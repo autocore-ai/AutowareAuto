@@ -1,0 +1,59 @@
+## Build and Install Folders
+/build
+/install
+/log
+/build_isolated
+/install_isolated
+/devel
+/*cmake-build*
+
+## Python Artifacts
+__pycache__/
+.eggs/
+
+
+## Coverage and Doxygen Artifacts
+lcov/
+.cov/
+html/
+latex/
+.coverage*
+.msg.md
+/docs/html
+
+## XCode Artifacts
+.DS_Store
+xcuserdata/
+
+## MSVC Artifacts
+.vscode/
+.vs/
+
+## CLion Artifacts
+cmake-build-debug
+.cmake-build-debug
+.idea
+
+## Valgrind and Callgrind
+vgcore.*
+*.log
+*.out*
+
+## Vizdep
+*.dot
+*.pickle
+*.svg
+
+## X-Compile Artifacts
+target_fs/
+
+## Miscellaneous
+*.cmd
+*.tmp
+*.user
+*.db
+*.opendb
+*.swp
+*.swo
+*.gch
+*.patch
