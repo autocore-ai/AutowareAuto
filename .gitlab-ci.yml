@@ -1,0 +1,168 @@
+stages:
+  - ade
+  - build
+  - deploy
+
+
+ade:
+  stage: ade
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - apk add --update-cache git
+    - cd tools/ade_image
+    - 'export LAST_CHANGE=$(git log -1 --pretty=%H .)'
+    - '
+      if [[ -n "$FORCE" ]]; then
+          chmod og-w . -R;
+          docker build -t image .;
+      else
+          (
+              docker pull $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA &&
+              docker tag $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA image
+          ) || (
+              docker pull $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE &&
+              docker tag $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE image
+          ) || (
+              chmod og-w . -R;
+              docker build -t image .
+          );
+      fi
+      '
+    - docker tag image $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE
+    - docker tag image $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE/ade:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE
+    - docker push $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/ade:$CI_COMMIT_REF_SLUG
+
+
+build:
+  stage: build
+  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  script:
+    # build and test
+    - 'colcon build
+           --merge-install
+           --install-base /opt/AutowareAuto
+           --cmake-args
+             -DCMAKE_BUILD_TYPE=Debug
+      '
+    - 'colcon test
+           --merge-install
+           --install-base /opt/AutowareAuto
+           --abort-on-error
+      '
+    - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
+    - colcon test-result --verbose
+
+    # Test package
+    - source /opt/AutowareAuto/setup.bash
+    - 'autoware_create_pkg
+          --pkg-name my_cool_pkg
+          --destination /tmp/tmp_ws/src
+          --description "My cool package does cool stuff"
+          --maintainer "Jane Doe"
+          --email "jane.doe@awesome-company.com"
+      '
+    - cd /tmp/tmp_ws
+    - colcon build --packages-select my_cool_pkg
+    - colcon test --packages-select my_cool_pkg
+    - colcon test-result --verbose
+    - cd -
+
+    # prepare volume artifact
+    - mkdir /opt/AutowareAuto/src
+    - '(cd src && git archive --format=tar HEAD | (cd /opt/AutowareAuto/src && tar xf -))'
+    - cp -a LICENSE /opt/AutowareAuto
+    - chmod -R og-w /opt/AutowareAuto
+    - tar cfz opt.tar.gz /opt/AutowareAuto
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - log
+      - opt.tar.gz
+    reports:
+      junit: test-results.xml
+
+
+coverage:
+  stage: build
+  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  script:
+    - 'colcon build
+           --cmake-args
+             -DCMAKE_BUILD_TYPE=Debug
+           --ament-cmake-args
+             -DCMAKE_CXX_FLAGS="$COVERAGE_FLAGS"
+             -DCMAKE_C_FLAGS="$COVERAGE_FLAGS"
+      '
+    - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.base --initial'
+    - 'colcon test
+           --abort-on-error
+      '
+    - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
+    - 'lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total'
+    - 'lcov --config-file .lcovrc -r lcov.total "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" -o lcov.total.filtered'
+    - 'genhtml --config-file .lcovrc -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage'
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - coverage
+  variables:
+    COVERAGE_FLAGS: "-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
+  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
+
+
+docs:
+  stage: build
+  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  script:
+    - doxygen .doxyfile
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - docs/html
+
+
+pages:
+  stage: deploy
+  image: alpine
+  dependencies:
+    - coverage
+    - docs
+  script:
+    - mv docs/html public
+    - mv coverage public
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - public
+  only:
+    - master
+
+
+volume:
+  stage: deploy
+  image: docker
+  services:
+    - docker:dind
+  dependencies:
+    - build
+  script:
+    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
+    - |
+      cat >Dockerfile <<EOF
+      FROM alpine
+      ADD opt.tar.gz /
+      VOLUME /opt/AutowareAuto
+      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
+      EOF
+    - docker build -t image .
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker tag image $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
