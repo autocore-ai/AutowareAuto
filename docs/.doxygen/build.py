@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+'''Build documentation with doxygen and inject customized search code'''
+
 import os
 import shutil
 import subprocess

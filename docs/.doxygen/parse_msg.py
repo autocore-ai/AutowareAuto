@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+'''Custom doxygen parser for ROS msg files'''
+
 import os
 import sys
 

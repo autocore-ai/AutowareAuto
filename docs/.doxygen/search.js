@@ -1,3 +1,4 @@
+// Drop-in replacement for doxygen's search.js with improved fulltext search
 // Based on Doxygen 1.8.11 search.js
 // Modified for AutowareAuto
 var searchResultsText=["Sorry, no documents matching your query.","Found <b>1</b> document matching your query.","Found <b>$num</b> documents matching your query. Showing best matches first."];
