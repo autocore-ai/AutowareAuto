@@ -3,7 +3,6 @@
 # Copyright 2017 - 2018 Ternaris
 # SPDX-License-Identifier: Apache 2.0
 
-unset ROS_DISTRO
-source "/opt/ros/$ROS2_DISTRO/setup.bash"
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 
 cd

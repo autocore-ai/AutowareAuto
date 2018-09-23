@@ -5,8 +5,7 @@
 
 set -e
 
-unset ROS_DISTRO
-source "/opt/ros/$ROS2_DISTRO/setup.bash"
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 
 
 if [[ -n "$GITLAB_CI" ]]; then
