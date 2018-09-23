@@ -120,11 +120,11 @@ docs:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
-    - doxygen .doxyfile
+    - docs/.doxygen/build.py
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
-      - docs/html
+      - docs/build/html
 
 
 pages:
