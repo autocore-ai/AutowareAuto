@@ -1,7 +1,8 @@
-# hungarian_assigner
+hungarian_assigner
+==================
 
 
-## Purpose / Use cases
+# Purpose / Use cases
 
 We require a method to associate distinct data together.
 
@@ -16,7 +17,7 @@ The primary trade-off here is that the Hungarian algorithm is O(N^3) instead of
 O(N log N) for GNN.
 
 
-## Design
+# Design
 
 This package is a fairly standard implementation of the O(N^3 ) Hungarian
 algorithm (see external links), however we have made some minor changes in
@@ -36,7 +37,7 @@ unbalanced assignment problem and missing weights (that is, illegal
 assignments).
 
 
-### Matrices
+## Matrices
 
 The following functionality for a matrix class is used:
 
@@ -46,7 +47,7 @@ The following functionality for a matrix class is used:
 - Operations on blocks: assignment, addition, subtraction (in place)
 
 
-### Assumptions / Known limits
+## Assumptions / Known limits
 
 - Fixed maximum capacity via template parameter, can choose one of:
 
@@ -69,7 +70,7 @@ false, it is assumed that the user will then need to check for an
 `UNASSSIGNED` assignment
 
 
-### Inputs / Outputs / API
+## Inputs / Outputs / API
 
 Basic usage:
 
@@ -100,7 +101,7 @@ Outputs:
 - Unassigned tasks (which columns are unassigned columns)
 
 
-## Error detection and handling
+# Error detection and handling
 
 Impossible assignments are detected by hitting loop bounds. In some cases, we
 can also check before doing computation if assignment is impossible (e.g. if a
@@ -120,24 +121,24 @@ For some inner loops, certain conditions should be theoretically guaranteed
 If these conditions are not met, an exception will be thrown.
 
 
-## Security considerations
+# Security considerations
 
 TBD by a security specialist.
 
 
-## References / External links
+# References / External links
 
 - [Baidu's Apollo Reference implementation](https://github.com/ApolloAuto/apollo/blob/master/modules/perception/obstacle/common/hungarian_bigraph_matcher.cc)
 - [Prose description of algorithm](https://stackoverflow.com/questions/23278375/hungarian-algorithm)
 - [Worked example for unit test 1](http://naagustutorial.blogspot.com/2013/12/hungarian-method-unbalanced-assignment.html)
 - [Worked example for unit test 2](http://file.scirp.org/pdf/AJOR_2016063017275082.pdf)
 
-## Future extensions / Unimplemented parts
+# Future extensions / Unimplemented parts
 
 N/A
 
 
-## Related issues
+# Related issues
 
 - #1152: Initial implementation
 - #1266: Refactor to remove eigen dependency

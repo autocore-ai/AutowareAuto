@@ -1,38 +1,39 @@
-# hello_world {#hello_world-package-design}
+hello_world {#hello_world-package-design}
+===========
 
 This is the design document for the `hello_world` package.
 
 
-## Purpose / Use cases
+# Purpose / Use cases
 <!-- Required -->
 <!-- Things to consider:
     - Why did we implement this feature? -->
 
 
-## Design
+# Design
 <!-- Required -->
 <!-- Things to consider:
     - How does it work? -->
 
 
-### Assumptions / Known limits
+## Assumptions / Known limits
 <!-- Required -->
 
-### Inputs / Outputs / API
+## Inputs / Outputs / API
 <!-- Required -->
 <!-- Things to consider:
     - How do you use the package / API? -->
 
 
-### Inner-workings / Algorithms
+## Inner-workings / Algorithms
 <!-- If applicable -->
 
 
-### Error detection and handling
+## Error detection and handling
 <!-- Required -->
 
 
-## Security considerations
+# Security considerations
 <!-- Required -->
 <!-- Things to consider:
 - Spoofing (How do you check for and handle fake input?)
@@ -43,13 +44,13 @@ This is the design document for the `hello_world` package.
 - Elevation of Privilege (Do you need to change permission levels during execution?) -->
 
 
-## References / External links
+# References / External links
 <!-- Optional -->
 
 
-## Future extensions / Unimplemented parts
+# Future extensions / Unimplemented parts
 <!-- Optional -->
 
 
-## Related issues
+# Related issues
 <!-- Required -->
