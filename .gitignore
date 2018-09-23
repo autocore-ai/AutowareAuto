@@ -19,7 +19,7 @@ html/
 latex/
 .coverage*
 .msg.md
-/docs/html
+/docs/build
 
 ## XCode Artifacts
 .DS_Store
