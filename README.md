@@ -3,6 +3,12 @@
 Autoware.Auto uses the Agile Development Environment (ADE).
 
 
+## Documentation
+
+The latest documentation corrsponding to the ``master`` branch can be found here:
+https://autowareauto.gitlab.io/AutowareAuto/
+
+
 ## Install ADE
 
 ADE is published on PyPI. It needs Python >= 3.5.2 and pip. All other
