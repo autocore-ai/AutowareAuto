@@ -1,0 +1,9 @@
+bash-completion
+doxygen
+git
+git-lfs
+graphviz
+lcov
+man
+shellcheck
+vim

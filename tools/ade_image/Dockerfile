@@ -30,26 +30,17 @@ ENV LANGUAGE en_US.UTF-8
 ENV LC_ALL en_US.UTF-8	
 
 
+COPY apt-packages /tmp/
 RUN apt-get update && \
     apt-get install -y \
-        bash-completion \
-	doxygen \
-        git \
-	git-lfs \
-	graphviz \
-        lcov \
-	man \
-	shellcheck \
-	vim \
-    && rm -rf /var/lib/apt/lists/*
+        $(cut -d# -f1 </tmp/apt-packages) \
+    && rm -rf /var/lib/apt/lists/* /tmp/apt-packages
 
 
+COPY pip3-packages /tmp/
 RUN pip3 install -U \
-        colcon-common-extensions \
-	pip-tools \
-	pylint \
-	twine \
-    && rm -rf /root/.cache /tmp/pip-*
+        $(cut -d# -f1 </tmp/pip3-packages) \
+    && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
 
 COPY bashrc-git-prompt /
