@@ -1,0 +1,43 @@
+<!-- HTML footer for doxygen 1.8.13-->
+<!-- start footer part -->
+
+<script>
+Array.from(document.querySelectorAll('.fragment')).forEach(el => {
+  if (!el.querySelector('.lineno')) {
+    return;
+  }
+  Array
+    .from(el.querySelectorAll('.line'))
+    .forEach(el => {
+        const textNode = el.childNodes[2];
+        let text = textNode.textContent.slice(1);
+        const match = /^(ade|)\$ /.exec(text);
+        if (match) {
+          const prompt = document.createElement('span');
+          prompt.classList.add('bash-prompt');
+          prompt.textContent = match[0];
+          el.insertBefore(prompt, textNode);
+          text = text.slice(match[0].length);
+        }
+        textNode.textContent = text;
+    })
+
+  let state = true;
+  const a = document.createElement('a');
+  a.href = '#';
+  a.classList.add('linenum-toggle');
+  a.textContent = 'toggle line numbers';
+  a.onclick = function(evt) {
+    evt.preventDefault();
+    const selector = '.line a:first-child, .line span.lineno';
+    const display = state ? 'none' : 'initial';
+    Array
+      .from(this.parentNode.querySelectorAll(selector))
+      .forEach(el => el.style.display = display);
+    state = !state;
+  };
+  el.insertBefore(a, el.firstChild);
+})
+</script>
+</body>
+</html>
