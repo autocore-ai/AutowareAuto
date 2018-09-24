@@ -46,6 +46,18 @@ RUN pip3 install -U \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
 
+RUN mkdir -p /opt/atom/bin && \
+    VERSION=$(curl -Ls https://api.github.com/repos/atom/atom/releases/latest | jq -r .tag_name) && \
+    URL="https://github.com/atom/atom/releases/download/${VERSION}/atom-amd64.tar.gz" && \
+    curl -Ls "${URL}" | tar -xzf - --directory=/opt/atom --strip-components=1 && \
+    chown -R root:root /opt/atom && \
+    ln -s ../atom /opt/atom/bin/ && \
+    ln -s ../resources/app/apm/bin/apm /opt/atom/bin/
+COPY atom-env.sh /opt/atom/.env.sh
+COPY atom-install-our-plugins /opt/atom/bin
+COPY atom-adeinit /opt/atom/.adeinit
+
+
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
     rm /bashrc-git-prompt

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+apm install \
+    atom-ide-ui \
+    autocomplete-python \
+    build \
+    build-colcon \
+    busy \
+    busy-signal \
+    goto \
+    highlight-selected \
+    ide-python \
+    language-cmake \
+    language-docker \
+    linter \
+    linter-docker \
+    linter-shellcheck \
+    linter-ui-default \
+    minimap \
+    minimap-highlight-selected \
+    minimap-split-diff \
+    pretty-json \
+    python-tools \
+    split-diff

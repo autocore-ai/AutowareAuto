@@ -2,3 +2,6 @@ colcon-common-extensions
 pip-tools
 pylint
 twine
+
+# Atom dependencies
+python-language-server

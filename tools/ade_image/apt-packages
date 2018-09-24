@@ -1,8 +1,10 @@
 bash-completion
+curl
 doxygen
 git
 git-lfs
 graphviz
+jq
 lcov
 man
 python3-lxml
@@ -11,3 +13,12 @@ sudo
 vim
 emacs
 ros-bouncy-launch-testing
+
+
+# Atom dependencies
+gconf2
+gvfs-bin
+libasound2
+libgtk-3.0
+libxkbfile1
+libxss1
