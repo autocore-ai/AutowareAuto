@@ -25,7 +25,8 @@ pip3 install ade-cli
 ADE needs a directory on the host which will be mounted as the user's
 home directory within the container. It will be populated with
 dotfiles and must be different than the user's home directory
-*outside* the container.
+*outside* the container. In case you use ADE for multiple projects it
+is recommended to use dedicated adehome directories per project.
 
 ADE will look for a directory containing a file named ``.adehome``
 starting with the current working directory and continuing with the
