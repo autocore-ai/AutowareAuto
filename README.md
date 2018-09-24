@@ -63,6 +63,19 @@ colcon test-result
 ```
 
 
+## How to use Atom for development
+
+The Autoware.Auto ADE image ships with the [Atom](https://atom.io/) text editor
+and automatically [installs](tools/ade_image/atom-install-our-plugins) some
+useful Atom packages.
+
+The installed packages include *build-colcon*, a colcon specific provider for
+the *build*  package. To take advantage of build-colcon, you have to open a
+ROS2 package as a *Project Folder* (File -> Add Project Folder...). All the
+functions and shortcuts provided by [build](https://atom.io/packages/build)
+should be available out of the box.
+
+
 ## Cleanup
 
 ADE uses docker and over time unused images, containers and volumes
