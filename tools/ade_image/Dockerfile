@@ -37,6 +37,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/* /tmp/apt-packages
 
 RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN echo 'Defaults env_keep += "DEBUG ROS_DISTRO"' >> /etc/sudoers
 
 
 COPY pip3-packages /tmp/

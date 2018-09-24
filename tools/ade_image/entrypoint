@@ -44,5 +44,16 @@ for x in /etc/skel/.*; do
 done
 
 
+if [[ -z "$SKIP_ADEINIT" ]]; then
+    for x in /opt/*; do
+	if [[ -x "$x/.adeinit" ]]; then
+	    echo "Initializing $x"
+	    sudo -Hu "$USER" -- bash -lc "$x/.adeinit"
+	    echo "Initializing $x done"
+	fi
+    done
+fi
+
+
 echo 'ADE startup completed.'
 exec "$@"
