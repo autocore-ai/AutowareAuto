@@ -124,7 +124,7 @@ docs:
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
-      - docs/build/html
+      - docs/_build/html
 
 
 pages:
@@ -134,7 +134,7 @@ pages:
     - coverage
     - docs
   script:
-    - mv docs/html public
+    - mv docs/_build/html public
     - mv coverage public
   artifacts:
     name: "$CI_JOB_NAME"
