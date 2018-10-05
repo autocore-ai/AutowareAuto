@@ -7,4 +7,5 @@ lcov
 man
 python3-lxml
 shellcheck
+sudo
 vim

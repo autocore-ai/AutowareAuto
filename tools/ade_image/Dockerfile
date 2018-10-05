@@ -36,6 +36,8 @@ RUN apt-get update && \
         $(cut -d# -f1 </tmp/apt-packages) \
     && rm -rf /var/lib/apt/lists/* /tmp/apt-packages
 
+RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 
 COPY pip3-packages /tmp/
 RUN pip3 install -U \
