@@ -33,8 +33,7 @@ custom_executable(topics listener)
 
 if(BUILD_TESTING)
 #TODO: include other linterns
-
-find_package(integration_tests REQUIRED	)
+find_package(integration_tests REQUIRED)
 integration_tests(
   EXPECTED_OUTPUT_DIR "test/expected_outputs"
   COMMANDS
