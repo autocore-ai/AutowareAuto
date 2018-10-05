@@ -9,3 +9,5 @@ python3-lxml
 shellcheck
 sudo
 vim
+emacs
+ros-bouncy-launch-testing
