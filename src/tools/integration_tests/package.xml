@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>apex_integration_tests</name>
+  <name>integration_tests</name>
   <version>0.4.0</version>
   <description>A package to easily create integration tests.</description>
   <maintainer email="jp.samper@apex.ai">Juan Pablo Samper</maintainer>
-  <license>Apex.AI Proprietary License</license>
+  <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake_core</buildtool_depend>
   <buildtool_depend>ament_cmake_pytest</buildtool_depend>
