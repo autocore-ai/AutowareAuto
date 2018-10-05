@@ -133,7 +133,7 @@ function(integration_tests)
     @ONLY
   )
   file(GENERATE
-    OUTPUT "${target_name}_$<CONFIG>.py"
+    OUTPUT "${CMAKE_BINARY_DIR}/${target_name}_$<CONFIG>.py"
     INPUT "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.py.configured"
   )
 
