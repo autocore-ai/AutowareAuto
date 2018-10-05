@@ -33,12 +33,16 @@ custom_executable(topics listener)
 
 if(BUILD_TESTING)
 #TODO: include other linterns
+file(COPY "${CMAKE_SOURCE_DIR}/test/expected_outputs"
+  DESTINATION "${CMAKE_BINARY_DIR}") 
+
 find_package(integration_tests REQUIRED)
 integration_tests(
-  EXPECTED_OUTPUT_DIR "test/expected_outputs"
+  EXPECTED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/expected_outputs"
   COMMANDS
   "talker"
-)
+  )
+
 endif()
 
 ament_package()
