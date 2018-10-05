@@ -22,8 +22,8 @@
 #                  The autogenerate name for a long lists of commands
 #                  may be too long for some OSes and filesystem, so
 #                  you must specify a shorter name.
-#                  The corresponding tests will be called <TESTNAME>_integration_test.
-#                  If multiple commands, then <TESTNAME>_0_integration_tests, etc.
+#                  The corresponding test will be called <TESTNAME>_integration_test.
+#                  Otherwise the test name will be <cmd1_cmd2>_integration_test.
 # :type TESTNAME: string
 # :param COMMANDS: a list of 3-colon-separated (:::) commands in the order they should be launched.
 # :type COMMANDS: string
