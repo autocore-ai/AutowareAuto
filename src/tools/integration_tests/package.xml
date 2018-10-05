@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>apex_integration_tests</name>
+  <version>0.4.0</version>
+  <description>A package to easily create integration tests.</description>
+  <maintainer email="jp.samper@apex.ai">Juan Pablo Samper</maintainer>
+  <license>Apex.AI Proprietary License</license>
+
+  <buildtool_depend>ament_cmake_core</buildtool_depend>
+  <buildtool_depend>ament_cmake_pytest</buildtool_depend>
+
+  <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake_pytest</buildtool_export_depend>
+
+  <exec_depend>ament_cmake_pytest</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_testing</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+</export>
+</package>
