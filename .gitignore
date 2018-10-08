@@ -34,6 +34,9 @@ cmake-build-debug
 .cmake-build-debug
 .idea
 
+## Clang Complete Artifacts (used by Atom)
+/.clang_complete
+
 ## Valgrind and Callgrind
 vgcore.*
 *.log
