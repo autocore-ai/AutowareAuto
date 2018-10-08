@@ -2,6 +2,8 @@
 
 apm install \
     atom-ide-ui \
+    atom-ide-debugger-native-gdb \
+    atom-ide-debugger-python \
     autocomplete-python \
     build \
     build-colcon \
