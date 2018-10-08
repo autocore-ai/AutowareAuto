@@ -1,5 +1,7 @@
 bash-completion
 curl
+doxygen
+gdb
 git
 git-lfs
 graphviz

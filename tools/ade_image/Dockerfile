@@ -67,6 +67,7 @@ COPY atom-adeinit /opt/atom/.adeinit
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
     rm /bashrc-git-prompt
+COPY gdbinit /etc/gdb/
 
 
 COPY env.sh /etc/profile.d/ade_env.sh
