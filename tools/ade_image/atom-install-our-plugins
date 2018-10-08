@@ -21,6 +21,7 @@ apm install \
     minimap \
     minimap-highlight-selected \
     minimap-split-diff \
+    platformio-ide-terminal \
     pretty-json \
     python-tools \
     split-diff
