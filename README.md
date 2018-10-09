@@ -75,6 +75,23 @@ ROS2 package as a *Project Folder* (File -> Add Project Folder...). All the
 functions and shortcuts provided by [build](https://atom.io/packages/build)
 should be available out of the box.
 
+To enable clang based autocompletion the colcon workspace has to be build
+through a wrapper script:
+```bash
+cd ~/AutowareAuto
+# enable wrapper script and rebuild everything
+rm -rf .clang_complete build install log
+export CC=$PWD/tools/clang_complete/cc
+export CXX=$PWD/tools/clang_complete/g++
+colcon build
+
+# This should at least contain some lines starting with "-I"
+cat .clang_complete
+```
+
+All future builds will automatically go through the wrapper script and keep the
+`.clang_complete` file up to date.
+
 
 ## Cleanup
 

@@ -4,6 +4,7 @@ apm install \
     atom-ide-ui \
     atom-ide-debugger-native-gdb \
     atom-ide-debugger-python \
+    autocomplete-clang \
     autocomplete-python \
     build \
     build-colcon \
