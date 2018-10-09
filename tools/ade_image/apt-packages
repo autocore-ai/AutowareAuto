@@ -1,6 +1,5 @@
 bash-completion
 curl
-doxygen
 git
 git-lfs
 graphviz
@@ -14,6 +13,9 @@ vim
 emacs
 ros-bouncy-launch-testing
 
+# Doxygen
+bison
+flex
 
 # Atom dependencies
 gconf2

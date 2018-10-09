@@ -46,6 +46,12 @@ RUN pip3 install -U \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
 
+RUN curl -Ls http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.linux.bin.tar.gz | tar -xzf - --directory=/usr/local/bin --strip-components=2 doxygen-1.8.14/bin/doxygen
+RUN curl -Ls http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz | tar -xzf - && \
+    cd doxygen-1.8.14 && cmake . && make && mv bin/doxygen /usr/local/bin && cd .. && \
+    rm -r doxygen-1.8.14
+
+
 RUN mkdir -p /opt/atom/bin && \
     VERSION=$(curl -Ls https://api.github.com/repos/atom/atom/releases/latest | jq -r .tag_name) && \
     URL="https://github.com/atom/atom/releases/download/${VERSION}/atom-amd64.tar.gz" && \
