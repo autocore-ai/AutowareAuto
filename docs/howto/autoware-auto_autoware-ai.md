@@ -3,7 +3,7 @@ ROS1 Bridge {#ros1_bridge_title}
 
 [TOC]
 
-# ros1_bridge: Bridging AutowareAuto (ROS 2) and Autoware AI (ROS 1) applications {#ros1-bridge}
+# ros1_bridge: Bridging AutowareAuto (ROS 2) and AutowareAI (ROS 1) applications {#ros1-bridge}
 
 The [`ros1_bridge`](https://github.com/ros2/ros1_bridge) application provides a network bridge
 which enables the exchange of messages between ROS 1 and ROS 2, allowing ROS 1 tools like
@@ -22,7 +22,7 @@ For more details see the
 [ROS 2 wiki instructions](https://github.com/ros2/ros1_bridge#building-the-bridge-from-source).
 
 The instructions below assume that you have installed ROS 2 Bouncy (already available in `ade`) and
-ROS 1 Kinetic. 
+[ROS 1 Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu). 
 
 If you have defined custom messages in your `~/workspace`, build and source
 your workspace before starting (see `ade$ source ~/workspace/install/setup.bash` below).
@@ -36,7 +36,7 @@ ade$ mkdir -p ~/ros1_bridge_ws/src
 ade$ cd ~/ros1_bridge_ws/src
 ade$ git clone https://github.com/ros2/ros1_bridge.git --branch 0.5.0
 ade$ cd ..
-ade$ source /opt/ros/kinetic/setup.bash
+ade$ source /opt/ros/melodic/setup.bash
 ade$ colcon build --merge-install --packages-select ros1_bridge
 ```
 
@@ -47,7 +47,7 @@ the `ros1_bridge` and `roscore` in one command.
 ```bash
 $ ade enter
 ade$ echo "source ~/ros1_bridge_ws/install/setup.bash" >> ~/.bashrc
-ade$ echo 'alias start_ros1_bridge="( source /opt/ros/kinetic/setup.bash && ( roscore & source ~/ros1_bridge_ws/install/setup.bash && sleep 1 && ros2 run ros1_bridge dynamic_bridge --bridge-all-topics ) && killall roscore ) || killall roscore"' >> ~/.bashrc
+ade$ echo 'alias start_ros1_bridge="( source /opt/ros/melodic/setup.bash && ( roscore & source ~/ros1_bridge_ws/install/setup.bash && sleep 1 && ros2 run ros1_bridge dynamic_bridge --bridge-all-topics ) && killall roscore ) || killall roscore"' >> ~/.bashrc
 ade$ source ~/.bashrc  # To enable it for the current terminal
 ```
 
@@ -71,7 +71,7 @@ ade$ ros2 topic pub /test std_msgs/Bool -r 1
 Terminal 3 - Listen for the message on ROS 1:
 ```bash
 $ ade enter
-ade$ source /opt/ros/kinetic/setup.bash
+ade$ source /opt/ros/melodic/setup.bash
 ade$ rostopic echo /test
 data: False
 ---
@@ -84,3 +84,9 @@ If the output in your terminal matches what is shown above, congratulations! You
 compiled and installed properly.
 
 Enter `Ctrl-C` to stop the applications.
+
+## 3. Run AutowareAuto and AutowareAI applications {#autoware-auto-autoware-ai}
+TBD after:
+1. https://gitlab.com/AutowareAuto/AutowareAuto/issues/3
+2. https://gitlab.com/AutowareAuto/AutowareAuto/issues/4
+3. https://gitlab.com/AutowareAuto/AutowareAuto/issues/6
