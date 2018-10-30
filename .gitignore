@@ -36,6 +36,7 @@ cmake-build-debug
 
 ## Clang Complete Artifacts (used by Atom)
 /.clang_complete
+/tags
 
 ## Valgrind and Callgrind
 vgcore.*
