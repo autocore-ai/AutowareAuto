@@ -5,7 +5,7 @@ Autoware.Auto uses the Agile Development Environment (ADE).
 
 ## Documentation
 
-The latest documentation corrsponding to the ``master`` branch can be found here:
+The latest documentation corresponding to the ``master`` branch can be found here:
 https://autowareauto.gitlab.io/AutowareAuto/
 
 
@@ -67,30 +67,82 @@ colcon test-result
 
 The Autoware.Auto ADE image ships with the [Atom](https://atom.io/) text editor
 and automatically [installs](tools/ade_image/atom-install-our-plugins) some
-useful Atom packages.
+useful Atom packages. Be sure to checkout its Welcome Guide and make yourself
+familiar with its features and keyboard shortcuts.
 
-The installed packages include *build-colcon*, a colcon specific provider for
-the *build*  package. To take advantage of build-colcon, you have to open a
-ROS2 package as a *Project Folder* (File -> Add Project Folder...). All the
-functions and shortcuts provided by [build](https://atom.io/packages/build)
-should be available out of the box.
 
-To enable clang based autocompletion the colcon workspace has to be build
-through a wrapper script:
+### Prepare your workspace
+
+To use all Atom features, like gdb debugging, clang autocompletion, and ctags
+supported code navigation you have to prepare your workspace:
+
 ```bash
+# cleanup workspace
 cd ~/AutowareAuto
-# enable wrapper script and rebuild everything
 rm -rf .clang_complete build install log
+
+# enable compiler wrapper script, needed for clang autocomplete
 export CC=$PWD/tools/clang_complete/cc
 export CXX=$PWD/tools/clang_complete/g++
-colcon build
 
-# This should at least contain some lines starting with "-I"
-cat .clang_complete
+# generate tags file for code navigation
+# be sure to repeat this when it gets out of date
+ctags -R .
+
+# build workspace with debugging enabled, building from
+colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'
 ```
 
-All future builds will automatically go through the wrapper script and keep the
-`.clang_complete` file up to date.
+
+### Navigate through the code
+
+In order for Atom to use the global `tags` file open the AutowareAuto folder as
+a *Project Folder* (File -> Add Project Folder...).
+
+You should add packages you are working on as additional project folders, but
+always keep AutowareAuto added to give Atom an overview of the full project.
+
+The two main shortcuts you are going to use are `F6` to go to the declaration
+of a symbol and `CTRL-ALT-DOWN` to go to its implementation.
+
+
+### Build code from Atom
+
+The installed packages include *build-colcon*, a colcon specific provider for
+the Atom *build*  package. To take advantage of build-colcon, you have to open a
+ROS2 package as a *Project Folder* (File -> Add Project Folder...). All the
+functions and shortcuts provided by [build](https://atom.io/packages/build)
+should be available out of the box. Pressing `F9` builds the current project.
+
+
+### Run build packages from Atom
+
+To test code directly from Atom press ``CTRL-` `` to open the builtin terminal.
+Here you can run a built binary:
+
+```bash
+~/AutowareAuto/build/demo_nodes_cpp/talker
+```
+
+
+### Debug a binary with gdb
+
+To debug a binary during runtime you can use the integrated gdb interface to
+introspect and step through the code.
+
+#### Example
+
+To debug `listener` from the `demo_nodes_cpp` package add
+`AutowareAuto/tools/demo_nodes_cpp` as a project folder.
+
+Open `src/topics/listener.cpp` and add a breakpoint on line 53 by clicking the
+blank space next to the line number.
+
+Click `Launch debugger...` in the sidebar on the right. Make sure the `Native -
+GDB` tab is selected and enter `~/AutowareAuto/build/demo_nodes_cpp/listener`
+as the program and `~` as the current working directory. The remaining two
+entries can be left blank. Clicking `Launch` will start the listener binary and
+pause at the breakpoint.
 
 
 ## Cleanup
