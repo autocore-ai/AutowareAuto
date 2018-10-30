@@ -21,6 +21,7 @@ bison
 flex
 
 # Atom dependencies
+exuberant-ctags
 gconf2
 gvfs-bin
 libasound2

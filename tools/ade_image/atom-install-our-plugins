@@ -5,14 +5,12 @@ apm install \
     atom-ide-debugger-native-gdb \
     atom-ide-debugger-python \
     autocomplete-clang \
-    autocomplete-python \
     build \
     build-colcon \
-    busy \
     busy-signal \
-    goto \
     highlight-selected \
     ide-python \
+    intentions \
     language-cmake \
     language-docker \
     linter \
@@ -24,5 +22,25 @@ apm install \
     minimap-split-diff \
     platformio-ide-terminal \
     pretty-json \
-    python-tools \
     split-diff
+
+
+if [[ ! -f ~/.atom/config.cson ]]; then
+    cat > ~/.atom/config.cson <<-EOF
+	"*":
+	  core:
+	    disabledPackages: [
+	      "linter"
+	    ]
+	  "ide-python":
+	    python: "python3"
+	EOF
+fi
+
+
+if [[ ! -f ~/.atom/keymap.cson ]]; then
+    cat > ~/.atom/keymap.cson <<-EOF
+	'atom-workspace':
+	  'f6': 'autocomplete-clang:go-declaration'
+	EOF
+fi
