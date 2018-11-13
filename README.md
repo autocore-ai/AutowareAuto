@@ -103,7 +103,8 @@ You should add packages you are working on as additional project folders, but
 always keep AutowareAuto added to give Atom an overview of the full project.
 
 The two main shortcuts you are going to use are `F6` to go to the declaration
-of a symbol and `CTRL-ALT-DOWN` to go to its implementation.
+of a symbol and `CTRL-SPACE` to go to its implementation and `CTRL-SHIFT-SPACE`
+to quickly return.
 
 
 ### Build code from Atom

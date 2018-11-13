@@ -42,5 +42,8 @@ if [[ ! -f ~/.atom/keymap.cson ]]; then
     cat > ~/.atom/keymap.cson <<-EOF
 	'atom-workspace':
 	  'f6': 'autocomplete-clang:go-declaration'
+	'.platform-linux atom-text-editor':
+	  'ctrl-space': 'symbols-view:go-to-declaration'
+	  'ctrl-shift-space': 'symbols-view:return-from-declaration'
 	EOF
 fi
