@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 apm install \
+    atom-beautify \
     atom-ide-ui \
     atom-ide-debugger-native-gdb \
     atom-ide-debugger-python \
@@ -28,6 +29,11 @@ apm install \
 if [[ ! -f ~/.atom/config.cson ]]; then
     cat > ~/.atom/config.cson <<-EOF
 	"*":
+	  "atom-beautify":
+	    c:
+	      configPath: "/opt/ros/bouncy/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
+	    cpp:
+	      configPath: "/opt/ros/bouncy/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
 	  core:
 	    disabledPackages: [
 	      "linter"
@@ -45,5 +51,7 @@ if [[ ! -f ~/.atom/keymap.cson ]]; then
 	'.platform-linux atom-text-editor':
 	  'ctrl-space': 'symbols-view:go-to-declaration'
 	  'ctrl-shift-space': 'symbols-view:return-from-declaration'
+	'atom-text-editor':
+	  'ctrl-alt-u': 'atom-beautify:beautify-editor'
 	EOF
 fi

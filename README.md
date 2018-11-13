@@ -107,6 +107,13 @@ of a symbol and `CTRL-SPACE` to go to its implementation and `CTRL-SHIFT-SPACE`
 to quickly return.
 
 
+### Auto-format your code
+
+Atom can auto-format your code to adhere to the ROS2 style rules using the
+configuration file from ament_uncrustify. The shortcut `CTRL-ALT-U` will
+automatically reformat the currently open file.
+
+
 ### Build code from Atom
 
 The installed packages include *build-colcon*, a colcon specific provider for
