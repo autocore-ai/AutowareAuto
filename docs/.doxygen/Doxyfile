@@ -875,7 +875,10 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = docs/_build \
-                         src/tools/autoware_create_pkg/autoware_create_pkg/template
+                         src/tools/autoware_create_pkg/autoware_create_pkg/template \
+                         src/osrf/osrf_testing_tools_cpp/osrf_testing_tools_cpp/include/osrf_testing_tools_cpp/vendor \
+                         src/osrf/osrf_testing_tools_cpp/README.md \
+                         src/osrf/osrf_testing_tools_cpp/osrf_testing_tools_cpp/include/osrf_testing_tools_cpp/memory_tools/gtest_quickstart.hpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
