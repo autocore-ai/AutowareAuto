@@ -13,7 +13,7 @@ integration tests, how to run these tests and how to evaluate results.
 
 
 1. [colcon](https://github.com/ros2/ros2/wiki/Colcon-Tutorial) is used to build and run test
-2. `integration_tests`is used to specify tests in CMakeLists.txt
+2. `integration_tests` is used to specify tests in CMakeLists.txt
 3. [pytest](https://docs.pytest.org/en/latest/) is used to eventually execute the test,
 generate jUnit format test result and evaluate the result
 4. [unit testing](@ref how-to-write-tests-and-measure-coverage) describes testing big picture
@@ -183,7 +183,7 @@ this test, refer to the following directories/files:
 
 \note SIGINT is broadcast only if the output of the **last** executable matches its regex.
 
-How exactly `integration_tests` works under hood:
+## How exactly `integration_tests` framework works under the hood
 
 `integration_tests` is a wrapper of [ament_add_pytest_test]
 (https://github.com/ament/ament_cmake/blob/master/ament_cmake_pytest/cmake/ament_add_pytest_test.cmake).
