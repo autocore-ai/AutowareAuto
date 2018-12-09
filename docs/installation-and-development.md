@@ -15,8 +15,8 @@ ADE is published on PyPI. It needs Python >= 3.5.2 and pip. All other
 dependencies will be fetched by pip.
 
 ```
-sudo apt-get install python3-pip
-pip3 install ade-cli
+$ sudo apt-get install python3-pip
+$ pip3 install ade-cli
 ```
 
 
@@ -33,9 +33,9 @@ starting with the current working directory and continuing with the
 parent directories to identify the ADE home directory to be mounted.
 
 ```
-mkdir adehome
-cd adehome
-touch .adehome
+$ mkdir adehome
+$ cd adehome
+$ touch .adehome
 ```
 
 For ade to function it needs to be configured. Autoware.Auto provides
@@ -45,22 +45,22 @@ directory and any parent directories. Additionally, values can be
 overridden by setting environment variables.
 
 ```
-cd adehome
-git clone git@gitlab.com:AutowareAuto/AutowareAuto.git
-cd AutowareAuto
-ade start
-ade enter
+$ cd adehome
+$ git clone git@gitlab.com:AutowareAuto/AutowareAuto.git
+$ cd AutowareAuto
+$ ade start
+$ ade enter
 ```
 
 
 # How to build {#how-to-build}
 
 ```
-ade enter
-cd AutowareAuto
-colcon build
-colcon test
-colcon test-result
+$ ade enter
+ade$ cd AutowareAuto
+ade$ colcon build
+ade$ colcon test
+ade$ colcon test-result
 ```
 
 
@@ -79,19 +79,19 @@ supported code navigation you have to prepare your workspace:
 
 ```bash
 # cleanup workspace
-cd ~/AutowareAuto
-rm -rf .clang_complete build install log
+ade$ cd ~/AutowareAuto
+ade$ rm -rf .clang_complete build install log
 
 # enable compiler wrapper script, needed for clang autocomplete
-export CC=$PWD/tools/clang_complete/cc
-export CXX=$PWD/tools/clang_complete/g++
+ade$ export CC=$PWD/tools/clang_complete/cc
+ade$ export CXX=$PWD/tools/clang_complete/g++
 
 # generate tags file for code navigation
 # be sure to repeat this when it gets out of date
-ctags -R .
+ade$ ctags -R .
 
 # build workspace with debugging enabled, building from
-colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'
+ade$ colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'
 ```
 
 
@@ -130,7 +130,7 @@ To test code directly from Atom press ``CTRL-` `` to open the built-in terminal.
 Here you can run a built binary:
 
 ```bash
-~/AutowareAuto/build/demo_nodes_cpp/talker
+ade$ ~/AutowareAuto/build/demo_nodes_cpp/talker
 ```
 
 
@@ -165,8 +165,8 @@ will clutter your hard drive.
 Let's first make sure that ADE is running:
 
 ```console
-cd adehome/AutowareAuto
-ade start
+$ cd adehome/AutowareAuto
+$ ade start
 ```
 
 In case you use ade for more than one project make sure all of them
@@ -189,6 +189,6 @@ Build Cache         0                   0                   0B                  
 
 ## Remove unused docker items {#Remove-unused-docker-items}
 
-```
-docker system prune -a --volumes
+```console
+$ docker system prune -a --volumes
 ```

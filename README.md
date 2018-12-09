@@ -29,13 +29,13 @@ in less than 2 weeks.
 **Car:** Lexus 450 LH with [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/)
 DBW interface.
 
-**Sensors:**
+**Sensors:**  
     1. 4 [VLP16](https://velodynelidar.com/vlp-16-hi-res.html) (or comparable sensors, e.g. VLP-32C)
     2. 16 Sonar sensors
     3. 4 [cameras](http://wiki.ros.org/pointgrey_camera_driver) (180 FOV)
     4. [Novatel GPS](https://autonomoustuff.com/product/novatel-vehicle-kits/)
 
-**ECUs:**
+**ECUs:**  
 	1. [Nvidia AGX Xavier](https://www.nvidia.com/en-us/deep-learning-ai/products/agx-systems/) aarch64 computer
 	1. [Nuvo](https://autonomoustuff.com/product/astuff-spectra/) rugged x86-64 desktop computer
 
