@@ -13,7 +13,7 @@ It also does two more things differently: a) we have crisply defined interfaces 
 different modules (messages and APIs) and  b) architecture designed for determinism
 such that it is possible to reproduce behaviors on live and development machines.
 
-![Autoware.Auto testing vehicle](lexus.jpg)
+![Autoware.Auto testing vehicle](docs/images/lexus.jpg)
 
 # Use Cases
 Autoware.Auto will initially address the following 2 use case:
@@ -25,7 +25,7 @@ will be completed, Autoware.Auto will allow you to easily map a parking lot, cre
 a map for autonomous driving and drive over this parking lot entirely autonomously
 in less than 2 weeks.
 
-![Autonomous valet parking](valet_parking.jpeg)
+![Autonomous valet parking](docs/valet_parking.jpeg)
 
 # Supported Hardware
 **Car:** Lexus 450 LH with [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/)
@@ -51,4 +51,4 @@ Functional features in Autoware.Auto will be developed according to the below ro
 More granular feature planning is being done via
 [milestones](https://gitlab.com/AutowareAuto/AutowareAuto/milestones).
 
-![Functional feature roadmap](aa_roadmap.png)
+![Functional feature roadmap](docs/aa_roadmap.png)
