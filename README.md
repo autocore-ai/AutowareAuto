@@ -25,6 +25,8 @@ will be completed, Autoware.Auto will allow you to easily map a parking lot, cre
 a map for autonomous driving and drive over this parking lot entirely autonomously
 in less than 2 weeks.
 
+![Autonomous valet parking](images/valet_parking.jpeg)
+
 # Supported Hardware
 **Car:** Lexus 450 LH with [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/)
 DBW interface.
@@ -43,3 +45,10 @@ DBW interface.
 
 The latest documentation corresponding to the ``master`` branch can be found here:
 https://autowareauto.gitlab.io/AutowareAuto/.
+
+# Roadmap
+Functional features in Autoware.Auto will be developed according to the below roadmap.
+More granular feature planning is being done via
+[milestones](https://gitlab.com/AutowareAuto/AutowareAuto/milestones).
+
+![Functional feature roadmap](images/aa_roadmap.png)
