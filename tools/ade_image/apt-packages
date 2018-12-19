@@ -15,6 +15,7 @@ man
 openssh-client
 python3-lxml
 ros-bouncy-launch-testing
+ros-bouncy-osrf-testing-tools-cpp
 shellcheck
 strace
 sudo
