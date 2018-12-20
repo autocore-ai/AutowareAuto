@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>velodyne_node</name>
+    <version>0.0.1</version>
+    <description>(Mostly) static memory implementation of a velodyne driver in one process</description>
+    <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
+    <license>Apex.AI License</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>autoware_cmake</buildtool_depend>
+
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>argparse</build_depend>
+    <build_depend>velodyne_driver</build_depend>
+
+    <depend>udp_driver</depend>
+
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>velodyne_driver</exec_depend>
+
+    <test_depend>ament_lint_common</test_depend>
+    <test_depend>lidar_integration</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>
