@@ -15,6 +15,7 @@ sudo
 vim
 emacs
 ros-bouncy-launch-testing
+libpcap-dev
 
 # Doxygen
 bison

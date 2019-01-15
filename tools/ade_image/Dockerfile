@@ -64,6 +64,11 @@ COPY atom-install-our-plugins /opt/atom/bin
 COPY atom-adeinit /opt/atom/.adeinit
 
 
+RUN git clone https://github.com/rigtorp/udpreplay && mkdir -p udpreplay/build \
+      && cd udpreplay/build && cmake .. && make && make install \
+      && cd - && rm -rf udpreplay/
+
+
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
     rm /bashrc-git-prompt
