@@ -1,10 +1,10 @@
 How to {#howto}
 =========
 
-Each how to article is a standalone resource to introduce and inform you about
-usage of Autoware.Auto for autonomous vehicle application development.
+Each how to article is a standalone resource to introduce and inform developers about usage of
+Autoware.Auto for autonomous vehicle application development.
 
-For an indepth review of Autoware.Auto, see its [tutorials](@ref tutorials).
+For an in-depth review of Autoware.Auto features, see [tutorials](@ref tutorials) category.
 
 - @subpage how-to-write-tests-and-measure-coverage
 - @subpage integration-testing
