@@ -3,16 +3,17 @@ Installation and development setup {#installation-and-development}
 
 [TOC]
 
-# Goals {#installation-and-development-1}
+# Goals {#installation-and-development-goals}
 
 
-In this article we will demonstrate how to use Agile Development Environment
-to develop Autoware.Auto applications.
+This article demonstrates how to use the Agile Development Environment (ADE) to develop
+Autoware.Auto applications.
 
-# Install ADE {#install-ADE}
 
-ADE is published on PyPI. It needs Python >= 3.5.2 and pip. All other
-dependencies will be fetched by pip.
+# Install ADE {#installation-and-development-install-ade}
+
+ADE is published on PyPI, and requires Python >= 3.5.2 and `pip`. Other dependencies are fetched by
+`pip`.
 
 ```
 $ sudo apt-get install python3-pip
@@ -20,15 +21,15 @@ $ pip3 install ade-cli
 ```
 
 
-# Setup ADE home and project checkout {#setup-ADE-home-and-project-checkout}
+# Setup ADE home and project checkout {#installation-and-development-setup-ade-home-and-project-checkout}
 
-ADE needs a directory on the host which will be mounted as the user's
-home directory within the container. It will be populated with
-dotfiles and must be different than the user's home directory
-*outside* the container. In case you use ADE for multiple projects it
-is recommended to use dedicated adehome directories per project.
+ADE needs a directory on the host machine which is mounted as the user's
+home directory within the container. The directory is populated with
+dotfiles, and must be different than the user's home directory
+*outside* of the container. In the event ADE is used for multiple, projects it
+is recommended to use dedicated `adehome` directories for each project.
 
-ADE will look for a directory containing a file named ``.adehome``
+ADE looks for a directory containing a file named `.adehome`
 starting with the current working directory and continuing with the
 parent directories to identify the ADE home directory to be mounted.
 
@@ -38,11 +39,12 @@ $ cd adehome
 $ touch .adehome
 ```
 
-For ade to function it needs to be configured. Autoware.Auto provides
-a [.aderc](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/.aderc)
-which is looked for in the current working
-directory and any parent directories. Additionally, values can be
-overridden by setting environment variables.
+For ADE to function, it must be properly configured. Autoware.Auto provides
+an [.aderc](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/.aderc) file
+which is expected to exist in the current working
+directory, or in any parent directory. Additionally, default configuration values can be
+overridden by setting environment variables. See the `ade --help` output for more information about
+using environment variables to define the configuration.
 
 ```
 $ cd adehome
@@ -53,7 +55,7 @@ $ ade enter
 ```
 
 
-# How to build {#how-to-build}
+# How to build {#installation-and-development-how-to-build}
 
 ```
 $ ade enter
@@ -64,18 +66,19 @@ ade$ colcon test-result
 ```
 
 
-# How to use Atom for development {#how-to-use-Atom-for-development}
+# How to use Atom for development {#installation-and-development-how-to-use-atom-for-development}
 
-The Autoware.Auto ADE image ships with the [Atom](https://atom.io/) text editor
-and automatically [installs](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/tools/ade_image/atom-install-our-plugins)
-some useful Atom packages. Be sure to checkout its Welcome Guide and make yourself
-familiar with its features and keyboard shortcuts.
+The Autoware.Auto ADE image ships with the [Atom](https://atom.io/) text editor,
+and automatically
+[installs](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/tools/ade_image/atom-install-our-plugins)
+some useful Atom packages. Be sure to checkout the Atom *Welcome Guide* and familiarize with the
+features and keyboard shortcuts.
 
 
-## Prepare your workspace {#prepare-your-workspace}
+## Prepare the workspace {#installation-and-development-prepare-the-workspace}
 
-To use all Atom features, like gdb debugging, clang autocompletion, and ctags
-supported code navigation you have to prepare your workspace:
+To be able to use all Atom features, like `gdb` debugging, clang autocompletion, and ctags for code
+navigation, prepare the workspace:
 
 ```bash
 # cleanup workspace
@@ -95,87 +98,100 @@ ade$ colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'
 ```
 
 
-## Navigate through the code {#navigate-through-the-code}
+## Navigate through the code {#installation-and-development-navigate-through-the-code}
 
-In order for Atom to use the global `tags` file open the `AutowareAuto` folder as
+\note
+The ctags file must be created before Atom can provide code navigation support;
+[prepare the workspace](@ref installation-and-development-prepare-the-workspace) before following
+the steps in this section.
+
+In order for Atom to use the global `tags` file, open the `AutowareAuto` folder as
 a *Project Folder* (File -> Add Project Folder...).
 
-You should add packages you are working on as additional project folders, but
+Add other packages that are being developed as additional project folders, but
 always keep `AutowareAuto` added to give Atom an overview of the full project.
 
-The two main shortcuts you are going to use are `F6` to go to the declaration
-of a symbol and `CTRL-SPACE` to go to its implementation and `CTRL-SHIFT-SPACE`
-to quickly return.
+The two main shortcuts that are used for code naviation are `F6` to go to the declaration
+of a symbol, `CTRL-SPACE` to go to the implementation, and `CTRL-SHIFT-SPACE` to quickly return.
 
 
-## Auto-format your code {#auto-format-your-code}
+## Auto-formatting code {#installation-and-development-auto-formatting-code}
 
-Atom can auto-format your code to adhere to the ROS2 style rules using the
-configuration file from ament_uncrustify. The shortcut `CTRL-ALT-U` will
-automatically reformat the currently open file.
-
-
-## Build code from Atom {#build-code-from-Atom}
-
-The installed packages include *build-colcon*, a colcon specific provider for
-the Atom *build*  package. To take advantage of build-colcon, you have to open a
-ROS2 package as a *Project Folder* (File -> Add Project Folder...). All the
-functions and shortcuts provided by [build](https://atom.io/packages/build)
-should be available out of the box. Pressing `F9` builds the current project.
+Atom can auto-format the code to adhere to the ROS 2 style rules using the
+configuration file from `ament_uncrustify`. The shortcut `CTRL-ALT-U` automatically reformats the
+currently open file.
 
 
-## Run build packages from Atom {#run-build-packages-from-Atom}
+## Build code from Atom {#installation-and-development-build-code-from-atom}
 
-To test code directly from Atom press ``CTRL-` `` to open the built-in terminal.
-Here you can run a built binary:
+The installed packages include `build-colcon`, a colcon specific provider for
+the Atom *build*  package. To take advantage of `build-colcon`, open a
+ROS 2 package as a *Project Folder* (File -> Add Project Folder...).
+
+The functions and shortcuts provided by [build](https://atom.io/packages/build) are available out of
+the box. Pressing `F9` builds the current project.
+
+
+## Run packages from Atom {#installation-and-development-run-packages-from-atom}
+
+To test code directly from Atom press `CTRL-` to open the built-in terminal.
+Run a built binary from the terminal, for example:
 
 ```bash
 ade$ ~/AutowareAuto/build/demo_nodes_cpp/talker
 ```
 
 
-## Debug a binary with gdb {#debug-a-binary-with-gdb}
+## Debug a binary with GDB {#installation-and-development-debug-a-binary-with-gdb}
 
-To debug a binary during runtime you can use the integrated gdb interface to
-introspect and step through the code.
+To debug a binary during runtime, use the integrated `gdb` interface to introspect and step through
+the code.
 
-### Example {#example}
 
-To debug `listener` from the `demo_nodes_cpp` package add
+### GDB example {#installation-and-development-gdb-example}
+
+To debug the `listener` application from the `demo_nodes_cpp` package, add
 `AutowareAuto/tools/demo_nodes_cpp` as a project folder.
 
-Open `src/topics/listener.cpp` and add a breakpoint on line 53 by clicking the
-blank space next to the line number.
+Open `src/topics/listener.cpp` and add a breakpoint on line 53 by clicking the blank space next to
+the line number.
 
-Click `Launch debugger...` in the sidebar on the right. Make sure the `Native -
-GDB` tab is selected and enter `~/AutowareAuto/build/demo_nodes_cpp/listener`
+Click `Launch debugger...` in the sidebar on the right side of Atom. Verify the
+`Native - GDB` tab is selected and enter `~/AutowareAuto/build/demo_nodes_cpp/listener`
 as the program and `~` as the current working directory. The remaining two
-entries can be left blank. Clicking `Launch` will start the listener binary and
-pause at the breakpoint.
+entries can be left blank. Clicking `Launch` starts the listener binary and pauses at the
+breakpoint.
+
+\note
+Applications that execute and exit quickly are not seen by the debugger **unless a breakpoint is
+set**.
 
 
-# Cleanup {#cleanup}
+# Cleanup {#installation-and-development-cleanup}
 
-ADE uses docker and over time unused images, containers and volumes
-will clutter your hard drive.
+ADE uses Docker, and over time unused images, containers, and volumes begin to clutter the hard
+drive. Follow the steps below to clean the Docker filesytem of stale images.
 
 
-## Start up everything docker you want to keep {#Start-up-everything-docker-you-want-to-keep}
+## Start relevant Docker resources {#installation-and-development-start-relevant-docker-resources}
 
-Let's first make sure that ADE is running:
+First, verify that ADE is running:
 
-```console
+```bash
 $ cd adehome/AutowareAuto
 $ ade start
 ```
 
-In case you use ade for more than one project make sure all of them
-are running, same for any other docker containers you want to keep.
+If ADE is used for more than one project, verify all ADE instances are running; the same rule
+applies for any other non-ADE Docker containers that should be preserved.
+
+\note
+Docker resources that are not started/running **will be removed**!
 
 
-## Docker disk usage {#Docker-disk-usage}
+## Docker disk usage {#installation-and-development-docker-disk-usage}
 
-To assess the situation:
+To assess the disk usage situation, run the following command:
 
 ```console
 $ docker system df
@@ -187,7 +203,11 @@ Build Cache         0                   0                   0B                  
 ```
 
 
-## Remove unused docker items {#Remove-unused-docker-items}
+## Remove unused docker items {#installation-and-development-remove-unused-docker-items}
+
+Use `docker system prune` to remove unused Docker items:
+
+Use `docker system prune` to remove unused Docker items:
 
 ```console
 $ docker system prune -a --volumes
