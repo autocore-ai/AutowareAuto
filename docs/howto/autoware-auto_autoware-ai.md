@@ -3,7 +3,7 @@ ROS1 Bridge {#ros1_bridge_title}
 
 [TOC]
 
-# ros1_bridge: Bridging AutowareAuto (ROS 2) and AutowareAI (ROS 1) applications {#ros1-bridge}
+# ros1_bridge: Bridging Autoware.Auto (ROS 2) and AutowareAI (ROS 1) applications {#ros1-bridge}
 
 The [`ros1_bridge`](https://github.com/ros2/ros1_bridge) application provides a network bridge
 which enables the exchange of messages between ROS 1 and ROS 2, allowing ROS 1 tools like
@@ -22,7 +22,7 @@ For more details see the
 [ROS 2 wiki instructions](https://github.com/ros2/ros1_bridge#building-the-bridge-from-source).
 
 The instructions below assume that you have installed ROS 2 Bouncy (already available in `ade`) and
-[ROS 1 Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu). 
+[ROS 1 Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu).
 
 If you have defined custom messages in your `~/workspace`, build and source
 your workspace before starting (see `ade$ source ~/workspace/install/setup.bash` below).
@@ -85,7 +85,7 @@ compiled and installed properly.
 
 Enter `Ctrl-C` to stop the applications.
 
-## 3. Run AutowareAuto and AutowareAI applications {#autoware-auto-autoware-ai}
+## 3. Run Autoware.Auto and Autoware.AI applications {#autoware-auto-autoware-ai}
 TBD after:
 1. https://gitlab.com/AutowareAuto/AutowareAuto/issues/3
 2. https://gitlab.com/AutowareAuto/AutowareAuto/issues/4

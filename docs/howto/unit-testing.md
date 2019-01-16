@@ -6,7 +6,7 @@ How to write tests and measure coverage {#how-to-write-tests-and-measure-coverag
 # Goals {#how-to-write-tests-and-measure-coverage-goals}
 
 In this article we will motivate why testing of code is important and what kind of
-testing we carry out in AutowareAuto.
+testing we carry out in Autoware.Auto.
 
 Furthermore, we will introduce how to write unit tests, how to run them, and how
 to track code test coverage.
@@ -27,9 +27,9 @@ thoroughly described testing system
 
 # Why testing {#how-to-write-tests-and-measure-coverage-why-testing}
 
-Dynamic and static testing methods make AutowareAuto reliable and robust, helping us to
+Dynamic and static testing methods make Autoware.Auto reliable and robust, helping us to
 perform anomaly detection and handling that would otherwise be difficult to find.
-Through testing, in AutowareAuto we can estimate the number of Heisenbugs, and find
+Through testing, in Autoware.Auto we can estimate the number of Heisenbugs, and find
 and eliminate [undefined behaviours](https://blog.regehr.org/archives/1520) for
 which C and C++ languages are known.
 
@@ -43,7 +43,7 @@ There are also formal verification methods (see the [book](https://www.amazon.co
 Chapter 15), but note that they will not be covered in this document.
 
 
-## Testing in AutowareAuto {#how-to-write-tests-and-measure-coverage-testing}
+## Testing in Autoware.Auto {#how-to-write-tests-and-measure-coverage-testing}
 
 This paragraph introduces various types of tests that are run both manually and automatically.
 
@@ -54,14 +54,14 @@ Some examples of tools used for style and linting are
 [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint),
 [uncrustify](https://github.com/uncrustify/uncrustify).
 
-Tests using the tools above allow AutowareAuto to follow C and C++ style guides which results
+Tests using the tools above allow Autoware.Auto to follow C and C++ style guides which results
 in uniform, easy to read code.
 
 
 ### Static code analysis {#how-to-write-tests-and-measure-coverage-static-code-analysis}
 
 [Cppcheck](https://github.com/danmar/cppcheck) tool is used for applications
-written in AutowareAuto.
+written in Autoware.Auto.
 
 Static code analysis tools detect the following types of errors:
 
@@ -111,7 +111,7 @@ A full working example is provided below.
 In integration testing, the individual software modules are combined and tested as a group.
 Integration testing occurs after unit testing.
 
-Since integration testing greatly depends on the system architecture, AutowareAuto provides an
+Since integration testing greatly depends on the system architecture, Autoware.Auto provides an
 integration testing tool called
 [integration_tests](@ref integration-testing).
 
@@ -140,9 +140,9 @@ For more details on this type of tests see the
 ### Software and Hardware-In-Loop tests {#how-to-write-tests-and-measure-coverage-software-and-hardware-in-loop-tests}
 
 With software in the loop (SIL) and hardware in the loop (HIL) testing the integration of
-AutowareAuto with real sensors and ECUs is proven, as shown in the image below.
+Autoware.Auto with real sensors and ECUs is proven, as shown in the image below.
 
-These types of tests assure that AutowareAuto remains compatible with sensor interfaces
+These types of tests assure that Autoware.Auto remains compatible with sensor interfaces
 and specific firmware versions, for example.
 
 ![Hardware-in-the-loop setup at Apex.AI](images/hil.jpg)
@@ -150,11 +150,11 @@ and specific firmware versions, for example.
 
 ### Road tests {#how-to-write-tests-and-measure-coverage-road-tests}
 
-Tests are written for AutowareAuto applications which are deployed and tested on the
+Tests are written for Autoware.Auto applications which are deployed and tested on the
 autonomous vehicles.
 
-These road tests validate AutowareAuto in a realistic autonomous vehicle product. Along with road tests
-AutowareAuto is also integration tested with the research-focused counter-part
+These road tests validate Autoware.Auto in a realistic autonomous vehicle product. Along with road tests
+Autoware.Auto is also integration tested with the research-focused counter-part
 [Autoware](https://github.com/CPFL/Autoware).
 
 ![Apex.AI's testing vehicle](images/lexus.jpg)
@@ -162,7 +162,7 @@ AutowareAuto is also integration tested with the research-focused counter-part
 
 # Write, build, run, and analyze unit tests {#how-to-write-tests-and-measure-coverage-write-build-run-and-analyze-unit-tests}
 
-AutowareAuto uses the `ament_cmake` framework to write, build, and run tests. The same
+Autoware.Auto uses the `ament_cmake` framework to write, build, and run tests. The same
 framework is also used to analyze the test results.
 
 `ament_cmake` provides several convenience functions to make it easier to write
@@ -346,7 +346,7 @@ Total Test time (real) =   7.91 sec
 Loosely described, a coverage metric is a measure of how much of the program code
 has been exercised (covered) during testing.
 
-In AutowareAuto the [lcov tool] (http://ltp.sourceforge.net/documentation/technical_papers/gcov-ols2003.pdf)
+In Autoware.Auto the [lcov tool] (http://ltp.sourceforge.net/documentation/technical_papers/gcov-ols2003.pdf)
 (which uses `gcov` internally) is used to measure:
 
 1. Statement coverage
@@ -421,4 +421,4 @@ The resulting `lcov/index.html` will have a similar form to the following:
 
 ![Example lcov output](images/lcov_result.jpg)
 
-In AutowareAuto coverage metrics are run as part of the CI pipeline.
+In Autoware.Auto coverage metrics are run as part of the CI pipeline.

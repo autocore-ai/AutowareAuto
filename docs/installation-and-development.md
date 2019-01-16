@@ -7,7 +7,7 @@ Installation and development setup {#installation-and-development}
 
 
 In this article we will demonstrate how to use Agile Development Environment
-to develop AutowareAuto applications.
+to develop Autoware.Auto applications.
 
 # Install ADE {#install-ADE}
 
@@ -97,11 +97,11 @@ ade$ colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'
 
 ## Navigate through the code {#navigate-through-the-code}
 
-In order for Atom to use the global `tags` file open the AutowareAuto folder as
+In order for Atom to use the global `tags` file open the `AutowareAuto` folder as
 a *Project Folder* (File -> Add Project Folder...).
 
 You should add packages you are working on as additional project folders, but
-always keep AutowareAuto added to give Atom an overview of the full project.
+always keep `AutowareAuto` added to give Atom an overview of the full project.
 
 The two main shortcuts you are going to use are `F6` to go to the declaration
 of a symbol and `CTRL-SPACE` to go to its implementation and `CTRL-SHIFT-SPACE`

@@ -59,7 +59,7 @@ More granular feature planning is being done via
 
 # Installation and development
 
-Install AutowareAuto and learn how to develop applications.
+Install Autoware.Auto and learn how to develop applications.
 
 - @subpage installation-and-development
 
