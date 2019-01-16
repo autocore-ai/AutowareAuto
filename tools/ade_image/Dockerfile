@@ -46,8 +46,8 @@ RUN pip3 install -U \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
 
-RUN curl -Ls http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.linux.bin.tar.gz | tar -xzf - --directory=/usr/local/bin --strip-components=2 doxygen-1.8.14/bin/doxygen
-RUN curl -Ls http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz | tar -xzf - && \
+RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.linux.bin.tar.gz | tar -xzf - --directory=/usr/local/bin --strip-components=2 doxygen-1.8.14/bin/doxygen
+RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.src.tar.gz | tar -xzf - && \
     cd doxygen-1.8.14 && cmake . && make && mv bin/doxygen /usr/local/bin && cd .. && \
     rm -r doxygen-1.8.14
 
