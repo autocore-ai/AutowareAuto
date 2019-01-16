@@ -5,10 +5,10 @@ How to write tests and measure coverage {#how-to-write-tests-and-measure-coverag
 
 # Goals {#how-to-write-tests-and-measure-coverage-goals}
 
-In this article we will motivate why testing of code is important and what kind of
-testing we carry out in Autoware.Auto.
+This article motivates developers to test code, explains the importance of testing, and details the
+testing performed in Autoware.Auto.
 
-Furthermore, we will introduce how to write unit tests, how to run them, and how
+Furthermore, this article details how to write unit tests, how to run unit tests, and how
 to track code test coverage.
 
 
@@ -25,11 +25,11 @@ how to test code in automotive systems
 thoroughly described testing system
 
 
-# Why testing {#how-to-write-tests-and-measure-coverage-why-testing}
+# Importance of testing {#how-to-write-tests-and-measure-coverage-importance-of-testing}
 
 Dynamic and static testing methods make Autoware.Auto reliable and robust, helping us to
 perform anomaly detection and handling that would otherwise be difficult to find.
-Through testing, in Autoware.Auto we can estimate the number of Heisenbugs, and find
+Through testing in Autoware.Auto, we can estimate the number of Heisenbugs, and find
 and eliminate [undefined behaviours](https://blog.regehr.org/archives/1520) for
 which C and C++ languages are known.
 
@@ -39,13 +39,14 @@ while looking for errors and failures.
 Static analysis means inspecting the code to look for faults. Static analysis is
 using a program (instead of a human) to inspect the code for faults.
 
-There are also formal verification methods (see the [book](https://www.amazon.com/Embedded-Software-Development-Safety-Critical-Systems/dp/1498726704),
-Chapter 15), but note that they will not be covered in this document.
+There are also formal verification methods (see the
+[book](https://www.amazon.com/Embedded-Software-Development-Safety-Critical-Systems/dp/1498726704),
+Chapter 15); note that the topics will not be covered in this document.
 
 
 ## Testing in Autoware.Auto {#how-to-write-tests-and-measure-coverage-testing}
 
-This paragraph introduces various types of tests that are run both manually and automatically.
+This section introduces various types of tests that are run both manually and automatically.
 
 
 ### Style / linter tests {#how-to-write-tests-and-measure-coverage-style-linter-tests}
@@ -60,7 +61,7 @@ in uniform, easy to read code.
 
 ### Static code analysis {#how-to-write-tests-and-measure-coverage-static-code-analysis}
 
-[Cppcheck](https://github.com/danmar/cppcheck) tool is used for applications
+The [Cppcheck](https://github.com/danmar/cppcheck) tool is used for applications
 written in Autoware.Auto.
 
 Static code analysis tools detect the following types of errors:
@@ -115,7 +116,7 @@ Since integration testing greatly depends on the system architecture, Autoware.A
 integration testing tool called
 [integration_tests](@ref integration-testing).
 
-While performing integration testing the following subtypes of tests are written:
+While performing integration testing, the following subtypes of tests are written:
 
 1. Fault injection testing
 2. Back-to-back comparison between a model and code
@@ -133,8 +134,8 @@ Memory tests allow the detection of unwanted calls to memory management APIs, su
 - `realloc`
 - `free`
 
-For more details on this type of tests see the
-[memory testing](https://github.com/osrf/osrf_testing_tools_cpp#memory_tools).
+For more details on memory tests see the
+[memory testing](https://github.com/osrf/osrf_testing_tools_cpp#memory_tools) tool.
 
 
 ### Software and Hardware-In-Loop tests {#how-to-write-tests-and-measure-coverage-software-and-hardware-in-loop-tests}
@@ -143,18 +144,18 @@ With software in the loop (SIL) and hardware in the loop (HIL) testing the integ
 Autoware.Auto with real sensors and ECUs is proven, as shown in the image below.
 
 These types of tests assure that Autoware.Auto remains compatible with sensor interfaces
-and specific firmware versions, for example.
+and specific firmware versions, for example:
 
 ![Hardware-in-the-loop setup at Apex.AI](images/hil.jpg)
 
 
 ### Road tests {#how-to-write-tests-and-measure-coverage-road-tests}
 
-Tests are written for Autoware.Auto applications which are deployed and tested on the
+Tests are written for Autoware.Auto applications, which are deployed and tested on the
 autonomous vehicles.
 
-These road tests validate Autoware.Auto in a realistic autonomous vehicle product. Along with road tests
-Autoware.Auto is also integration tested with the research-focused counter-part
+These road tests validate Autoware.Auto in a realistic autonomous vehicle product. Along with road
+tests, Autoware.Auto also performs integration testing with the research-focused counter-part
 [Autoware](https://github.com/CPFL/Autoware).
 
 ![Apex.AI's testing vehicle](images/lexus.jpg)
@@ -168,29 +169,29 @@ framework is also used to analyze the test results.
 `ament_cmake` provides several convenience functions to make it easier to write
 CMake-based packages:
 
-1. It generates a CMake configuration file for the package which allows for passing information
+1. Generate a CMake configuration file for the package, which allows for passing information
 (e.g. about include directories and libraries) to downstream packages
-    1. It makes it easy to pass along information from recursive dependencies (and takes care of
-      ordering include directories)
-2. It provides an easy interface to register tests and ensure that JUnit-compatible
-result files are generated
+    1. This feature makes it easy to pass along information from recursive dependencies (and takes
+      care of ordering include directories)
+2. Easy interface to register tests and ensure that JUnit-compatible result files are generated
     1. Currently supports a few different testing frameworks like `pytest`, `gtest`, and `gmock`
-3. It allows a package to generate environment hooks to extend the environment, for example by
-extending the PATH
-4. It provides a CMake API to read and write `ament` resource index entries
+3. Allows a package to generate environment hooks to extend the environment, for example by
+extending the `PATH`
+4. Provides a CMake API to read and write `ament` resource index entries
     1. The index is created at build time and provides efficient access to information
 like the available packages, messages, etc.
-5. It provides an uninstall target for convenience
+5. Provides an uninstall target for convenience
 
-Below is an example of using `ament_cmake_gtest` with `colcon test`. All other tests follow
+See below for an example of using `ament_cmake_gtest` with `colcon test`. All other tests follow
 a similar pattern.
 
-This example assumes that the package `my_cool_pkg` was generated with [autoware_create_package](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/tools/autoware_create_pkg).
+This example assumes that the package `my_cool_pkg` is generated with
+[autoware_create_package](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/tools/autoware_create_pkg).
 
 
 ## Writing a unit test with gtest {#how-to-write-tests-and-measure-coverage-writing-unit-test-with-gtest}
 
-In `my_cool_pkg/test`, create gtest entrypoint `gtest_main.cpp`
+In `my_cool_pkg/test`, create the gtest entrypoint `gtest_main.cpp`:
 
 ```cpp
 #include "gtest/gtest.h"
@@ -202,7 +203,7 @@ int main(int argc, char * argv[])
 }
 ```
 
-and `gtest` code file `test_my_cool_pkg.cpp`:
+Create the `gtest` code file `test_my_cool_pkg.cpp`:
 
 ```cpp
 #include "gtest/gtest.h"
@@ -212,9 +213,12 @@ TEST(test_my_cool_pkg, test_hello) {
 }
 ```
 
-For more examples of `gtest` features see [the gtest](https://github.com/google/googletest).
+For more examples of `gtest` features, see the
+[gtest repo](https://github.com/google/googletest).
 
-Add an entry under `BUILD_TESTING` in the `CMakeLists.txt` to compile the test:
+Add an entry under `BUILD_TESTING` in the `CMakeLists.txt` to compile the test the test code
+source files:
+
 ```
 find_package(ament_cmake_gtest)
 set(TEST_SOURCES test/gtest_main.cpp test/test_my_cool_pkg.cpp)
@@ -224,31 +228,32 @@ ament_add_gtest(${TEST_MY_COOL_PKG_EXE} ${TEST_SOURCES})
 
 The entrypoint `main` calls all tests that are registered as `gtest` items.
 
-To register a new `gtest` item, wrap the test code with the macro **TEST ()**. **TEST ()**
+To register a new `gtest` item, wrap the test code with the macro `TEST ()`. `TEST ()`
 is a predefined macro that helps generate the final test code, and also registers
 a `gtest` item.
 
-`gtest/gtest.h` also contains predefined macros of gtest like `ASSERT_TRUE(condition)`,
+`gtest/gtest.h` also contains predefined macros of `gtest` like `ASSERT_TRUE(condition)`,
 `ASSERT_FALSE(condition)`, `ASSERT_EQ(val1,val2)`, `ASSERT_STREQ(str1,str2)`,
 `EXPECT_EQ()`, etc. `ASSERT_*` will abort the test if the condition is not
-satisfied while `EXPECT_*` will mark the test as failed but continue to next test
-condition. More information about `gtest` can be found in
+satisfied, while `EXPECT_*` will mark the test as failed but continue to next test
+condition. More information about `gtest` can be found in the
 [gtest repo](https://github.com/google/googletest).
 
 In the demo `CMakeLists.txt`, `ament_add_gtest` is a predefined macro in `ament_cmake`
-that helps simplify adding `gtest` code. Details can be viewed in [ament_add_gtest.cmake](https://github.com/ament/ament_cmake/blob/master/ament_cmake_gtest/cmake/ament_add_gtest.cmake).
+that helps simplify adding `gtest` code. Details can be viewed in
+[ament_add_gtest.cmake](https://github.com/ament/ament_cmake/blob/master/ament_cmake_gtest/cmake/ament_add_gtest.cmake).
 
 
 ### Build test {#how-to-write-tests-and-measure-coverage-build-test}
 
-All necessary test files (ELF, CTesttestfile.cmake, etc.) are compiled by default by `colcon`:
+By default, all necessary test files (ELF, CTesttestfile.cmake, etc.) are compiled by `colcon`:
 
 ```bash
 ade$ cd ~/workspace/
 ade$ colcon build --merge-install --packages-select my_cool_pkg
 ```
 
-Test files will be generated under `~/workspace/build/my_cool_pkg`.
+Test files are generated under `~/workspace/build/my_cool_pkg`.
 
 
 ### Run test {#how-to-write-tests-and-measure-coverage-run-test}
@@ -264,7 +269,8 @@ Finished <<< my_cool_pkg [7.80s]
 Summary: 1 package finished [9.27s]
 ```
 
-\note  Remove `--merge-install` if the package is built without `--merge-install`, which is
+\note
+Remove `--merge-install` if the package is built without `--merge-install`, which is
 equivalent to adding `--isolated` to `ament.py build` (the legacy build tool).
 
 The test command output contains a brief report of all the test results.
@@ -421,4 +427,4 @@ The resulting `lcov/index.html` will have a similar form to the following:
 
 ![Example lcov output](images/lcov_result.jpg)
 
-In Autoware.Auto coverage metrics are run as part of the CI pipeline.
+In Autoware.Auto, coverage metrics are run as part of the CI pipeline.
