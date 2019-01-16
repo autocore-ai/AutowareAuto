@@ -1,4 +1,4 @@
-fusion {#autoware-fusion-design}
+Fusion {#autoware-fusion-design}
 ======
 
 @par Table of Contents

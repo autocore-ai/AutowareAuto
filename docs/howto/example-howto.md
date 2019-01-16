@@ -1,4 +1,4 @@
-Example How to {#example-howto}
+Example how to {#example-howto}
 =======
 
 # Description
