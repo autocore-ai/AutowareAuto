@@ -9,11 +9,14 @@ git-lfs
 graphviz
 jq
 lcov
+less
 libpcap-dev
 man
+openssh-client
 python3-lxml
 ros-bouncy-launch-testing
 shellcheck
+strace
 sudo
 vim
 
