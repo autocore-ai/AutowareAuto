@@ -2,20 +2,20 @@ bash-completion
 clang
 curl
 doxygen
+emacs
 gdb
 git
 git-lfs
 graphviz
 jq
 lcov
+libpcap-dev
 man
 python3-lxml
+ros-bouncy-launch-testing
 shellcheck
 sudo
 vim
-emacs
-ros-bouncy-launch-testing
-libpcap-dev
 
 # Doxygen
 bison
