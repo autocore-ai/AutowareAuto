@@ -44,7 +44,7 @@ ament_target_dependencies(${CLOUD_LIB}
   "velodyne_driver"
   "udp_driver"
   "sensor_msgs")
-target_link_libraries(${CLOUD_LIB})
+target_link_libraries(${CLOUD_LIB} ${Boost_LIBRARIES})
 
 # generate executable for ros1-style standalone nodes
 file(COPY param/vlp16_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory

@@ -39,6 +39,7 @@ if(BUILD_TESTING)
 
     ament_target_dependencies(${TEST_LIB} "rclcpp" "rclcpp_lifecycle" "std_msgs")
     target_include_directories(${TEST_LIB} PRIVATE include)
+    target_link_libraries(${TEST_LIB} ${Boost_LIBRARIES})
 
     # Unit tests
     find_package(ament_cmake_gtest REQUIRED)
