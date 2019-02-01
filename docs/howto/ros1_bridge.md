@@ -125,9 +125,13 @@ ADE Terminal 2 - start `rviz`:
 
 ```bash
 $ ade enter
+ade$ unset LD_LIBRARY_PATH  # this is required to to run rviz in a terminal that's already sourced the ROS 2 workspace
 ade$ source /opt/ros/melodic/setup.bash
 ade$ rviz
 ```
+\note
+The steps above are required to start `rviz` from ROS 1; `rviz2` is also supported and only requires
+that ROS 1 Melodic **is not sourced** in the terminal. 
 
 ADE Terminal 3 - start `udpreplay`:
 
