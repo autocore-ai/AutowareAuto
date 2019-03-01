@@ -7,4 +7,5 @@ twine
 python-language-server[all]
 
 # ubuntu package affected by https://github.com/PyCQA/pycodestyle/issues/741
-flake8
+# Pin to a version before 3.7 to work around https://github.com/ament/ament_lint/pull/124
+flake8>=3.5,<3.7
