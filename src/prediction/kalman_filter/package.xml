@@ -11,7 +11,6 @@
     <buildtool_depend>autoware_cmake</buildtool_depend>
 
     <depend>motion_model</depend>
-    <depend>helper_functions</depend>
 
     <test_depend>ament_lint_common</test_depend>
     <test_depend>ament_cmake_gtest</test_depend>

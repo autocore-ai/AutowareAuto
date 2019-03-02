@@ -11,7 +11,6 @@
     <buildtool_depend>autoware_cmake</buildtool_depend>
 
     <build_depend>sensor_msgs</build_depend>
-    <build_depend>argparse</build_depend>
     <build_depend>velodyne_driver</build_depend>
 
     <depend>udp_driver</depend>
@@ -20,7 +19,6 @@
     <exec_depend>velodyne_driver</exec_depend>
 
     <test_depend>ament_lint_common</test_depend>
-    <test_depend>lidar_integration</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>
 </package>
