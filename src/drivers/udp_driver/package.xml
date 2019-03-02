@@ -5,7 +5,7 @@
     <version>0.0.0</version>
     <description>A template class and associated utilities which encapsulate basic reading from UDP sockets</description>
     <maintainer email="yunus.caliskan@apex.ai">Yunus Emre Caliskan</maintainer>
-    <license>Apex.AI License</license>
+    <license>Apache License 2.0</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_cmake</buildtool_depend>

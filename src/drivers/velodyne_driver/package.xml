@@ -5,7 +5,7 @@
     <version>0.0.1</version>
     <description>(Mostly) static memory implementation of a velodyne driver in one process</description>
     <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
-    <license>Apex.AI License</license>
+    <license>Apache License 2.0</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_cmake</buildtool_depend>
