@@ -31,9 +31,9 @@ if [[ ! -f ~/.atom/config.cson ]]; then
 	"*":
 	  "atom-beautify":
 	    c:
-	      configPath: "/opt/ros/bouncy/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
+	      configPath: "/opt/ros/crystal/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
 	    cpp:
-	      configPath: "/opt/ros/bouncy/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
+	      configPath: "/opt/ros/crystal/lib/python3.6/site-packages/ament_uncrustify/configuration/ament_code_style.cfg"
 	  core:
 	    disabledPackages: [
 	      "linter"

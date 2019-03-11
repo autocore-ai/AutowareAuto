@@ -51,7 +51,7 @@ After sourcing ROS 1 Melodic, the following warning will appear; it can safely b
 following this workflow:
 ```
 ade$ source /opt/ros/melodic/setup.bash
-ROS_DISTRO was set to 'bouncy' before. Please make sure that the environment does not mix paths from
+ROS_DISTRO was set to 'crystal' before. Please make sure that the environment does not mix paths from
 different distributions.
 ```
 

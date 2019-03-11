@@ -56,9 +56,7 @@ protected:
 TEST_F(udp_driver, basic)
 {
     //rclcpp::init required to start the node
-    char *argv[] = {{}};
-    int argc = sizeof(argv) / sizeof(char*) - 1;
-    rclcpp::init(argc, argv);
+    rclcpp::init(0, nullptr);
 
     //setting values to send
     std::vector<int> values(10);

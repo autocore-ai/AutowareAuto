@@ -1,4 +1,4 @@
-FROM osrf/ros:bouncy-desktop
+FROM osrf/ros:crystal-desktop
 ARG CODENAME=bionic
 
 
