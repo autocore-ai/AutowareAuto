@@ -52,16 +52,8 @@ RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1
     rm -r doxygen-1.8.14
 
 
-RUN mkdir -p /opt/atom/bin && \
-    VERSION=$(curl -Ls https://api.github.com/repos/atom/atom/releases/latest | jq -r .tag_name) && \
-    URL="https://github.com/atom/atom/releases/download/${VERSION}/atom-amd64.tar.gz" && \
-    curl -Ls "${URL}" | tar -xzf - --directory=/opt/atom --strip-components=1 && \
-    chown -R root:root /opt/atom && \
-    ln -s ../atom /opt/atom/bin/ && \
-    ln -s ../resources/app/apm/bin/apm /opt/atom/bin/
-COPY atom-env.sh /opt/atom/.env.sh
-COPY atom-install-our-plugins /opt/atom/bin
-COPY atom-adeinit /opt/atom/.adeinit
+RUN mkdir -p /opt/aw-atom-config/bin
+COPY atom-install-our-plugins /etc/atom/atom-install-our-plugins
 
 
 RUN git clone https://github.com/rigtorp/udpreplay && mkdir -p udpreplay/build \

@@ -3,5 +3,6 @@ export ADE_GITLAB=gitlab.com
 export ADE_REGISTRY=registry.gitlab.com
 export ADE_IMAGES="
   registry.gitlab.com/autowareauto/autowareauto/ade:master
+  registry.gitlab.com/apexai/ade-atom:latest
   registry.gitlab.com/autowareauto/autowareauto:master
 "

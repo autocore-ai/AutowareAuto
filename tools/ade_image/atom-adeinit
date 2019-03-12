@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ ! -d "${ATOM_HOME}" ]]; then
-    echo "Doing initial install of atom plugins:"
-    atom-install-our-plugins
-    echo "Initial install of atom plugins done."
-fi
