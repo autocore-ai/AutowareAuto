@@ -21,7 +21,7 @@ The `ros1_bridge` is limited to the message/service types that are available at 
 bridge; therefore, the `ros1_bridge` must be compiled from source. The `ros1_bridge` **must be built
 when a new message type is defined**.
 
-The instructions below assume that ROS 2 Bouncy has been installed (already available in `ade`), as
+The instructions below assume that ROS 2 Crystal has been installed (already available in `ade`), as
 well as [ROS 1 Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu).
 
 If custom messages have been defined in the `~/workspace`, build and source the workspace containing
