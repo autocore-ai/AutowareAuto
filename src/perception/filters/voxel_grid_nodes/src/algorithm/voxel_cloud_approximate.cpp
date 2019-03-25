@@ -1,0 +1,76 @@
+// Copyright 2017-2019 Apex.AI, Inc.
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
+#include <cstring>
+
+namespace autoware
+{
+namespace perception
+{
+namespace filters
+{
+namespace voxel_grid_nodes
+{
+namespace algorithm
+{
+////////////////////////////////////////////////////////////////////////////////
+VoxelCloudApproximate::VoxelCloudApproximate(const voxel_grid::Config & cfg)
+: VoxelCloudBase(),
+  m_cloud(),
+  m_grid(cfg)
+{
+  // frame id is arbitrary, not the responsibility of this component
+  init_pcl_msg(m_cloud, "base_link", cfg.get_capacity());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VoxelCloudApproximate::insert(const sensor_msgs::msg::PointCloud2 & msg)
+{
+  m_cloud.header = msg.header;
+  for (std::size_t idx = 0U; idx < msg.data.size(); idx += msg.point_step) {
+    PointXYZIF pt;
+    //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
+    (void)memmove(
+      static_cast<void *>(&pt.x),
+      static_cast<const void *>(&msg.data[idx]),
+      msg.point_step);
+    m_grid.insert(pt);
+  }
+  // TODO(c.ho) overlay?
+}
+
+////////////////////////////////////////////////////////////////////////////////
+const sensor_msgs::msg::PointCloud2 & VoxelCloudApproximate::get()
+{
+  m_cloud.width = 0U;
+  m_cloud.data.clear();
+  reset_cloud_idx();  // resetting the index for the pointcloud iterators
+
+  for (const auto & it : m_grid) {
+    const auto & pt = it.second.get();
+    (void)add_point_to_cloud(m_cloud, pt);
+    // Don't need to check if cloud can't fit since it has the same capacity as the grid
+    // insert will throw if the grid is at capacity
+  }
+  m_grid.clear();
+
+  return m_cloud;
+}
+}  // namespace algorithm
+}  // namespace voxel_grid_nodes
+}  // namespace filters
+}  // namespace perception
+}  // namespace autoware
