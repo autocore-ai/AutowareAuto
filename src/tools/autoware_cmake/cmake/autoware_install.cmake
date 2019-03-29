@@ -29,7 +29,7 @@
 # :type HAS_LAUNCH: an option
 macro(autoware_install)
 
-  set(OPTION_NAMES "HAS_CMAKE;HAS_INCLUDE;HAS_LAUNCH")
+  set(OPTION_NAMES "HAS_CMAKE;HAS_INCLUDE;HAS_LAUNCH;HAS_PARAM")
   set(ARGN_NAMES "LIBRARIES;EXECUTABLES")
 
   cmake_parse_arguments(ARG
@@ -49,7 +49,9 @@ macro(autoware_install)
       ARCHIVE DESTINATION lib
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin)
-    ament_export_libraries(${PROJECT_NAME})
+    foreach(LIB ${ARG_LIBRARIES})
+      ament_export_libraries(${LIB})
+    endforeach()
   endif()
 
   if(ARG_EXECUTABLES)
@@ -85,6 +87,14 @@ macro(autoware_install)
     install(
       DIRECTORY launch/
       DESTINATION share/${PROJECT_NAME}/
+    )
+  endif()
+
+  if(ARG_HAS_PARAM)
+    # For configuration files in the param folder
+    install(
+        DIRECTORY param/
+        DESTINATION share/${PROJECT_NAME}/
     )
   endif()
 endmacro()

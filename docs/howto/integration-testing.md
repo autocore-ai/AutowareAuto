@@ -61,7 +61,7 @@ detected
 
 With ROS 2, it is possible to program complex autonomous driving applications with a large number
 of nodes. Therefore, a lot of effort has been made to provide an integration test framework that
-helps developers test the interaction of Apex.OS nodes.
+helps developers test the interaction of ROS2 nodes.
 
 
 # Integration test framework architecture {#how-to-write-integration-tests-integration-test-framework-architecture}
@@ -219,7 +219,7 @@ For detailed information about how `integration_tests` operates, see [the Q&A]
 
 In the `my_cool_pkg` example, only one executable is added to the integration test. Typically,
 the goal is to test the interaction between several executables. Suppose `my_cool_pkg` has
-two executables, a `talker` and a `listener` which communicate with each other with an Apex.OS
+two executables, a `talker` and a `listener` which communicate with each other with a ROS2
 topic.
 
 The `launcher` starts the `talker` and `listener` at the same time. The `talker` starts incrementing
