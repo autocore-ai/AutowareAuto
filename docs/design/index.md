@@ -6,3 +6,6 @@ for each Autoware.Auto feature.
 
 - @subpage autoware-drivers-design
 - @subpage autoware-fusion-design
+- @subpage autoware-motion-design
+- @subpage autoware-perception-design
+- @subpage autoware-prediction-design
