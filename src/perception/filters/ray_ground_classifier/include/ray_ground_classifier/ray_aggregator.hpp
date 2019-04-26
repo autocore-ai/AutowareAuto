@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "lidar_utils/lidar_types.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
 namespace autoware
@@ -35,6 +36,8 @@ namespace filters
 {
 namespace ray_ground_classifier
 {
+
+using autoware::common::lidar_utils::PointBlock;
 
 /// \brief Used as a prefiltering step for RayGroundClassifier. Aggregates unstructured
 ///        blobs into rays of points that the RayGroundClassifier can partition.

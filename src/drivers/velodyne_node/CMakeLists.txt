@@ -25,6 +25,7 @@ find_package(velodyne_driver REQUIRED)
 find_package(udp_driver REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system program_options filesystem)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(lidar_utils REQUIRED)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
@@ -40,6 +41,7 @@ add_library(${CLOUD_LIB} SHARED
   src/velodyne_cloud_node.cpp)
 autoware_set_compile_options(${CLOUD_LIB})
 ament_target_dependencies(${CLOUD_LIB}
+  "lidar_utils"
   "rclcpp_lifecycle"
   "velodyne_driver"
   "udp_driver"
@@ -63,6 +65,7 @@ autoware_install(
   LIBRARIES  ${CLOUD_LIB}
   EXECUTABLES ${CLOUD_EXEC}
 )
+
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 target_compile_options(${CLOUD_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
 target_compile_options(${CLOUD_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion)

@@ -20,6 +20,8 @@
 #include <chrono>
 #include <random>
 
+#include <lidar_utils/lidar_types.hpp>
+
 #include "gtest/gtest.h"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 #include "test_ray_ground_classifier_aux.hpp"
@@ -28,7 +30,7 @@
 namespace test_ray_ground_classifier
 {
 
-using autoware::perception::filters::ray_ground_classifier::POINT_BLOCK_CAPACITY;
+using autoware::common::lidar_utils::POINT_BLOCK_CAPACITY;
 
 // do basic sanity checks
 TEST_F(ray_ground_classifier, point_classification)
@@ -433,7 +435,7 @@ TEST_F(ray_ground_classifier, height_filter)
   EXPECT_FLOAT_EQ(cfg.get_min_height(), -1.0F);
   EXPECT_FLOAT_EQ(cfg.get_max_height(), 1.5F);
   autoware::perception::filters::ray_ground_classifier::RayGroundClassifier filter(cfg);
-  autoware::perception::filters::ray_ground_classifier::PointXYZIF pt1, pt2;
+  autoware::common::lidar_utils::PointXYZIF pt1, pt2;
   pt1.x = 1.0F;
   pt1.z = cfg.get_max_height() + 0.00001F;
   filter.insert(pt1);

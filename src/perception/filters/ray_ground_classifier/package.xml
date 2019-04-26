@@ -10,6 +10,10 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_cmake</buildtool_depend>
 
+    <build_depend>lidar_utils</build_depend>
+
+    <exec_depend>lidar_utils</exec_depend>
+
     <test_depend>ament_lint_common</test_depend>
 
     <export>

@@ -22,6 +22,7 @@
 #include <cmath>
 #include <vector>
 
+#include "lidar_utils/lidar_types.hpp"
 #include "ray_ground_classifier/visibility_control.hpp"
 
 namespace autoware
@@ -35,28 +36,14 @@ namespace perception
 ///        but in the future it may include filtering for images and other functionality
 namespace filters
 {
+using autoware::common::lidar_utils::PI;
+using autoware::common::lidar_utils::TAU;
+using autoware::common::lidar_utils::PointXYZIF;
+
 /// \brief Resources for the ray ground filter algorithm used for
 ///        ground filtering in point clouds
 namespace ray_ground_classifier
 {
-/// pi = tau / 2
-constexpr float PI = 3.14159265359F;
-/// tau = 2 pi
-constexpr float TAU = 6.283185307179586476925286766559F;
-/// arbitrary small constant: 1.0E-6F
-constexpr float FEPS = 0.000001F;
-
-struct PointXYZIF
-{
-  float x, y, z, intensity;
-  uint16_t id;
-  static constexpr uint16_t END_OF_SCAN_ID = 65535u;
-};
-
-using PointBlock = std::vector<PointXYZIF>;
-/// \brief Stores basic configuration information, does some simple validity checking
-static constexpr uint16_t POINT_BLOCK_CAPACITY = 512U;
-
 template<typename T>
 inline T clamp(const T val, const T min, const T max)
 {

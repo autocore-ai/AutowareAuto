@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "lidar_utils/lidar_types.hpp"
 #include "ray_ground_classifier/ray_aggregator.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
@@ -29,9 +30,11 @@ namespace filters
 {
 namespace ray_ground_classifier
 {
-using autoware::perception::filters::ray_ground_classifier::FEPS;
-using autoware::perception::filters::ray_ground_classifier::PI;
-using autoware::perception::filters::ray_ground_classifier::POINT_BLOCK_CAPACITY;
+
+using autoware::common::lidar_utils::FEPS;
+using autoware::common::lidar_utils::PI;
+using autoware::common::lidar_utils::POINT_BLOCK_CAPACITY;
+
 ////////////////////////////////////////////////////////////////////////////////
 RayAggregator::Config::Config(
   const float min_ray_angle_rad,
@@ -188,15 +191,15 @@ std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
   const float y = pt.get_point_pointer()->y;
   // (0, 0) is always bin 0
   float idx = 0.0F;
-  if ((fabsf(x) > autoware::perception::filters::ray_ground_classifier::FEPS) ||
-    (fabsf(y) > autoware::perception::filters::ray_ground_classifier::FEPS))
+  if ((fabsf(x) > autoware::common::lidar_utils::FEPS) ||
+    (fabsf(y) > autoware::common::lidar_utils::FEPS))
   {
     const float th = atan2f(y, x);
     idx = th - m_cfg.get_min_angle();
     if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
       // Case where receptive field crosses the +PI/-PI singularity
       // [-PI, max_angle) domain
-      idx = idx + autoware::perception::filters::ray_ground_classifier::TAU;
+      idx = idx + autoware::common::lidar_utils::TAU;
     }
     // Avoid underflow
     idx = std::max(0.0F, idx);

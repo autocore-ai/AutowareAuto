@@ -14,8 +14,9 @@
 // limitations under the License.
 #include <string>
 
+#include "lidar_utils/lidar_types.hpp"
+#include "lidar_utils/point_cloud_utils.hpp"
 #include "ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp"
-
 
 namespace autoware
 {
@@ -26,59 +27,12 @@ namespace filters
 namespace ray_ground_classifier_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
-using autoware::perception::filters::ray_ground_classifier::PointXYZIF;
+using autoware::common::lidar_utils::PointXYZIF;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 
 using std::placeholders::_1;
 
-////
-void init_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::string & frame_id,
-  const std::size_t size)
-{
-  msg.height = 1U;
-  msg.fields.resize(4U);
-  msg.fields[0U].name = "x";
-  msg.fields[1U].name = "y";
-  msg.fields[2U].name = "z";
-  msg.fields[3U].name = "intensity";
-  msg.point_step = 0U;
-  for (uint32_t idx = 0U; idx < 4U; ++idx) {
-    msg.fields[idx].offset = static_cast<uint32_t>(idx * sizeof(float));
-    msg.fields[idx].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    msg.fields[idx].count = 1U;
-    msg.point_step += static_cast<uint32_t>(sizeof(float));
-  }
-  const std::size_t capacity = msg.point_step * size;
-  msg.data.reserve(capacity);
-  msg.is_bigendian = false;
-  msg.is_dense = false;
-  msg.header.frame_id = frame_id;
-}
-
-/////
-bool add_point_to_cloud(
-  sensor_msgs::msg::PointCloud2 & cloud,
-  const PointXYZIF & pt)
-{
-  bool ret = false;
-  // Actual size is 20 due to padding. This check is to make sure that when we do a insert of
-  // 16 bytes, we will not stride past the bounds of the structure.
-  static_assert(
-    sizeof(PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
-    "PointXYZIF is not expected size: ");
-  if (((cloud.width + 1U) * cloud.point_step) < static_cast<uint32_t>(cloud.data.capacity())) {
-    // TODO(c.ho. andreas.pasternak) Fix in #2131
-    //lint -e9176 needed to support external API NOLINT
-    const uint8_t * const byte_ptr = reinterpret_cast<const uint8_t * const>(&pt);
-    //lint -e9016 needed to support external API, check above prevents overflow NOLINT
-    (void)cloud.data.insert(cloud.data.end(), byte_ptr, byte_ptr + cloud.point_step);
-    ++cloud.width;
-    ret = true;
-  }
-  return ret;
-}
+using autoware::common::lidar_utils::init_pcl_msg;
 
 RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   const std::string & node_name,
@@ -189,19 +143,17 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
       m_classifier.partition(m_aggregator.get_next_ray(), ground_blk, nonground_blk);
       // Add ray to point clouds
       for (auto & ground_point : ground_blk) {
-        if (!add_point_to_cloud(m_ground_msg, ground_point)) {
+        if (!add_point_to_cloud(m_ground_msg, ground_point, m_point_cloud_idx)) {
           throw std::runtime_error("RayGroundClassifierNode: Overran ground msg point capacity");
         }
       }
+      reset_cloud_idx();
       for (auto & nonground_point : nonground_blk) {
-        if (!add_point_to_cloud(
-            m_nonground_msg,
-            nonground_point))
-        {
-          throw
-            std::runtime_error("RayGroundClassifierNode: Overran nonground msg point capacity");
+        if (!add_point_to_cloud(m_nonground_msg, nonground_point, m_point_cloud_idx)) {
+          throw std::runtime_error("RayGroundClassifierNode: Overran nonground msg point capacity");
         }
       }
+      reset_cloud_idx();
     }
     // publish: nonground first for the possible microseconds of latency
     m_nonground_pub_ptr->publish(m_nonground_msg);
@@ -269,6 +221,11 @@ void RayGroundClassifierCloudNode::register_callbacks_preallocate()
   // initialize messages
   init_pcl_msg(m_ground_msg, m_frame_id.c_str(), m_pcl_size);
   init_pcl_msg(m_nonground_msg, m_frame_id.c_str(), m_pcl_size);
+}
+////////////////////////////////////////////////////////////////////////////////
+void RayGroundClassifierCloudNode::reset_cloud_idx()
+{
+  m_point_cloud_idx = 0;
 }
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

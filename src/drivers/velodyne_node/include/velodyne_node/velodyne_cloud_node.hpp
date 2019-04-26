@@ -24,11 +24,11 @@
 
 #include <string>
 #include <vector>
+#include "lidar_utils/lidar_types.hpp"
 #include "udp_driver/udp_driver_node.hpp"
 #include "velodyne_driver/vlp16_translator.hpp"
 #include "velodyne_node/visibility_control.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-#include "sensor_msgs/point_cloud2_iterator.hpp"
 
 
 namespace autoware
@@ -81,16 +81,8 @@ protected:
   bool get_output_remainder(sensor_msgs::msg::PointCloud2 & output) override;
 
 private:
-  void init_pcl_msg(
-    sensor_msgs::msg::PointCloud2 & msg,
-    const std::string & frame_id,
-    const std::size_t size);
-
-  bool add_point_to_cloud(
-    sensor_msgs::msg::PointCloud2 & cloud,
-    const velodyne_driver::PointXYZIF & pt);
   velodyne_driver::Vlp16Translator m_translator;
-  std::vector<velodyne_driver::PointXYZIF> m_point_block;
+  std::vector<autoware::common::lidar_utils::PointXYZIF> m_point_block;
 
   // These next two variables are a minor hack to maintain stateful information across convert()
   // calls. Specifically, it signals to reset any stateful information on the data vector at the top

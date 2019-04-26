@@ -10,11 +10,13 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_cmake</buildtool_depend>
 
+    <build_depend>lidar_utils</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>velodyne_driver</build_depend>
 
     <depend>udp_driver</depend>
 
+    <exec_depend>lidar_utils</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>velodyne_driver</exec_depend>
 

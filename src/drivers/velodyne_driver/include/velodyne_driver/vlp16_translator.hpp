@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <vector>
 #include "geometry_msgs/msg/point32.hpp"
+#include "lidar_utils/lidar_types.hpp"
 
 namespace autoware
 {
@@ -38,13 +39,6 @@ namespace drivers
 ///        velodne LiDARs respectively.
 namespace velodyne_driver
 {
-struct PointXYZIF
-{
-  float x, y, z, intensity;
-  uint16_t id;
-  static constexpr uint16_t END_OF_SCAN_ID = 65535u;
-};
-
 inline uint32_t to_uint32(const uint8_t first, const uint8_t second)
 {
   // probably ok since uint8_t<<8 =>uint32_t, this is to get around
@@ -180,7 +174,7 @@ private:
   /// \brief Convert a packet into a block of cartesian points
   /// \param[in] pkt A packet from a VLP16 HiRes sensor for conversion
   /// \param[out] output Gets filled with cartesian points and any additional flags
-  void convert(const Packet & pkt, std::vector<PointXYZIF> & output);
+  void convert(const Packet & pkt, std::vector<autoware::common::lidar_utils::PointXYZIF> & output);
 
 private:
   // make sure packet sizes are correct
@@ -200,7 +194,7 @@ private:
   /// \param[in] phi_ind the altitude angle index from lookup tables(angle orthogonal to z-axis)
   /// \return none
   inline void polar_to_xyz(
-    PointXYZIF & pt,
+    autoware::common::lidar_utils::PointXYZIF & pt,
     const float r_m,
     const uint32_t th_ind,
     const uint32_t phi_ind)

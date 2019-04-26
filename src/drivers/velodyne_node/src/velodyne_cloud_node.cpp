@@ -16,6 +16,10 @@
 #include <string>
 #include <chrono>
 #include <vector>
+
+#include "lidar_utils/lidar_types.hpp"
+#include "lidar_utils/point_cloud_utils.hpp"
+#include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "velodyne_node/velodyne_cloud_node.hpp"
 
 namespace autoware
@@ -86,7 +90,7 @@ VelodyneCloudNode::VelodyneCloudNode(
 ////////////////////////////////////////////////////////////////////////////////
 void VelodyneCloudNode::init_output(sensor_msgs::msg::PointCloud2 & output)
 {
-  init_pcl_msg(output, m_frame_id.c_str(), m_cloud_size);
+  autoware::common::lidar_utils::init_pcl_msg(output, m_frame_id.c_str(), m_cloud_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,8 +110,8 @@ bool VelodyneCloudNode::convert(
     // deserialize remainder into pointcloud
     m_published_cloud = false;
     for (uint32_t idx = m_remainder_start_idx; idx < m_point_block.size(); ++idx) {
-      const velodyne_driver::PointXYZIF & pt = m_point_block[idx];
-      (void)add_point_to_cloud(output, pt);
+      const autoware::common::lidar_utils::PointXYZIF & pt = m_point_block[idx];
+      (void)add_point_to_cloud(output, pt, m_point_cloud_idx);
       // Here I am ignoring the return value, because this operation should never fail.
       // In the constructor I ensure that cloud_size > PointBlock::CAPACITY. This means
       // I am guaranteed to fit at least one whole PointBlock into my PointCloud2.
@@ -117,9 +121,9 @@ bool VelodyneCloudNode::convert(
   }
   m_translator.convert(pkt, m_point_block);
   for (uint32_t idx = 0U; idx < m_point_block.size(); ++idx) {
-    const velodyne_driver::PointXYZIF & pt = m_point_block[idx];
-    if (static_cast<uint16_t>(velodyne_driver::PointXYZIF::END_OF_SCAN_ID) != pt.id) {
-      if (!add_point_to_cloud(output, pt)) {
+    const autoware::common::lidar_utils::PointXYZIF & pt = m_point_block[idx];
+    if (static_cast<uint16_t>(autoware::common::lidar_utils::PointXYZIF::END_OF_SCAN_ID) != pt.id) {
+      if (!add_point_to_cloud(output, pt, m_point_cloud_idx)) {
         m_published_cloud = true;
         m_remainder_start_idx = idx;
       }
@@ -149,67 +153,6 @@ bool VelodyneCloudNode::get_output_remainder(sensor_msgs::msg::PointCloud2 & out
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-void VelodyneCloudNode::init_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::string & frame_id,
-  const std::size_t size)
-{
-  msg.height = 1U;
-  msg.is_bigendian = false;
-  msg.is_dense = false;
-  msg.header.frame_id = frame_id;
-  // set the fields
-  sensor_msgs::PointCloud2Modifier modifier(msg);
-  modifier.setPointCloud2Fields(4U, "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
-    "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
-    "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
-    "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
-  // allocate memory
-  modifier.resize(size);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool VelodyneCloudNode::add_point_to_cloud(
-  sensor_msgs::msg::PointCloud2 & cloud,
-  const velodyne_driver::PointXYZIF & pt)
-{
-  bool ret = false;
-
-  sensor_msgs::PointCloud2Iterator<float> x_it(cloud, "x");
-  sensor_msgs::PointCloud2Iterator<float> y_it(cloud, "y");
-  sensor_msgs::PointCloud2Iterator<float> z_it(cloud, "z");
-  sensor_msgs::PointCloud2Iterator<float> intensity_it(cloud, "intensity");
-
-  x_it += m_point_cloud_idx;
-  y_it += m_point_cloud_idx;
-  z_it += m_point_cloud_idx;
-  intensity_it += m_point_cloud_idx;
-
-  // Actual size is 20 due to padding. This check is to make sure that when we do a insert of
-  // 16 bytes, we will not stride past the bounds of the structure.
-  static_assert(
-    sizeof(velodyne_driver::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
-    "PointXYZIF is not expected size: ");
-
-  if (x_it != x_it.end() &&
-    y_it != y_it.end() &&
-    z_it != z_it.end() &&
-    intensity_it != intensity_it.end())
-  {
-    // add the point data
-    *x_it = pt.x;
-    *y_it = pt.y;
-    *z_it = pt.z;
-    *intensity_it = pt.intensity;
-
-    // increment the index to keep track of the pointcloud's size
-    m_point_cloud_idx++;
-    ret = true;
-  }
-  return ret;
-}
 }  // namespace velodyne_node
 }  // namespace drivers
 }  // namespace autoware

@@ -20,11 +20,11 @@
 namespace
 {
 
+using autoware::common::lidar_utils::PointXYZIF;
+using autoware::perception::filters::ray_ground_classifier::PointBlock;
+using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 using autoware::perception::filters::ray_ground_classifier::Ray;
 using autoware::perception::filters::ray_ground_classifier::RayAggregator;
-using autoware::perception::filters::ray_ground_classifier::PointBlock;
-using autoware::perception::filters::ray_ground_classifier::PointXYZIF;
-using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 
 void check_ray(const Ray & ray, const float th)
 {
@@ -195,8 +195,7 @@ TEST(ray_aggregator, multi_insert)
 TEST(ray_aggregator, bad_cases)
 {
   const uint32_t capacity =
-    static_cast<uint32_t>(autoware::perception::filters::ray_ground_classifier::
-    POINT_BLOCK_CAPACITY);
+    static_cast<uint32_t>(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY);
   // small width
   EXPECT_THROW(RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.00000000001F, 10U}),
     std::runtime_error);

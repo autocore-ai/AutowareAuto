@@ -27,6 +27,8 @@ namespace drivers
 namespace velodyne_driver
 {
 
+using autoware::common::lidar_utils::PointXYZIF;
+
 //lint -e9103 not reusing, just using decl NOLINT
 static const uint16_t POINTS_PER_FIRE_SEQ = 16U;
 

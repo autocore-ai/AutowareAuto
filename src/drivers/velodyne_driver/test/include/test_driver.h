@@ -16,6 +16,7 @@
 #ifndef TEST_VELODYNE_DRIVER_H
 #define TEST_VELODYNE_DRIVER_H
 
+#include "lidar_utils/lidar_types.hpp"
 #include "velodyne_driver/vlp16_translator.hpp"
 
 #include <iostream>
@@ -138,7 +139,7 @@ public:
 
 protected:
   Vlp16Translator::Packet pkt;
-  std::vector<autoware::drivers::velodyne_driver::PointXYZIF> out;
+  std::vector<autoware::common::lidar_utils::PointXYZIF> out;
 };  // class velodyne_driver
 
 /// make sure instantiating the driver doesn't result in the process shitting the bed
@@ -167,7 +168,7 @@ TEST_F(velodyne_driver, basic)
   float max_phi = -std::numeric_limits<float>::max();
   uint32_t last_id = 0U;
   for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::drivers::velodyne_driver::PointXYZIF & pt = out[idx];
+    autoware::common::lidar_utils::PointXYZIF & pt = out[idx];
     if (0U == idx) {
       last_id = pt.id;
     }
@@ -253,7 +254,7 @@ TEST_F(velodyne_driver, config_radius)
     Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
   uint32_t last_id = 0U;
   for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::drivers::velodyne_driver::PointXYZIF & pt = out[idx];
+    autoware::common::lidar_utils::PointXYZIF & pt = out[idx];
     if (0U == idx) {
       last_id = pt.id;
     }
@@ -289,7 +290,7 @@ TEST_F(velodyne_driver, config_rotation1)
     Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
   uint32_t last_id = 0U;
   for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::drivers::velodyne_driver::PointXYZIF & pt = out[idx];
+    autoware::common::lidar_utils::PointXYZIF & pt = out[idx];
     if (0U == idx) {
       last_id = pt.id;
     }
@@ -324,7 +325,7 @@ TEST_F(velodyne_driver, config_rotation2)
     Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
   uint32_t last_id = 0U;
   for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::drivers::velodyne_driver::PointXYZIF & pt = out[idx];
+    autoware::common::lidar_utils::PointXYZIF & pt = out[idx];
     if (0U == idx) {
       last_id = pt.id;
     }

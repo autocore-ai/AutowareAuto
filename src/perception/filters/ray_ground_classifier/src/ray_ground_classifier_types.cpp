@@ -28,8 +28,8 @@ namespace filters
 namespace ray_ground_classifier
 {
 
-using autoware::perception::filters::ray_ground_classifier::FEPS;
-using autoware::perception::filters::ray_ground_classifier::PointXYZIF;
+using autoware::common::lidar_utils::FEPS;
+using autoware::common::lidar_utils::PointXYZIF;
 
 Config::Config(
   const float sensor_height_m,

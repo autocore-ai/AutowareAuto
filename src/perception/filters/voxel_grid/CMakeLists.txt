@@ -22,6 +22,7 @@ project(voxel_grid)
 find_package(autoware_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(lidar_utils REQUIRED)
 
 # includes
 include_directories(include)
@@ -38,7 +39,9 @@ add_library(${PROJECT_NAME} SHARED
 )
 autoware_set_compile_options(${PROJECT_NAME})
 ament_target_dependencies(${PROJECT_NAME}
-  "geometry_msgs")
+  "geometry_msgs"
+  "lidar_utils"
+)
 
 if(BUILD_TESTING)
   # run linters

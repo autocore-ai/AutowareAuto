@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <voxel_grid/voxels.hpp>
+#include "lidar_utils/lidar_types.hpp"
+#include "voxel_grid/voxels.hpp"
 
 namespace autoware
 {
@@ -25,9 +26,9 @@ namespace voxel_grid
 {
 // Instantiation of common types
 template class ApproximateVoxel<PointXYZ>;
-template class ApproximateVoxel<PointXYZIF>;
+template class ApproximateVoxel<autoware::common::lidar_utils::PointXYZIF>;
 template class CentroidVoxel<PointXYZ>;
-template class CentroidVoxel<PointXYZIF>;
+template class CentroidVoxel<autoware::common::lidar_utils::PointXYZIF>;
 }  // namespace voxel_grid
 }  // namespace filters
 }  // namespace perception

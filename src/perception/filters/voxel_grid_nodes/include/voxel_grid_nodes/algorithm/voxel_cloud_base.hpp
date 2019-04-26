@@ -55,27 +55,9 @@ public:
 protected:
   using PointXYZIF = autoware::perception::filters::voxel_grid::PointXYZIF;
 
-  /// \brief Initializes a given PointCloud2
-  /// \param[in] msg The point cloud to initialize
-  /// \param[in] frame_id frame_id of the PointCloud2 message
-  /// \param[in] size Desired size of the PointCloud2 message
-  void init_pcl_msg(
-    sensor_msgs::msg::PointCloud2 & msg,
-    const std::string & frame_id,
-    const std::size_t size);
-
-  /// \brief Adds a point to a given PointCloud2
-  /// \param[in] cloud The point cloud to add the point into
-  /// \param[in] pt point to add
-  /// \return Boolean showing the success of the adding operation
-  bool add_point_to_cloud(
-    sensor_msgs::msg::PointCloud2 & cloud,
-    const PointXYZIF & pt);
-
   /// \brief Resets the offset of the PointCloud2 iterators
   void reset_cloud_idx();
 
-private:
   /// \brief The offset to be used with the PointCloud2 iterators
   int32_t m_point_cloud_idx{0};
 };  // VoxelCloudBase

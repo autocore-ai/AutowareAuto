@@ -19,17 +19,14 @@ cmake_minimum_required(VERSION 3.5)
 project(voxel_grid_nodes)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(autoware_cmake REQUIRED)
+find_package(lidar_utils REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(voxel_grid REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
 # includes
 include_directories(include)
@@ -46,7 +43,13 @@ add_library(${PROJECT_NAME} SHARED
   src/voxel_cloud_node.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-ament_target_dependencies(${PROJECT_NAME} "sensor_msgs" "voxel_grid" "rclcpp" "rclcpp_lifecycle")
+ament_target_dependencies(${PROJECT_NAME}
+  "lidar_utils"
+  "sensor_msgs"
+  "voxel_grid"
+  "rclcpp"
+  "rclcpp_lifecycle"
+)
 
 # Cloud executable
 set(VOXEL_CLOUD_EXE voxel_grid_cloud_node_exe)

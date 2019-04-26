@@ -12,7 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <voxel_grid/voxel_grid.hpp>
+
+#include "lidar_utils/lidar_types.hpp"
+#include "voxel_grid/voxel_grid.hpp"
 
 namespace autoware
 {
@@ -25,9 +27,9 @@ namespace voxel_grid
 ////////////////////////////////////////////////////////////////////////////////
 // Instantiation of common types
 template class VoxelGrid<ApproximateVoxel<PointXYZ>>;
-template class VoxelGrid<ApproximateVoxel<PointXYZIF>>;
+template class VoxelGrid<ApproximateVoxel<autoware::common::lidar_utils::PointXYZIF>>;
 template class VoxelGrid<CentroidVoxel<PointXYZ>>;
-template class VoxelGrid<CentroidVoxel<PointXYZIF>>;
+template class VoxelGrid<CentroidVoxel<autoware::common::lidar_utils::PointXYZIF>>;
 }  // namespace voxel_grid
 }  // namespace filters
 }  // namespace perception

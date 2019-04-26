@@ -41,14 +41,6 @@ inline T clamp(const T val, const T min, const T max)
   return (val < min) ? min : ((val > max) ? max : val);
 }
 
-// TODO(cvasfi) move this definition to a shared/common place
-struct PointXYZIF
-{
-  float x, y, z, intensity;
-  uint16_t id;
-  static constexpr uint16_t END_OF_SCAN_ID = 65535u;
-};
-
 using PointXYZ = geometry_msgs::msg::Point32;
 
 

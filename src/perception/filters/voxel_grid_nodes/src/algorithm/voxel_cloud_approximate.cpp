@@ -13,8 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <cstring>
+
+#include "lidar_utils/point_cloud_utils.hpp"
+#include "voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp"
 
 namespace autoware
 {
@@ -33,7 +35,7 @@ VoxelCloudApproximate::VoxelCloudApproximate(const voxel_grid::Config & cfg)
   m_grid(cfg)
 {
   // frame id is arbitrary, not the responsibility of this component
-  init_pcl_msg(m_cloud, "base_link", cfg.get_capacity());
+  autoware::common::lidar_utils::init_pcl_msg(m_cloud, "base_link", cfg.get_capacity());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +63,7 @@ const sensor_msgs::msg::PointCloud2 & VoxelCloudApproximate::get()
 
   for (const auto & it : m_grid) {
     const auto & pt = it.second.get();
-    (void)add_point_to_cloud(m_cloud, pt);
+    (void)add_point_to_cloud(m_cloud, pt, m_point_cloud_idx);
     // Don't need to check if cloud can't fit since it has the same capacity as the grid
     // insert will throw if the grid is at capacity
   }

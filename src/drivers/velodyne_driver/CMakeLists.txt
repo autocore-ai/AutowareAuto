@@ -22,6 +22,7 @@ find_package(autoware_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(lidar_utils REQUIRED)
 
 include_directories(include)
 
@@ -33,7 +34,10 @@ add_library(${PROJECT_NAME} SHARED
         "src/vlp16_config.cpp"
         "src/vlp16_translator.cpp")
 target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
-ament_target_dependencies(${PROJECT_NAME} "geometry_msgs")
+ament_target_dependencies(${PROJECT_NAME}
+  "geometry_msgs"
+  "lidar_utils"
+)
 autoware_set_compile_options(${PROJECT_NAME})
 
 ## Testing
