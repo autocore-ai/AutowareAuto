@@ -34,26 +34,32 @@ int32_t main(const int32_t argc, char ** const argv)
   boost::filesystem::path default_config_path = boost::filesystem::absolute(argv[0]).parent_path() /
     "param" / "vlp16_test.param.yaml";
 
+  boost::program_options::options_description desc("Allowed options");
+  desc.add_options()("help", "produce help message")("config_file",
+    boost::program_options::value<std::string>()->
+    default_value(default_config_path.string()),
+    "Parameter file used for the two nodes")("node_name",
+    boost::program_options::value<std::string>()->
+    default_value("vlp16_test_node"),
+    "Name of velodyne cloud node")("node_namespace",
+    boost::program_options::value<std::string>()->
+    default_value(""),
+    "Namespace of velodyne cloud driver")
+  ;
+  boost::program_options::variables_map vm;
+  boost::program_options::store(
+    boost::program_options::parse_command_line(argc, argv, desc), vm);
+  boost::program_options::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 1;
+  }
+
   std::shared_ptr<autoware::drivers::velodyne_node::VelodyneCloudNode> vptr;
 
   try {
     rclcpp::init(argc, argv);
-    boost::program_options::options_description desc("Allowed options");
-    desc.add_options()("help", "produce help message")("config_file",
-      boost::program_options::value<std::string>()->
-      default_value(default_config_path.string()),
-      "Parameter file used for the two nodes")("node_name",
-      boost::program_options::value<std::string>()->
-      default_value("vlp16_test_node"),
-      "Name of velodyne cloud node")("node_namespace",
-      boost::program_options::value<std::string>()->
-      default_value(""),
-      "Namespace of velodyne cloud driver")
-    ;
-    boost::program_options::variables_map vm;
-    boost::program_options::store(
-      boost::program_options::parse_command_line(argc, argv, desc), vm);
-    boost::program_options::notify(vm);
 
     vptr = std::make_shared<autoware::drivers::velodyne_node::VelodyneCloudNode>(
       vm["node_name"].as<std::string>().c_str(),
