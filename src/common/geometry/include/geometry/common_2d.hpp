@@ -12,7 +12,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 /// \file
 /// \brief This file includes common functionality for 2D geometry, such as dot products
 
@@ -20,6 +19,7 @@
 #define GEOMETRY__COMMON_2D_HPP_
 
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace autoware
@@ -28,14 +28,15 @@ namespace common
 {
 namespace geometry
 {
-// TODO(esteve): use FEPS and clamp from common lidar_utils
-constexpr float FEPS = 0.000001F;
-
 template<typename T>
 inline T clamp(const T val, const T min, const T max)
 {
   return (val < min) ? min : ((val > max) ? max : val);
 }
+// TODO(c.ho) replace types to be sized?
+using float32_t = float;
+using float64_t = double;
+using bool8_t = bool;
 
 /// \brief Temporary namespace for point adapter methods, for use with nonstandard point types
 namespace point_adapter
@@ -45,7 +46,7 @@ namespace point_adapter
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float x_(const PointT & pt)
+float32_t x_(const PointT & pt)
 {
   return pt.x;
 }
@@ -54,7 +55,7 @@ float x_(const PointT & pt)
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float y_(const PointT & pt)
+float32_t y_(const PointT & pt)
 {
   return pt.y;
 }
@@ -63,7 +64,7 @@ float y_(const PointT & pt)
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float z_(const PointT & pt)
+float32_t z_(const PointT & pt)
 {
   return pt.z;
 }
@@ -72,7 +73,7 @@ float z_(const PointT & pt)
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float & xr_(PointT & pt)
+float32_t & xr_(PointT & pt)
 {
   return pt.x;
 }
@@ -81,7 +82,7 @@ float & xr_(PointT & pt)
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float & yr_(PointT & pt)
+float32_t & yr_(PointT & pt)
 {
   return pt.y;
 }
@@ -90,7 +91,7 @@ float & yr_(PointT & pt)
 /// \param[in] pt The point
 /// \tparam PointT The point type
 template<typename PointT>
-float & zr_(PointT & pt)
+float32_t & zr_(PointT & pt)
 {
   return pt.z;
 }
@@ -213,6 +214,7 @@ inline T intersection_2d(const T & pt, const T & u, const T & q, const T & v)
 {
   const float num = cross_2d(minus_2d(pt, q), u);
   float den = cross_2d(v, u);
+  constexpr auto FEPS = std::numeric_limits<float>::epsilon();
   if (fabsf(den) < FEPS) {
     if (fabsf(num) < FEPS) {
       // collinear case, anything is ok
@@ -294,7 +296,7 @@ inline T closest_segment_point_2d(const T & p, const T & q, const T & r)
   const T qp = minus_2d(q, p);
   const float len2 = dot_2d(qp, qp);
   T ret = p;
-  if (len2 > FEPS) {
+  if (len2 > std::numeric_limits<float>::epsilon()) {
     const float t = clamp(dot_2d(minus_2d(r, p), qp) / len2, 0.0F, 1.0F);
     ret = plus_2d(p, times_2d(qp, t));
   }
@@ -313,7 +315,6 @@ inline float point_line_segment_distance_2d(const T & p, const T & q, const T & 
   const T pq_r = minus_2d(closest_segment_point_2d(p, q, r), r);
   return norm_2d(pq_r);
 }
-
 }  // namespace geometry
 }  // namespace common
 }  // namespace autoware

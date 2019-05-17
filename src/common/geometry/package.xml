@@ -4,17 +4,18 @@
     <name>geometry</name>
     <version>0.0.1</version>
     <description>Geometry related algorithms</description>
-    <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
-    <license>Apex.AI License</license>
+    <maintainer email="opensource@apex.ai">Apex.AI</maintainer>
+    <license>Apache 2</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_cmake</buildtool_depend>
 
-    <test_depend>ament_lint_common</test_depend>
-    <test_depend>ament_cmake_pclint</test_depend>
-    <test_depend>geometry_msgs</test_depend>
+    <depend>autoware_auto_msgs</depend>
+    <depend>geometry_msgs</depend>
 
-    <export>
-        <build_type>ament_cmake</build_type>
-    </export>
+    <test_depend>ament_lint_common</test_depend>
+    <test_depend>ament_cmake_gtest</test_depend>
+    <test_depend>ament_cmake_pclint</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
 </package>

@@ -38,5 +38,4 @@
 #else  // defined(__linux__)
   #error "Unsupported Build Configuration"
 #endif  // defined(__WIN32)
-
 #endif  // GEOMETRY__VISIBILITY_CONTROL_HPP_
