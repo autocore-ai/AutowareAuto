@@ -17,6 +17,28 @@ float32 real
 float32 imag
 ```
 
+## BoundingBox
+
+```
+geometry_msgs/Point32 centroid
+geometry_msgs/Point32 size
+geometry_msgs/Quaternion orientation
+geometry_msgs/Point32[4] corners
+float32 value
+uint32 label
+```
+# TODO refactor and add rationale
+
+## BoundingBoxArray
+
+```
+std_msgs/Header header
+BoundingBox[256] boxes
+uint32 size
+uint32 CAPACITY=256
+```
+# TODO refactor and add rationale
+
 ## DiagnosticHeader
 
 ```
