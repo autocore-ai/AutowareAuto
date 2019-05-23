@@ -77,7 +77,7 @@ endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
-autoware_install(LIBRARIES ${PROJECT_NAME} EXECUTABLES ${VOXEL_CLOUD_EXE})
+autoware_install(LIBRARIES ${PROJECT_NAME} EXECUTABLES ${VOXEL_CLOUD_EXE} HAS_INCLUDE)
 # Ament Exporting
 ament_export_dependencies("sensor_msgs" "voxel_grid" "rclcpp" "rclcpp_lifecycle")
 ament_package()
