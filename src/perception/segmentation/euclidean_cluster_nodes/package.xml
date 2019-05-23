@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>euclidean_cluster_nodes</name>
+    <version>0.0.1</version>
+    <description>
+      ROS 2 nodes for various post-processing steps on euclidean clustering. For debugging and to
+      decouple algorithm dependencies from ROS 2
+    </description>
+    <maintainer email="opensource@apex.ai">Apex.AI</maintainer>
+    <license>Apache 2</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>autoware_cmake</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>autoware_auto_msgs</depend>
+    <depend>euclidean_cluster</depend>
+    <depend>sensor_msgs</depend>
+    <depend>voxel_grid_nodes</depend>
+
+    <test_depend>ament_lint_common</test_depend>
+    <test_depend>ament_cmake_pclint</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>

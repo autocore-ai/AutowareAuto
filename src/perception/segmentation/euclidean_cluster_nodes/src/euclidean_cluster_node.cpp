@@ -1,0 +1,232 @@
+/// \copyright Copyright 2017-2018 Apex.AI, Inc.
+/// All rights reserved.
+/// \file
+/// \brief This file implements a clustering node that published colored point clouds and convex
+///        hulls
+
+#include <memory>
+#include <string>
+#include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
+
+namespace autoware
+{
+namespace perception
+{
+namespace segmentation
+{
+namespace euclidean_cluster_nodes
+{
+////////////////////////////////////////////////////////////////////////////////
+EuclideanClusterNode::EuclideanClusterNode(
+  const std::string & node_name,
+  const std::string & node_namespace)
+: Node(node_name.c_str(), node_namespace.c_str()),
+  m_cloud_sub_ptr{create_subscription<PointCloud2>(get_parameter("cloud_topic").as_string(),
+      rclcpp::QoS(10),
+      [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
+  m_cluster_pub_ptr{get_parameter("cluster_topic").as_string().empty() ? nullptr :
+  create_publisher<Clusters>(get_parameter("cluster_topic").as_string(), rclcpp::QoS(10))},
+// m_box_pub_ptr{get_parameter("box_topic").as_string().empty() ? nullptr :
+//   create_publisher<BoundingBoxArray>(get_parameter("box_topic").as_string())},
+m_cluster_alg{
+  euclidean_cluster::Config{
+    get_parameter("cluster.frame_id").as_string().c_str(),
+    static_cast<std::size_t>(get_parameter("cluster.min_cluster_size").as_int()),
+    static_cast<std::size_t>(get_parameter("cluster.max_num_clusters").as_int())
+  },
+  euclidean_cluster::HashConfig{
+    static_cast<float32_t>(get_parameter("hash.min_x").as_double()),
+    static_cast<float32_t>(get_parameter("hash.max_x").as_double()),
+    static_cast<float32_t>(get_parameter("hash.min_y").as_double()),
+    static_cast<float32_t>(get_parameter("hash.max_y").as_double()),
+    static_cast<float32_t>(get_parameter("hash.side_length").as_double()),
+    static_cast<std::size_t>(get_parameter("max_cloud_size").as_int())
+  }
+},
+m_clusters{},
+// m_boxes{},
+m_voxel_ptr{nullptr},  // Because voxel config's Point types don't accept positional arguments
+m_use_lfit{get_parameter("use_lfit").as_bool()},
+m_use_z{get_parameter("use_z").as_bool()}
+{
+  init(m_cluster_alg.get_config());
+  // Initialize voxel grid
+  if (get_parameter("downsample").as_bool()) {
+    filters::voxel_grid::PointXYZ min_point;
+    filters::voxel_grid::PointXYZ max_point;
+    filters::voxel_grid::PointXYZ voxel_size;
+    min_point.x = static_cast<float32_t>(get_parameter("voxel.min_point.x").as_double());
+    min_point.y = static_cast<float32_t>(get_parameter("voxel.min_point.y").as_double());
+    min_point.z = static_cast<float32_t>(get_parameter("voxel.min_point.z").as_double());
+    max_point.x = static_cast<float32_t>(get_parameter("voxel.max_point.x").as_double());
+    max_point.y = static_cast<float32_t>(get_parameter("voxel.max_point.y").as_double());
+    max_point.z = static_cast<float32_t>(get_parameter("voxel.max_point.z").as_double());
+    voxel_size.x = static_cast<float32_t>(get_parameter("voxel.voxel_size.x").as_double());
+    voxel_size.y = static_cast<float32_t>(get_parameter("voxel.voxel_size.y").as_double());
+    voxel_size.z = static_cast<float32_t>(get_parameter("voxel.voxel_size.z").as_double());
+    // Aggressive downsampling if not using z
+    if (!m_use_z) {
+      voxel_size.z = (max_point.z - min_point.z) + 1.0F;
+      // Info
+      RCLCPP_INFO(get_logger(), "z is not used, height aspect is fully downsampled away");
+    }
+    m_voxel_ptr = std::make_unique<VoxelAlgorithm>(
+      filters::voxel_grid::Config{
+              min_point,
+              max_point,
+              voxel_size,
+              static_cast<std::size_t>(get_parameter("max_cloud_size").as_int())
+            });
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+EuclideanClusterNode::EuclideanClusterNode(
+  const std::string & node_name,
+  const std::string & node_namespace,
+  const std::string & cloud_topic,
+  const std::string & cluster_topic,
+  const std::string & box_topic,
+  const euclidean_cluster::Config & cls_cfg,
+  const euclidean_cluster::HashConfig & hash_cfg,
+  const bool8_t use_lfit,
+  const bool8_t use_z,
+  const std::unique_ptr<filters::voxel_grid::Config> voxel_cfg_ptr)
+: Node{node_name.c_str(), node_namespace.c_str()},
+  m_cloud_sub_ptr{create_subscription<PointCloud2>(cloud_topic.c_str(),
+      rclcpp::QoS(10),
+      [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
+  m_cluster_pub_ptr{cluster_topic.empty() ? nullptr :
+  create_publisher<Clusters>(cluster_topic.c_str(), rclcpp::QoS(10))},
+// m_box_pub_ptr{box_topic.empty() ? nullptr :
+//   create_publisher<BoundingBoxArray>(box_topic.c_str())},
+m_cluster_alg{cls_cfg, hash_cfg},
+m_clusters{},
+// m_boxes{},
+m_voxel_ptr{voxel_cfg_ptr ? std::make_unique<VoxelAlgorithm>(*voxel_cfg_ptr) : nullptr},
+m_use_lfit{use_lfit},
+m_use_z{use_z}
+{
+  // TODO(c.ho) temporary until bounding boxes are in
+  (void)box_topic;
+  init(cls_cfg);
+  // Check if you're squashing z
+  if (voxel_cfg_ptr && (!use_z)) {
+    if ((voxel_cfg_ptr->get_max_point().z - voxel_cfg_ptr->get_min_point().z) <
+      voxel_cfg_ptr->get_voxel_size().z)
+    {
+      // Warn
+      RCLCPP_WARN(get_logger(),
+        "z is not used, but voxel z size permits height information; more downsampling is"
+        " possible");
+    } else {
+      // Info
+      RCLCPP_INFO(get_logger(), "z is not used, height aspect is fully downsampled away");
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
+{
+  // TODO(c.ho) bring back commented out code when bounding boxes are available
+  (void)cfg;
+  // Sanity check
+  // if ((!m_box_pub_ptr) && (!m_cluster_pub_ptr)) {
+  if (!m_cluster_pub_ptr) {
+    throw std::domain_error{"EuclideanClusterNode: No publisher topics provided"};
+  }
+  // Reserve
+  // m_clusters.clusters.reserve(cfg.max_num_clusters());
+  // m_boxes.header.frame_id.reserve(256U);
+  // m_boxes.header.frame_id = cfg.frame_id().c_str();
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::insert_plain(const PointCloud2 & cloud)
+{
+  using euclidean_cluster::PointXYZI;
+  //lint -e{826, 9176} NOLINT I claim this is ok and tested
+  const auto begin = reinterpret_cast<const PointXYZI *>(&cloud.data[0U]);
+  //lint -e{826, 9176} NOLINT I claim this is ok and tested
+  const auto end = reinterpret_cast<const PointXYZI *>(&cloud.data[cloud.row_step]);
+  m_cluster_alg.insert(begin, end);
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::insert_voxel(const PointCloud2 & cloud)
+{
+  m_voxel_ptr->insert(cloud);
+  insert_plain(m_voxel_ptr->get());
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::insert(const PointCloud2 & cloud)
+{
+  if (m_voxel_ptr) {
+    insert_voxel(cloud);
+  } else {
+    insert_plain(cloud);
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::publish_clusters(
+  Clusters & clusters,
+  const std_msgs::msg::Header & header)
+{
+  for (auto & cls : clusters.clusters) {
+    cls.header.stamp = header.stamp;
+    // frame id was reserved
+    cls.header.frame_id = header.frame_id;
+  }
+  m_cluster_pub_ptr->publish(clusters);
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::handle_clusters(
+  Clusters & clusters,
+  const std_msgs::msg::Header & header)
+{
+  if (m_cluster_pub_ptr) {
+    publish_clusters(clusters, header);
+  }
+  // TODO(c.ho) Uncomment when bounding boxes are in
+  // if (m_box_pub_ptr) {
+  //   if (m_use_lfit) {
+  //     if (m_use_z) {
+  //       details::compute_eigenboxes_with_z(clusters, m_boxes);
+  //     } else {
+  //       details::compute_eigenboxes(clusters, m_boxes);
+  //     }
+  //   } else {
+  //     if (m_use_z) {
+  //       details::compute_lfit_bounding_box_with_z(clusters, m_boxes);
+  //     } else {
+  //       details::compute_lfit_bounding_box(clusters, m_boxes);
+  //     }
+  //   }
+  //   m_boxes.header.stamp = header.stamp;
+  //   // Frame id was reserved
+  //   m_boxes.header.frame_id = header.frame_id;
+  //   m_box_pub_ptr->publish(m_boxes);
+  // }
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanClusterNode::handle(const PointCloud2::SharedPtr msg_ptr)
+{
+  try {
+    try {
+      insert(*msg_ptr);
+    } catch (const std::length_error & e) {
+      // Hit limits of inserting, can still cluster, but in bad state
+      RCLCPP_WARN(get_logger(), e.what());
+    }
+    m_cluster_alg.cluster(m_clusters);
+    //lint -e{523} NOLINT empty functions to make this modular
+    handle_clusters(m_clusters, msg_ptr->header);
+    m_cluster_alg.cleanup(m_clusters);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), e.what());
+  } catch (...) {
+    RCLCPP_FATAL(get_logger(), "EuclideanClusterNode: Unexpected error occurred!");
+    throw;
+  }
+}
+}  // namespace euclidean_cluster_nodes
+}  // namespace segmentation
+}  // namespace perception
+}  // namespace autoware
