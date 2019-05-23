@@ -84,7 +84,7 @@ motion planners
 ambiguities between angles, and angle distances. In addition, it conveniently represents a
 precomputed sine and cosine values, obviating the need for additional computations.
 
-# Messages
+# Interface Messages
 
 ## Control Diagnostic
 

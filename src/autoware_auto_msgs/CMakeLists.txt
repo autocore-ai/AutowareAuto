@@ -24,6 +24,8 @@ rosidl_generate_interfaces(autoware_auto_msgs
   "msg/VehicleOdometry.msg"
   "msg/VehicleStateCommand.msg"
   "msg/VehicleStateReport.msg"
+  # Implementation-specific messages
+  "msg/PointClusters.msg"
   DEPENDENCIES "std_msgs" "geometry_msgs" "sensor_msgs")
 
 ament_export_dependencies("std_msgs" "geometry_msgs" "sensor_msgs")
