@@ -26,9 +26,12 @@ ros-dashing-ament-flake8
 ros-dashing-ament-lint-auto
 ros-dashing-ament-lint-common
 ros-dashing-ament-pep257
+ros-dashing-demo-nodes-cpp
 ros-dashing-launch
 ros-dashing-launch-ros
 ros-dashing-launch-testing
+ros-dashing-launch-testing-ament-cmake
+ros-dashing-launch-testing-ros
 ros-dashing-osrf-testing-tools-cpp
 ros-dashing-rclcpp
 ros-dashing-rclcpp-lifecycle
@@ -54,3 +57,6 @@ libasound2
 libgtk-3.0
 libxkbfile1
 libxss1
+
+# ROS Melodic
+ros-melodic-desktop

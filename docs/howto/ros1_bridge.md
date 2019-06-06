@@ -21,8 +21,8 @@ The `ros1_bridge` is limited to the message/service types that are available at 
 bridge; therefore, the `ros1_bridge` must be compiled from source. The `ros1_bridge` **must be built
 when a new message type is defined**.
 
-The instructions below assume that ROS 2 Dashing has been installed (already available in `ade`), as
-well as [ROS 1 Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu).
+The instructions below assume that ROS 2 Dashing and ROS 1 Melodic have been installed (both already
+available in `ade`).
 
 If custom messages have been defined in the `~/workspace`, build and source the workspace containing
 the message definitions before starting (see `ade$ source ~/workspace/install/setup.bash` below).
@@ -40,7 +40,7 @@ $ ade enter
 ade$ source ~/workspace/install/setup.bash  # Only if you have custom messages
 ade$ mkdir -p ~/ros1_bridge_ws/src
 ade$ cd ~/ros1_bridge_ws/src
-ade$ git clone https://github.com/ros2/ros1_bridge.git --branch 0.5.0
+ade$ git clone https://github.com/ros2/ros1_bridge.git --branch 0.7.2
 ade$ cd ..
 ade$ source /opt/ros/melodic/setup.bash
 ade$ colcon build --merge-install --packages-select ros1_bridge
