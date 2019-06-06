@@ -33,11 +33,13 @@ if(BUILD_TESTING)
   file(COPY "${CMAKE_SOURCE_DIR}/test/expected_outputs"
     DESTINATION "${CMAKE_BINARY_DIR}")
 
-  find_package(integration_tests REQUIRED)
-    integration_tests(
-    EXPECTED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/expected_outputs"
-    COMMANDS
-    "talker:::listener")
+#  TODO(esteve): Disabling integration tests for now. Port them to Dashing.
+#  See https://gitlab.com/AutowareAuto/AutowareAuto/issues/89
+#  find_package(integration_tests REQUIRED)
+#    integration_tests(
+#    EXPECTED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/expected_outputs"
+#    COMMANDS
+#    "talker:::listener")
 endif()
 
 autoware_install(EXECUTABLES talker listener)

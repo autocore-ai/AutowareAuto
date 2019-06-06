@@ -55,7 +55,7 @@ public:
     const std::string & ip,
     const uint16_t port)
   : LifecycleNode(node_name),
-    m_pub_ptr(this->create_publisher<OutputT>(topic)),
+    m_pub_ptr(this->create_publisher<OutputT>(topic, rclcpp::QoS(10))),
     m_io_service(),
     m_udp_socket(m_io_service,
       boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port)) {}
@@ -72,10 +72,12 @@ public:
   : LifecycleNode(
       node_name,
       node_namespace,
-      rclcpp::contexts::default_context::get_global_default_context(),
-      {("__params:=" + param_file)},
-      {}),
-    m_pub_ptr(LifecycleNode::create_publisher<OutputT>(get_parameter("topic").as_string())),
+      rclcpp::NodeOptions()
+      .context(rclcpp::contexts::default_context::get_global_default_context())
+      .arguments({("__params:=" + param_file)})
+      .automatically_declare_parameters_from_overrides(true)),
+    m_pub_ptr(LifecycleNode::create_publisher<OutputT>(get_parameter("topic").as_string(),
+      rclcpp::QoS(10))),
     m_io_service(),
     m_udp_socket(m_io_service, boost::asio::ip::udp::endpoint(
         boost::asio::ip::address::from_string(get_parameter("ip").as_string()),

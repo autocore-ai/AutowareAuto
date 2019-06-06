@@ -1,4 +1,4 @@
-FROM osrf/ros:crystal-desktop
+FROM ros:dashing
 ARG CODENAME=bionic
 
 

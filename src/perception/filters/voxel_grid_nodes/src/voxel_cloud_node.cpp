@@ -15,6 +15,7 @@
 
 
 //lint -e537 NOLINT cpplint wants this due to std::make_unique
+#include <rclcpp/node_options.hpp>
 #include <voxel_grid_nodes/voxel_cloud_node.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
@@ -37,12 +38,14 @@ VoxelCloudNode::VoxelCloudNode(
 : LifecycleNode(
     node_name.c_str(),
     node_namespace.c_str(),
-    rclcpp::contexts::default_context::get_global_default_context(),
-    {(std::string{"__params:="} + param_file).c_str()},
-    {}),
+    rclcpp::NodeOptions()
+    .context(rclcpp::contexts::default_context::get_global_default_context())
+    .arguments({(std::string {"__params:="} +param_file).c_str()})
+    .automatically_declare_parameters_from_overrides(true)),
   m_sub_ptr(create_subscription<Message>(get_parameter("input_topic").as_string(),
-    std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>(get_parameter("downsample_topic").as_string())),
+    rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
+  m_pub_ptr(create_publisher<Message>(get_parameter("downsample_topic").as_string(),
+    rclcpp::QoS(10))),
   m_has_failed(false)
 {
   // Build config manually (messages only have default constructors)
@@ -72,8 +75,8 @@ VoxelCloudNode::VoxelCloudNode(
   const bool is_approximate)
 : LifecycleNode(node_name.c_str()),
   m_sub_ptr(create_subscription<Message>(sub_topic.c_str(),
-    std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>(pub_topic.c_str())),
+    rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
+  m_pub_ptr(create_publisher<Message>(pub_topic.c_str(), rclcpp::QoS(10))),
   m_has_failed(false)
 {
   init(cfg, is_approximate);

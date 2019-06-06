@@ -41,9 +41,10 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
 : LifecycleNode(
     node_name.c_str(),
     node_namespace.c_str(),
-    rclcpp::contexts::default_context::get_global_default_context(),
-    {(std::string{"__params:="} + param_file).c_str()},
-    {}),
+    rclcpp::NodeOptions()
+    .context(rclcpp::contexts::default_context::get_global_default_context())
+    .arguments({(std::string {"__params:="} +param_file).c_str()})
+    .automatically_declare_parameters_from_overrides(true)),
   m_classifier(ray_ground_classifier::Config{
           static_cast<float>(get_parameter("classifier.sensor_height_m").as_double()),
           static_cast<float>(get_parameter("classifier.max_local_slope_deg").as_double()),
@@ -71,9 +72,11 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_has_failed(false),
   m_timeout(std::chrono::milliseconds{get_parameter("cloud_timeout_ms").as_int()}),
   m_raw_sub_ptr(create_subscription<PointCloud2>(get_parameter("raw_topic").as_string(),
-    std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
-  m_ground_pub_ptr(create_publisher<PointCloud2>(get_parameter("ground_topic").as_string())),
-  m_nonground_pub_ptr(create_publisher<PointCloud2>(get_parameter("nonground_topic").as_string()))
+    rclcpp::QoS(10), std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
+  m_ground_pub_ptr(create_publisher<PointCloud2>(get_parameter("ground_topic").as_string(),
+    rclcpp::QoS(10))),
+  m_nonground_pub_ptr(create_publisher<PointCloud2>(get_parameter("nonground_topic").as_string(),
+    rclcpp::QoS(10)))
 {
   register_callbacks_preallocate();
 }
@@ -96,9 +99,11 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_has_failed(false),
   m_timeout(timeout),
   m_raw_sub_ptr(create_subscription<PointCloud2>(raw_topic.c_str(),
-    std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
-  m_ground_pub_ptr(create_publisher<PointCloud2>(ground_topic.c_str())),
-  m_nonground_pub_ptr(create_publisher<PointCloud2>(nonground_topic.c_str()))
+    rclcpp::QoS(10), std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
+  m_ground_pub_ptr(create_publisher<PointCloud2>(ground_topic.c_str(),
+    rclcpp::QoS(10))),
+  m_nonground_pub_ptr(create_publisher<PointCloud2>(nonground_topic.c_str(),
+    rclcpp::QoS(10)))
 {
   register_callbacks_preallocate();
 }

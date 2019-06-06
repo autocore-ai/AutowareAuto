@@ -52,13 +52,11 @@ public:
 
         // Put the message into a queue to be processed by the middleware.
         // This call is non-blocking.
-        pub_->publish(msg_);
+        pub_->publish(*msg_);
       };
 
     // Create a publisher with a custom Quality of Service profile.
-    rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_default;
-    custom_qos_profile.depth = 7;
-    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, custom_qos_profile);
+    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, rclcpp::QoS(7));
 
     // Use a timer to schedule periodic message publishing.
     timer_ = this->create_wall_timer(1s, publish_message);
