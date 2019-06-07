@@ -43,9 +43,11 @@ protected:
   std::unique_ptr<Config> cfg_ptr;
   std::array<PointXYZIF, 16U> obs_points1;
   std::array<PointXYZIF, 8U> ref_points1;
+  const std::size_t m_capacity;
 
 public:
-  VoxelAlgorithm()
+
+  VoxelAlgorithm() : m_capacity(10U)
   {
     // Initialize config
     PointXYZ min_point;
@@ -60,8 +62,7 @@ public:
     voxel_size.x = 1.0F;
     voxel_size.y = 1.0F;
     voxel_size.z = 1.0F;
-    const std::size_t capacity = 10U;
-    cfg_ptr = std::make_unique<Config>(min_point, max_point, voxel_size, capacity);
+    cfg_ptr = std::make_unique<Config>(min_point, max_point, voxel_size, m_capacity);
     // List of points
     obs_points1 = {
       make(-1.0F, -1.0F, -1.0F),  // voxel 0
@@ -163,7 +164,7 @@ TEST_F(CloudAlgorithm, approximate)
   this->ref_points1[7U] = this->make(0.5F, 0.5F, 0.5F);
   // initialize
   alg_ptr = std::make_unique<VoxelCloudApproximate>(*cfg_ptr);
-  // check empty
+  // check initial
   EXPECT_EQ(alg_ptr->get().width, 0U);
   // add points
   alg_ptr->insert(cloud1);

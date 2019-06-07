@@ -34,11 +34,6 @@ VoxelCloudBase::~VoxelCloudBase()
   // No base members
 }
 
-void VoxelCloudBase::reset_cloud_idx()
-{
-  m_point_cloud_idx = 0;
-}
-
 }  // namespace algorithm
 }  // namespace voxel_grid_nodes
 }  // namespace filters

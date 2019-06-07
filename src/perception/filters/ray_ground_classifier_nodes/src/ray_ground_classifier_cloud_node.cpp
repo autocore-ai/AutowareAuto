@@ -76,7 +76,9 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_ground_pub_ptr(create_publisher<PointCloud2>(get_parameter("ground_topic").as_string(),
     rclcpp::QoS(10))),
   m_nonground_pub_ptr(create_publisher<PointCloud2>(get_parameter("nonground_topic").as_string(),
-    rclcpp::QoS(10)))
+    rclcpp::QoS(10))),
+  m_ground_pc_idx{0},
+  m_nonground_pc_idx{0}
 {
   register_callbacks_preallocate();
 }
@@ -103,7 +105,9 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_ground_pub_ptr(create_publisher<PointCloud2>(ground_topic.c_str(),
     rclcpp::QoS(10))),
   m_nonground_pub_ptr(create_publisher<PointCloud2>(nonground_topic.c_str(),
-    rclcpp::QoS(10)))
+    rclcpp::QoS(10))),
+  m_ground_pc_idx{0},
+  m_nonground_pc_idx{0}
 {
   register_callbacks_preallocate();
 }
@@ -148,18 +152,19 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
       m_classifier.partition(m_aggregator.get_next_ray(), ground_blk, nonground_blk);
       // Add ray to point clouds
       for (auto & ground_point : ground_blk) {
-        if (!add_point_to_cloud(m_ground_msg, ground_point, m_point_cloud_idx)) {
+        if (!add_point_to_cloud(m_ground_msg, ground_point, m_ground_pc_idx)) {
           throw std::runtime_error("RayGroundClassifierNode: Overran ground msg point capacity");
         }
       }
-      reset_cloud_idx();
       for (auto & nonground_point : nonground_blk) {
-        if (!add_point_to_cloud(m_nonground_msg, nonground_point, m_point_cloud_idx)) {
+        if (!add_point_to_cloud(m_nonground_msg, nonground_point, m_nonground_pc_idx)) {
           throw std::runtime_error("RayGroundClassifierNode: Overran nonground msg point capacity");
         }
       }
-      reset_cloud_idx();
     }
+    // Resize the clouds down to their actual sizes.
+    autoware::common::lidar_utils::resize_pcl_msg(m_ground_msg, m_ground_pc_idx);
+    autoware::common::lidar_utils::resize_pcl_msg(m_nonground_msg, m_nonground_pc_idx);
     // publish: nonground first for the possible microseconds of latency
     m_nonground_pub_ptr->publish(m_nonground_msg);
     m_ground_pub_ptr->publish(m_ground_msg);
@@ -203,10 +208,8 @@ void RayGroundClassifierCloudNode::reset()
     (void)m_aggregator.get_next_ray();
   }
   // reset messages
-  m_nonground_msg.data.clear();
-  m_nonground_msg.width = 0U;
-  m_ground_msg.data.clear();
-  m_ground_msg.width = 0U;
+  autoware::common::lidar_utils::reset_pcl_msg(m_ground_msg, m_pcl_size, m_ground_pc_idx);
+  autoware::common::lidar_utils::reset_pcl_msg(m_nonground_msg, m_pcl_size, m_nonground_pc_idx);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifierCloudNode::register_callbacks_preallocate()
@@ -226,11 +229,6 @@ void RayGroundClassifierCloudNode::register_callbacks_preallocate()
   // initialize messages
   init_pcl_msg(m_ground_msg, m_frame_id.c_str(), m_pcl_size);
   init_pcl_msg(m_nonground_msg, m_frame_id.c_str(), m_pcl_size);
-}
-////////////////////////////////////////////////////////////////////////////////
-void RayGroundClassifierCloudNode::reset_cloud_idx()
-{
-  m_point_cloud_idx = 0;
 }
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

@@ -112,8 +112,8 @@ private:
   const std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<PointCloud2>> m_nonground_pub_ptr;
   /// \brief Read samples from the subscription
   void callback(const PointCloud2::SharedPtr msg);
-  void reset_cloud_idx();
-  int m_point_cloud_idx;
+  int m_ground_pc_idx;
+  int m_nonground_pc_idx;
 };  // class RayGroundFilterDriverNode
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

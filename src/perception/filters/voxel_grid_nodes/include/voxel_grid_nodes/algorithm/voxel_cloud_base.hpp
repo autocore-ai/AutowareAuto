@@ -55,9 +55,6 @@ public:
 protected:
   using PointXYZIF = autoware::perception::filters::voxel_grid::PointXYZIF;
 
-  /// \brief Resets the offset of the PointCloud2 iterators
-  void reset_cloud_idx();
-
   /// \brief The offset to be used with the PointCloud2 iterators
   int32_t m_point_cloud_idx{0};
 };  // VoxelCloudBase

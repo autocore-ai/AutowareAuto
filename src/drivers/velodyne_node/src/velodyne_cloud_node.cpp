@@ -98,14 +98,10 @@ bool VelodyneCloudNode::convert(
   const velodyne_driver::Vlp16Translator::Packet & pkt,
   sensor_msgs::msg::PointCloud2 & output)
 {
-  sensor_msgs::PointCloud2Modifier pc_modifier(output);
   // This handles the case when the below loop exited due to containing extra points
   if (m_published_cloud) {
     // reset the pointcloud
-    pc_modifier.clear();
-    m_point_cloud_idx = 0;
-    // resize back to the capacity for building a new pointcloud
-    pc_modifier.resize(m_cloud_size);
+    autoware::common::lidar_utils::reset_pcl_msg(output, m_cloud_size, m_point_cloud_idx);
 
     // deserialize remainder into pointcloud
     m_published_cloud = false;
@@ -135,8 +131,7 @@ bool VelodyneCloudNode::convert(
   }
   if (m_published_cloud) {
     // resize pointcloud down to its actual size
-    pc_modifier.resize(static_cast<size_t>(m_point_cloud_idx));
-    output.row_step = output.width * output.point_step;
+    autoware::common::lidar_utils::resize_pcl_msg(output, m_point_cloud_idx);
     output.header.stamp = this->now();
   }
 

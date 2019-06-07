@@ -22,23 +22,17 @@ void init_pcl_msg(
   const std::size_t size)
 {
   msg.height = 1U;
-  msg.fields.resize(4U);
-  msg.fields[0U].name = "x";
-  msg.fields[1U].name = "y";
-  msg.fields[2U].name = "z";
-  msg.fields[3U].name = "intensity";
-  msg.point_step = 0U;
-  for (uint32_t idx = 0U; idx < 4U; ++idx) {
-    msg.fields[idx].offset = static_cast<uint32_t>(idx * sizeof(float));
-    msg.fields[idx].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    msg.fields[idx].count = 1U;
-    msg.point_step += static_cast<uint32_t>(sizeof(float));
-  }
-  const std::size_t capacity = msg.point_step * size;
-  msg.data.reserve(capacity);
   msg.is_bigendian = false;
   msg.is_dense = false;
   msg.header.frame_id = frame_id;
+  // set the fields
+  sensor_msgs::PointCloud2Modifier modifier(msg);
+  modifier.setPointCloud2Fields(4U, "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
+  // allocate memory so that iterators can be used
+  modifier.resize(size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +77,29 @@ bool add_point_to_cloud(
     ret = true;
   }
   return ret;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void reset_pcl_msg(
+  sensor_msgs::msg::PointCloud2 & msg,
+  const std::size_t size,
+  int & point_cloud_idx)
+{
+  sensor_msgs::PointCloud2Modifier pc_modifier(msg);
+  pc_modifier.clear();
+  point_cloud_idx = 0;
+  pc_modifier.resize(size);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void resize_pcl_msg(
+  sensor_msgs::msg::PointCloud2 & msg,
+  const int new_size)
+{
+  sensor_msgs::PointCloud2Modifier pc_modifier(msg);
+  pc_modifier.resize(new_size);
 }
 
 }  // namespace lidar_utils

@@ -43,7 +43,8 @@ int32_t main(const int32_t argc, char * argv[])
     if (nullptr != arg) {
       node_namespace = arg;
     }
-    // TODO(christopher.ho) #1270apex_app
+    rclcpp::init(argc, argv);
+
     using
     autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
     const auto nd_ptr = std::make_shared<RayGroundClassifierCloudNode>(

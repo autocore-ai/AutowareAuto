@@ -3,7 +3,7 @@
 
 voxel_grid_cloud_node:
   ros__parameters:
-    input_topic: "points_raw"
+    input_topic: "test_velodyne_node_cloud_front"
     downsample_topic: "points_downsampled"
     is_approximate: false
     config:

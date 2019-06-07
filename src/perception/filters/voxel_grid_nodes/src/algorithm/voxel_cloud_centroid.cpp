@@ -57,9 +57,8 @@ void VoxelCloudCentroid::insert(const sensor_msgs::msg::PointCloud2 & msg)
 ////////////////////////////////////////////////////////////////////////////////
 const sensor_msgs::msg::PointCloud2 & VoxelCloudCentroid::get()
 {
-  m_cloud.width = 0U;
-  m_cloud.data.clear();
-  reset_cloud_idx();  // resetting the index for the pointcloud iterators
+  // resetting the index for the pointcloud iterators
+  autoware::common::lidar_utils::reset_pcl_msg(m_cloud, m_grid.capacity(), m_point_cloud_idx);
 
   for (const auto & it : m_grid) {
     const auto & pt = it.second.get();
@@ -68,6 +67,8 @@ const sensor_msgs::msg::PointCloud2 & VoxelCloudCentroid::get()
     // insert will throw if the grid is at capacity
   }
   m_grid.clear();
+  autoware::common::lidar_utils::resize_pcl_msg(m_cloud, m_point_cloud_idx);
+
   return m_cloud;
 }
 }  // namespace algorithm
