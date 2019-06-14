@@ -92,7 +92,7 @@ private:
   // a point cloud in the middle of processing it
   uint32_t m_remainder_start_idx;
   // keeps track of the constructed point cloud to continue growing it with new data
-  int m_point_cloud_idx;
+  uint32_t m_point_cloud_idx;
   const std::string m_frame_id;
   const std::size_t m_cloud_size;
 };  // class VelodyneCloudNode

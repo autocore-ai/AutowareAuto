@@ -56,7 +56,7 @@ protected:
   using PointXYZIF = autoware::perception::filters::voxel_grid::PointXYZIF;
 
   /// \brief The offset to be used with the PointCloud2 iterators
-  int32_t m_point_cloud_idx{0};
+  uint32_t m_point_cloud_idx{0};
 };  // VoxelCloudBase
 }  // namespace algorithm
 }  // namespace voxel_grid_nodes
