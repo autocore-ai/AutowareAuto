@@ -38,16 +38,16 @@ LIDAR_UTILS_PUBLIC void init_pcl_msg(
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
   const autoware::common::lidar_utils::PointXYZIF & pt,
-  int & point_cloud_idx);
+  uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC void reset_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::size_t size,
-  int & point_cloud_idx);
+  uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC void resize_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
-  const int new_size);
+  const std::size_t new_size);
 
 }  // namespace lidar_utils
 }  // namespace common

@@ -40,7 +40,7 @@ void init_pcl_msg(
 bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
   const autoware::common::lidar_utils::PointXYZIF & pt,
-  int & point_cloud_idx)
+  uint32_t & point_cloud_idx)
 {
   bool ret = false;
 
@@ -84,7 +84,7 @@ bool add_point_to_cloud(
 void reset_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::size_t size,
-  int & point_cloud_idx)
+  uint32_t & point_cloud_idx)
 {
   sensor_msgs::PointCloud2Modifier pc_modifier(msg);
   pc_modifier.clear();
@@ -96,7 +96,7 @@ void reset_pcl_msg(
 
 void resize_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
-  const int new_size)
+  const std::size_t new_size)
 {
   sensor_msgs::PointCloud2Modifier pc_modifier(msg);
   pc_modifier.resize(new_size);
