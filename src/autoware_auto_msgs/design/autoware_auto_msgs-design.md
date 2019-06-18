@@ -1,5 +1,5 @@
-autoware_auto_msgs design
-=========================
+autoware_auto_msgs
+==================
 
 [TOC]
 
@@ -27,7 +27,7 @@ geometry_msgs/Point32[4] corners
 float32 value
 uint32 label
 ```
-# TODO refactor and add rationale
+<!-- # TODO refactor and add rationale -->
 
 ## BoundingBoxArray
 
@@ -37,7 +37,7 @@ BoundingBox[256] boxes
 uint32 size
 uint32 CAPACITY=256
 ```
-# TODO refactor and add rationale
+<!-- # TODO refactor and add rationale -->
 
 ## DiagnosticHeader
 
