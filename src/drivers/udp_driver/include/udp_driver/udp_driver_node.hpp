@@ -60,28 +60,24 @@ public:
     m_udp_socket(m_io_service,
       boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port)) {}
 
-  /// \brief Constructor with parameter file
+  /// \brief Constructor
   /// \param[in] node_name Name of node for rclcpp internals
   /// \param[in] node_namespace Namespace of this node
-  /// \param[in] param_file Absolute path to parameter file, which must have topic, ip and port
-  /// defined as string, string and int respectively
   UdpDriverNode(
     const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & param_file)
+    const std::string & node_namespace)
   : LifecycleNode(
       node_name,
       node_namespace,
-      rclcpp::NodeOptions()
-      .context(rclcpp::contexts::default_context::get_global_default_context())
-      .arguments({("__params:=" + param_file)})
-      .automatically_declare_parameters_from_overrides(true)),
-    m_pub_ptr(LifecycleNode::create_publisher<OutputT>(get_parameter("topic").as_string(),
+      rclcpp::NodeOptions()),
+    // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
+    m_pub_ptr(
+      LifecycleNode::create_publisher<OutputT>(declare_parameter("topic").get<std::string>(),
       rclcpp::QoS(10))),
     m_io_service(),
     m_udp_socket(m_io_service, boost::asio::ip::udp::endpoint(
-        boost::asio::ip::address::from_string(get_parameter("ip").as_string()),
-        static_cast<uint16_t>(get_parameter("port").as_int()))) {}
+        boost::asio::ip::address::from_string(declare_parameter("ip").get<std::string>()),
+        static_cast<uint16_t>(declare_parameter("port").get<uint16_t>()))) {}
 
 
   // brief Main loop: receives data from UDP, publishes to the given topic

@@ -18,7 +18,6 @@
 #include <lifecycle_msgs/msg/state.hpp>
 #include <lifecycle_msgs/msg/transition.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -27,34 +26,11 @@
 int32_t main(const int32_t argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  boost::filesystem::path default_config_path = boost::filesystem::absolute(argv[0]).parent_path() /
-    "param" / "vlp16_lexus_centroid.param.yaml";
 
   int32_t ret = 0;
   try {
-    const char * config_file = default_config_path.string().c_str();
-    const char * arg = rcutils_cli_get_option(argv, &argv[argc], "--config_file");
-    if (nullptr != arg) {
-      config_file = arg;
-    }
-    const char * node_name = "voxel_grid_cloud_node";
-    arg = rcutils_cli_get_option(argv, &argv[argc], "--node_name");
-    if (nullptr != arg) {
-      node_name = arg;
-    }
-    const char * node_namespace = "";
-    arg = rcutils_cli_get_option(argv, &argv[argc], "--node_namespace");
-    if (nullptr != arg) {
-      node_namespace = arg;
-    }
-
-
     using autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode;
-    const auto nd_ptr = std::make_shared<VoxelCloudNode>(
-      node_name,
-      node_namespace,
-      config_file);
-
+    const auto nd_ptr = std::make_shared<VoxelCloudNode>("voxel_grid_cloud_node");
 
     if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != nd_ptr->configure().id()) {
       throw std::runtime_error("Could not configure VoxelCloudNode!");

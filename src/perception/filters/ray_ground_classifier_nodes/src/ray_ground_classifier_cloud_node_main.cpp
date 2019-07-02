@@ -20,37 +20,15 @@
 
 #include "ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp"
 
-#define DEFAULT_CONFIG \
-  CMAKE_INSTALL_PREFIX "/" "share/ray_ground_classifier_nodes/vlp16_lexus.param.yaml"
-
-
 int32_t main(const int32_t argc, char * argv[])
 {
   int32_t ret = 0;
   try {
-    const char * config_file = DEFAULT_CONFIG;
-    const char * arg = rcutils_cli_get_option(argv, &argv[argc], "--config_file");
-    if (nullptr != arg) {
-      config_file = arg;
-    }
-    const char * node_name = "ray_ground_classifier";
-    arg = rcutils_cli_get_option(argv, &argv[argc], "--node_name");
-    if (nullptr != arg) {
-      node_name = arg;
-    }
-    const char * node_namespace = "";
-    arg = rcutils_cli_get_option(argv, &argv[argc], "--node_namespace");
-    if (nullptr != arg) {
-      node_namespace = arg;
-    }
     rclcpp::init(argc, argv);
 
     using
     autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
-    const auto nd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
-      node_name,
-      node_namespace,
-      config_file);
+    const auto nd_ptr = std::make_shared<RayGroundClassifierCloudNode>("ray_ground_classifier");
     if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != nd_ptr->configure().id()) {
       throw std::runtime_error("Could not configure RayGroundClassifierCloudNode!");
     }

@@ -58,32 +58,31 @@ VelodyneCloudNode::VelodyneCloudNode(
 ////////////////////////////////////////////////////////////////////////////////
 VelodyneCloudNode::VelodyneCloudNode(
   const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & param_file)
-: UdpDriverNode(node_name, node_namespace, param_file),
+  const std::string & node_namespace)
+: UdpDriverNode(node_name, node_namespace),
   m_translator(
       {
-        static_cast<float>(get_parameter("rpm").as_int()),
+        static_cast<float>(declare_parameter("rpm").get<int>()),
         velodyne_driver::make_point(
-          static_cast<float>(get_parameter("translation.dx_m").as_double()),
-          static_cast<float>(get_parameter("translation.dy_m").as_double()),
-          static_cast<float>(get_parameter("translation.dz_m").as_double())
+          static_cast<float>(declare_parameter("translation.dx_m").get<float>()),
+          static_cast<float>(declare_parameter("translation.dy_m").get<float>()),
+          static_cast<float>(declare_parameter("translation.dz_m").get<float>())
         ),
         velodyne_driver::make_point(
-          static_cast<float>(get_parameter("rotation.roll_rad").as_double()),
-          static_cast<float>(get_parameter("rotation.pitch_rad").as_double()),
-          static_cast<float>(get_parameter("rotation.yaw_rad").as_double())
+          static_cast<float>(declare_parameter("rotation.roll_rad").get<float>()),
+          static_cast<float>(declare_parameter("rotation.pitch_rad").get<float>()),
+          static_cast<float>(declare_parameter("rotation.yaw_rad").get<float>())
         ),
-        static_cast<float>(get_parameter("filter.min_radius_m").as_double()),
-        static_cast<float>(get_parameter("filter.max_radius_m").as_double()),
-        static_cast<float>(get_parameter("filter.min_angle_deg").as_double()),
-        static_cast<float>(get_parameter("filter.max_angle_deg").as_double())
+        static_cast<float>(declare_parameter("filter.min_radius_m").get<float>()),
+        static_cast<float>(declare_parameter("filter.max_radius_m").get<float>()),
+        static_cast<float>(declare_parameter("filter.min_angle_deg").get<float>()),
+        static_cast<float>(declare_parameter("filter.max_angle_deg").get<float>())
       }),
   m_published_cloud(false),
   m_remainder_start_idx(0U),
   m_point_cloud_idx(0),
-  m_frame_id(get_parameter("frame_id").as_string().c_str()),
-  m_cloud_size(static_cast<std::size_t>(get_parameter("cloud_size").as_int()))
+  m_frame_id(declare_parameter("frame_id").get<std::string>().c_str()),
+  m_cloud_size(static_cast<std::size_t>(declare_parameter("cloud_size").get<std::size_t>()))
 {
   m_point_block.reserve(autoware::drivers::velodyne_driver::Vlp16Translator::POINT_BLOCK_CAPACITY);
 }

@@ -26,7 +26,6 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(voxel_grid REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem)
 
 # includes
 include_directories(include)
@@ -55,8 +54,8 @@ ament_target_dependencies(${PROJECT_NAME}
 set(VOXEL_CLOUD_EXE voxel_grid_cloud_node_exe)
 add_executable(${VOXEL_CLOUD_EXE} src/voxel_cloud_main.cpp)
 autoware_set_compile_options(${VOXEL_CLOUD_EXE})
-target_link_libraries(${VOXEL_CLOUD_EXE} ${PROJECT_NAME} ${Boost_LIBRARIES})
-ament_target_dependencies(${VOXEL_CLOUD_EXE} "rclcpp" "rclcpp_lifecycle" "Boost")
+target_link_libraries(${VOXEL_CLOUD_EXE} ${PROJECT_NAME})
+ament_target_dependencies(${VOXEL_CLOUD_EXE} "rclcpp" "rclcpp_lifecycle")
 target_compile_definitions(${VOXEL_CLOUD_EXE} PRIVATE
     CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 

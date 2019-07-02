@@ -33,49 +33,51 @@ EuclideanClusterNode::EuclideanClusterNode(
   const std::string & node_name,
   const std::string & node_namespace)
 : Node(node_name.c_str(), node_namespace.c_str()),
-  m_cloud_sub_ptr{create_subscription<PointCloud2>(get_parameter("cloud_topic").as_string(),
+  m_cloud_sub_ptr{create_subscription<PointCloud2>(
+      declare_parameter("cloud_topic").get<std::string>(),
       rclcpp::QoS(10),
       [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
-  m_cluster_pub_ptr{get_parameter("cluster_topic").as_string().empty() ? nullptr :
-  create_publisher<Clusters>(get_parameter("cluster_topic").as_string(), rclcpp::QoS(10))},
-// m_box_pub_ptr{get_parameter("box_topic").as_string().empty() ? nullptr :
-//   create_publisher<BoundingBoxArray>(get_parameter("box_topic").as_string())},
+  m_cluster_pub_ptr{declare_parameter("cluster_topic").get<std::string>().empty() ? nullptr :
+  create_publisher<Clusters>(
+    declare_parameter("cluster_topic").get<std::string>(), rclcpp::QoS(10))},
+// m_box_pub_ptr{declare_parameter("box_topic").get<std::string>().empty() ? nullptr :
+//   create_publisher<BoundingBoxArray>(declare_parameter("box_topic").get<std::string>())},
 m_cluster_alg{
   euclidean_cluster::Config{
-    get_parameter("cluster.frame_id").as_string().c_str(),
-    static_cast<std::size_t>(get_parameter("cluster.min_cluster_size").as_int()),
-    static_cast<std::size_t>(get_parameter("cluster.max_num_clusters").as_int())
+    declare_parameter("cluster.frame_id").get<std::string>().c_str(),
+    static_cast<std::size_t>(declare_parameter("cluster.min_cluster_size").get<std::size_t>()),
+    static_cast<std::size_t>(declare_parameter("cluster.max_num_clusters").get<std::size_t>())
   },
   euclidean_cluster::HashConfig{
-    static_cast<float32_t>(get_parameter("hash.min_x").as_double()),
-    static_cast<float32_t>(get_parameter("hash.max_x").as_double()),
-    static_cast<float32_t>(get_parameter("hash.min_y").as_double()),
-    static_cast<float32_t>(get_parameter("hash.max_y").as_double()),
-    static_cast<float32_t>(get_parameter("hash.side_length").as_double()),
-    static_cast<std::size_t>(get_parameter("max_cloud_size").as_int())
+    static_cast<float32_t>(declare_parameter("hash.min_x").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("hash.max_x").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("hash.min_y").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("hash.max_y").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("hash.side_length").get<float32_t>()),
+    static_cast<std::size_t>(declare_parameter("max_cloud_size").get<std::size_t>())
   }
 },
 m_clusters{},
 // m_boxes{},
 m_voxel_ptr{nullptr},  // Because voxel config's Point types don't accept positional arguments
-m_use_lfit{get_parameter("use_lfit").as_bool()},
-m_use_z{get_parameter("use_z").as_bool()}
+m_use_lfit{declare_parameter("use_lfit").get<bool>()},
+m_use_z{declare_parameter("use_z").get<bool>()}
 {
   init(m_cluster_alg.get_config());
   // Initialize voxel grid
-  if (get_parameter("downsample").as_bool()) {
+  if (declare_parameter("downsample").get<bool>()) {
     filters::voxel_grid::PointXYZ min_point;
     filters::voxel_grid::PointXYZ max_point;
     filters::voxel_grid::PointXYZ voxel_size;
-    min_point.x = static_cast<float32_t>(get_parameter("voxel.min_point.x").as_double());
-    min_point.y = static_cast<float32_t>(get_parameter("voxel.min_point.y").as_double());
-    min_point.z = static_cast<float32_t>(get_parameter("voxel.min_point.z").as_double());
-    max_point.x = static_cast<float32_t>(get_parameter("voxel.max_point.x").as_double());
-    max_point.y = static_cast<float32_t>(get_parameter("voxel.max_point.y").as_double());
-    max_point.z = static_cast<float32_t>(get_parameter("voxel.max_point.z").as_double());
-    voxel_size.x = static_cast<float32_t>(get_parameter("voxel.voxel_size.x").as_double());
-    voxel_size.y = static_cast<float32_t>(get_parameter("voxel.voxel_size.y").as_double());
-    voxel_size.z = static_cast<float32_t>(get_parameter("voxel.voxel_size.z").as_double());
+    min_point.x = static_cast<float32_t>(declare_parameter("voxel.min_point.x").get<float32_t>());
+    min_point.y = static_cast<float32_t>(declare_parameter("voxel.min_point.y").get<float32_t>());
+    min_point.z = static_cast<float32_t>(declare_parameter("voxel.min_point.z").get<float32_t>());
+    max_point.x = static_cast<float32_t>(declare_parameter("voxel.max_point.x").get<float32_t>());
+    max_point.y = static_cast<float32_t>(declare_parameter("voxel.max_point.y").get<float32_t>());
+    max_point.z = static_cast<float32_t>(declare_parameter("voxel.max_point.z").get<float32_t>());
+    voxel_size.x = static_cast<float32_t>(declare_parameter("voxel.voxel_size.x").get<float32_t>());
+    voxel_size.y = static_cast<float32_t>(declare_parameter("voxel.voxel_size.y").get<float32_t>());
+    voxel_size.z = static_cast<float32_t>(declare_parameter("voxel.voxel_size.z").get<float32_t>());
     // Aggressive downsampling if not using z
     if (!m_use_z) {
       voxel_size.z = (max_point.z - min_point.z) + 1.0F;
@@ -87,7 +89,7 @@ m_use_z{get_parameter("use_z").as_bool()}
               min_point,
               max_point,
               voxel_size,
-              static_cast<std::size_t>(get_parameter("max_cloud_size").as_int())
+              static_cast<std::size_t>(declare_parameter("max_cloud_size").get<std::size_t>())
             });
   }
 }

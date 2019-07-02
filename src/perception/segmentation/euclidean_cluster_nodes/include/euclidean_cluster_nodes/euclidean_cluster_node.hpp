@@ -55,6 +55,7 @@ public:
   EuclideanClusterNode(
     const std::string & node_name,
     const std::string & node_namespace = "");
+
   /// \brief Explicit parameter constructor
   /// \param[in] node_name Name of the node
   /// \param[in] node_namespace Namespace of the node

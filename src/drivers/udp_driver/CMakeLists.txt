@@ -54,4 +54,6 @@ if(BUILD_TESTING)
     autoware_static_code_analysis()
 endif()
 
-ament_package()
+ament_package(
+    CONFIG_EXTRAS_POST "udp_driver-extras.cmake"
+)

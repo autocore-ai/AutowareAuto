@@ -23,13 +23,8 @@ find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(velodyne_driver REQUIRED)
 find_package(udp_driver REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system program_options filesystem)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lidar_utils REQUIRED)
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
 include_directories(include)
 
@@ -46,7 +41,6 @@ ament_target_dependencies(${CLOUD_LIB}
   "velodyne_driver"
   "udp_driver"
   "sensor_msgs")
-target_link_libraries(${CLOUD_LIB} ${Boost_LIBRARIES})
 
 # generate executable for ros1-style standalone nodes
 file(COPY param/vlp16_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
@@ -54,7 +48,6 @@ set(CLOUD_EXEC "velodyne_cloud_node_exe")
 add_executable(${CLOUD_EXEC} src/velodyne_cloud_node_main.cpp)
 autoware_set_compile_options(${CLOUD_EXEC})
 target_link_libraries(${CLOUD_EXEC} ${CLOUD_LIB})
-ament_target_dependencies(${CLOUD_EXEC} "Boost")
 
 if(BUILD_TESTING)
     autoware_static_code_analysis()

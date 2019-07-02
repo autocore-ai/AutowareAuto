@@ -24,7 +24,7 @@ int32_t main(const int32_t argc, char ** const argv)
   try {
     rclcpp::init(argc, argv);
     using autoware::perception::segmentation::euclidean_cluster_nodes::EuclideanClusterNode;
-    const auto nd_ptr = std::make_shared<EuclideanClusterNode>("euclidean_cluster_node");
+    const auto nd_ptr = std::make_shared<EuclideanClusterNode>("euclidean_cluster_cloud_node");
 
     rclcpp::spin(nd_ptr);
 

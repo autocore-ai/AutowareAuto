@@ -43,11 +43,9 @@ public:
   /// \brief Parameter constructor
   /// \param[in] node_name Name of the node, controls which parameter set from the file is matched
   /// \param[in] node_namespace Name of the node's namespace, controls which parameters are used
-  /// \param[in] param_file Path to configuration file
   VoxelCloudNode(
     const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & param_file);
+    const std::string & node_namespace = "");
 
   /// \brief Explicit constructor
   /// \param[in] node_name Name of the node

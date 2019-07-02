@@ -36,15 +36,12 @@ using autoware::common::lidar_utils::init_pcl_msg;
 
 RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & param_file)
+  const std::string & node_namespace)
 : LifecycleNode(
     node_name.c_str(),
     node_namespace.c_str(),
-    rclcpp::NodeOptions()
-    .context(rclcpp::contexts::default_context::get_global_default_context())
-    .arguments({(std::string {"__params:="} +param_file).c_str()})
-    .automatically_declare_parameters_from_overrides(true)),
+    rclcpp::NodeOptions()),
+  // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
   m_classifier(ray_ground_classifier::Config{
           static_cast<float>(get_parameter("classifier.sensor_height_m").as_double()),
           static_cast<float>(get_parameter("classifier.max_local_slope_deg").as_double()),

@@ -67,11 +67,9 @@ public:
   /// \brief Parameter file constructor
   /// \param[in] node_name Name of this node
   /// \param[in] node_namespace Namespace for this node
-  /// \param[in] param_file Absolute path to parameter file
   VelodyneCloudNode(
     const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & param_file);
+    const std::string & node_namespace = "");
 
 protected:
   void init_output(sensor_msgs::msg::PointCloud2 & output) override;

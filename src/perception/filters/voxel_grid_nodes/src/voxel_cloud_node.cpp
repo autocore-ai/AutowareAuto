@@ -33,15 +33,12 @@ namespace voxel_grid_nodes
 ////////////////////////////////////////////////////////////////////////////////
 VoxelCloudNode::VoxelCloudNode(
   const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & param_file)
+  const std::string & node_namespace)
 : LifecycleNode(
     node_name.c_str(),
     node_namespace.c_str(),
-    rclcpp::NodeOptions()
-    .context(rclcpp::contexts::default_context::get_global_default_context())
-    .arguments({(std::string {"__params:="} +param_file).c_str()})
-    .automatically_declare_parameters_from_overrides(true)),
+    rclcpp::NodeOptions()),
+  // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
   m_sub_ptr(create_subscription<Message>(get_parameter("input_topic").as_string(),
     rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
   m_pub_ptr(create_publisher<Message>(get_parameter("downsample_topic").as_string(),
