@@ -158,12 +158,6 @@ float PointXYZIFR::get_z() const
   return m_point.z;
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool PointXYZIFR::operator<(const PointXYZIFR & rhs) const
-{
-  return (fabsf(get_r() - rhs.get_r()) > FEPS) ?
-         (get_r() < rhs.get_r()) : (get_z() < rhs.get_z());
-}
-////////////////////////////////////////////////////////////////////////////////
 const PointXYZIF * PointXYZIFR::get_point_pointer() const
 {
   return &m_point;

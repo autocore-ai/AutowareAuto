@@ -151,6 +151,8 @@ private:
 ///        projected radial distance from the sensor
 class RAY_GROUND_CLASSIFIER_PUBLIC PointXYZIFR
 {
+  friend bool operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept;
+
 public:
   /// \brief Default constructor
   PointXYZIFR() = default;
@@ -164,11 +166,6 @@ public:
   /// \return The height of the point
   float get_z() const;
 
-  /// \brief Comparison operator for default sorting
-  /// \param[in] rhs Right hand side of comparison
-  /// \return True if lhs < rhs: if lhs.r < rhs.r, if nearly same radius then lhs.z < rhs.z
-  bool operator<(const PointXYZIFR & rhs) const;
-
   /// \brief Get address-of core point
   /// \return Pointer to internally stored point
   const PointXYZIF * get_point_pointer() const;
@@ -179,6 +176,16 @@ private:
   PointXYZIF m_point;
   float m_r_xy;
 };  // class PointXYZIFR
+
+/// \brief Comparison operator for default sorting
+/// \param[in] lhs Left hand side of comparison
+/// \param[in] rhs Right hand side of comparison
+/// \return True if lhs < rhs: if lhs.r < rhs.r, if nearly same radius then lhs.z < rhs.z
+inline bool operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept
+{
+  return (fabsf(lhs.m_r_xy - rhs.m_r_xy) > autoware::common::lidar_utils::FEPS) ?
+         (lhs.m_r_xy < rhs.m_r_xy) : (lhs.m_point.z < rhs.m_point.z);
+}
 
 using Ray = std::vector<PointXYZIFR>;
 
