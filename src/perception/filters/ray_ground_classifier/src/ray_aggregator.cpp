@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "lidar_utils/lidar_utils.hpp"
 #include "ray_ground_classifier/ray_aggregator.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
@@ -194,7 +194,7 @@ std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
   if ((fabsf(x) > autoware::common::lidar_utils::FEPS) ||
     (fabsf(y) > autoware::common::lidar_utils::FEPS))
   {
-    const float th = atan2f(y, x);
+    const float th = autoware::common::lidar_utils::fast_atan2(y, x);
     idx = th - m_cfg.get_min_angle();
     if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
       // Case where receptive field crosses the +PI/-PI singularity

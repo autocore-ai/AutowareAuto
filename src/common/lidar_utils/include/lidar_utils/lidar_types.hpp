@@ -19,6 +19,8 @@ namespace lidar_utils
 {
 /// pi = tau / 2
 constexpr float PI = 3.14159265359F;
+/// pi/2
+constexpr float PI_2 = 1.5707963267948966F;
 /// tau = 2 pi
 constexpr float TAU = 6.283185307179586476925286766559F;
 /// arbitrary small constant: 1.0E-6F

@@ -17,6 +17,7 @@ include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   include/lidar_utils/point_cloud_utils.hpp
   include/lidar_utils/lidar_types.hpp
+  include/lidar_utils/lidar_utils.hpp
   src/point_cloud_utils.cpp)
 
 autoware_set_compile_options(${PROJECT_NAME})
@@ -29,6 +30,15 @@ ament_target_dependencies(${PROJECT_NAME}
 if(BUILD_TESTING)
     # run linters
     autoware_static_code_analysis()
+
+    find_package(ament_cmake_gtest REQUIRED)
+
+    ament_add_gtest(test_fast_atan2
+      test/src/test_fast_atan2.cpp
+    )
+    target_include_directories(test_fast_atan2
+      PRIVATE "include"
+    )
 endif()
 
 autoware_install(
