@@ -4,7 +4,7 @@
   <name>autoware_auto_msgs</name>
   <version>0.1.0</version>
   <description>Interfaces between core Autoware.Auto components</description>
-  <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
+  <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <license>Apache 2</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

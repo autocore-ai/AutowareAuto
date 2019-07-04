@@ -4,7 +4,7 @@
   <name>autoware_examples</name>
   <version>0.0.0</version>
   <description>Examples and configuration files for Autoware.Auto</description>
-  <maintainer email="dejan@apex.ai">Dejan Pangercic</maintainer>
+  <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

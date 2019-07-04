@@ -4,7 +4,7 @@
   <name>autoware_create_pkg</name>
   <version>0.0.1</version>
   <description>A command line tool to create a boiler-plate package</description>
-  <maintainer email="jp.samper@apex.ai">Juan Pablo Samper</maintainer>
+  <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <license>Apache 2.0</license>
 
   <test_depend>ament_copyright</test_depend>

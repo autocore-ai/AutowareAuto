@@ -4,7 +4,7 @@
     <name>voxel_grid</name>
     <version>0.0.1</version>
     <description>voxel grid filters</description>
-    <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
+    <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>

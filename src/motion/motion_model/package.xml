@@ -4,7 +4,7 @@
     <name>motion_model</name>
     <version>0.0.1</version>
     <description>implementation of motion models for prediction</description>
-    <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
+    <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2.0</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>

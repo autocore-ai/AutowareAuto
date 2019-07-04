@@ -4,7 +4,7 @@
     <name>lidar_utils</name>
     <version>0.0.1</version>
     <description>Common utility functions and classes for point clouds</description>
-    <maintainer email="christopher.ho@apex.ai">Christopher Ho</maintainer>
+    <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apex.AI License</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>

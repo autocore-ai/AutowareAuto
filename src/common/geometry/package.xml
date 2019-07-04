@@ -4,7 +4,7 @@
     <name>geometry</name>
     <version>0.0.1</version>
     <description>Geometry related algorithms</description>
-    <maintainer email="opensource@apex.ai">Apex.AI</maintainer>
+    <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>

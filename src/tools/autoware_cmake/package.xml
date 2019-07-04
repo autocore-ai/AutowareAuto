@@ -4,7 +4,7 @@
   <name>autoware_cmake</name>
   <version>0.0.0</version>
   <description>Import the compiler settings defined for Autoware.Auto</description>
-  <maintainer email="jp.samper@apex.ai">Juan Pablo Samper</maintainer>
+  <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake_core</buildtool_depend>
