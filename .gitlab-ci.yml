@@ -105,7 +105,7 @@ coverage:
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
     - 'lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total'
-    - 'lcov --config-file .lcovrc -r lcov.total "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" -o lcov.total.filtered'
+    - 'lcov --config-file .lcovrc -r lcov.total "*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*" -o lcov.total.filtered'
     - 'genhtml --config-file .lcovrc -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage'
   artifacts:
     name: "$CI_JOB_NAME"
