@@ -1,7 +1,7 @@
 # config/vlp16_test.param.yaml
 ---
 
-vlp16_test_node:
+vlp16_driver_node:
   ros__parameters:
     ip: "127.0.0.1"
     port: 2368

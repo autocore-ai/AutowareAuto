@@ -38,6 +38,7 @@ ros-dashing-rclcpp-lifecycle
 ros-dashing-rcutils
 ros-dashing-rmw
 ros-dashing-rmw-implementation-cmake
+ros-dashing-rviz2
 ros-dashing-sensor-msgs
 ros-dashing-std-msgs
 shellcheck

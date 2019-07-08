@@ -9,4 +9,5 @@ For an in-depth review of Autoware.Auto features, see [tutorials](@ref tutorials
 - @subpage example-howto
 - @subpage integration-testing
 - @subpage how-to-write-tests-and-measure-coverage
+- @subpage perception-stack
 - @subpage ros1_bridge_title
