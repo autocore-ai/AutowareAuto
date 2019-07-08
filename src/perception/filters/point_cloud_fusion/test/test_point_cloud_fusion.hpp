@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 class TestPCF : public ::testing::Test
 {

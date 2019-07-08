@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <tf2_ros/buffer_interface.h>  // TODO(esteve): Workaround for https://github.com/ros2/geometry2/pull/126
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <point_cloud_fusion/point_cloud_transform.hpp>
 #include <memory>

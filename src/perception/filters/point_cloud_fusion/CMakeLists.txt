@@ -27,7 +27,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-#find_package(tf2_sensor_msgs REQUIRED)
+find_package(tf2_sensor_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 include_directories(
@@ -52,6 +52,7 @@ ament_target_dependencies(${PC_FUSION_LIB}
   "message_filters"
   "tf2_ros"
   "tf2_geometry_msgs"
+  "tf2_sensor_msgs"
 )
 #copy the param file into the build directory
 file(COPY param/pc_fusion.example.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")
