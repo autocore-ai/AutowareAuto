@@ -19,6 +19,7 @@
 #ifndef RAY_GROUND_CLASSIFIER__RAY_GROUND_CLASSIFIER_HPP_
 #define RAY_GROUND_CLASSIFIER__RAY_GROUND_CLASSIFIER_HPP_
 
+#include <autoware_auto_algorithm/algorithm.hpp>
 #include <lidar_utils/lidar_types.hpp>
 #include <ray_ground_classifier/ray_ground_point_classifier.hpp>
 
@@ -121,6 +122,9 @@ private:
 
   /// worker array
   Ray m_sort_array;
+
+  /// Iterative quick sorter for rays
+  autoware::common::algorithm::QuickSorter<Ray> m_ray_sorter;
 
   /// actual ground filter
   RayGroundPointClassifier m_point_classifier;

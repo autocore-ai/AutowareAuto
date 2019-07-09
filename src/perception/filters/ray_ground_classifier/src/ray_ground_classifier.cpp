@@ -36,6 +36,7 @@ namespace ray_ground_classifier
 ////////////////////////////////////////////////////////////////////////////////
 RayGroundClassifier::RayGroundClassifier(const Config & cfg)
 : m_sort_array(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY),
+  m_ray_sorter(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY),
   m_point_classifier(cfg),
   m_min_height_m(cfg.get_min_height()),
   m_max_height_m(cfg.get_max_height())
@@ -119,8 +120,7 @@ void RayGroundClassifier::structured_partition(
 void RayGroundClassifier::sort_ray()
 {
   // sort by radial distance
-  // partial sort is 2.5 to 4x slower than std::sort, but it's not recursive
-  std::partial_sort(m_sort_array.begin(), m_sort_array.end(), m_sort_array.end());
+  m_ray_sorter.sort(m_sort_array.begin(), m_sort_array.end());
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifier::insert(PointBlock & block, const PointXYZIF & pt)
