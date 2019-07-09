@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include "lidar_utils/lidar_types.hpp"
+#include "lidar_utils/point_cloud_utils.hpp"
 #include "udp_driver/udp_driver_node.hpp"
 #include "velodyne_driver/vlp16_translator.hpp"
 #include "velodyne_node/visibility_control.hpp"
@@ -91,6 +92,7 @@ private:
   uint32_t m_remainder_start_idx;
   // keeps track of the constructed point cloud to continue growing it with new data
   uint32_t m_point_cloud_idx;
+  autoware::common::lidar_utils::PointCloudIts m_point_cloud_its;
   const std::string m_frame_id;
   const std::size_t m_cloud_size;
 };  // class VelodyneCloudNode

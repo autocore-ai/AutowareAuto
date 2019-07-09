@@ -149,19 +149,21 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
       m_classifier.partition(m_aggregator.get_next_ray(), ground_blk, nonground_blk);
       // Add ray to point clouds
       for (auto & ground_point : ground_blk) {
-        if (!add_point_to_cloud(m_ground_msg, ground_point, m_ground_pc_idx)) {
+        if (!add_point_to_cloud(m_ground_pc_its, ground_point, m_ground_pc_idx)) {
           throw std::runtime_error("RayGroundClassifierNode: Overran ground msg point capacity");
         }
       }
       for (auto & nonground_point : nonground_blk) {
-        if (!add_point_to_cloud(m_nonground_msg, nonground_point, m_nonground_pc_idx)) {
+        if (!add_point_to_cloud(m_nonground_pc_its, nonground_point, m_nonground_pc_idx)) {
           throw std::runtime_error("RayGroundClassifierNode: Overran nonground msg point capacity");
         }
       }
     }
     // Resize the clouds down to their actual sizes.
     autoware::common::lidar_utils::resize_pcl_msg(m_ground_msg, m_ground_pc_idx);
+    m_ground_pc_its.reset(m_ground_msg, m_ground_pc_idx);
     autoware::common::lidar_utils::resize_pcl_msg(m_nonground_msg, m_nonground_pc_idx);
+    m_nonground_pc_its.reset(m_nonground_msg, m_nonground_pc_idx);
     // publish: nonground first for the possible microseconds of latency
     m_nonground_pub_ptr->publish(m_nonground_msg);
     m_ground_pub_ptr->publish(m_ground_msg);
@@ -206,7 +208,9 @@ void RayGroundClassifierCloudNode::reset()
   }
   // reset messages
   autoware::common::lidar_utils::reset_pcl_msg(m_ground_msg, m_pcl_size, m_ground_pc_idx);
+  m_ground_pc_its.reset(m_ground_msg, m_ground_pc_idx);
   autoware::common::lidar_utils::reset_pcl_msg(m_nonground_msg, m_pcl_size, m_nonground_pc_idx);
+  m_nonground_pc_its.reset(m_nonground_msg, m_nonground_pc_idx);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifierCloudNode::register_callbacks_preallocate()
@@ -225,7 +229,9 @@ void RayGroundClassifierCloudNode::register_callbacks_preallocate()
   }
   // initialize messages
   init_pcl_msg(m_ground_msg, m_frame_id.c_str(), m_pcl_size);
+  m_ground_pc_its.reset(m_ground_msg, 0);
   init_pcl_msg(m_nonground_msg, m_frame_id.c_str(), m_pcl_size);
+  m_nonground_pc_its.reset(m_nonground_msg, 0);
 }
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

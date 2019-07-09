@@ -36,7 +36,7 @@ ament_target_dependencies(${PROJECT_NAME}
   "geometry"
   "lidar_utils"
   "autoware_auto_msgs")
-target_compile_options(${PROJECT_NAME} PUBLIC "-O0")
+target_compile_options(${PROJECT_NAME} PUBLIC "-O0" PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 if(BUILD_TESTING)
   # run linters

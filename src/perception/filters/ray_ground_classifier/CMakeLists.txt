@@ -66,6 +66,9 @@ autoware_install(
   LIBRARIES ${PROJECT_NAME}
 )
 
+# workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
+
 # Ament Exporting
 ament_export_dependencies(
   "lidar_utils"

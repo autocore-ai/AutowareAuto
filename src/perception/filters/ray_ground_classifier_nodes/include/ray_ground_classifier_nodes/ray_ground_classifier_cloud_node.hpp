@@ -25,6 +25,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ray_ground_classifier/ray_ground_classifier.hpp>
 #include <ray_ground_classifier/ray_aggregator.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 
 #include <memory>
 #include <string>
@@ -110,7 +111,9 @@ private:
   /// \brief Read samples from the subscription
   void callback(const PointCloud2::SharedPtr msg);
   uint32_t m_ground_pc_idx;
+  autoware::common::lidar_utils::PointCloudIts m_ground_pc_its;
   uint32_t m_nonground_pc_idx;
+  autoware::common::lidar_utils::PointCloudIts m_nonground_pc_its;
 };  // class RayGroundFilterDriverNode
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

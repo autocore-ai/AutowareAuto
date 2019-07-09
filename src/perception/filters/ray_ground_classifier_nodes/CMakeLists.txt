@@ -35,6 +35,10 @@ ament_target_dependencies(${CLOUD_NODE_EXE})
 autoware_set_compile_options(${CLOUD_NODE_EXE})
 target_compile_definitions(${CLOUD_NODE_EXE} PRIVATE CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 
+# workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
+target_compile_options(${CLOUD_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
+target_compile_options(${CLOUD_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)
+
 if(BUILD_TESTING)
   # run linters
   autoware_static_code_analysis()
