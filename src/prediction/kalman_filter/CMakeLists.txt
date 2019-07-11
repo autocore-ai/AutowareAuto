@@ -5,7 +5,7 @@ project(kalman_filter)
 
 #dependencies
 find_package(ament_cmake REQUIRED)
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(motion_model REQUIRED)
 find_package(Eigen3 REQUIRED)
 

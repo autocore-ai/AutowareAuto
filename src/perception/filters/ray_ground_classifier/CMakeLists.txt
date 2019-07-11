@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ray_ground_classifier)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(lidar_utils REQUIRED)
 find_package(autoware_auto_algorithm REQUIRED)

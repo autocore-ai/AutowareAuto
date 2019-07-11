@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(lidar_utils)
 
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclcpp REQUIRED)

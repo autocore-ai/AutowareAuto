@@ -122,7 +122,7 @@ architecture of `integration_tests` framework is shown in the diagram below.
 
 The simplest scenario is a single node. Create a package named `my_cool_pkg` in the `~/workspace`
 directory; it's recommended to use the
-[package creation tool](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/tools/autoware_create_pkg).
+[package creation tool](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/tools/autoware_auto_create_pkg).
 
 `my_cool_pkg` has an executable that prints `Hello World` to `stdout`. Follow the steps below to
 add an integration test:

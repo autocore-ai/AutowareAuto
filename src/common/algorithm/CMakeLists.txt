@@ -5,7 +5,7 @@ project(autoware_auto_algorithm)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 
 if(BUILD_TESTING)
   # run linters

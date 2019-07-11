@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>autoware_cmake</name>
+  <name>autoware_auto_cmake</name>
   <version>0.0.0</version>
   <description>Import the compiler settings defined for Autoware.Auto</description>
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>autoware_create_pkg</name>
+  <name>autoware_auto_create_pkg</name>
   <version>0.0.1</version>
   <description>A command line tool to create a boiler-plate package</description>
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>

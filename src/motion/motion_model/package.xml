@@ -8,7 +8,7 @@
     <license>Apache 2.0</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
-    <buildtool_depend>autoware_cmake</buildtool_depend>
+    <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <test_depend>ament_lint_common</test_depend>
     <test_depend>ament_cmake_gtest</test_depend>

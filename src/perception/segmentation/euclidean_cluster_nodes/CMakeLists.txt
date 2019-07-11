@@ -18,12 +18,12 @@ cmake_minimum_required(VERSION 3.5)
 project(euclidean_cluster_nodes)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(euclidean_cluster REQUIRED)
-find_package(geometry REQUIRED)
+find_package(autoware_auto_geometry REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(voxel_grid_nodes REQUIRED)
 
@@ -40,7 +40,7 @@ ament_target_dependencies(${CLUSTER_NODE_LIB}
   "rclcpp"
   "autoware_auto_msgs"
   "euclidean_cluster"
-  "geometry"
+  "autoware_auto_geometry"
   "sensor_msgs"
   "voxel_grid_nodes")
 
@@ -66,7 +66,7 @@ ament_export_dependencies(
   "rclcpp"
   "autoware_auto_msgs"
   "euclidean_cluster"
-  "geometry"
+  "autoware_auto_geometry"
   "sensor_msgs"
   "voxel_grid_nodes")
 ament_package()

@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include("${autoware_cmake_DIR}/autoware_cmake.cmake")
-include("${autoware_cmake_DIR}/autoware_install.cmake")
+include("${autoware_auto_cmake_DIR}/autoware_auto_cmake.cmake")
+include("${autoware_auto_cmake_DIR}/autoware_install.cmake")

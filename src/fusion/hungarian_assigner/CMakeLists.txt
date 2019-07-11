@@ -18,7 +18,7 @@ project(hungarian_assigner)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 include_directories(include)

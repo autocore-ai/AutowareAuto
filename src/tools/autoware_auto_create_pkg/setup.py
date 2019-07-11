@@ -2,7 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(
-    name='autoware_create_pkg',
+    name='autoware_auto_create_pkg',
     version='0.0.1',
     packages=find_packages(exclude=['test']),
     install_requires=['setuptools'],
@@ -34,7 +34,7 @@ create a new package based on this template.""",
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'autoware_create_pkg = autoware_create_pkg.main:main',
+            'autoware_auto_create_pkg = autoware_auto_create_pkg.main:main',
         ],
     },
 )

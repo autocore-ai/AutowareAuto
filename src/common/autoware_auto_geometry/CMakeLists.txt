@@ -15,12 +15,12 @@
 cmake_minimum_required(VERSION 3.5)
 
 ### Export headers
-project(geometry)
+project(autoware_auto_geometry)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_msgs REQUIRED)
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 # includes

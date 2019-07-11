@@ -14,10 +14,10 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.5)
 
-project(hello_world)
+project(autoware_auto_hello_world)
 
 # dependencies
-find_package(autoware_cmake REQUIRED)  # Required on all packages!
+find_package(autoware_auto_cmake REQUIRED)  # Required on all packages!
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 

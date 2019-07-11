@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 project(motion_model)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 

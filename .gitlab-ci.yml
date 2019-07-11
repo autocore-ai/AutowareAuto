@@ -60,7 +60,7 @@ build:
 
     # Test package
     - source /opt/AutowareAuto/setup.bash
-    - 'autoware_create_pkg
+    - 'autoware_auto_create_pkg
           --pkg-name my_cool_pkg
           --destination /tmp/tmp_ws/src
           --description "My cool package does cool stuff"

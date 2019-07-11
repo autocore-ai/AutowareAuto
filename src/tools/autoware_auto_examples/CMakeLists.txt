@@ -1,6 +1,3 @@
-# Copyright 2018 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,19 +11,13 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.5)
 
-project(autoware_cmake NONE)
+project(autoware_auto_examples)
 
-find_package(ament_cmake_core REQUIRED)
-
-ament_package(
-  CONFIG_EXTRAS "autoware_cmake-extras.cmake"
-)
-if(BUILD_TESTING)
-    find_package(ament_cmake_lint_cmake REQUIRED)
-    ament_lint_cmake(${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY cmake
-  DESTINATION share/${PROJECT_NAME}
+  DIRECTORY rviz/
+  DESTINATION share/${PROJECT_NAME}/rviz
 )
+
+ament_package()

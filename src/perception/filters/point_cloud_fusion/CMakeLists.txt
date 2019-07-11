@@ -20,7 +20,7 @@ project(point_cloud_fusion)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(lidar_utils REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)

@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.5)
 project(voxel_grid)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(lidar_utils REQUIRED)

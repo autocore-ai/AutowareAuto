@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ray_ground_classifier_nodes)
 
 ## dependencies
-find_package(autoware_cmake REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ray_ground_classifier REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)

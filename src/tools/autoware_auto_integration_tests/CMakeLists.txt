@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(integration_tests NONE)
+project(autoware_auto_integration_tests NONE)
 
 find_package(ament_cmake_core REQUIRED)
 
