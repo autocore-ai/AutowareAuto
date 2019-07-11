@@ -74,6 +74,11 @@ Install Autoware.Auto and learn how to develop applications.
 
 - @subpage installation-and-development
 
+# Development process guide {#index-cpp-development-process}
+
+Guidelines for contributing to Autoware.Auto.
+
+- @subpage cpp-development-process
 
 # Links to other resources {#index-links-to-other-resources}
 
