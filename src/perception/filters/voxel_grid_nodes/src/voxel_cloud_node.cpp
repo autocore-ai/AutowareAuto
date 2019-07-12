@@ -58,7 +58,8 @@ VoxelCloudNode::VoxelCloudNode(
   voxel_size.x = static_cast<float>(declare_parameter("config.voxel_size.x").get<float>());
   voxel_size.y = static_cast<float>(declare_parameter("config.voxel_size.y").get<float>());
   voxel_size.z = static_cast<float>(declare_parameter("config.voxel_size.z").get<float>());
-  const std::size_t capacity = static_cast<std::size_t>(declare_parameter("config.capacity").get<std::size_t>());
+  const std::size_t capacity =
+    static_cast<std::size_t>(declare_parameter("config.capacity").get<std::size_t>());
   const voxel_grid::Config cfg{min_point, max_point, voxel_size, capacity};
   // Init
   init(cfg, declare_parameter("is_approximate").get<bool>());

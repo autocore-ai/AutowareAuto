@@ -62,7 +62,8 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
           static_cast<float>(declare_parameter("aggregator.min_ray_angle_rad").get<float>()),
           static_cast<float>(declare_parameter("aggregator.max_ray_angle_rad").get<float>()),
           static_cast<float>(declare_parameter("aggregator.ray_width_rad").get<float>()),
-          static_cast<std::size_t>(declare_parameter("aggregator.max_ray_points").get<std::size_t>())
+          static_cast<std::size_t>(
+            declare_parameter("aggregator.max_ray_points").get<std::size_t>())
         }),
   m_pcl_size(static_cast<std::size_t>(declare_parameter("pcl_size").get<std::size_t>())),
   m_frame_id(declare_parameter("frame_id").get<std::string>().c_str()),
@@ -70,9 +71,11 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_timeout(std::chrono::milliseconds{declare_parameter("cloud_timeout_ms").get<uint16_t>()}),
   m_raw_sub_ptr(create_subscription<PointCloud2>(declare_parameter("raw_topic").get<std::string>(),
     rclcpp::QoS(10), std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
-  m_ground_pub_ptr(create_publisher<PointCloud2>(declare_parameter("ground_topic").get<std::string>(),
+  m_ground_pub_ptr(
+    create_publisher<PointCloud2>(declare_parameter("ground_topic").get<std::string>(),
     rclcpp::QoS(10))),
-  m_nonground_pub_ptr(create_publisher<PointCloud2>(declare_parameter("nonground_topic").get<std::string>(),
+  m_nonground_pub_ptr(
+    create_publisher<PointCloud2>(declare_parameter("nonground_topic").get<std::string>(),
     rclcpp::QoS(10))),
   m_ground_pc_idx{0},
   m_nonground_pc_idx{0}
