@@ -43,36 +43,36 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
     rclcpp::NodeOptions()),
   // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
   m_classifier(ray_ground_classifier::Config{
-          static_cast<float>(get_parameter("classifier.sensor_height_m").as_double()),
-          static_cast<float>(get_parameter("classifier.max_local_slope_deg").as_double()),
-          static_cast<float>(get_parameter("classifier.max_global_slope_deg").as_double()),
-          static_cast<float>(get_parameter(
-            "classifier.nonground_retro_thresh_deg").as_double()),
-          static_cast<float>(get_parameter("classifier.min_height_thresh_m").as_double()),
-          static_cast<float>(get_parameter(
-            "classifier.max_global_height_thresh_m").as_double()),
-          static_cast<float>(get_parameter(
-            "classifier.max_last_local_ground_thresh_m").as_double()),
-          static_cast<float>(get_parameter(
-            "classifier.max_provisional_ground_distance_m").as_double()),
-          static_cast<float>(get_parameter("classifier.min_height_m").as_double()),
-          static_cast<float>(get_parameter("classifier.max_height_m").as_double())
+          static_cast<float>(declare_parameter("classifier.sensor_height_m").get<float>()),
+          static_cast<float>(declare_parameter("classifier.max_local_slope_deg").get<float>()),
+          static_cast<float>(declare_parameter("classifier.max_global_slope_deg").get<float>()),
+          static_cast<float>(declare_parameter(
+            "classifier.nonground_retro_thresh_deg").get<float>()),
+          static_cast<float>(declare_parameter("classifier.min_height_thresh_m").get<float>()),
+          static_cast<float>(declare_parameter(
+            "classifier.max_global_height_thresh_m").get<float>()),
+          static_cast<float>(declare_parameter(
+            "classifier.max_last_local_ground_thresh_m").get<float>()),
+          static_cast<float>(declare_parameter(
+            "classifier.max_provisional_ground_distance_m").get<float>()),
+          static_cast<float>(declare_parameter("classifier.min_height_m").get<float>()),
+          static_cast<float>(declare_parameter("classifier.max_height_m").get<float>())
         }),
   m_aggregator(ray_ground_classifier::RayAggregator::Config{
-          static_cast<float>(get_parameter("aggregator.min_ray_angle_rad").as_double()),
-          static_cast<float>(get_parameter("aggregator.max_ray_angle_rad").as_double()),
-          static_cast<float>(get_parameter("aggregator.ray_width_rad").as_double()),
-          static_cast<std::size_t>(get_parameter("aggregator.max_ray_points").as_int())
+          static_cast<float>(declare_parameter("aggregator.min_ray_angle_rad").get<float>()),
+          static_cast<float>(declare_parameter("aggregator.max_ray_angle_rad").get<float>()),
+          static_cast<float>(declare_parameter("aggregator.ray_width_rad").get<float>()),
+          static_cast<std::size_t>(declare_parameter("aggregator.max_ray_points").get<std::size_t>())
         }),
-  m_pcl_size(static_cast<std::size_t>(get_parameter("pcl_size").as_int())),
-  m_frame_id(get_parameter("frame_id").as_string().c_str()),
+  m_pcl_size(static_cast<std::size_t>(declare_parameter("pcl_size").get<std::size_t>())),
+  m_frame_id(declare_parameter("frame_id").get<std::string>().c_str()),
   m_has_failed(false),
-  m_timeout(std::chrono::milliseconds{get_parameter("cloud_timeout_ms").as_int()}),
-  m_raw_sub_ptr(create_subscription<PointCloud2>(get_parameter("raw_topic").as_string(),
+  m_timeout(std::chrono::milliseconds{declare_parameter("cloud_timeout_ms").get<uint16_t>()}),
+  m_raw_sub_ptr(create_subscription<PointCloud2>(declare_parameter("raw_topic").get<std::string>(),
     rclcpp::QoS(10), std::bind(&RayGroundClassifierCloudNode::callback, this, _1))),
-  m_ground_pub_ptr(create_publisher<PointCloud2>(get_parameter("ground_topic").as_string(),
+  m_ground_pub_ptr(create_publisher<PointCloud2>(declare_parameter("ground_topic").get<std::string>(),
     rclcpp::QoS(10))),
-  m_nonground_pub_ptr(create_publisher<PointCloud2>(get_parameter("nonground_topic").as_string(),
+  m_nonground_pub_ptr(create_publisher<PointCloud2>(declare_parameter("nonground_topic").get<std::string>(),
     rclcpp::QoS(10))),
   m_ground_pc_idx{0},
   m_nonground_pc_idx{0}
