@@ -200,6 +200,7 @@ void EuclideanCluster::cluster_impl(Clusters & clusters)
       cluster(clusters, pt);
     }
   }
+  m_hash.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanCluster::cluster(Clusters & clusters, const PointXYZII & pt)
