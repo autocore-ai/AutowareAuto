@@ -44,7 +44,7 @@ ament_target_dependencies(${CLOUD_LIB}
 
 # generate executable for ros1-style standalone nodes
 file(COPY param/vlp16_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
-set(CLOUD_EXEC "autoware_auto_velodyne_cloud_node_exe")
+set(CLOUD_EXEC "velodyne_cloud_node_exe")
 add_executable(${CLOUD_EXEC} src/velodyne_cloud_node_main.cpp)
 autoware_set_compile_options(${CLOUD_EXEC})
 target_link_libraries(${CLOUD_EXEC} ${CLOUD_LIB})
