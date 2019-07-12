@@ -149,7 +149,7 @@ void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
     throw std::domain_error{"EuclideanClusterNode: No publisher topics provided"};
   }
   // Reserve
-  // m_clusters.clusters.reserve(cfg.max_num_clusters());
+  m_clusters.clusters.reserve(cfg.max_num_clusters());
   // m_boxes.header.frame_id.reserve(256U);
   // m_boxes.header.frame_id = cfg.frame_id().c_str();
 }
