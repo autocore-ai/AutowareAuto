@@ -17,7 +17,7 @@ ADE Terminal 1 - start `rviz2`:
 
 ```bash
 $ ade enter
-ade$ export LD_LIBRARY_PATH=/usr/local/nvidia/lib64/  # see the note below
+ade$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64/  # see the note below
 ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/share/autoware_examples/rviz/autoware.rviz
 ```
 \note

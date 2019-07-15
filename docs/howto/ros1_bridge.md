@@ -121,7 +121,7 @@ In the terminal where were going to start `rviz2` (when following the [3D Percep
 
 ```bash
 $ ade enter
-ade$ export LD_LIBRARY_PATH=/usr/local/nvidia/lib64/  # see the note below
+ade$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64/  # see the note below
 ade$ source /opt/ros/melodic/setup.bash
 ade$ rviz -d /home/"${USER}"/AutowareAuto/install/share/autoware_examples/rviz/autoware.rviz
 ```
