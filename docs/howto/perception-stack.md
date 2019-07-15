@@ -18,7 +18,7 @@ ADE Terminal 1 - start `rviz2`:
 ```bash
 $ ade enter
 ade$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64/  # see the note below
-ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/share/autoware_examples/rviz/autoware.rviz
+ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/share/autoware_auto_examples/rviz2/autoware.rviz
 ```
 \note
 Systems with an NVIDIA graphics card must set the `LD_LIBRARY_PATH` in order to load the correct
@@ -44,7 +44,7 @@ ade$ ros2 run velodyne_node velodyne_cloud_node_exe __params:=/home/"${USER}"/Au
 The steps above leverage a pcap file, however the `velodyne_node` can be connected directly to
 the sensor. Update the IP address and port arguments in the yaml file to connect to live hardware.
 
-When the `velodyne_node` is running, the resulting LiDAR point cloud can be visualized within `rviz` as
+When the `velodyne_node` is running, the resulting LiDAR point cloud can be visualized within `rviz2` as
 a `sensor_msgs/PointCloud2` topic type. The data will look similar to the image shown below.
 
 We will now start with the [ray ground filter](../../../src/perception/filters/ray_ground_classifier)
@@ -63,8 +63,8 @@ ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe _
 This will create two new topics (`/nonground_points` and `/points_ground`) that output
 `sensor_msgs/PointCloud2`s that we can use to segment the Velodyne point clouds.
 
-With `rviz` open, we can add visualizations for the two new topics, alternatively an `rviz`
-configuration is provided in `AutowareAuto/src/tools/autoware_examples/rviz/autoware_ray_ground.rviz`
+With `rviz2` open, we can add visualizations for the two new topics, alternatively an `rviz2`
+configuration is provided in `AutowareAuto/src/tools/autoware_auto_examples/rviz2/autoware_ray_ground.rviz`
 that can be loaded to automatically set up the visualizations.
 
 ![Autoware.Auto ray ground filter snapshot](autoware-auto-ray-ground-filter.png)
@@ -82,7 +82,7 @@ ade$ ros2 run voxel_grid_nodes voxel_grid_cloud_node_exe __params:=/home/"${USER
 ```
 
 After this we will have a new topic, named (`/points_downsampled`) that we can visualize with the
-provided `rviz2` configuration file in `src/tools/autoware_examples/rviz/autoware_voxel.rviz`
+provided `rviz2` configuration file in `src/tools/autoware_auto_examples/rviz2/autoware_voxel.rviz`
 
 ![Autoware.Auto voxel grid downsampling snapshot](autoware-auto-voxel-grid-downsampling.png)
 
