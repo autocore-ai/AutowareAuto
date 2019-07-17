@@ -62,3 +62,6 @@ libxss1
 
 # ROS Melodic
 ros-melodic-desktop
+
+# Bloom
+python-bloom
