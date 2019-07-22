@@ -1,5 +1,4 @@
 point_cloud_fusion
-
 =============
 
 # Purpose / Use cases
