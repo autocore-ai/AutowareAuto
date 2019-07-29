@@ -12,6 +12,9 @@ Autoware.Auto applications.
 
 # Install ADE {#installation-and-development-install-ade}
 
+[ADE](https://ade-cli.readthedocs.io/en/latest/) is a modular Docker-based tool to ensure that all developers in a project have a common, consistent development environment.
+Please confirm [the requirements](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) for installing the tool.
+
 ADE is published on PyPI, and requires Python >= 3.5.2 and `pip`. Other dependencies are fetched by
 `pip`.
 
