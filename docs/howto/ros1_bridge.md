@@ -55,15 +55,20 @@ ROS_DISTRO was set to 'dashing' before. Please make sure that the environment do
 different distributions.
 ```
 
-To enable the `ros1_bridge` by default (for all future terminals), source the install directory in
-the `~/.bashrc` file. It's also **strongly recommended** to add the following alias so that the
+It's **strongly recommended** to add the following alias so that the
 `ros1_bridge` and `roscore` can be started with a single command.
 
 ```bash
 $ ade enter
-ade$ echo "source ~/ros1_bridge_ws/install/setup.bash" >> ~/.bashrc
 ade$ echo 'alias start_ros1_bridge="( source /opt/ros/melodic/setup.bash && ( roscore & source ~/ros1_bridge_ws/install/setup.bash && sleep 1 && ros2 run ros1_bridge dynamic_bridge --bridge-all-topics ) && killall roscore ) || killall roscore"' >> ~/.bashrc
 ade$ source ~/.bashrc  # To enable it for the current terminal
+```
+
+\note
+To enable the `ros1_bridge` by default, adding `source ~/ros1_bridge_ws/install/setup.bash` in the `~/.bashrc` seems to be reasonable.
+However, it would cause the following error when executing `$ ros2 topic pub /test std_msgs/Bool -r 1` in the next section.
+```bash
+AttributeError: type object 'type' has no attribute '_TYPE_SUPPORT' This might be a ROS 1 message type but it should be a ROS 2 message type. Make sure to source your ROS 2 workspace after your ROS 1 workspace.
 ```
 
 
@@ -75,6 +80,7 @@ ADE Terminal 1 - start `roscore` and `ros1_bridge`:
 
 ```bash
 $ ade enter
+ade$ source ~/ros1_bridge_ws/install/setup.bash
 ade$ start_ros1_bridge
 ```
 
