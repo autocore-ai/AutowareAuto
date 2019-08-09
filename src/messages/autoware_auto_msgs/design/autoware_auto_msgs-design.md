@@ -56,9 +56,12 @@ builtin_interfaces/Duration time_from_start
 float32 x
 float32 y
 Complex32 heading
-float32 velocity_mps
+float32 longitudinal_velocity_mps 0.0
+float32 lateral_velocity_mps 0.0
 float32 acceleration_mps2
 float32 heading_rate_rps
+float32 front_wheel_angle_rad 0.0
+float32 rear_wheel_angle_rad 0.0
 ```
 
 And the heading field has the following form:
@@ -84,6 +87,8 @@ motion planners
 ambiguities between angles, and angle distances. In addition, it conveniently represents a
 precomputed sine and cosine values, obviating the need for additional computations.
 
+For more details, see [Controller design](@ref controller-design)
+
 # Interface Messages
 
 ## Control Diagnostic
@@ -108,12 +113,13 @@ float32 yaw_rate_error_rps
 **Rationale**: Diagnostic information is helpful to detect if a fault occurred, or some incorrect
 behavior leading up to a fault. It can also be used for infotainment applications.
 
+For more details, see [Controller design](@ref controller-design)
+
 ## Trajectory
 
 ```
 std_msgs/Header header
-TrajectoryPoint[100] points
-uint32 size
+TrajectoryPoint[<=100] points
 ```
 
 **Source**: Motion planner
@@ -123,6 +129,8 @@ uint32 size
 **Rationale**: A bounded number of points is provided since a new trajectory should be provided
 at a regular rate. Bounded data structures also imply more deterministic communication times
 due to having a bounded size.
+
+For more details, see [Controller design](@ref controller-design)
 
 ## Vehicle Control Command
 ```
@@ -163,6 +171,8 @@ of the mapping between steering wheel angle to wheel angle.
 such as forklifts.
 
 **Rational**: A frame is not provided since it is implied that it is fixed to the vehicle frame.
+
+For more details, see [Controller design](@ref controller-design)
 
 ## Vehicle Kinematic State
 **Source**: Vehicle interface
@@ -214,6 +224,7 @@ transforms would allow for a controller to properly follow the trajectory.
 **Rationale**: The kinematics are populated with a fixed frame assumption to simplify the updates
 and usage of this field.
 
+For more details, see [Controller design](@ref controller-design)
 
 ## Vehicle Odometry
 
