@@ -36,9 +36,7 @@ VoxelCloudNode::VoxelCloudNode(
   const std::string & node_namespace)
 : LifecycleNode(
     node_name.c_str(),
-    node_namespace.c_str(),
-    rclcpp::NodeOptions()),
-  // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
+    node_namespace.c_str()),
   m_sub_ptr(create_subscription<Message>(declare_parameter("input_topic").get<std::string>(),
     rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
   m_pub_ptr(create_publisher<Message>(declare_parameter("downsample_topic").get<std::string>(),

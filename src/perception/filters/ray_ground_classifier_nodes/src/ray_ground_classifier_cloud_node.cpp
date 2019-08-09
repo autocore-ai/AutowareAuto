@@ -39,9 +39,7 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   const std::string & node_namespace)
 : LifecycleNode(
     node_name.c_str(),
-    node_namespace.c_str(),
-    rclcpp::NodeOptions()),
-  // TODO(esteve): Pass empty NodeOptions as workaround for https://github.com/ros2/rclcpp/pull/775
+    node_namespace.c_str()),
   m_classifier(ray_ground_classifier::Config{
           static_cast<float>(declare_parameter("classifier.sensor_height_m").get<float>()),
           static_cast<float>(declare_parameter("classifier.max_local_slope_deg").get<float>()),

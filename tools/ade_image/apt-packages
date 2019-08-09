@@ -34,7 +34,7 @@ ros-dashing-launch-testing-ament-cmake
 ros-dashing-launch-testing-ros
 ros-dashing-osrf-testing-tools-cpp
 ros-dashing-rclcpp
-ros-dashing-rclcpp-lifecycle
+ros-dashing-rclcpp-lifecycle # 0.7.6
 ros-dashing-rcutils
 ros-dashing-rmw
 ros-dashing-rmw-implementation-cmake
