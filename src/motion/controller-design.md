@@ -100,6 +100,7 @@ vehicle model, the following information must be available in real time:
 - Longitudinal velocity
 - Lateral velocity
 - Actuator pose (e.g. wheel angle)
+- Yaw rate
 
 Additional real time information may be used, such as:
 - Longitudinal acceleration
@@ -111,6 +112,7 @@ Finally, some additional information may be used at real time, though they may b
 - Vehicle mass
 - Vehicle center of gravity
 - Tire properties (i.e. steering gradient, etc.)
+- Rotational/moment of inertia (with respect to the z axis)
 
 ## Achieving configuration states
 
@@ -192,11 +194,13 @@ The following inputs are required:
     - Transforms to satisfy above input
   - Longitudinal velocity (safe maneuvering use case)
   - Lateral velocity (high speed safe maneuvering)
+  - Yaw rate (high speed maneuvering)
   - Wheel angles (all use cases)
 - A reference trajectory with at least:
   - Position
   - Longitudinal velocity
   - Wheel angles
+  - Yaw rate (high speed maneuvering)
 
 The following inputs are optional:
 - Longitudinal acceleration (high speed maneuvering)
@@ -208,6 +212,7 @@ parameter):
 - Vehicle mass/inertia
 - Vehicle center of gravity
 - Vehicle tire properties
+- Yaw/moment of inertia
 
 ## Outputs
 
@@ -249,6 +254,7 @@ coordinate frame)
 7. Wheel angles (front and rear, assuming single-track model)
 8. A time stamp, which is the time point corresponding to the time at which the original sensor data
 was generated
+9. Yaw rate
 
 All parameters are in standard ISO units, where applicable (meters, seconds, kilograms, radians).
 
