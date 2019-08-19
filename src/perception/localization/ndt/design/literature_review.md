@@ -30,6 +30,8 @@ matching:
         - (Trilinear) interpolation for handling boundary effects
         - Iterative subdivision to improve robustness
         - Linked nodes for handling outliers/missing data
+    - P2D is more robust for unstructured environments and small overlaps between scans compared to D2D
+    - D2D is faster and less sensitive to poor initial estimates
 - [Point cloud registration from local feature correspondences—Evaluation on challenging datasets](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0187943#pone-0187943-t002)
     - Compares ICP variants and NDT
     - NDT is good at handling translation, and among the fastest of techniques
