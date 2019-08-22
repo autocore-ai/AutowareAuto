@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>bridge_velodyne_node</name>
+    <version>0.0.1</version>
+    <description>Bridge for combining Autoware.Auto and Autoware.AI</description>
+    <maintainer email="takayuki.akamine@tier4.jp">Takayuki AKAMINE</maintainer>
+    <license>Apache 2.0</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+
+    <!-- Building process will not be performed.-->
+    <!-- This package is used for only launching.-->
+
+    <exec_depend>ros1_bridge</exec_depend>
+    <exec_depend>velodyne_node</exec_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>
