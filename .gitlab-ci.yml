@@ -39,6 +39,39 @@ ade:
     - docker push $CI_REGISTRY_IMAGE/ade:$CI_COMMIT_REF_SLUG
 
 
+build_barebones:
+  stage: build
+  image: ubuntu:bionic
+  script:
+    - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+          tzdata
+          gnupg
+      '
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          sudo
+          curl
+          gnupg2
+          lsb-release
+          ca-certificates
+      '
+    - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
+    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          python3-colcon-common-extensions
+          cmake
+          build-essential
+          python-rosdep
+      '
+    - 'rosdep init && rosdep update'
+    - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
+    - 'source /opt/ros/dashing/setup.bash'
+    - 'colcon build
+           --merge-install
+           --install-base /opt/AutowareAuto
+           --cmake-args
+             -DCMAKE_BUILD_TYPE=Debug
+      '
+
 build:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA

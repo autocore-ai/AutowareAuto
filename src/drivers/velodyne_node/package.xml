@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
     <name>velodyne_node</name>
     <version>0.0.1</version>
     <description>(Mostly) static memory implementation of a velodyne driver in one process</description>
@@ -11,15 +11,18 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <build_depend>lidar_utils</build_depend>
+    <build_depend>rclcpp_lifecycle</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>velodyne_driver</build_depend>
 
     <depend>udp_driver</depend>
 
     <exec_depend>lidar_utils</exec_depend>
+    <exec_depend>rclcpp_lifecycle</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>velodyne_driver</exec_depend>
 
+    <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>

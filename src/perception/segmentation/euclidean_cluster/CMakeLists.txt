@@ -41,8 +41,6 @@ target_compile_options(${PROJECT_NAME} PUBLIC "-O0" PRIVATE -Wno-sign-conversion
 if(BUILD_TESTING)
   # run linters
   autoware_static_code_analysis()
-  find_package(ament_cmake_pclint REQUIRED)
-  ament_pclint(CHECK_HEADERS)
 
   # gtest
   set(EUCLIDEAN_CLUSTER_GTEST euclidean_cluster_gtest)

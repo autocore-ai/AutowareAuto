@@ -54,8 +54,6 @@ target_link_libraries(${CLUSTER_MAIN} ${CLUSTER_NODE_LIB})
 if(BUILD_TESTING)
   # Static checking only if built via ament
   autoware_static_code_analysis()
-  find_package(ament_cmake_pclint REQUIRED)
-  ament_pclint(CHECK_HEADERS)
 endif()
 # Ament Exporting
 autoware_install(LIBRARIES ${CLUSTER_NODE_LIB}
