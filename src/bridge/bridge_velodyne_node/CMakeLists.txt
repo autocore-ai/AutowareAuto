@@ -1,4 +1,4 @@
-# Copyright 2018 Apex.AI, Inc.
+# Copyright 2019 Tier IV, Inc.
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +19,14 @@ project(bridge_velodyne_node)
 # dependencies
 find_package(autoware_auto_cmake REQUIRED)  # Required on all packages!
 find_package(ament_cmake REQUIRED)
-# comment out until ROS2 dashing on ADE provides ros1_bridge
-# find_package(ros1_bridge REQUIRED)
-find_package(velodyne_node REQUIRED)
-
 
 # Testing
 if(BUILD_TESTING)
-  # Building testing will not be performed.
-  # This pakcage only includes launch file.
+  # TODO: Integration testing cannot work on Gitlab CI.
+  # After solving the issue, this comment-out will be removed.
+  # find_package(launch_testing_ament_cmake)
+  # add_launch_test(test/bridge_velodyne_node_test.py
+  #  TIMEOUT 200)
 endif()
 
 # Install stuff
@@ -35,6 +34,12 @@ autoware_install(
   HAS_LAUNCH
 )
 
+# TODO: Integration testing cannot work on Gitlab CI.
+# Install testing stuff
+# install(
+#   DIRECTORY test/
+#   DESTINATION share/${PROJECT_NAME}/test/
+# )
 # Ament Exporting
 ament_export_dependencies("rclcpp")
 ament_package()

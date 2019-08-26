@@ -1,4 +1,4 @@
-# Copyright 2018 Tier IV, Inc.
+# Copyright 2019 Tier IV, Inc.
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,14 +29,16 @@ def generate_launch_description():
         get_package_share_directory('velodyne_node'),
         'param',
         'vlp16_test.param.yaml')
-    parameter_args = " __params:=" + vlp_test_param_file_path
+    param_file=launch.substitutions.LaunchConfiguration(
+        'params', default=[vlp_test_param_file_path])
+    
 
     # velodyne node execution definition.
     velodyne_node_runner = launch_ros.actions.Node(
         package='velodyne_node',
         node_executable='velodyne_cloud_node_exe',
-        arguments=["/test_velodyne_node_cloud_front:=/raw_points",
-                   parameter_args])
+        parameters=[param_file],
+        arguments=["/test_velodyne_node_cloud_front:=/points_raw"])
 
     # ros1 bridge runner definition.
     ros1_bridge_runner = launch_ros.actions.Node(
