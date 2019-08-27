@@ -66,3 +66,6 @@ ros-melodic-desktop
 # Bloom
 # Use the Python 2.x version of Bloom because of conflicts with catkin_pkg
 python-bloom
+
+# ros-drivers
+ros-dashing-udp-driver
