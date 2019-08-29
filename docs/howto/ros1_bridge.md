@@ -11,7 +11,7 @@ to enable the exchange of messages between ROS 1 and ROS 2, allowing ROS 1 tools
 
 This article explains how to build the `ros1_bridge` within ADE, and validate the connection between
 Autoware.Auto and Autoware.AI using a `pcap` file, the
-[velodyne_node](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/drivers/velodyne_node),
+[velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node),
 the `ros1_bridge`, and `rviz`.
 
 

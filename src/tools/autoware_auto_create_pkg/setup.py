@@ -18,7 +18,7 @@ setup(
     author_email='jp.samper@apex.ai',
     maintainer='Juan Pablo Samper',
     maintainer_email='jp.samper@apex.ai',
-    url='https://gitlab.com/AutowareAuto/AutowareAuto',
+    url='https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto',
     keywords=[],
     classifiers=[
         'Environment :: Console',

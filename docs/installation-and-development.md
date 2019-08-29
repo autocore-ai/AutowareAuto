@@ -43,7 +43,7 @@ $ touch .adehome
 ```
 
 For ADE to function, it must be properly configured. Autoware.Auto provides
-an [.aderc](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/.aderc) file
+an [.aderc](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/blob/master/.aderc) file
 which is expected to exist in the current working
 directory, or in any parent directory. Additionally, default configuration values can be
 overridden by setting environment variables. See the `ade --help` output for more information about
@@ -73,7 +73,7 @@ ade$ colcon test-result
 
 The Autoware.Auto ADE image ships with the [Atom](https://atom.io/) text editor,
 and automatically
-[installs](https://gitlab.com/AutowareAuto/AutowareAuto/blob/master/tools/ade_image/atom-install-our-plugins)
+[installs](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/blob/master/tools/ade_image/atom-install-our-plugins)
 some useful Atom packages. Be sure to checkout the Atom *Welcome Guide* and familiarize with the
 features and keyboard shortcuts.
 

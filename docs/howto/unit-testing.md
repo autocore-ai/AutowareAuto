@@ -186,7 +186,7 @@ See below for an example of using `ament_cmake_gtest` with `colcon test`. All ot
 a similar pattern.
 
 This example assumes that the package `my_cool_pkg` is generated with
-[autoware_auto_create_package](https://gitlab.com/AutowareAuto/AutowareAuto/tree/master/src/tools/autoware_auto_create_pkg).
+[autoware_auto_create_package](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/tools/autoware_auto_create_pkg).
 
 
 ## Writing a unit test with gtest {#how-to-write-tests-and-measure-coverage-writing-unit-test-with-gtest}

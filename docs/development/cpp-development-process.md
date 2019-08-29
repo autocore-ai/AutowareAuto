@@ -54,7 +54,7 @@ $ pip3 install -U ade-cli
 Clone the AutowareAuto project:
 
 ```bash
-$ git clone https://gitlab.com/AutowareAuto/AutowareAuto.git
+$ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
 
 ## Entering ADE
@@ -67,7 +67,7 @@ $ git clone https://gitlab.com/AutowareAuto/AutowareAuto.git
 
 We follow the standard fork and pull model popularized by GitHub.
 
-All contributions start with a fork of https://gitlab.com/AutowareAuto/AutowareAuto.git into your account.
+All contributions start with a fork of https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git into your account.
 
 ![Autoware.Auto fork](images/autoware-fork.png)
 
@@ -81,7 +81,7 @@ request (put simply, GitLab's name for what GitHub calls a pull request).
 
 ![Autoware.Auto merge request from push command line](images/autoware-merge-request.png)
 
-A merge request can also be triggered by going to the [Autoware project page](https://gitlab.com/AutowareAuto/AutowareAuto),
+A merge request can also be triggered by going to the [Autoware project page](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto),
 where a message will pop up with a button to create new merge request.
 
 ![Autoware.Auto merge request from project page](images/autoware-merge-request-project.png)
