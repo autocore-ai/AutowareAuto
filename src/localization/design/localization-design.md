@@ -3,35 +3,33 @@ Localization Design {#localization-design}
 
 # High Summary
 
+The Autoware.Auto localization stack should be compliant with REP105[3], with the following frames
+defined:
+- `/earth`
+- `/map`
+- `/odom`
+- `/base_link`
+- `/ego` - A clone of `/base_link` intended to represent odometry-based transforms
+- Additional coordinate frames may be attached to the `/base_link` frame to represent sensor frames
+
 A localization stack should have the following components:
-- Map manager
-- LLA2ENU converter
-- Absolute Localizer (e.g. GPS)
-- Relative Localizer (e.g. NDT Matching)
-- Local Localizer (e.g. visual odometry)
+- Map manager (outputs `/earth`-`/map` transform)
+- Transform manager (outputs full chain of transforms)
+- Absolute Localizer (e.g. GPS, outputs `/earth`-`/base_link` transform)
+- Relative Localizer (e.g. NDT Matching, outputs `/map`-`/base_link` transform)
+- Local Localizer (e.g. visual odometry, IMU, outputs `/odom`-`/base_link` transform)
+
+In addition, downstream components should make use of the following component, which understands the
+semantics laid out in this document:
+- LocalBufferCore (Maintains `/ego` frame, updates `/odom`-`/base_link` transforms)
 
 With the following interfaces:
 - Reference map (input to relative localizer):
 [PointCloud2](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/PointCloud2.msg)
-- Absolute localization (output of absolute localizer):
-[NavSatFix](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/NavSatFix.msg).
 - Relative localization status:
 [DiagnosticStatus](https://github.com/ros2/common_interfaces/blob/master/diagnostic_msgs/msg/DiagnosticStatus.msga)
-- Relative/local localization (output of relative/local localizer):
-```
-# TransformWithCovariance
-geometry_msgs/TransformStamped transform
-
-float64[9] translation_covariance
-float64[16] rotation_covariance
-uint8 position_covariance_type
-uint8 rotation_covariance_type
-
-uint8 COVARIANCE_TYPE_UNKNOWN = 0
-uint8 COVARIANCE_TYPE_APPROXIMATED = 1
-uint8 COVARIANCE_TYPE_DIAGONAL_KNOWN = 2
-uint8 COVARIANCE_TYPE_KNOWN = 3
-```
+- Output of all localization components (for consistency):
+[TFMessage](https://github.com/ros2/geometry2/blob/ros2/tf2_msgs/msg/TFMessage.msg)
 
 Depending on the use case, some subset of components may be needed.
 
@@ -65,7 +63,7 @@ In general, we can subdivide the use case into three kinds of localization, with
 or guarantees:
 - Absolute localization
 - Relative localization
-- Local localization (i.e. visual odometry)
+- Odometry (i.e. visual odometry)
 
 This relative localization use case can then be applied to, or broken down into various specific
 use cases:
@@ -78,13 +76,15 @@ In addition, various input modalities can be considered, including:
 - GPS/IMU/INSS
 
 Usages of the output or result of localization can also be broadly considered:
-- Motion control
-- Motion planning
-- Behavior planning
-- Routing/global planning
-- Object tracking/occupancy mapping
-- Scene understanding (e.g. lane detection)
-- Motion estimation (e.g. sensor fusion)
+- Global algorithms:
+  - Behavior planning
+  - Routing/global planning
+- Local algorithms:
+  - Motion control
+  - Motion planning
+  - Object tracking/occupancy mapping
+  - Scene understanding (e.g. lane detection)
+  - Motion estimation (e.g. sensor fusion)
 - Dead reckoning
 
 Finally, the concrete use case of a long-distance travel (i.e. cross-country) in a caravan can be
@@ -97,8 +97,8 @@ Each of the high level use cases are described below.
 ### Absolute localization
 
 Absolute localization involves providing the vehicle pose with respect to an absolute inertial frame
-that does not change, for example, providing the vehicle pose in LLA coordinates, which is with
-respect to the center of the earth.
+that does not change, for example, providing the vehicle pose in LLA (or ECEF, preferred)
+coordinates, which is with respect to the center of the earth.
 
 In this context, GPS can provide absolute localization. Absolute localization may also be possible
 by using the ego position relative to fixed, unique features, such as a unique sign on the road.
@@ -118,9 +118,9 @@ These algorithms often solve nonconvex optimization problems, implying the solut
 minima. This implies that these algorithms generally require a good initial guess, which can be
 provided by an absolute localization component, or warm-started from a previous solution.
 
-### Local localization
+### Odometry
 
-Local localization involves computing a transform of the ego vehicle with respect to local features,
+Odometry involves computing a transform of the ego vehicle with respect to local features,
 such as lanes, road boundaries, and signs.
 
 Algorithms in this space overlap with SLaM algorithms, and other feature extraction methods.
@@ -144,7 +144,7 @@ Generally speaking, a map should be in a ENU coordinate frame to be compatible w
 reasoning and planning.
 
 In this context, a map's origin should have some ECEF coordinate associated with it. A map should
-likely be reasonably bounded in size (e.g. < 10 km) so as to avoid error induced due to the
+likely be reasonably bounded in size (e.g. < 83 km[3]) so as to avoid error induced due to the
 curvature of the planet.
 
 Because of this, it is likely necessary to geofence or implement a mechanism that allows the
@@ -231,7 +231,40 @@ fixed map or reference frame.
 The output of a transform of the ego frame with respect to a fixed or reference frame can be
 used by many algorithms in the autonomous driving stack.
 
-### Motion estimation
+### Global algorithms
+
+Global algorithms operate with respect to a coordinate frame that is fixed in the world. These
+algorithms general involve some longer range planning.
+
+#### Behavior Planning
+
+A behavior planner generally sets up a motion planning problem based on the current pose, the local
+road network, and obstacles within or near the region of interest.
+
+A behavior planner may not need a full fidelity representation of the vehicle's state, but it will
+need transforms such that all inputs to this component are in compatible coordinate frames.
+
+In general, a behavior planner will operate in the `/map` coordinate frame.
+
+#### Global planning
+
+A global planner computes a sequence of lanelet sets which can bring the ego vehicle from it's
+current pose in the world to a target pose.
+
+A global planner would only need a coarse representation of the vehicle's state (i.e. position,
+heading, velocity). The localization component would need to provide a pose in a coordinate
+frame that is compatible with the world frame.
+
+In general, a global planner will operate in the `/earth` or `/map` frame, depending on the use
+case.
+
+### Local algorithms
+
+Local algorithms generally operate in a frame local to the ego vehicle. These algorithms typically
+directly use observations and operate in the `/odom` frame. If no source of odometry is available,
+then these algorithms can alternately operate in the `/map` coordinate frame.
+
+#### Motion estimation
 
 The pose, or transform of the ego vehicle with respect to a fixed (inertial) frame can be
 accumulated over time to produce estimates about the dynamics of the dynamics of the vehicle.
@@ -251,6 +284,39 @@ representation.
 Such dynamics estimates can be used by the planning and control components of the autonomous driving
 stack.
 
+#### Motion Control
+
+Given a trajectory, and a current state, a motion controller produces a control command which
+bounds the error of subsequent states with respect to the reference trajectory.
+
+At each iteration, a state which denotes where the vehicle is with respect to the reference
+trajectory must be provided. The results of localization can be used to populate the state,
+or transform the state into a coordinate frame that is compatible with the reference trajectory.
+
+In this context, robust control may benefit from the addition of uncertainty parameters.
+
+#### Motion Planning
+
+Given a current state, a target state, obstacles, and a drivable space, a motion planner generates
+a trajectory that is compatible with the current state, stays within the drivable space, does not
+collide with obstacles, and makes progress towards the target state.
+
+The results of localization may be used to implicitly generate the current state, and it may be used
+to ensure that all of the inputs to a motion planner are in a compatible coordinate frame.
+
+Similarly, robust planning algorithms may benefit from the addition of uncertainty parameters.
+
+#### Object Tracking / Occupancy Mapping / Scene Understanding
+
+Object tracking, occupancy mapping, and scene understanding algorithms generally follow similar
+patterns. These algorithms involve receiving observations via (processed) sensor input, and
+use these observations to update a posterior state estimate of some world property.
+
+Fundamentally, this involves making sure the state of the algorithm is in a consistent coordinate
+frame as the observation. As an example, this would involve ensuring that a transform exists
+between the ego, or base link coordinate frame which objects are observed in, and some inertial
+coordinate frame, for example a map frame, which object tracks are stored in.
+
 ### Dead reckoning
 
 Another common use case is dead reckoning when stronger localization signals are unavailable. For
@@ -266,55 +332,6 @@ combine sensing modalities within a localization implementation to improve updat
 using GPS with IMU). Alternatively, dead reckoning can be implemented as a part of motion estimation
 (i.e. as a part of the temporal prediction step).
 
-### Motion Control
-
-Given a trajectory, and a current state, a motion controller produces a control command which
-bounds the error of subsequent states with respect to the reference trajectory.
-
-At each iteration, a state which denotes where the vehicle is with respect to the reference
-trajectory must be provided. The results of localization can be used to populate the state,
-or transform the state into a coordinate frame that is compatible with the reference trajectory.
-
-In this context, robust control may benefit from the addition of uncertainty parameters.
-
-### Motion Planning
-
-Given a current state, a target state, obstacles, and a drivable space, a motion planner generates
-a trajectory that is compatible with the current state, stays within the drivable space, does not
-collide with obstacles, and makes progress towards the target state.
-
-The results of localization may be used to implicitly generate the current state, and it may be used
-to ensure that all of the inputs to a motion planner are in a compatible coordinate frame.
-
-Similarly, robust planning algorithms may benefit from the addition of uncertainty parameters.
-
-### Behavior Planning
-
-A behavior planner generally sets up a motion planning problem based on the current pose, the local
-road network, and obstacles within or near the region of interest.
-
-A behavior planner may not need a full fidelity representation of the vehicle's state, but it will
-need transforms such that all inputs to this component are in compatible coordinate frames.
-
-### Global planning
-
-A global planner computes a sequence of lanelet sets which can bring the ego vehicle from it's
-current pose in the world to a target pose.
-
-A global planner would only need a coarse representation of the vehicle's state (i.e. position,
-heading, velocity). The localization component would need to provide a pose in a coordinate
-frame that is compatible with the world frame.
-
-### Object Tracking / Occupancy Mapping / Scene Understanding
-
-Object tracking, occupancy mapping, and scene understanding algorithms generally follow similar
-patterns. These algorithms involve receiving observations via (processed) sensor input, and
-use these observations to update a posterior state estimate of some world property.
-
-Fundamentally, this involves making sure the state of the algorithm is in a consistent coordinate
-frame as the observation. As an example, this would involve ensuring that a transform exists
-between the ego, or base link coordinate frame which objects are observed in, and some inertial
-coordinate frame, for example a map frame, which object tracks are stored in.
 
 ## Concrete Use Case
 
@@ -328,8 +345,8 @@ no additional mechanisms will be needed besides a mechanism to translate absolut
 to a local frame, in addition to periodic updates to the local frame (i.e. map switching),
 as planning generally occurs in the local frame.
 
-If some GPS-deprived locales will be traversed, then a form of local or relative localization must
-be used in the GPS-deprived regions. This may involve maintaining a reference map which can be
+If some GPS-deprived locales will be traversed, then a form of odometry or relative localization
+must be used in the GPS-deprived regions. This may involve maintaining a reference map which can be
 localized against, or maintaining local updates that can support local planning and tracking
 processes.
 
@@ -344,9 +361,12 @@ The same general concerns apply when traversing GPS-deprived regions as in map-d
 A localization implementation must satisfy a few requirements in order to be compatible with the
 aforementioned use cases:
 - Provide a rigid body transform between the ego frame and a specified inertial frame
+- Provide a transform compatible with the `/earth` frame
 - A mechanism for managing reference maps must be provided if relative localization is used
 - A relative localizer should have a mechanism that permits initialization either from a startup
 or reference-deprived state, from either an absolute localization, or a local source
+- An implementation of a localization stack should be compliant with REP105[3]
+- The `/odom`-`/base_link` transform must not be allowed to grow in magnitude indefinitely.
 
 ## Provide a transform between ego and inertial frame
 
@@ -369,6 +389,15 @@ or performance of the mechanism, for example:
 
 **Rationale**: Planning, tracking and motion estimation generally take place in Cartesian/ENU/local
 coordinate frames
+
+## Provide a transform compatible with the `/earth` frame
+
+For the long-term planning use case, and the use cases which involve the use of a HD map, then an
+absolute transform with respect to the `/earth` frame must be available. As such, some mechanism
+must be provided which connects the local inertial frame with the absolute `/earth` frame.
+
+**Rationale**: Some useful features are provided in the `/earth` frame, either via LLA or ECEF
+coordinates.
 
 ## Updating Local inertial frame
 
@@ -397,6 +426,40 @@ To ensure optimal operation of a reference localizer, initial pose estimates sho
 **Rationale**: Most relative localization algorithms need a reasonable initial guess to converge to
 a good estimate.
 
+## REP105 Compliance
+
+REP105[3] is a standard specifying coordinate frames for a robot. Various concerns are baked into
+the choice and design of the coordinate frames, including:
+- Map switching
+- Localization drift/correction
+- Map coordinate frame and initialization conventions
+
+**Rationale**: Compliance to this standard will make this localization stack immediately
+understandable to external experts
+
+**Rationale**: Adherence to this standard allows implementations not purpose-build for the
+autonomous driving use-case to be used in this localization stack
+
+**Rationale**: This standard specifies behaviors which can account for various failure cases and
+encodes community expertise and expectations
+
+## /odom-/base_link transform must be bounded
+
+Local algorithms involve transforming constructs with respect to different times and space. An
+implicit assumption is that these transforms will be smooth across time. As such, local algorithms
+must operate with respect to the `/odom` coordinate frame, which has the built-in assumption of
+having smooth evolution. This typically assumes that the `/odom` frame origin is fixed in space
+without moving.
+
+If a vehicle is travelling for long distances, then the magnitude of the `/odom`-`base_link`
+transform will grow in magnitude, possibly to the point where floating point precision becomes an
+issue[3]. As such, we require a mechanism to ensure that the magnitude of this transform remains
+reasonably small, to avoid errors from floating point arithmetic at large magnitudes.
+
+**Rationale**: Floating point arithmetic incurs errors, which are proportional to the magnitude of
+the values involved in the arithmetic. These errors should be minimized, thus implying that the
+magnitude of the transform should be bounded or minimized.
+
 # Mechanisms
 
 The primary mechanism to satisfy this requirement is the selection of an appropriate localization
@@ -410,6 +473,8 @@ component to satisfy the basic requirement
 frame
 - A mechanism must be provided which can provide an initial guess for relative localization
 algorithms
+- A mechanism to batch update the frame graph such that the `/odom`-`/base_link` transform can be
+kept small, and ensure smoothness, and global consistency is needed
 
 These mechanisms are partially instantiated in the general localization architecture as described
 below.
@@ -426,26 +491,28 @@ the use case and capabilities of various components, only some subset of the com
 needed.
 
 - Map manager
-- LLA2ENU converter
+- TF manager
 - Absolute Localizer (e.g. GPS)
 - Relative Localizer (e.g. NDT Matching)
 - Local Localizer
+
+To support the control of magnitude of the `/odom`-`/base_link` transform, an additional mechanism,
+embedded in downstream algorithms, LocalBufferCore, is required.
 
 ### Map Manager
 
 A map manager maintains control over the local inertial frame. It is the responsibility of the map
 manager to provide reference maps to relative localizers for the local inertial frame, and the
-appropriate ECEF reference point for LLA2ENU conversions. This component must also handle the
+appropriate ECEF reference point for the local coordinate frame. This component must also handle the
 update of local maps and appropriate communication of these changes to the relative localizer
 and other components which may be affected.
 
-**Input**: Absolute localization
-
-**Input**: Map-relative localization
+**Input**: The full transform tree at a given time step (i.e. a message containing the following
+transforms at one or more time steps: `/earth`-`/map`, `/map`-`/odom`, `/odom`-`/base_link`)
 
 **Output**: Reference map (localization)
 
-**Output**: ECEF/LLA anchor point of current reference map
+**Output**: A paired `/earth`-`/map` and `/map`-`/odom` transform
 
 **Output**: Other map features (i.e. planning)
 
@@ -457,43 +524,84 @@ away from the last road sequence which can keep the vehicle within the bounds of
 If the use case does not require map switching, then map switching may not be needed, and only
 simple loading and publishing of data.
 
-**Behavior**: Either absolute or relative localization can be used to determine if the vehicle is
-near the boundary of a map. Unless another mechanism is provided, the initial map should be
-determined using an absolute localization signal. For further updates, the local transform should
-be used as the primary input to this component.
+**Behavior**: The `/earth`-`/base_link` transform should be used to determine when map switching
+should occur
 
-**Rationale**: Both absolute and map-relative localization can be supported. A use case might
-involve a vehicle that always starts in a known position, obviating the need for absolute
-localization. As the vehicle approaches the boundaries of a map, the map can unambiguously be
-switched.
+**Behavior**: When the `/map` frame updates, the inverse of the `/earth`-`/map` applied transform
+should be applied to the latest `/map`-`/odom` transform and published along with the update
 
-**Rationale**: Preferring map-relative localization during runtime minimizes dependence on
-absolute localization for different use cases.
+**Rationale**: Using the full transform tree update as the input simplifies the initialization of
+this component with respect to various use cases
 
-### LLA2ENU converter
+**Rationale**: A paired update is needed to maintain consistency of the `/base_link` coordinate
+frame in the absolute or global frame.
 
-When an absolute localizer is used, it reports positions in an absolute frame, such as LLA or ECEF.
-Because of the planar assumption typically used in local algorithms such as planning, tracking, and
-motion estimation, these absolute coordinate systems are incompatible with those used by local
-algorithms. As such, it is necessary to have a component which converts absolute signals to relative
-signals.
+### TF Manager
 
-**Input**: Absolute localization
+Each of the localization modalities provides the pose of the ego vehicle with respect to their
+reference coordinate frame. These transforms are generally not compatible with the transform tree
+as defined.
 
-**Input**: ECEF/LLA anchor point of current reference map
+As such, a component is necessary which can combine all the localization modalities and ensure
+they are outputted in a way that is consistent with the defined transform tree.
 
-**Output**: Pose in local inertial frame
+This component coordinates the various parts of a localization stack, and represents the primary
+output of the localization stack and it's interface with the rest of the autonomous driving system.
 
-**Behavior**: Converts absolute pose to relative pose
+**Input**: Absolute localization (`/earth`-`/base_link`)
 
-**Rationale**: This component is needed to provide a bridge between absolute localization and local
-algorithms
+**Input**: Relative localization (`/map`-`/base_link`)
 
-**Rationale**: This component is separate from absolute localizers because combining them would
-add a dependency on maps to absolute localizers
+**Input**: Odometry (`/odom`-`/base_link`)
 
-**Rationale**: This component is separate from the map manager to isolate and simplify the concerns
-of the map manager and this component respectively
+**Input**: Map update (`/earth`-`/map`)
+
+**Output**: The full transform tree at a given time step (i.e. a message containing the following
+transforms at one or more time steps: `/earth`-`/map`, `/map`-`/odom`, `/odom`-`/base_link`)
+- This message may also occasionally contain a `/odom`-`/odom` transform to signal an update of
+the position of the `/odom` frame and child transforms
+
+**Behavior**: The TF manager can only be considered initialized when it has received a
+`/earth`-`/map` transform. This may involve some preliminary output from this component
+
+**Behavior**: When an odometry input is received, this transform is added to the latest
+`/odom`-`/base_link` transform, the resulting transform is added to the frame graph, and to a
+message containing cached map and odometry frame transforms and published
+
+**Behavior**: When a relative localization input is received, the odometry transform at the
+appropriate time stamp is subtracted from it to provide a `/map`-`/odom` transform
+
+**Behavior**: When an absolute localization input is received, the map and odometry components of
+the transform can be subtracted to provide a `/map`-`/odom` transform
+
+**Behavior**: When a map update input is received, the new transform message should be input into
+the output message, and the previous map transform should be included with a time just before the
+new transform
+
+**Behavior**: If absolute and relative localization inputs are available for the same time frame,
+the update to the `/map`-`/odom` frame is implementation defined. These implementations may include:
+- Fusion of transforms via sensor fusion algorithms
+- Preferring the more precise transform
+- Preferring the more transform that arrives sooner
+
+**Behavior**: Periodically (i.e. every N seconds, or every N odometry updates), the TF manager
+should signal an update to the `/map`-`/base_link` frames by prepending an appropriate
+`/odom`-`/odom` transform to the beginning of the output message. The remaining output may either:
+- Be a nominal update for the given time instant
+- Contain a full transform tree (with `/odom`-`/base_link` history)
+
+**Behavior**: On startup, the every transform is initialized to be the identity transform
+
+**Rationale**: This component is necessary to isolate the concerns of each individual localization
+modality, thus simplifying their implementation.
+
+**Rationale**: All transforms are initialized to the identity transform to
+simplify initialization of other components. When the appropriate map is initialized, a step
+transform can be induced to update the `/earth`-`/map` transforms without affecting the
+`/odom`-`/base_link` transform, ensuring continuity
+
+**Rationale**: Handling multiple localization modalities is use-case specific. This document only
+outlines the basic behavior of updating the appropriate coordinate frames
 
 ### Absolute Localizer
 
@@ -501,9 +609,15 @@ An absolute localizer (e.g. GPS driver) provides the current pose of the ego in 
 
 **Input**: N/A (Implementation defined, e.g. sensor input)
 
-**Output**: Pose of vehicle in an absolute frame (e.g. LLA or ECEF)
+**Output**: The transform `/earth`-`/base_link`, where rotation is such that the z axis is pointing
+away from the earth, and the x-axis is pointing to the east
 
 **Rationale**: This is an independent sensing modality
+
+\note If a GPS driver is used which produces the
+[NavSatFix](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/NavSatFix.msg)
+message, an additional component may be needed to convert the point into an appropriate ECEF
+transform.
 
 ### Relative Localizer
 
@@ -516,20 +630,21 @@ parameters of the given use case, motion constraints may also be encoded into th
 
 **Input**: A reference map
 
-**Input**: Initial pose estimate, a transform type in the reference (local) frame
+**Input**: The transform tree, within which the `/map`-`/base_link` transform is used for
+initialization
 
 **Output**: Provides 6 DoF rigid body transform (translation, rotation) with respect to a reference
-map
+map (A transform between `/map`-`/base_link`)
 
 **Output**: Some form of diagnostic should be provided, specifying the state of the algorithm
 
 **Behavior**: The reference map must be validated to ensure all necessary features are present
 
-**Behavior**: If no initial pose estimate is provided, the last published transform should be
-used as an initial guess.
+**Behavior**: If a transform between `/map`-`/base_link` is available at the time stamp of the
+sensor input, this transform should be used to initialize the algorithm.
 
-**Behavior**: If the algorithm is completely starting from scratch, with no initial pose estimate,
-the behavior is implementation defined
+**Behavior**: If no initial pose estimate is available for the time stamp of the sensor input,
+then the behavior is implementation defined.
 
 **Behavior**: If a solved transform is near the boundaries of a reference map, a warning should be
 communicated to the larger stack. "Near" can be defined as being within 10 seconds away from the
@@ -540,6 +655,10 @@ away from the last road sequence which can keep the vehicle within the bounds of
 **Rationale**: A number of methods can be used for cold start initialization, including zero-
 initialization, or reading a file written upon shutdown. The appropriateness of these methods
 are use-case dependent, and thus cannot be pre-specified for all implementations
+
+**Rationale**: Similarly, a number of methods can be used for extrapolation, such as using
+the last transform, or predicting the current pose using a motion model. The appropriateness of
+any method depends on the use case.
 
 **Rationale**: Loss of localization is a critical error. This situation should be proactively
 avoided by properly notifying the larger system.
@@ -552,35 +671,75 @@ may include, but are not limited to:
 - IMU readings
 - Odometry readings
 
-### Local Localizer
+### Odometry
 
-Local localization works similarly to relative localization. In this case, the algorithm provides
+Odometry works similarly to relative localization. In this case, the algorithm provides
 transforms with respect to previous observations. Algorithms that fulfill this component's
 behavior include (visual/LiDAR) odometry algorithms, and SLaM algorithms.
 
 **Input**: N/A (Implementation defined, some sensor input)
 
 **Output**: Provides 6 DoF rigid body transform (translation, rotation) with respect to a previous
-observation
+observation, characterized as a transform `/ego`-`/base_link`
+
+### LocalBufferCore
+
+In order to keep the `/odom`-`/base_link` transforms bounded in size, batch updates of transforms
+are needed. These updates involve updating the `/map`-`/odom` transform with a given transform, and
+updating the history of `/odom`-`/base_link` transforms with the inverse of the aforementioned
+transform to ensure global consistency is maintained.
+
+This component would be a wrapper around `tf2::BufferCore`.
+
+The following API is proposed:
+
+```cpp
+class LocalBufferCore : protected tf2::BufferCore
+{
+public:
+  // Handles whole frame graph update when /odom-/odom message is received; also handles queueing of
+  // /odom-/base_link transforms to support this
+  void addTransforms(const TFMessage & msgs);
+  // Handles transforms from /base_link (past) to /base_link (present), or vice versa
+  bool canTransform(const std::string & frame_id, time from, time to);
+  // Handles transforms from /base_link (past) to /base_link (present), or vice versa
+  TransformStamped lookupTransform(const std::string & frame_id, time from, time to);
+  using BufferCore::canTransform;
+  using BufferCore::lookupTransform;
+};  // class tf2::BufferCore
+```
+**Rationale**: This component is needed to ensure updates to the `/odom` frame are synchronized
+across a distributed system
+
+**Rationale**: This component allows local algorithms to operate in the `/base_link` frame, and
+update their internal state to be consistent with observations if need be
+
+**Rationale**: If a local algorithm is computing transforms across time in the `/base_link` frame,
+then an accumulated transform should be the same between two time points before and after an
+`/odom`-`/odom` update
 
 # Interface definitions
 
 Concrete interface definitions are proposed for the above design.
 
-## Absolute localization output
+## Output
 
-The standard
-[NavSatFix](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/NavSatFix.msg)
-is proposed for use.
+All components output the standard
+[TFMessage](https://github.com/ros2/geometry2/blob/ros2/tf2_msgs/msg/TFMessage.msg).
 
-**Rationale**: This would make GPS drivers immediately compatible as an absolute localization
-component
+**Rationale**: Some components may output one or more transform
 
-**Rationale**: This is a standard message type for denoting pose in LLA coordinates
+**Rationale**: This is a standard message
 
-## Relative localization output
+**Rationale**: All components should use this to maintain type consistency
 
-The following message is proposed:
+**Rationale**: For components which generally output one transform, the use of this type allows
+for extensibility or batching, as appropriate
+
+### Extensions
+
+If the use of uncertainty semantics is needed by algorithm developers, then the following message is
+proposed:
 
 ```
 # TransformWithCovariance
@@ -597,6 +756,12 @@ uint8 COVARIANCE_TYPE_DIAGONAL_KNOWN = 2
 uint8 COVARIANCE_TYPE_KNOWN = 3
 ```
 
+```
+# TFCovarianceMessage
+
+TransformWtihCovariance transforms[]
+```
+
 Where the `rotation_covariance` can have Bingham[2] semantics.
 
 **Rationale**: A transform message is a standard message which denotes a rigid body transform in
@@ -607,16 +772,8 @@ standard Cartesian space
 This additional information may be of use to probabilistic or robust algorithms used downstream,
 such as motion estimation or planning algorithms
 
-## Local localization output
-
-The above proposed `TransformWithCovariance` message proposed for relative localization is also
-proposed for local localization.
-
-Aggregate motion can be estimated by aggregating these results over time and comparing the time
-stamp. If the time stamp is properly populated, this should result in accurate motion estimates.
-
-**Rationale**: The transform semantics are consistent, even when applied to a vehicle's current
-pose with respect to some previous pose.
+\note The use of these custom messages are not recommended at this time due to overhead and breaking
+with standard messages
 
 ## Reference map representation
 
@@ -650,13 +807,17 @@ cases and architectures are proposed.
 A GPS-only stack would consist of the following components:
 - Absolute localizer (GPS driver)
 - Map manager (only periodically updates local reference frame)
-- LLA2ENU
+- TF manager
+
+Because there is no odometry, local algorithms using this output would likely have to be set up to
+operate with respect to the `/map` frame to ensure consistency.
 
 ## NDT-Based
 
 At a bare minimum, an NDT-based (or any other relative localizer) stack would need the following:
 - Relative localizer (NDT matching)
 - Map manager
+- TF manager
 
 The map manager can simply produce a single map, if the map appropriately covers the service area.
 Alternatively, if the relative localizer is appropriately initialized with an appropriate map,
@@ -666,31 +827,35 @@ reference map.
 If no other form of initialization is available, or specified by the use case, then the following
 additional components are needed to ensure the stack can properly initialize:
 - Absolute localizer
-- LLA2ENU
+
+Similarly, in this setting, because there is no odometry, local algorithms using this output would
+likely have to be set up to operate with respect to the `/map` frame to ensure consistency.
 
 ## Highway Autopilot
 
 For a minimal highway autopilot stack, the vehicle only needs to know where it is with respect to
 local features, such as lane markings, or where the vehicle was previously.
 As such, such a stack would only require:
-- Local localization
+- Odometry
+- TF manager
 
 ## Full stack
 
 A full, redundant localization stack would require every component from the proposed localization
 stack:
 - Map manager
-- LLA2ENU converter
+- TF manager
 - Absolute Localizer
 - Relative Localizer
-- Local Localizer
+- Odometry
 
-Absolute localization can be used to initialize relative localization. During general runtime,
-observations from all three localization modalities can be fused via motion estimation. During
-deprived scenarios, relative and/or local localization can be used to maintain minimal functionality
-and restart absolute or local localization can be used to reinitialize local localization.
+Absolute localization can be used to initialize map management and relative localization. During
+general runtime, observations odometry can be used in motion estimation. During
+deprived scenarios, relative and/or odometry can be used to maintain minimal functionality
+and restart absolute or relative localization when higher level sensing functionality is restored.
 
 # References
 
 - [1] [Vehicle Localization with low cost radar sensors, Ward and Folkesson](https://kth.diva-portal.org/smash/get/diva2:972553/FULLTEXT01.pdf)
 - [2] [The Bingham Distribution of Quaternions and its Spherical Radon Transform in Texture Analysis, Kunze and Schaeben](https://www.researchgate.net/publication/226385995_The_Bingham_Distribution_of_Quaternions_and_Its_Spherical_Radon_Transform_in_Texture_Analysis)
+- [3] [REP105 - Coordinate Frames for Mobile Platforms](https://www.ros.org/reps/rep-0105.html)
