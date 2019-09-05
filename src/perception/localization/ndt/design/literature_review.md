@@ -22,6 +22,16 @@ matching:
 - [Scan Registration for Autonomous Mining Vehicles Using 3D-NDT](http://aass.oru.se/Research/mro/publications/2007/Magnusson_etal_2007-JFR-3D_Scan_Registration_for_Autonomous_Mining_Vehicles.pdf)
     - Extends the original NDT paper from 3 DoF scan registration to a full 6 DoF registration
     - This can be thought of as Point-to-Distribution NDT (P2D)
+- [The Three-Dimensional Normal-Distributions Transform – an Efficient Representation for Registration, Surface Analysis, and Loop Detection](http://www.diva-portal.org/smash/get/diva2:276162/FULLTEXT02.pdf)
+    - Thesis for NDT, covers 2D-NDT, 3D-NDT, Color-NDT
+    - Also covers variations on NDT representation:
+        - Trilinear interpolation
+        - Linked nodes, etc.
+    - Has a variety of empirical results:
+        - NDT is faster and more consistent than ICP
+        - NDT is somewhat more robust than ICP, but still needs good initializations
+        - Color-NDT is better than plain NDT
+    - Also covers applications, e.g. loop-closure
 - [Fast and accurate scan registration through minimization of the distance between compact 3D NDT representations](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.817.5962&rep=rep1&type=pdf)
     - Introduces Distribution-to-Distribution NDT (D2D)
     - Faster than P2D-NDT
