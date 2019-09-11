@@ -9,7 +9,6 @@ defined:
 - `/map`
 - `/odom`
 - `/base_link`
-- `/ego` - A clone of `/base_link` intended to represent odometry-based transforms
 - Additional coordinate frames may be attached to the `/base_link` frame to represent sensor frames
 
 A localization stack should have the following components:
@@ -19,9 +18,13 @@ A localization stack should have the following components:
 - Relative Localizer (e.g. NDT Matching, outputs `/map`-`/base_link` transform)
 - Local Localizer (e.g. visual odometry, IMU, outputs `/odom`-`/base_link` transform)
 
+Mapping is considered to be a separate, but closely related concern to localization.
+
 In addition, downstream components should make use of the following component, which understands the
 semantics laid out in this document:
-- LocalBufferCore (Maintains `/ego` frame, updates `/odom`-`/base_link` transforms)
+- LocalBufferCore (Updates `/odom`-`/base_link` transforms, permits `/base_link`-`/base_link`
+transforms across time)
+
 
 With the following interfaces:
 - Reference map (input to relative localizer):
@@ -248,7 +251,7 @@ In general, a behavior planner will operate in the `/map` coordinate frame.
 
 #### Global planning
 
-A global planner computes a sequence of lanelet sets which can bring the ego vehicle from it's
+A global planner computes a sequence of lanelet sets which can bring the ego vehicle from its
 current pose in the world to a target pose.
 
 A global planner would only need a coarse representation of the vehicle's state (i.e. position,
@@ -494,7 +497,7 @@ needed.
 - TF manager
 - Absolute Localizer (e.g. GPS)
 - Relative Localizer (e.g. NDT Matching)
-- Local Localizer
+- Odometry
 
 To support the control of magnitude of the `/odom`-`/base_link` transform, an additional mechanism,
 embedded in downstream algorithms, LocalBufferCore, is required.
@@ -546,7 +549,7 @@ As such, a component is necessary which can combine all the localization modalit
 they are outputted in a way that is consistent with the defined transform tree.
 
 This component coordinates the various parts of a localization stack, and represents the primary
-output of the localization stack and it's interface with the rest of the autonomous driving system.
+output of the localization stack and its interface with the rest of the autonomous driving system.
 
 **Input**: Absolute localization (`/earth`-`/base_link`)
 
@@ -602,6 +605,11 @@ transform can be induced to update the `/earth`-`/map` transforms without affect
 
 **Rationale**: Handling multiple localization modalities is use-case specific. This document only
 outlines the basic behavior of updating the appropriate coordinate frames
+
+**Rationale**: An update of the odometry frame is necessary to ensure the transforms are bounded in
+magnitude and to minimize errors in floating point arithmetic. Inverse updates of the historical
+transforms are needed to ensure global consistency of the coordinate frames. Updates may be of
+different forms to accommodate a communication-computation trade-off.
 
 ### Absolute Localizer
 
@@ -853,6 +861,33 @@ Absolute localization can be used to initialize map management and relative loca
 general runtime, observations odometry can be used in motion estimation. During
 deprived scenarios, relative and/or odometry can be used to maintain minimal functionality
 and restart absolute or relative localization when higher level sensing functionality is restored.
+
+## SLaM
+
+Simulataneous localization and mapping involves generating a map at runtime, and localizing against
+this map. These algorithms typically involve an "inner" problem during which the localization
+algorithm matches the current observation against recent history, and an "outer" problem, in which
+the overall map is corrected for global consistency (i.e. bundle adjustment, pose graph
+optimization).
+
+In the context of the proposed localization stack, a component performing the SLaM task can be
+considered to be an equivalent to an odometry component. If the outer problem produces global
+estimates with respect to a known map frame, then it may also be considered a relative localizer
+component.
+
+## Mapping
+
+Mapping generally involves aggregating observations and solving a global optimization problem to
+ensure consistency between various optimizations, as stated in the SLaM case. In the case where
+the mapping algorithms are kept separate from the registration/matching algorithms, a separate
+mapping component can simply take in observations of the salient type and topic, and the transform
+tree at a given time step.
+
+The observations can then be transformed to produce an initial guess of the global map, upon which
+refinement can be done in a non-real-time loop. The result may be stored somewhere.
+
+It is generally not recommended to use the results of an asynchronous mapping procedure in a safety-
+critical use case.
 
 # References
 
