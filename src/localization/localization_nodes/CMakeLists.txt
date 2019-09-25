@@ -31,5 +31,8 @@ autoware_set_compile_options(${PROJECT_NAME})
 
 ament_target_dependencies(${PROJECT_NAME} "localization_common" "rclcpp" "tf2")
 
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
+        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
+
 autoware_install(HAS_INCLUDE)
 ament_package()

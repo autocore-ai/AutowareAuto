@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef LOCALIZATION_NODES__LOCALIZATION_NODE_HPP_
+#define LOCALIZATION_NODES__LOCALIZATION_NODE_HPP_
+
 #include <localization_common/localizer_base.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/buffer_core.h>
@@ -30,7 +33,7 @@ class RelativeLocalizerNode : rclcpp::Node{
 
     template <typename LocalizerConfigT>
     RelativeLocalizerNode(LocalizerConfigT & localizer_config):
-    m_localizer(std::make_unique<LocalizerT>(localizer_config)){};
+    m_localizer(std::make_unique<LocalizerT>(localizer_config)){}
 private:
   void core_callback(){
     // get msg
@@ -60,3 +63,4 @@ private:
 }          // namespace autoware
 }      // namespace localization
 }  // namespace localization_nodes
+#endif
