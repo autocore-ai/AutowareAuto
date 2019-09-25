@@ -1,3 +1,6 @@
+#ifndef LOCALIZATION_COMMON__INITIALIZATION_HPP_
+#define LOCALIZATION_COMMON__INITIALIZATION_HPP_
+
 #include <geometry_msgs/msg/transform.hpp>
 #include <tf2/buffer_core.h>
 // probably include the motion model
@@ -25,3 +28,5 @@ class VehicleOdometryPoseInitialization : public PoseInitializationBase<VehicleO
 }          // namespace autoware
 }      // namespace localization
 }  // namespace localization_common
+
+#endif

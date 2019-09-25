@@ -13,4 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//#include <localization_common/localizer_base.hpp>
+#include <localization_common/localizer_base.hpp>
