@@ -12,6 +12,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#ifndef OPTIMIZATION__OPTIMIZATION_PROBLEM_HPP_
+#define OPTIMIZATION__OPTIMIZATION_PROBLEM_HPP_
 
 #include <optimization/visibility_control.hpp>
 #include <Eigen/Core>
@@ -28,7 +30,7 @@ namespace optimization
 {
 // Mathematical expression base class (CRTP for performance)
 template<typename Derived, typename DomainValueT, int NumJacobianRowsT, int NumVarsT>
-class Expression
+class OPTIMIZATION_PUBLIC Expression
 {
 protected:
 public:
@@ -64,7 +66,7 @@ private:
 // This is a generalized representation of an optimization problem. (CRTP base class)
 template<typename Derived, typename DomainValueT, int NumJacobianRowsT, int NumVarsT,
   typename ObjectiveT, typename EqualityConstraintsT, typename InequalityConstraintsT>
-class OptimizationProblem;
+class OPTIMIZATION_PUBLIC OptimizationProblem;
 
 
 // Definition of OptimizationProblem.
@@ -77,7 +79,7 @@ template<typename Derived,
   typename ... EqualityConstraints,
   typename ... InequalityConstraints,
   typename ObjectiveT, typename DomainValueT, int NumJacobianRowsT, int NumVarsT>
-class OptimizationProblem<Derived, DomainValueT, NumJacobianRowsT, NumVarsT, ObjectiveT,
+class OPTIMIZATION_PUBLIC OptimizationProblem<Derived, DomainValueT, NumJacobianRowsT, NumVarsT, ObjectiveT,
     std::tuple<EqualityConstraints...>,
     std::tuple<InequalityConstraints...>>
   : public Expression<
@@ -86,6 +88,7 @@ class OptimizationProblem<Derived, DomainValueT, NumJacobianRowsT, NumVarsT, Obj
     std::tuple<InequalityConstraints...>>,
     DomainValueT, NumJacobianRowsT, NumVarsT>
 {
+public:
   // Same types and dimensions used as the objective function.
   using DomainValue = typename ObjectiveT::DomainValue;
   using Value = typename ObjectiveT::Value;
@@ -113,3 +116,5 @@ using UnconstrainedOptimizationProblem = OptimizationProblem<Derived, DomainValu
 }          // namespace autoware
 }      // namespace common
 }  // namespace optimization
+
+#endif

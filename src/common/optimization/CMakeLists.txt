@@ -25,8 +25,8 @@ set(OPTIMIZATION_LIB_HEADERS
 
 add_library(
 ${PROJECT_NAME} SHARED
-        ${OPTIMIZATION_LIB_SRC}
         ${OPTIMIZATION_LIB_HEADERS}
+        ${OPTIMIZATION_LIB_SRC}
 )
 autoware_set_compile_options(${PROJECT_NAME})
 

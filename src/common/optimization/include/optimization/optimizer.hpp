@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef OPTIMIZATION__OPTIMIZER_HPP_
+#define OPTIMIZATION__OPTIMIZER_HPP_
+
 #include <optimization/optimization_problem.hpp>
 
 namespace autoware
@@ -24,7 +27,7 @@ namespace optimization
 
 // Optimization solver base class(CRTP) for a given optimization problem.
 template<typename Derived, typename LineSearchT>
-class Optimizer
+class OPTIMIZATION_PUBLIC Optimizer
 {
 public:
   using StepT = float_t;
@@ -61,7 +64,7 @@ class NewtonsMethod : public Optimizer<NewtonsMethod<LineSearchT>, LineSearchT>
 
 // Class to mange the step length during optimization.
 template <typename Derived>
-class LineSearch{
+class OPTIMIZATION_PUBLIC LineSearch{
     using value = double;
     template <typename OptimizationProblemT>
     value compute_step_length(OptimizationProblemT &);
@@ -71,3 +74,5 @@ class LineSearch{
 }          // namespace autoware
 }      // namespace common
 }  // namespace optimization
+
+#endif

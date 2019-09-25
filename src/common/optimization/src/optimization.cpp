@@ -14,3 +14,4 @@
 // limitations under the License.
 
 #include "optimization/optimization_problem.hpp"
+#include "optimization/optimizer.hpp"
