@@ -21,8 +21,8 @@
 
 #include <voxel_grid/visibility_control.hpp>
 #include <geometry_msgs/msg/point32.hpp>
+#include <geometry/common_2d.hpp>
 #include <cmath>
-
 
 namespace autoware
 {
@@ -32,7 +32,6 @@ namespace filters
 {
 namespace voxel_grid
 {
-
 // TODO(cvasfi) move this definition to a shared/common place
 
 template<typename T>
@@ -80,15 +79,18 @@ public:
   template<typename PointT>
   uint64_t index(const PointT & pt) const
   {
-    // pt needs x, y and z
     const uint64_t idx = static_cast<uint64_t>(
-      std::floor((clamp(pt.x, m_min_point.x, m_max_point.x) - m_min_point.x) * m_voxel_size_inv.x));
+      std::floor((clamp(common::geometry::point_adapter::x_(pt),
+      m_min_point.x, m_max_point.x) - m_min_point.x) * m_voxel_size_inv.x));
     const uint64_t jdx = static_cast<uint64_t>(
-      std::floor((clamp(pt.y, m_min_point.y, m_max_point.y) - m_min_point.y) * m_voxel_size_inv.y));
+      std::floor((clamp(common::geometry::point_adapter::y_(pt),
+      m_min_point.y, m_max_point.y) - m_min_point.y) * m_voxel_size_inv.y));
     const uint64_t kdx = static_cast<uint64_t>(
-      std::floor((clamp(pt.z, m_min_point.z, m_max_point.z) - m_min_point.z) * m_voxel_size_inv.z));
+      std::floor((clamp(common::geometry::point_adapter::z_(pt),
+      m_min_point.z, m_max_point.z) - m_min_point.z) * m_voxel_size_inv.z));
     return idx + (jdx * m_y_stride) + (kdx * m_z_stride);
   }
+
   /// \brief Computes the centroid for a given voxel index
   /// \param[in] index The index for a given voxel
   /// \return A point for whom the x, y and z fields are filled out
@@ -105,9 +107,13 @@ public:
     const uint64_t xdx = jdx % m_y_stride;
     // compute centroid of voxel
     PointT pt;
-    pt.x = ((static_cast<float>(xdx) + 0.5F) * m_voxel_size.x) + m_min_point.x;
-    pt.y = ((static_cast<float>(ydx) + 0.5F) * m_voxel_size.y) + m_min_point.y;
-    pt.z = ((static_cast<float>(zdx) + 0.5F) * m_voxel_size.z) + m_min_point.z;
+
+    common::geometry::point_adapter::xr_(pt) = ((static_cast<float>(xdx) + 0.5F) * m_voxel_size.x) +
+      m_min_point.x;
+    common::geometry::point_adapter::yr_(pt) = ((static_cast<float>(ydx) + 0.5F) * m_voxel_size.y) +
+      m_min_point.y;
+    common::geometry::point_adapter::zr_(pt) = ((static_cast<float>(zdx) + 0.5F) * m_voxel_size.z) +
+      m_min_point.z;
     return pt;
   }
 

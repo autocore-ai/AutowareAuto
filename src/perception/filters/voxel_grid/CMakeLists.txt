@@ -23,6 +23,7 @@ find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(lidar_utils REQUIRED)
+find_package(autoware_auto_geometry REQUIRED)
 
 # includes
 include_directories(include)
@@ -41,6 +42,7 @@ autoware_set_compile_options(${PROJECT_NAME})
 ament_target_dependencies(${PROJECT_NAME}
   "geometry_msgs"
   "lidar_utils"
+  "autoware_auto_geometry"
 )
 
 if(BUILD_TESTING)
@@ -60,5 +62,5 @@ endif()
 
 autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
 # Ament Exporting
-ament_export_dependencies("geometry_msgs")
+ament_export_dependencies("geometry_msgs" "autoware_auto_geometry")
 ament_package()

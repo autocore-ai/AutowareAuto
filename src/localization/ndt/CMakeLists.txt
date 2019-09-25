@@ -59,6 +59,9 @@ if(BUILD_TESTING)
 endif()
 
 
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
+        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
+
 autoware_install(HAS_INCLUDE)
 ament_package(
                     CONFIG_EXTRAS_POST "ndt-extras.cmake"
