@@ -16,18 +16,23 @@
 #ifndef NDT__NDT_OPTIMIZATION_PROBLEM_HPP_
 #define NDT__NDT_OPTIMIZATION_PROBLEM_HPP_
 
-#include <ndt/ndt_representations.hpp>
+#include <ndt/ndt_map.hpp>
 #include <optimization/optimization_problem.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <Eigen/Core>
 #include <tuple>
 
-namespace autoware{
-namespace localization{
-namespace ndt{
+namespace autoware
+{
+namespace localization
+{
+namespace ndt
+{
 
-  class NDT_PUBLIC P2DNDTObjective : public common::optimization::Expression<P2DNDTObjective, geometry_msgs::msg::Transform, 1U, 6U>{
-  public:
+class NDT_PUBLIC P2DNDTObjective : public common::optimization::Expression<P2DNDTObjective,
+    geometry_msgs::msg::Transform, 1U, 6U>
+{
+public:
   // getting aliases from the base class.
   using ExpressionT = Expression<P2DNDTObjective, geometry_msgs::msg::Transform, 1U, 6U>;
   using DomainValue = typename ExpressionT::DomainValue;
@@ -35,32 +40,32 @@ namespace ndt{
   using Jacobian = typename ExpressionT::Jacobian;
   using Hessian = typename ExpressionT::Hessian;
 
-
-  public:
-      P2DNDTObjective(const DomainValue & init_guess, const P2DNDTScan & scan, const NDTMap & map):
-      m_init_guess_ref(init_guess),
-      m_scan_ref(scan),
-      m_map_ref(map){}
+  P2DNDTObjective(const DomainValue & init_guess, const P2DNDTScan & scan, const NDTVoxelMap & map)
+  : m_init_guess_ref(init_guess),
+    m_scan_ref(scan),
+    m_map_ref(map) {}
 
   Value operator()(const DomainValue & x);
   Jacobian & jacobian(const DomainValue & x);
   Hessian & hessian(const DomainValue & x);
 
-  private:
+private:
   // references as class members to be initialized at constructor.
   const DomainValue & m_init_guess_ref;
   const P2DNDTScan & m_scan_ref;
-  const NDTMap & m_map_ref;
+  const NDTVoxelMap & m_map_ref;
 };
 
 // Here the class P2DNDTObjective
-class NDT_PUBLIC P2DNDTOptimizationProblem : public common::optimization::UnconstrainedOptimizationProblem<
-        P2DNDTOptimizationProblem, geometry_msgs::msg::Transform, 6U, P2DNDTObjective>{
+class NDT_PUBLIC P2DNDTOptimizationProblem : public common::optimization::
+  UnconstrainedOptimizationProblem<
+    P2DNDTOptimizationProblem, geometry_msgs::msg::Transform, 6U, P2DNDTObjective>
+{
 // Forward everything to the P2DNDTObjective? Possibly unnecessary.
 };
 
-}
-}
-}
+}  // namespace ndt
+}  // namespace localization
+}  // namespace autoware
 
-#endif
+#endif  // NDT__NDT_OPTIMIZATION_PROBLEM_HPP_

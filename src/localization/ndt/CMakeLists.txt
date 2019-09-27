@@ -5,14 +5,9 @@ cmake_minimum_required(VERSION 3.5)
 project(ndt)
 
 #dependencies
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
-find_package(localization_common REQUIRED)
-find_package(optimization REQUIRED)
-find_package(lidar_utils REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(Eigen3 REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)
@@ -30,18 +25,12 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_map.hpp
     include/ndt/ndt_localizer.hpp)
 
-add_library(
+ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${NDT_NODES_LIB_SRC}
         ${NDT_NODES_LIB_HEADERS}
 )
 autoware_set_compile_options(${PROJECT_NAME})
-
-ament_target_dependencies(${PROJECT_NAME} "localization_common" "optimization" "lidar_utils"
-        "sensor_msgs" "geometry_msgs" "eigen3")
-# point_cloud2_iterator headers need this suprression
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
-
 
 if(BUILD_TESTING)
   # run linters
@@ -52,17 +41,14 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(${NDT_TEST} test/test_ndt_map.hpp
-          test/test_ndt_map.cpp)
+  ament_add_gtest(${NDT_TEST} test/test_ndt_map.hpp test/test_ndt_map.cpp)
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME})
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
 endif()
 
-
+# required for tf2
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
-autoware_install(HAS_INCLUDE)
-ament_package(
-                    CONFIG_EXTRAS_POST "ndt-extras.cmake"
-)
+
+ament_auto_package()

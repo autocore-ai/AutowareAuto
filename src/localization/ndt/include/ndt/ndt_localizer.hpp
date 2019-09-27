@@ -22,18 +22,25 @@
 #include <ndt/ndt_representations.hpp>
 #include <ndt/ndt_optimization_problem.hpp>
 
-namespace autoware{
-namespace localization{
-namespace ndt{
+namespace autoware
+{
+namespace localization
+{
+namespace ndt
+{
 
-    using CloudT = sensor_msgs::msg::PointCloud2;
-    // Base class for NDT based localizers.
-template <typename derived, typename ScanT, typename MapT, typename NDTOptimizationProblemT, typename OptimizerT, typename PoseInitializationT>
-class NDTLocalizerBase : localization_common::RelativeLocalizerBase<CloudT, CloudT, PoseInitializationT>{
+using CloudT = sensor_msgs::msg::PointCloud2;
+// Base class for NDT based localizers.
+template<typename derived, typename ScanT, typename MapT, typename NDTOptimizationProblemT,
+  typename OptimizerT, typename PoseInitializationT>
+class NDTLocalizerBase : localization_common::RelativeLocalizerBase<CloudT, CloudT,
+    PoseInitializationT>
+{
 public:
-    using PoseT = geometry_msgs::msg::Transform;
+  using PoseT = geometry_msgs::msg::Transform;
 
-  PoseT register_measurement(const CloudT &msg, const PoseT & initial_guess) override{
+  PoseT register_measurement(const CloudT & msg, const PoseT & initial_guess) override
+  {
 //    auto scan = msg_to_scan(msg);
 //    auto problem = NDTOptimizationProblemT(initial_guess, scan, m_map);
 //    PoseT res;
@@ -43,25 +50,27 @@ public:
   void set_map(const CloudT & msg) override;
 
 protected:
-    ScanT msg_to_scan(const CloudT &);
-    MapT msg_to_map(const CloudT &);
+  ScanT msg_to_scan(const CloudT &);
+  MapT msg_to_map(const CloudT &);
+
 private:
-    OptimizerT m_optimizer;
-    MapT m_map;
+  OptimizerT m_optimizer;
+  MapT m_map;
 };
 
 // this can use dynamic polymorphism as well
-template <typename OptimizerT, typename PoseInitializationT>
+template<typename OptimizerT, typename PoseInitializationT>
 class P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTLocalizer<OptimizerT, PoseInitializationT>,
-        P2DNDTScan, NDTMap, P2DNDTOptimizationProblem, OptimizerT, PoseInitializationT>{
-    using CloudT = sensor_msgs::msg::PointCloud2;
+    P2DNDTScan, NDTMap, P2DNDTOptimizationProblem, OptimizerT, PoseInitializationT>
+{
+  using CloudT = sensor_msgs::msg::PointCloud2;
 
-    P2DNDTScan msg_to_scan(const CloudT &);
-    NDTMap msg_to_map(const CloudT &);
+  P2DNDTScan msg_to_scan(const CloudT &);
+  NDTMap msg_to_map(const CloudT &);
 };
 
-}
-}
-}
+}  // namespace ndt
+}  // namespace localization
+}  // namespace autoware
 
-#endif
+#endif  // NDT__NDT_LOCALIZER_HPP_

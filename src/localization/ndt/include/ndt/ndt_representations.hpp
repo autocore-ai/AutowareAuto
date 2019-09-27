@@ -21,41 +21,66 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
-#include <vector>
+#include <helper_functions/crtp.hpp>
 #include <Eigen/Core>
+#include <vector>
+#include <algorithm>
 
-namespace autoware{
-namespace localization{
-namespace ndt{
-
-class NdtNormal
+namespace autoware
 {
-
+namespace localization
+{
+namespace ndt
+{
+using float64_t = double;
+using float32_t = float;
+using Real = float64_t;
+/// Class Representing a base NDT grid cell. Functionality is implemented by CRTP derived classes.
+/// \tparam Derived Implementation class
+template<typename Derived>
+class NDTNormal : public common::helper_functions::crtp<Derived>
+{
+public:
   using Point = Eigen::Vector3d;
   using Covariance = Eigen::Matrix3d;
 
-  // getters, setters
-  Point centroid;
-  Covariance covariance;
+  /// Function returning the mean value of the normal distribution
+  /// \return Centroid of the unit.
+  const Point & centroid() const
+  {
+    return this->impl().centroid_();
+  }
+
+  /// Function returning the covariance of the normal distribution
+  /// \return Covariance of the unit
+  const Covariance & covariance() const
+  {
+    return this->impl().covariance_();
+  }
 };
 
-
-//CRTP base class for NDT maps
-template<typename Derived, typename NdtUnit = NdtNormal>
-class NdtMapBase
+/// Base class for an NDT map.
+/// \tparam Derived Implementation class
+/// \tparam NdtUnit NDT map cell representation. Must implement NDTNormal.
+/// \tparam OutputNdtUnit NDT map output representation. Must implement NDTNormal.
+template<typename Derived, typename NdtUnit, typename OutputNdtUnit = NdtUnit>
+class NDTMapBase : public common::helper_functions::crtp<Derived>
 {
-    // neighbourhood search
-  const std::vector<NdtUnit> & cells(double x, double y, double z);
+public:
+  const std::vector<OutputNdtUnit> & cells(double_t x, double_t y, double_t z)
+  {
+    return this->impl().cells_(x, y, z);
+  }
 };
 
 
-//CRTP base class for NDT scans.
 template<typename Derived, typename NdtUnit = common::lidar_utils::PointXYZIF>
-class NdtScanBase{
+class NDTScanBase
+{
 public:
   using Point = NdtUnit;
   using IterT = typename std::vector<NdtUnit>::iterator;
-  //get the point for a given index.
+  // get the point for a given index.
   NdtUnit & get(size_t index);
 
   IterT begin();
@@ -69,14 +94,9 @@ private:
   }
 };
 
-class NDTMap : public NdtMapBase<NDTMap, NdtNormal>{
-    // Use voxelgrid or spatial hash directly etc. instead
-    using MapContainer = std::vector<NdtNormal>;
-private:
-    MapContainer m_cells;
-};
 
-class P2DNDTScan : public NdtScanBase<P2DNDTScan, common::lidar_utils::PointXYZIF>{
+class P2DNDTScan : public NDTScanBase<P2DNDTScan, common::lidar_utils::PointXYZIF>
+{
   using PointT = common::lidar_utils::PointXYZIF;
   const std::vector<PointT> & cells(double x, double y, double z);
 
@@ -86,12 +106,13 @@ class P2DNDTScan : public NdtScanBase<P2DNDTScan, common::lidar_utils::PointXYZI
   PointT front();
   PointT back();
   void transform(const geometry_msgs::msg::Transform &);
+
 private:
- sensor_msgs::msg::PointCloud2 m_cloud;
+  sensor_msgs::msg::PointCloud2 m_cloud;
 };
 
-}
-}
-}
+}  // namespace ndt
+}  // namespace localization
+}  // namespace autoware
 
-#endif
+#endif  // NDT__NDT_REPRESENTATIONS_HPP_

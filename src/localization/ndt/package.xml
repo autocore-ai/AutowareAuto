@@ -7,7 +7,7 @@
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2.0</license>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_auto</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <depend>localization_common</depend>
@@ -16,6 +16,10 @@
     <depend>sensor_msgs</depend>
     <depend>geometry_msgs</depend>
     <depend>eigen</depend>
+    <depend>voxel_grid</depend>
+    <depend>autoware_auto_geometry</depend>
+    <depend>autoware_auto_helper_functions</depend>
+
     <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>

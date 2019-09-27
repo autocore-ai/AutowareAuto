@@ -14,3 +14,4 @@
 // limitations under the License.
 
 #include <ndt/ndt_optimization_problem.hpp>
+#include <ndt/ndt_map.hpp>
