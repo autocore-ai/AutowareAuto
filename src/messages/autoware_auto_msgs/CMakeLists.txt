@@ -10,10 +10,13 @@ ament_auto_find_build_dependencies()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   # Helper types
+  "msg/BoundingBox.msg"
   "msg/Complex32.msg"
   "msg/DiagnosticHeader.msg"
+  "msg/Quaternion32.msg"
   "msg/TrajectoryPoint.msg"
   # Interfaces
+  "msg/BoundingBoxArray.msg"
   "msg/ControlDiagnostic.msg"
   "msg/Trajectory.msg"
   "msg/VehicleControlCommand.msg"
