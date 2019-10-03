@@ -43,4 +43,4 @@ endif()
 
 autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
 # Ament Exporting
-ament_package()
+ament_package(CONFIG_EXTRAS motion_model-extras.cmake)
