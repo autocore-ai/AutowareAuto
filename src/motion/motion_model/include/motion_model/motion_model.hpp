@@ -89,6 +89,9 @@ public:
   /// \return number of dimensions in this model
   constexpr index_t get_num_states() {return NumStates;}
 
+  /// Destructor
+  virtual ~MotionModel() = default;
+
 private:
   MotionModel<NumStates> & operator=(const MotionModel<NumStates> & rhs) = delete;
 };  // class MotionModel
