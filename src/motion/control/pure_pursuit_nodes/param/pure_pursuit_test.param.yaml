@@ -1,0 +1,28 @@
+# config/pure_pursuit_test.param.yaml
+---
+
+pure_pursuit_node:
+  ros__parameters:
+    timeout_ms:                  100
+    pose_topic:                  "current_pose"
+    trajectory_topic:            "trajectory"
+    command_topic:               "ctrl_cmd"
+    diagnosis_topic:             "ctrl_diag"
+    tf_timeout:                  20
+    traj_minimum_rate:           100
+    qos_depth:                   10
+    num_max_traj_history:        5
+    static_frame_ids:
+      - "world"
+    dynamic_frame_ids:
+      - "base_link"
+      - "map"
+    controller:
+      minimum_lookahead_distance:      6.0
+      maximum_lookahead_distance:      100.0
+      speed_to_lookahead_ratio:        2.0
+      is_interpolate_lookahead_point:  false
+      is_delay_compensation:           false
+      emergency_stop_distance:         0.1
+      speed_thres_traveling_direction: 0.3
+      dist_front_rear_wheels:          2.7
