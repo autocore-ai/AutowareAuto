@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_common/motion_common.hpp>
 #include <motion_model/catr_model.hpp>
 #include <time_utils/time_utils.hpp>
 #include <algorithm>
 #include <limits>
 #include <utility>
-#include "pure_pursuit/heading.hpp"
 #include "pure_pursuit/pure_pursuit.hpp"
 
 namespace autoware
@@ -164,23 +164,6 @@ uint32_t PurePursuit::find_second_point(
   return second_nearest_idx;
 }
 
-void PurePursuit::interpolate_points(
-  TrajectoryPoint & target,
-  const TrajectoryPoint & point1,
-  const TrajectoryPoint & point2,
-  const float32_t rate_a) const
-{
-  const float32_t rate_b = 1.0F - rate_a;
-  target.x = (rate_b * point1.x) + (rate_a * point2.x);
-  target.y = (rate_b * point1.y) + (rate_a * point2.y);
-  target.longitudinal_velocity_mps =
-    (rate_b * point1.longitudinal_velocity_mps) + (rate_a * point2.longitudinal_velocity_mps);
-  target.acceleration_mps2 =
-    (rate_b * point1.acceleration_mps2) + (rate_a * point2.acceleration_mps2);
-  const float32_t heading_diff = to_angle(angle_difference(point2.heading, point1.heading));
-  target.heading = angle_addition(point1.heading, from_angle(heading_diff * rate_a));
-  target.heading_rate_rps = (rate_b * point1.heading_rate_rps) + (rate_a * point2.heading_rate_rps);
-}
 ////////////////////////////////////////////////////////////////////////////////
 void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
 {
@@ -224,7 +207,7 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
       const float32_t rate_a =
         0.5F * (((sq_dist_nearest_second + sq_dist_current_nearest) -
         sq_dist_current_second) / sq_dist_nearest_second);
-      interpolate_points(target, nearest_point, second_point, rate_a);
+      target = ::motion::motion_common::interpolate(nearest_point, second_point, rate_a);
     }
   }
   // Error
@@ -234,7 +217,7 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
   m_diag.lateral_error_m = relative_xy.second;
   m_diag.velocity_error_mps =
     target.longitudinal_velocity_mps - current_point.longitudinal_velocity_mps;
-  m_diag.yaw_error_rad = to_angle(angle_difference(target.heading, current_point.heading));
+  m_diag.yaw_error_rad = ::motion::motion_common::to_angle(target.heading - current_point.heading);
   m_diag.acceleration_error_mps2 = target.acceleration_mps2 - current_point.acceleration_mps2;
   m_diag.yaw_rate_error_rps = target.heading_rate_rps - current_point.heading_rate_rps;
 }
@@ -258,14 +241,14 @@ void PurePursuit::delay_compensation(
     CatrModel motion_model;
     Matrix<float32_t, 6U, 1U> x;
     x << current_point.x, current_point.y, current_point.longitudinal_velocity_mps,
-      current_point.acceleration_mps2, to_angle(current_point.heading),
+      current_point.acceleration_mps2, ::motion::motion_common::to_angle(current_point.heading),
       current_point.heading_rate_rps;
     motion_model.reset(x);
     motion_model.predict(diff_nano);
 
     current_point.x = motion_model[CatrState::POSE_X];
     current_point.y = motion_model[CatrState::POSE_Y];
-    current_point.heading = from_angle(motion_model[CatrState::HEADING]);
+    current_point.heading = ::motion::motion_common::from_angle(motion_model[CatrState::HEADING]);
     // To avoid changing the sign of the velocity and
     // underestimating the velocity after the strong brake
     constexpr float32_t speed_thres = 0.01F;  // meter per second
@@ -368,7 +351,7 @@ void PurePursuit::compute_interpolate_target_point(
     // a^2 - r^2 = b^2 - (c - r)^2 -> rate_a = r / c
     const float32_t rate_a =
       sqrtf(compute_points_distance_squared(m_target_point, prev_target_point) / aa_bb);
-    interpolate_points(m_target_point, prev_target_point, target_point, rate_a);
+    m_target_point = ::motion::motion_common::interpolate(prev_target_point, target_point, rate_a);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -429,9 +412,9 @@ std::pair<float32_t, float32_t> PurePursuit::compute_relative_xy_offset(
 {
   const float32_t diff_x = target.x - current.x;
   const float32_t diff_y = target.y - current.y;
-  const auto cs = sin_cos(current.heading);
-  const float32_t cos_pose = cs.cos_value;
-  const float32_t sin_pose = cs.sin_value;
+  const auto cos_pose =
+    (current.heading.real + current.heading.imag) * (current.heading.real - current.heading.imag);
+  const auto sin_pose = 2.0F * current.heading.real * current.heading.imag;
   const float32_t relative_x = (cos_pose * diff_x) + (sin_pose * diff_y);
   const float32_t relative_y = (-sin_pose * diff_x) + (cos_pose * diff_y);
   const std::pair<float32_t, float32_t> relative_xy(relative_x, relative_y);

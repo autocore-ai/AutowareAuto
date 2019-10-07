@@ -79,16 +79,6 @@ private:
   PURE_PURSUIT_LOCAL uint32_t find_second_point(
     const TrajectoryPoint & current_point,
     const uint32_t nearest_idx) const;
-  /// \brief Interpolate the point using given two points and the rate
-  /// \param[inout] target The interpolated point
-  /// \param[in] point1 The input point
-  /// \param[in] point2 The input point
-  /// \param[in] rate_a The ratio between point1 and point2
-  PURE_PURSUIT_LOCAL void interpolate_points(
-    TrajectoryPoint & target,
-    const TrajectoryPoint & point1,
-    const TrajectoryPoint & point2,
-    const float32_t rate_a) const;
   /// \brief Compute error of the current vehicle state by comparing the nearest neighbor
   ///        trajectory point
   /// \param[in] current_point The current position and velocity information

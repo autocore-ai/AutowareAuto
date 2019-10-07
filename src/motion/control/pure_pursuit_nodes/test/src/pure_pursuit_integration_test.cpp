@@ -8,7 +8,7 @@
 #include <autoware_auto_msgs/msg/control_diagnostic.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <pure_pursuit/heading.hpp>
+#include <motion_common/motion_common.hpp>
 #include <pure_pursuit/pure_pursuit.hpp>
 #include <time_utils/time_utils.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -47,7 +47,7 @@ void create_traj(
     traj.points[idx].y = (static_cast<float32_t>(idx) * slope) + offset;
     float32_t velocity = static_cast<float32_t>(idx) + offset;
     traj.points[idx].longitudinal_velocity_mps = velocity;
-    traj.points[idx].heading = autoware::motion::control::pure_pursuit::from_angle(heading);
+    traj.points[idx].heading = ::motion::motion_common::from_angle(heading);
   }
 }
 
@@ -63,7 +63,7 @@ void create_current_pose(
 {
   current_stamp.state.x = x;
   current_stamp.state.y = y;
-  current_stamp.state.heading = autoware::motion::control::pure_pursuit::from_angle(heading);
+  current_stamp.state.heading = ::motion::motion_common::from_angle(heading);
   current_stamp.state.longitudinal_velocity_mps = velocity;
   current_stamp.state.acceleration_mps2 = acceleration;
   current_stamp.state.heading_rate_rps = heading_rate;

@@ -1,6 +1,7 @@
 // Copyright 2017-2018 Apex.AI, Inc.
 // All rights reserved.
 
+#include <motion_common/motion_common.hpp>
 #include <time_utils/time_utils.hpp>
 
 #include <cmath>
@@ -9,7 +10,6 @@
 #include <string>
 #include <vector>
 #include "pure_pursuit_nodes/pure_pursuit_node.hpp"
-#include "pure_pursuit/heading.hpp"
 
 namespace autoware
 {
@@ -119,8 +119,9 @@ void PurePursuitNode::function(TrajectoryPointStamped pose)
       pose.header.frame_id.c_str(),
       m_controller.get_trajectory().header.frame_id.c_str(),
       t_trajectory);
-    transform_pose(pose, pose_to_traj.transform);
-    const auto & cmd = m_controller.update(pose);
+    auto pose_tf = pose;
+    ::motion::motion_common::doTransform(pose, pose_tf, pose_to_traj);
+    const auto & cmd = m_controller.update(pose_tf);
     m_cmd_pub_ptr->publish(cmd);
     const auto & diagnostic = m_controller.get_diagnostic();
     m_diag_pub_ptr->publish(diagnostic);
@@ -128,36 +129,6 @@ void PurePursuitNode::function(TrajectoryPointStamped pose)
     // Since the trajectory is taken successfully, TF graph or the trajectory's timestamp
     // has problems. Fatal error.
     RCLCPP_WARN(get_logger(), "PurePursuitNode: could not subscribe the tf topic");
-  }
-}
-////////////////////////////////////////////////////////////////////////////////
-void PurePursuitNode::transform_pose(
-  TrajectoryPointStamped & pose, const Transform & transform) const
-{
-  // Compute transform TODO(y.tsuji) Ported from the KinematicTracker.
-  // Current ApexOS does not support tf based transformation.
-  const float32_t a2 = static_cast<float32_t>(transform.rotation.w * transform.rotation.w);
-  const float32_t b2 = static_cast<float32_t>(transform.rotation.x * transform.rotation.x);
-  const float32_t c2 = static_cast<float32_t>(transform.rotation.y * transform.rotation.y);
-  const float32_t d2 = static_cast<float32_t>(transform.rotation.z * transform.rotation.z);
-  const float32_t ad = static_cast<float32_t>(transform.rotation.w * transform.rotation.z);
-  const float32_t bc = static_cast<float32_t>(transform.rotation.x * transform.rotation.y);
-  const float32_t rot_xx = (a2 + b2) - (c2 + d2);
-  const float32_t rot_xy = 2.0F * (bc - ad);
-  const float32_t rot_x = static_cast<float32_t>(transform.translation.x);
-  const float32_t rot_yx = 2.0F * (bc + ad);
-  const float32_t rot_yy = (a2 + c2) - (b2 + d2);
-  const float32_t rot_y = static_cast<float32_t>(transform.translation.y);
-  const float32_t pos_x = pose.state.x;
-  pose.state.x = (rot_xx * pos_x) + (rot_xy * pose.state.y) + rot_x;
-  pose.state.y = (rot_yx * pos_x) + (rot_yy * pose.state.y) + rot_y;
-  {
-    // Ensure you're using a normalized 2D quaternion
-    autoware_auto_msgs::msg::Complex32 dth;
-    const auto s = 1.0F / (std::sqrt(a2 + b2 + c2 + d2));
-    dth.real = static_cast<decltype(dth.real)>(transform.rotation.w) * s;
-    dth.imag = static_cast<decltype(dth.imag)>(transform.rotation.z) * s;
-    pose.state.heading = pure_pursuit::angle_addition(pose.state.heading, dth);
   }
 }
 }  // namespace pure_pursuit_nodes

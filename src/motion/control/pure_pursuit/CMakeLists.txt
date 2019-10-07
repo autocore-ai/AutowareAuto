@@ -15,7 +15,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/config.cpp
   include/pure_pursuit/pure_pursuit.hpp
   src/pure_pursuit.cpp
-  src/heading.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
 if(BUILD_TESTING)

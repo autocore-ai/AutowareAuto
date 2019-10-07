@@ -76,12 +76,6 @@ private:
 
   /// \brief Core run loop
   void function(TrajectoryPointStamped pose);
-  /// \brief Transform the current pose by the given transformation
-  /// \param[inout] pose The current vehicle pose
-  /// \param[in] transform The transformation from the source frame to the target frame
-  PURE_PURSUIT_NODES_LOCAL
-  void transform_pose(
-    TrajectoryPointStamped & pose, const Transform & transform) const;
 
   pure_pursuit::PurePursuit m_controller;
   tf2::BufferCore m_tf{};

@@ -15,13 +15,13 @@
 
 #include <gtest/gtest.h>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <motion_common/motion_common.hpp>
 #include <motion_model/catr_model.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #include <time_utils/time_utils.hpp>
 
 #include <string>
 
-#include "pure_pursuit/heading.hpp"
 #include "pure_pursuit/pure_pursuit.hpp"
 
 using autoware::motion::control::pure_pursuit::Config;
@@ -30,7 +30,7 @@ using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using TrajectoryPointStamped = autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware::motion::control::pure_pursuit::ControllerDiagnostic;
-using autoware::motion::control::pure_pursuit::from_angle;
+using ::motion::motion_common::from_angle;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware::motion::motion_model::CatrModel;
 using autoware::motion::motion_model::CatrState;
