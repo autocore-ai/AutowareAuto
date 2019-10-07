@@ -1,6 +1,8 @@
 // Copyright 2017-2018 Apex.AI, Inc.
 // All rights reserved.
 
+#include <time_utils/time_utils.hpp>
+
 #include <cmath>
 #include <chrono>
 #include <utility>
@@ -107,9 +109,7 @@ void PurePursuitNode::function(TrajectoryPointStamped pose)
 {
   // Take a trajectory
   const auto now = std::chrono::system_clock::now();
-  const auto t_epoch = now - now.time_since_epoch();
-  const auto t_trajectory =
-    pure_pursuit::to_duration(m_controller.get_trajectory().header.stamp) + t_epoch;
+  const auto t_trajectory = time_utils::from_message(m_controller.get_trajectory().header.stamp);
   const auto can_transform = m_tf.canTransform(
     pose.header.frame_id.c_str(),
     m_controller.get_trajectory().header.frame_id.c_str(),

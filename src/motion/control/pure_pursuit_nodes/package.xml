@@ -17,6 +17,8 @@
     <depend>tf2</depend>
     <depend>tf2_msgs</depend>
 
+    <build_depend>time_utils</build_depend>
+
     <test_depend>ament_lint_common</test_depend>
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>geometry_msgs</test_depend>

@@ -10,6 +10,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <pure_pursuit/heading.hpp>
 #include <pure_pursuit/pure_pursuit.hpp>
+#include <time_utils/time_utils.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <atomic>
@@ -106,8 +107,7 @@ public:
     m_num_correct_output()  // zero initialization
   {
     // initialize trajectory
-    const auto now = std::chrono::system_clock::now();
-    m_traj_msg.header.stamp = autoware::motion::control::pure_pursuit::to_time(now);;
+    m_traj_msg.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
     create_traj(m_traj_msg, 100U, 0.0F);
     m_traj_msg.header.frame_id = m_trajectory_frame_id.c_str();
     m_trajectory_pub_ptr->publish(m_traj_msg);
@@ -184,8 +184,7 @@ private:
         m_tf_msg.transform.rotation.z += 0.007;  // From 0 to PI/2
         const float32_t z_float = static_cast<float32_t>(m_tf_msg.transform.rotation.z);
         m_tf_msg.transform.rotation.w = sqrtf(1.0F - z_float * z_float);
-        const auto now = std::chrono::system_clock::now();
-        m_tf_msg.header.stamp = autoware::motion::control::pure_pursuit::to_time(now);;
+        m_tf_msg.header.stamp = time_utils::to_message(right_now);
         m_tf2_msg.transforms.push_back(m_tf_msg);
         m_tf2_pub_ptr->publish(m_tf2_msg);
         m_tf2_msg.transforms.clear();
@@ -201,7 +200,7 @@ private:
         create_current_pose(
           m_pose_msg, offset * 2.0F, offset * 2.0F, 0.0F, offset * 10,
           0.0F, 0.0F, m_pose_frame_id.c_str());
-        m_pose_msg.header.stamp = autoware::motion::control::pure_pursuit::to_time(right_now);;
+        m_pose_msg.header.stamp = time_utils::to_message(right_now);
         m_pose_pub_ptr->publish(m_pose_msg);
       }
       m_iteration++;

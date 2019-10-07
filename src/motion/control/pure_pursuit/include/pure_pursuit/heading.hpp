@@ -73,25 +73,6 @@ struct PURE_PURSUIT_PUBLIC TrigValue
 /// \param[in] heading A 2D quaternion to from which to compute sine and cosine
 /// \return Packed sine and cosine values
 PURE_PURSUIT_PUBLIC TrigValue sin_cos(const autoware_auto_msgs::msg::Complex32 heading) noexcept;
-
-/// Convert time point to message time; may over/underflow
-/// \param[in] t The time point to convert
-/// \return Message time
-PURE_PURSUIT_PUBLIC
-builtin_interfaces::msg::Time to_time(const std::chrono::system_clock::time_point t);
-
-/// Convert a message time or duration to a std::chrono duration (ignoring epoch for time points)
-/// \tparam T One of Time or Duration messages
-/// \param[in] t The message to convert
-/// \return std::chrono::duration
-template<typename T>
-PURE_PURSUIT_PUBLIC std::chrono::nanoseconds to_duration(const T t)
-{
-  static_assert(std::is_same<T, builtin_interfaces::msg::Time>::value ||
-    std::is_same<T, builtin_interfaces::msg::Duration>::value,
-    "Must be message time or duration");
-  return std::chrono::nanoseconds{t.nanosec} + std::chrono::seconds{t.sec};
-}
 }  // namespace pure_pursuit
 }  // namespace control
 }  // namespace motion

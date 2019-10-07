@@ -17,6 +17,7 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_model/catr_model.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
+#include <time_utils/time_utils.hpp>
 
 #include <string>
 
@@ -357,8 +358,7 @@ TEST_F(PurePursuitTest, delay_compensation)
     current_pose, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, "pose1");
   VehicleControlCommand command1;
 
-  using autoware::motion::control::pure_pursuit::to_time;
-  const builtin_interfaces::msg::Time pose_time = to_time(std::chrono::system_clock::now());
+  const auto pose_time = time_utils::to_message(std::chrono::system_clock::now());
   current_pose.header.stamp = pose_time;
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
@@ -367,8 +367,8 @@ TEST_F(PurePursuitTest, delay_compensation)
   diag = controller.get_diagnostic();
 
   const builtin_interfaces::msg::Time start_time = diag.header.computation_start;
-  using autoware::motion::control::pure_pursuit::to_duration;
-  const auto diff_nano = to_duration(start_time) - to_duration(pose_time);
+  using time_utils::from_message;
+  const auto diff_nano = from_message(start_time) - from_message(pose_time);
 
   CatrModel model;
   Matrix<float, 6, 1> x;
@@ -392,7 +392,7 @@ TEST_F(PurePursuitTest, delay_compensation)
   create_current_pose(
     current_pose, 1.0F, 1.0F, 0, -15.0F, -2.0F, -1.0F, "pose1");
 
-  const builtin_interfaces::msg::Time & pose_time2 = to_time(std::chrono::system_clock::now());
+  const auto pose_time2 = time_utils::to_message(std::chrono::system_clock::now());
   current_pose.header.stamp = pose_time2;
 
   controller.set_trajectory(traj);
@@ -400,7 +400,7 @@ TEST_F(PurePursuitTest, delay_compensation)
   diag = controller.get_diagnostic();
 
   const builtin_interfaces::msg::Time & start_time2 = diag.header.computation_start;
-  const auto diff_nano2 = to_duration(start_time2) - to_duration(pose_time2);
+  const auto diff_nano2 = from_message(start_time2) - from_message(pose_time2);
 
   Matrix<float, 6, 1> x2;
   x2 << 1.0F, 1.0F, -15.0F, -2.0F, 0, -1.0F;

@@ -89,24 +89,6 @@ TrigValue sin_cos(const autoware_auto_msgs::msg::Complex32 heading) noexcept
     (heading.real + heading.imag) * (heading.real - heading.imag)};
 }
 
-
-builtin_interfaces::msg::Time to_time(const std::chrono::system_clock::time_point t)
-{
-  const std::chrono::nanoseconds dt = t.time_since_epoch();
-  builtin_interfaces::msg::Time ret{};
-  const auto dt_sec = std::chrono::duration_cast<std::chrono::seconds>(dt);
-  const auto clamp_limits = [](const auto dummy, const auto val) -> auto {
-      (void)dummy;
-      using DummyT = decltype(dummy);
-      using T = decltype(val);
-      const auto max = static_cast<T>(std::numeric_limits<DummyT>::max());
-      const auto min = static_cast<T>(std::numeric_limits<DummyT>::min());
-      return static_cast<DummyT>(std::max(std::min(val, max), min));
-    };
-  ret.sec = clamp_limits(decltype(ret.sec) {}, dt_sec.count());
-  ret.nanosec = clamp_limits(decltype(ret.nanosec) {}, (dt - dt_sec).count());
-  return ret;
-}
 }  // namespace pure_pursuit
 }  // namespace control
 }  // namespace motion

@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include <motion_model/catr_model.hpp>
+#include <time_utils/time_utils.hpp>
 #include <algorithm>
 #include <limits>
 #include <utility>
@@ -46,7 +47,7 @@ PurePursuit::PurePursuit(const Config & cfg)
   m_iterations(0U)
 {
   m_diag.header.name = "PurePursuit";
-  m_diag.header.computation_start = to_time(std::chrono::system_clock::now());
+  m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
   m_traj.points.reserve(CAPACITY);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +75,7 @@ const ControllerDiagnostic & PurePursuit::get_diagnostic() const
 ////////////////////////////////////////////////////////////////////////////////
 const VehicleControlCommand & PurePursuit::update(const TrajectoryPointStamped & current_pose)
 {
-  m_diag.header.computation_start = to_time(std::chrono::system_clock::now());
+  m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
   const std::chrono::steady_clock::time_point start(std::chrono::steady_clock::now());
   bool8_t is_success = false;
   TrajectoryPoint current_point = current_pose.state;  // copy 32bytes
@@ -252,7 +253,7 @@ void PurePursuit::delay_compensation(
   const builtin_interfaces::msg::Time & start_time,
   const builtin_interfaces::msg::Time & pose_time)
 {
-  const auto diff_nano = to_duration(start_time) - to_duration(pose_time);
+  const auto diff_nano = time_utils::from_message(start_time) - time_utils::from_message(pose_time);
   if (diff_nano > std::chrono::nanoseconds::zero()) {
     CatrModel motion_model;
     Matrix<float32_t, 6U, 1U> x;
