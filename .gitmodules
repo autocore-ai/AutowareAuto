@@ -1,0 +1,3 @@
+[submodule "src/motion/mpc"]
+	path = src/external/mpc
+	url = https://gitlab.com/aninnymouse/mpc.git
