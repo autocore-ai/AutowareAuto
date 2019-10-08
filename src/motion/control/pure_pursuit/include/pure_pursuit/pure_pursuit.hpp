@@ -21,6 +21,7 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/control_diagnostic.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
+#include <controller_common/controller_base.hpp>
 #include <utility>
 #include "pure_pursuit/config.hpp"
 
@@ -41,26 +42,29 @@ using VehicleControlCommand = autoware_auto_msgs::msg::VehicleControlCommand;
 
 /// \brief Given a trajectory and the current state, compute the control command
 class PURE_PURSUIT_PUBLIC PurePursuit
+  : public ::motion::control::controller_common::ControllerBase
 {
 public:
   /// \brief Default constructor
   /// \param[in] cfg Pure pursuit configuration parameters
   explicit PurePursuit(const Config & cfg);
-  /// \brief Set the trajectory that the controller will refer to.
-  /// \param[in] traj The trajectory
-  void set_trajectory(const Trajectory & traj);
   /// \brief get the current trajectory
   /// \return the current trajectory
   const Trajectory & get_trajectory() const;
   /// \brief Get the diagnosis of the controller
   /// \return the diagnosis result of the controller
   const ControllerDiagnostic & get_diagnostic() const;
+
+protected:
   /// \brief Compute the vehicle command based on the current pose and the given trajectory.
   ///        If the trajectory's size is 0 or the current pose passed through the trajectory,
   ///        the emergency stop acceleration will be computed
-  /// \param[in] current_pose The current position and velocity information
+  /// \param[in] state The current position and velocity information
   /// \return the command for the vehicle control
-  const VehicleControlCommand & update(const TrajectoryPointStamped & current_pose);
+  VehicleControlCommand compute_command_impl(const TrajectoryPointStamped & state) override;
+  /// \brief Set the trajectory that the controller will refer to.
+  /// \param[in] traj The trajectory
+  Trajectory handle_new_trajectory(const Trajectory & traj) override;
 
 private:
   /// \brief Find the nearest neighbor trajectory point from the current vehicle position

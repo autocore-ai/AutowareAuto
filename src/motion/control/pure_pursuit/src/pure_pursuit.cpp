@@ -36,7 +36,11 @@ using Eigen::Matrix;
 constexpr uint32_t CAPACITY = autoware_auto_msgs::msg::Trajectory::CAPACITY;
 ////////////////////////////////////////////////////////////////////////////////
 PurePursuit::PurePursuit(const Config & cfg)
-: m_lookahead_distance(0.0F),
+: ControllerBase{::motion::control::controller_common::BehaviorConfig{
+            3.0F,
+            std::chrono::milliseconds{100LL},
+            ::motion::control::controller_common::ControlReference::SPATIAL}},
+  m_lookahead_distance(0.0F),
   m_traj{},
   m_target_point{},
   m_command{},
@@ -51,7 +55,7 @@ PurePursuit::PurePursuit(const Config & cfg)
   m_traj.points.reserve(CAPACITY);
 }
 ////////////////////////////////////////////////////////////////////////////////
-void PurePursuit::set_trajectory(const Trajectory & traj)
+Trajectory PurePursuit::handle_new_trajectory(const Trajectory & traj)
 {
   m_traj.header = traj.header;
   using Size = decltype(traj.points)::size_type;
@@ -61,6 +65,7 @@ void PurePursuit::set_trajectory(const Trajectory & traj)
   }
   m_is_traj_update = true;
   m_reference_idx = 0U;
+  return m_traj;
 }
 ////////////////////////////////////////////////////////////////////////////////
 const Trajectory & PurePursuit::get_trajectory() const
@@ -73,7 +78,7 @@ const ControllerDiagnostic & PurePursuit::get_diagnostic() const
   return m_diag;
 }
 ////////////////////////////////////////////////////////////////////////////////
-const VehicleControlCommand & PurePursuit::update(const TrajectoryPointStamped & current_pose)
+VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointStamped & current_pose)
 {
   m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
   const std::chrono::steady_clock::time_point start(std::chrono::steady_clock::now());

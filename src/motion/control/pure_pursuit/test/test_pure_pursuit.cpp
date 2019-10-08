@@ -65,8 +65,11 @@ void create_traj(Trajectory & traj, uint32_t size, float32_t heading = PI / 4.0F
   const float32_t offset = 1.0F;
   traj.points.resize(size);
   traj.header.frame_id = "traj";
+  traj.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
   const auto q_heading = from_angle(heading);
   for (uint32_t idx = 0U; idx < size; ++idx) {
+    traj.points[idx].time_from_start.sec = static_cast<int32_t>(idx) / 10;
+    traj.points[idx].time_from_start.nanosec = (idx % 10U) * 1'000'000U;
     traj.points[idx].x = (static_cast<float32_t>(idx) * slope) + offset;
     traj.points[idx].y = (static_cast<float32_t>(idx) * slope) + offset;
     traj.points[idx].longitudinal_velocity_mps = (static_cast<float32_t>(idx) + offset);
@@ -80,8 +83,11 @@ void create_reverse_traj(Trajectory & traj, uint32_t size, float32_t heading = -
   const float32_t offset = 1.0F;
   traj.points.resize(size);
   traj.header.frame_id = "traj";
+  traj.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
   const auto q_heading = from_angle(heading);
   for (uint32_t idx = 0U; idx < size; ++idx) {
+    traj.points[idx].time_from_start.sec = static_cast<int32_t>(idx) / 10;
+    traj.points[idx].time_from_start.nanosec = (idx % 10U) * 1'000'000U;
     traj.points[idx].x = -((static_cast<float32_t>(idx) * slope) + offset);
     traj.points[idx].y = -((static_cast<float32_t>(idx) * slope) + offset);
     traj.points[idx].longitudinal_velocity_mps = -(static_cast<float32_t>(idx) + offset);
@@ -122,7 +128,8 @@ void create_current_pose(
   current_stamp.state.longitudinal_velocity_mps = velocity;
   current_stamp.state.acceleration_mps2 = acceleration;
   current_stamp.state.heading_rate_rps = heading_rate;
-  current_stamp.header.frame_id = frame_id;
+  current_stamp.header.frame_id = "traj";  // frame_id;
+  current_stamp.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
 }
 
 
@@ -149,7 +156,7 @@ TEST_F(PurePursuitTest, simple)
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
   const Trajectory & traj_result = controller.get_trajectory();
 
@@ -163,7 +170,7 @@ TEST_F(PurePursuitTest, simple)
   create_current_pose(
     current_pose, 1.5F, 1.0F, 0.0F, 5.0F, 0.0F, 0.0F, "pose2");
 
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -21.0F / (pow(1.25F, 0.5F) * 2.0F));
@@ -176,7 +183,7 @@ TEST_F(PurePursuitTest, simple)
     current_pose, 0.5F, 2.0F, 0.0F, 5.0F, 0.0F, 0.0F, "pose3");
 
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -24.0F / (pow(1.25F, 0.5F) * 2.0F));
@@ -199,7 +206,7 @@ TEST_F(PurePursuitTest, reverse)
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
@@ -210,7 +217,7 @@ TEST_F(PurePursuitTest, reverse)
 
   create_current_pose(current_pose, -1.5F, -1.0F, 0.0F, -5.0F, 0.0F, 0.0F, "pose2");
 
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 21.0F / (pow(1.25F, 0.5F) * 2.0F));
@@ -225,7 +232,7 @@ TEST_F(PurePursuitTest, reverse)
   create_current_pose(
     current_pose, 0.0, 0.0F, PI, 1.0F, 0.0F, 0.0F, "pose2");
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
   EXPECT_LT(diag.yaw_error_rad - PI / 4.0F, TOL);
 
@@ -233,7 +240,7 @@ TEST_F(PurePursuitTest, reverse)
   create_current_pose(
     current_pose, -1.5F, -1.5F, PI, 1.0F, 0.0F, 0.0F, "pose2");
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
   EXPECT_LT(diag.yaw_error_rad - 0.0F, TOL);
 
@@ -249,7 +256,7 @@ TEST_F(PurePursuitTest, emergency_stop)
 
   // No trajectory set and the car is stopped
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   // Do nothing
@@ -261,7 +268,7 @@ TEST_F(PurePursuitTest, emergency_stop)
     1.0F, 0.0F, 0.0F, "pose2");
 
   // No trajectory set and the car is moving
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   // Emergency stop
@@ -274,14 +281,14 @@ TEST_F(PurePursuitTest, emergency_stop)
 
   // The trajectory is updated and new current pose
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   // If there is no point in the traveling direction
   create_current_pose(current_pose, 120.0F, 120.0F,
     PI / 4.0F, 5.0F, 0.0F, 0.0F, "pose4");
 
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   // Emergency stop
@@ -294,7 +301,7 @@ TEST_F(PurePursuitTest, emergency_stop)
     current_pose, 0.5F, 0.0F, PI, 5.0F, 0.0F, 0.0F, "pose5");
 
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -25.0F / (2.0F * 2.0F));
@@ -316,7 +323,7 @@ TEST_F(PurePursuitTest, interpolation)
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
@@ -328,7 +335,7 @@ TEST_F(PurePursuitTest, interpolation)
   create_current_pose(
     current_pose, 1.5F, 1.0F, PI / 4.0F, 10.0F, 0.0F, 0.0F, "pose2");
 
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FALSE(diag.new_trajectory);
@@ -337,7 +344,7 @@ TEST_F(PurePursuitTest, interpolation)
     current_pose, 2.0F, 4.0F, 0.0F, 5.0F * powf(2.0F, 0.5F),
     0.0F, 0.0F, "pose3");
 
-  command = controller.update(current_pose);
+  command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -41.0F / (pow(2.0F, 0.5F) * 2.0F));
@@ -363,7 +370,7 @@ TEST_F(PurePursuitTest, delay_compensation)
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
-  command1 = controller.update(current_pose);
+  command1 = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   const builtin_interfaces::msg::Time start_time = diag.header.computation_start;
@@ -382,7 +389,7 @@ TEST_F(PurePursuitTest, delay_compensation)
 
   VehicleControlCommand command2;
   controller2.set_trajectory(traj);
-  command2 = controller2.update(current_pose);
+  command2 = controller2.compute_command(current_pose);
 
   EXPECT_FLOAT_EQ(command1.long_accel_mps2, command2.long_accel_mps2);
   EXPECT_FLOAT_EQ(command1.front_wheel_angle_rad, command2.front_wheel_angle_rad);
@@ -396,7 +403,7 @@ TEST_F(PurePursuitTest, delay_compensation)
   current_pose.header.stamp = pose_time2;
 
   controller.set_trajectory(traj);
-  command1 = controller.update(current_pose);
+  command1 = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   const builtin_interfaces::msg::Time & start_time2 = diag.header.computation_start;
@@ -411,7 +418,7 @@ TEST_F(PurePursuitTest, delay_compensation)
     model[CatrState::ACCELERATION], model[CatrState::TURN_RATE], "pose2");
 
   controller2.set_trajectory(traj);
-  command2 = controller2.update(current_pose);
+  command2 = controller2.compute_command(current_pose);
   diag = controller.get_diagnostic();
 
   EXPECT_FLOAT_EQ(command1.long_accel_mps2, command2.long_accel_mps2);

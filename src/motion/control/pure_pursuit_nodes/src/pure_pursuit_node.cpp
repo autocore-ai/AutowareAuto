@@ -121,7 +121,7 @@ void PurePursuitNode::function(TrajectoryPointStamped pose)
       t_trajectory);
     auto pose_tf = pose;
     ::motion::motion_common::doTransform(pose, pose_tf, pose_to_traj);
-    const auto & cmd = m_controller.update(pose_tf);
+    const auto & cmd = m_controller.compute_command(pose_tf);
     m_cmd_pub_ptr->publish(cmd);
     const auto & diagnostic = m_controller.get_diagnostic();
     m_diag_pub_ptr->publish(diagnostic);
