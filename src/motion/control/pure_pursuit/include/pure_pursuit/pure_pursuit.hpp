@@ -61,22 +61,6 @@ protected:
   VehicleControlCommand compute_command_impl(const TrajectoryPointStamped & state) override;
 
 private:
-  /// \brief Find the nearest neighbor trajectory point from the current vehicle position
-  /// \param[in] current_point The current position and velocity information
-  /// \param[inout] nearest_idx The nearest neighbor index in the trajectory
-  /// \param[inout] dist_current_nearest The nearest neighbor distance from the current point
-  /// \return the nearest neighbor point
-  PURE_PURSUIT_LOCAL const TrajectoryPoint & find_nearest_point(
-    const TrajectoryPoint & current_point,
-    uint32_t & nearest_idx,
-    float32_t & dist_current_nearest);
-  /// \brief Find the 2nd nearest neighbor trajectory point from the current vehicle position
-  /// \param[in] current_point The current position and velocity information
-  /// \param[in] nearest_idx The nearest neighbor index in the trajectory
-  /// \return the 2nd nearest neighbor index
-  PURE_PURSUIT_LOCAL uint32_t find_second_point(
-    const TrajectoryPoint & current_point,
-    const uint32_t nearest_idx) const;
   /// \brief Compute error of the current vehicle state by comparing the nearest neighbor
   ///        trajectory point
   /// \param[in] current_point The current position and velocity information

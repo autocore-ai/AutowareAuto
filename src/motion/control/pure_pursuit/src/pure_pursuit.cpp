@@ -89,43 +89,6 @@ VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointSta
   m_diag.header.runtime = time_utils::to_message(duration);
   return m_command;
 }
-////////////////////////////////////////////////////////////////////////////////
-const TrajectoryPoint & PurePursuit::find_nearest_point(
-  const TrajectoryPoint & current_point,
-  uint32_t & nearest_idx,
-  float32_t & dist_current_nearest)
-{
-  for (uint32_t idx = 0U; idx < get_reference_trajectory().points.size(); ++idx) {
-    const float32_t dist = compute_points_distance_squared(current_point, get_reference_trajectory().points[idx]);
-    if (dist < dist_current_nearest) {
-      nearest_idx = idx;
-      dist_current_nearest = dist;
-    }
-  }
-  dist_current_nearest = sqrtf(dist_current_nearest);
-  return get_reference_trajectory().points[nearest_idx];
-}
-////////////////////////////////////////////////////////////////////////////////
-uint32_t PurePursuit::find_second_point(
-  const TrajectoryPoint & current_point,
-  const uint32_t nearest_idx) const
-{
-  uint32_t second_nearest_idx;
-  if (nearest_idx == 0U) {
-    second_nearest_idx = 1U;
-  } else if (nearest_idx == (get_reference_trajectory().points.size() - 1U)) {
-    second_nearest_idx = nearest_idx - 1U;
-  } else {
-    const uint32_t candidate1_idx = nearest_idx - 1U;
-    const uint32_t candidate2_idx = nearest_idx + 1U;
-    const float32_t dist_current_c1 =
-      compute_points_distance_squared(current_point, get_reference_trajectory().points[candidate1_idx]);
-    const float32_t dist_current_c2 =
-      compute_points_distance_squared(current_point, get_reference_trajectory().points[candidate2_idx]);
-    second_nearest_idx = (dist_current_c1 > dist_current_c2) ? candidate2_idx : candidate1_idx;
-  }
-  return second_nearest_idx;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
@@ -149,7 +112,7 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
     auto nearest_idx = decltype(first_idx_after_current) {};
     auto second_nearest_idx = decltype(first_idx_after_current) {1U};
     auto dist_nearest = std::numeric_limits<float32_t>::max();
-    auto dist_second_nearest =  std::numeric_limits<float32_t>::max();
+    auto dist_second_nearest = std::numeric_limits<float32_t>::max();
     if (0U != first_idx_after_current) {
       const auto & next_point = traj.points[first_idx_after_current];
       const auto dist_next = compute_points_distance_squared(current_point, next_point);
