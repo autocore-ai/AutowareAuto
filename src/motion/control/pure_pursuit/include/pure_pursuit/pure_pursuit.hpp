@@ -19,7 +19,6 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
-#include <autoware_auto_msgs/msg/control_diagnostic.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <controller_common/controller_base.hpp>
 #include <utility>
@@ -48,9 +47,6 @@ public:
   /// \brief Default constructor
   /// \param[in] cfg Pure pursuit configuration parameters
   explicit PurePursuit(const Config & cfg);
-  /// \brief Get the diagnosis of the controller
-  /// \return the diagnosis result of the controller
-  const ControllerDiagnostic & get_diagnostic() const;
 
 protected:
   /// \brief Compute the vehicle command based on the current pose and the given trajectory.
@@ -121,7 +117,6 @@ private:
   float32_t m_lookahead_distance;
   TrajectoryPoint m_target_point;
   VehicleControlCommand m_command;
-  ControllerDiagnostic m_diag;
   Config m_config;
 
   bool8_t m_is_traj_update;

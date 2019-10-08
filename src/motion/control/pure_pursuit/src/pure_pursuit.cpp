@@ -39,25 +39,17 @@ PurePursuit::PurePursuit(const Config & cfg)
   m_lookahead_distance(0.0F),
   m_target_point{},
   m_command{},
-  m_diag{},
   m_config(cfg),
   m_is_traj_update(false),
   m_reference_idx(0U),
   m_iterations(0U)
 {
-  m_diag.header.name = "PurePursuit";
-  m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
 }
-////////////////////////////////////////////////////////////////////////////////
-const ControllerDiagnostic & PurePursuit::get_diagnostic() const
-{
-  return m_diag;
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointStamped & current_pose)
 {
   const auto start = std::chrono::system_clock::now();
-  m_diag.header.computation_start = time_utils::to_message(start);
   TrajectoryPoint current_point = current_pose.state;  // copy 32bytes
   compute_errors(current_point);
 
@@ -77,16 +69,6 @@ VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointSta
   }
   ++m_iterations;
 
-  // Diagnostic
-  m_diag.header.data_stamp = current_pose.header.stamp;
-  m_diag.header.iterations = m_iterations;
-  m_diag.new_trajectory = m_is_traj_update;
-  m_is_traj_update = false;
-  m_diag.trajectory_source = get_reference_trajectory().header.frame_id;
-  m_diag.pose_source = current_pose.header.frame_id;
-
-  const auto duration = std::chrono::system_clock::now() - start;
-  m_diag.header.runtime = time_utils::to_message(duration);
   return m_command;
 }
 
@@ -150,16 +132,6 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
       target = ::motion::motion_common::interpolate(nearest_point, second_point, rate_a);
     }
   }
-  // Error
-  const std::pair<float32_t, float32_t> relative_xy =
-    compute_relative_xy_offset(target, current_point);
-  m_diag.longitudinal_error_m = relative_xy.first;
-  m_diag.lateral_error_m = relative_xy.second;
-  m_diag.velocity_error_mps =
-    target.longitudinal_velocity_mps - current_point.longitudinal_velocity_mps;
-  m_diag.yaw_error_rad = ::motion::motion_common::to_angle(target.heading - current_point.heading);
-  m_diag.acceleration_error_mps2 = target.acceleration_mps2 - current_point.acceleration_mps2;
-  m_diag.yaw_rate_error_rps = target.heading_rate_rps - current_point.heading_rate_rps;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void PurePursuit::compute_lookahead_distance(const float32_t current_velocity)
