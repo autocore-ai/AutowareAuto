@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <motion_common/motion_common.hpp>
-#include <motion_model/catr_model.hpp>
 #include <time_utils/time_utils.hpp>
 #include <algorithm>
 #include <limits>
@@ -30,9 +29,6 @@ namespace control
 namespace pure_pursuit
 {
 
-using motion::motion_model::CatrModel;
-using motion::motion_model::CatrState;
-using Eigen::Matrix;
 constexpr uint32_t CAPACITY = autoware_auto_msgs::msg::Trajectory::CAPACITY;
 ////////////////////////////////////////////////////////////////////////////////
 PurePursuit::PurePursuit(const Config & cfg)
@@ -80,36 +76,24 @@ const ControllerDiagnostic & PurePursuit::get_diagnostic() const
 ////////////////////////////////////////////////////////////////////////////////
 VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointStamped & current_pose)
 {
-  m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
-  const std::chrono::steady_clock::time_point start(std::chrono::steady_clock::now());
-  bool8_t is_success = false;
+  const auto start = std::chrono::system_clock::now();
+  m_diag.header.computation_start = time_utils::to_message(start);
   TrajectoryPoint current_point = current_pose.state;  // copy 32bytes
   compute_errors(current_point);
 
-  if (!m_traj.points.empty()) {
-    if (m_config.get_is_delay_compensation()) {
-      delay_compensation(
-        current_point, m_diag.header.computation_start, current_pose.header.stamp);
-    }
-    compute_lookahead_distance(current_point.longitudinal_velocity_mps);
-    is_success = compute_target_point(current_point);
+  if (m_config.get_is_delay_compensation()) {
+    current_point =
+      predict(current_point, start - time_utils::from_message(current_pose.header.stamp));
   }
+  compute_lookahead_distance(current_point.longitudinal_velocity_mps);
+  const auto is_success = compute_target_point(current_point);
 
-  if ((m_traj.points.empty()) || (!is_success)) {
-    constexpr float32_t speed_stop_eps = 0.001F;  // meter per second
-    if (fabsf(current_point.longitudinal_velocity_mps) < speed_stop_eps) {
-      // If the vehicle is stopped
-      m_command.long_accel_mps2 = 0.0F;
-    } else {
-      // If the vehicle is moving
-      m_command.long_accel_mps2 = compute_command_accel_mps(current_point, true);
-    }
-    m_command.front_wheel_angle_rad = 0.0F;
-    m_command.rear_wheel_angle_rad = 0.0F;
-  } else {
+  if (is_success) {
     m_command.long_accel_mps2 = compute_command_accel_mps(current_point, false);
     m_command.front_wheel_angle_rad = compute_steering_rad(current_point);
     m_command.rear_wheel_angle_rad = 0.0F;
+  } else {
+    m_command = compute_stop_command(current_pose);
   }
   ++m_iterations;
 
@@ -121,14 +105,8 @@ VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointSta
   m_diag.trajectory_source = m_traj.header.frame_id;
   m_diag.pose_source = current_pose.header.frame_id;
 
-  const std::chrono::steady_clock::time_point stop(std::chrono::steady_clock::now());
-  const auto duration = stop - start;
-  const int32_t time_sec = static_cast<int32_t>(
-    std::chrono::duration_cast<std::chrono::seconds>(duration).count());
-  const uint32_t time_nano = static_cast<uint32_t>(
-    std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
-  m_diag.header.runtime.sec = time_sec;
-  m_diag.header.runtime.nanosec = time_nano;
+  const auto duration = std::chrono::system_clock::now() - start;
+  m_diag.header.runtime = time_utils::to_message(duration);
   return m_command;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,40 +212,6 @@ void PurePursuit::compute_lookahead_distance(const float32_t current_velocity)
   m_lookahead_distance =
     std::max(m_config.get_minimum_lookahead_distance(),
       std::min(lookahead_distance, m_config.get_maximum_lookahead_distance()));
-}
-////////////////////////////////////////////////////////////////////////////////
-void PurePursuit::delay_compensation(
-  TrajectoryPoint & current_point,
-  const builtin_interfaces::msg::Time & start_time,
-  const builtin_interfaces::msg::Time & pose_time)
-{
-  const auto diff_nano = time_utils::from_message(start_time) - time_utils::from_message(pose_time);
-  if (diff_nano > std::chrono::nanoseconds::zero()) {
-    CatrModel motion_model;
-    Matrix<float32_t, 6U, 1U> x;
-    x << current_point.x, current_point.y, current_point.longitudinal_velocity_mps,
-      current_point.acceleration_mps2, ::motion::motion_common::to_angle(current_point.heading),
-      current_point.heading_rate_rps;
-    motion_model.reset(x);
-    motion_model.predict(diff_nano);
-
-    current_point.x = motion_model[CatrState::POSE_X];
-    current_point.y = motion_model[CatrState::POSE_Y];
-    current_point.heading = ::motion::motion_common::from_angle(motion_model[CatrState::HEADING]);
-    // To avoid changing the sign of the velocity and
-    // underestimating the velocity after the strong brake
-    constexpr float32_t speed_thres = 0.01F;  // meter per second
-    if (fabsf(current_point.longitudinal_velocity_mps) > speed_thres) {
-      if (fabsf(motion_model[CatrState::VELOCITY]) > speed_thres) {
-        current_point.longitudinal_velocity_mps = motion_model[CatrState::VELOCITY];
-      }
-    }
-  } else if (diff_nano < std::chrono::nanoseconds::zero()) {
-    throw std::runtime_error(
-            "The timestamp of the controller should be bigger than the one of the pose's result");
-  } else {
-    // Do nothing
-  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t PurePursuit::in_traveling_direction(

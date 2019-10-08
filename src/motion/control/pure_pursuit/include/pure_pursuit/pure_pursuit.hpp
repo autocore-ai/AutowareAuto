@@ -91,14 +91,6 @@ private:
   ///        from the velocity to distance
   /// \param[in] current_velocity The current vehicle velocity
   PURE_PURSUIT_LOCAL void compute_lookahead_distance(const float32_t current_velocity);
-  /// \brief Revise the current position with the Catr model according to the timestamp difference
-  /// \param[in] current_point The current position and velocity information
-  /// \param[in] start_time The computation start's time stamp
-  /// \param[in] pose_time The current pose's time stamp
-  PURE_PURSUIT_LOCAL void delay_compensation(
-    TrajectoryPoint & current_point,
-    const builtin_interfaces::msg::Time & start_time,
-    const builtin_interfaces::msg::Time & pose_time);
   /// \brief Whether the point is in the traveling direction.
   ///        If the value of the target velocity computed the previous update is positive,
   ///        the current target should be in the forward direction
