@@ -37,7 +37,6 @@ PurePursuit::PurePursuit(const Config & cfg)
             std::chrono::milliseconds{100LL},
             ::motion::control::controller_common::ControlReference::SPATIAL}},
   m_lookahead_distance(0.0F),
-  m_traj{},
   m_target_point{},
   m_command{},
   m_diag{},
@@ -48,25 +47,6 @@ PurePursuit::PurePursuit(const Config & cfg)
 {
   m_diag.header.name = "PurePursuit";
   m_diag.header.computation_start = time_utils::to_message(std::chrono::system_clock::now());
-  m_traj.points.reserve(CAPACITY);
-}
-////////////////////////////////////////////////////////////////////////////////
-Trajectory PurePursuit::handle_new_trajectory(const Trajectory & traj)
-{
-  m_traj.header = traj.header;
-  using Size = decltype(traj.points)::size_type;
-  m_traj.points.resize(std::min(traj.points.size(), static_cast<Size>(CAPACITY)));
-  if (!traj.points.empty()) {
-    (void)std::copy(std::begin(traj.points), std::end(traj.points), std::begin(m_traj.points));
-  }
-  m_is_traj_update = true;
-  m_reference_idx = 0U;
-  return m_traj;
-}
-////////////////////////////////////////////////////////////////////////////////
-const Trajectory & PurePursuit::get_trajectory() const
-{
-  return m_traj;
 }
 ////////////////////////////////////////////////////////////////////////////////
 const ControllerDiagnostic & PurePursuit::get_diagnostic() const
@@ -102,7 +82,7 @@ VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointSta
   m_diag.header.iterations = m_iterations;
   m_diag.new_trajectory = m_is_traj_update;
   m_is_traj_update = false;
-  m_diag.trajectory_source = m_traj.header.frame_id;
+  m_diag.trajectory_source = get_reference_trajectory().header.frame_id;
   m_diag.pose_source = current_pose.header.frame_id;
 
   const auto duration = std::chrono::system_clock::now() - start;
@@ -115,15 +95,15 @@ const TrajectoryPoint & PurePursuit::find_nearest_point(
   uint32_t & nearest_idx,
   float32_t & dist_current_nearest)
 {
-  for (uint32_t idx = 0U; idx < m_traj.points.size(); ++idx) {
-    const float32_t dist = compute_points_distance_squared(current_point, m_traj.points[idx]);
+  for (uint32_t idx = 0U; idx < get_reference_trajectory().points.size(); ++idx) {
+    const float32_t dist = compute_points_distance_squared(current_point, get_reference_trajectory().points[idx]);
     if (dist < dist_current_nearest) {
       nearest_idx = idx;
       dist_current_nearest = dist;
     }
   }
   dist_current_nearest = sqrtf(dist_current_nearest);
-  return m_traj.points[nearest_idx];
+  return get_reference_trajectory().points[nearest_idx];
 }
 ////////////////////////////////////////////////////////////////////////////////
 uint32_t PurePursuit::find_second_point(
@@ -133,15 +113,15 @@ uint32_t PurePursuit::find_second_point(
   uint32_t second_nearest_idx;
   if (nearest_idx == 0U) {
     second_nearest_idx = 1U;
-  } else if (nearest_idx == (m_traj.points.size() - 1U)) {
+  } else if (nearest_idx == (get_reference_trajectory().points.size() - 1U)) {
     second_nearest_idx = nearest_idx - 1U;
   } else {
     const uint32_t candidate1_idx = nearest_idx - 1U;
     const uint32_t candidate2_idx = nearest_idx + 1U;
     const float32_t dist_current_c1 =
-      compute_points_distance_squared(current_point, m_traj.points[candidate1_idx]);
+      compute_points_distance_squared(current_point, get_reference_trajectory().points[candidate1_idx]);
     const float32_t dist_current_c2 =
-      compute_points_distance_squared(current_point, m_traj.points[candidate2_idx]);
+      compute_points_distance_squared(current_point, get_reference_trajectory().points[candidate2_idx]);
     second_nearest_idx = (dist_current_c1 > dist_current_c2) ? candidate2_idx : candidate1_idx;
   }
   return second_nearest_idx;
@@ -151,7 +131,8 @@ uint32_t PurePursuit::find_second_point(
 void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
 {
   TrajectoryPoint target;
-  if (m_traj.points.empty()) {
+  const auto & traj = get_reference_trajectory();
+  if (traj.points.empty()) {
     // Do nothing
     target.x = current_point.x;
     target.y = current_point.y;
@@ -159,23 +140,40 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
     target.longitudinal_velocity_mps = 0.0F;  // should be stopped
     target.heading_rate_rps = 0.0F;
     target.acceleration_mps2 = 0.0F;
-  } else if (m_traj.points.size() == 1U) {
-    target = m_traj.points[0U];
+  } else if (traj.points.size() == 1U) {
+    target = traj.points[0U];
   } else {
-    uint32_t nearest_idx{};
-    float32_t dist_current_nearest = std::numeric_limits<float32_t>::max();
-    const TrajectoryPoint & nearest_point = find_nearest_point(
-      current_point, nearest_idx, dist_current_nearest);
-
-    const uint32_t second_nearest_idx = find_second_point(current_point, nearest_idx);
-    const TrajectoryPoint & second_point = m_traj.points[second_nearest_idx];
-    const float32_t dist_current_second =
-      sqrtf(compute_points_distance_squared(current_point, second_point));
-
+    // This is the first point on trajectory just after the current_point; closest is either this
+    // index, or the one just before
+    const auto first_idx_after_current = get_current_state_spatial_index();
+    auto nearest_idx = decltype(first_idx_after_current) {};
+    auto second_nearest_idx = decltype(first_idx_after_current) {1U};
+    auto dist_nearest = std::numeric_limits<float32_t>::max();
+    auto dist_second_nearest =  std::numeric_limits<float32_t>::max();
+    if (0U != first_idx_after_current) {
+      const auto & next_point = traj.points[first_idx_after_current];
+      const auto dist_next = compute_points_distance_squared(current_point, next_point);
+      const auto last_idx = first_idx_after_current - 1U;
+      const auto & last_point = traj.points[last_idx];
+      const auto dist_last = compute_points_distance_squared(current_point, last_point);
+      if (dist_last < dist_next) {
+        nearest_idx = last_idx;
+        second_nearest_idx = first_idx_after_current;
+        dist_nearest = dist_last;
+        dist_second_nearest = dist_next;
+      } else {
+        nearest_idx = first_idx_after_current;
+        second_nearest_idx = last_idx;
+        dist_nearest = dist_next;
+        dist_second_nearest = dist_last;
+      }
+    }
+    const auto & nearest_point = traj.points[nearest_idx];
+    const auto & second_point = traj.points[second_nearest_idx];
     // Decide which side of the point is the second nearest point
-    const float32_t dist_nearest_second =
-      sqrtf(compute_points_distance_squared(nearest_point, second_point));
-    if (dist_nearest_second < 0.01F) {
+    const auto dist_nearest_second =
+      compute_points_distance_squared(nearest_point, second_point);
+    if (dist_nearest_second < 0.1F) {
       target = nearest_point;
     } else {
       // linear interpolation: Compute the interpolated point `P` between `A` and `B`.
@@ -184,12 +182,8 @@ void PurePursuit::compute_errors(const TrajectoryPoint & current_point)
       // A----------------*-------B
       //                  |
       //                  * C
-      const float32_t sq_dist_current_nearest = dist_current_nearest * dist_current_nearest;
-      const float32_t sq_dist_current_second = dist_current_second * dist_current_second;
-      const float32_t sq_dist_nearest_second = dist_nearest_second * dist_nearest_second;
       const float32_t rate_a =
-        0.5F * (((sq_dist_nearest_second + sq_dist_current_nearest) -
-        sq_dist_current_second) / sq_dist_nearest_second);
+        0.5F * (((dist_nearest_second + dist_nearest) - dist_second_nearest) / dist_nearest_second);
       target = ::motion::motion_common::interpolate(nearest_point, second_point, rate_a);
     }
   }
@@ -247,7 +241,7 @@ void PurePursuit::compute_interpolate_target_point(
   const bool8_t has_idx = (idx != 0U);
   const uint32_t prev_idx = has_idx ? (idx - 1U) : 0U;
   const TrajectoryPoint & prev_target_point =
-    has_idx ? m_traj.points[prev_idx] : current_point;
+    has_idx ? get_reference_trajectory().points[prev_idx] : current_point;
   // Compute the intersection between the line and the circle
   // The center of circle is the current position and moved into (0, 0)
   // compute the linear equation (ax + by + c = 0) from the prev and current points
@@ -309,8 +303,9 @@ bool8_t PurePursuit::compute_target_point(const TrajectoryPoint & current_point)
   uint32_t idx = m_reference_idx;
   bool8_t is_travel_direct = false;
   uint32_t last_idx_for_noupdate = 0U;
-  for (; idx < m_traj.points.size(); ++idx) {
-    const TrajectoryPoint & target_point = m_traj.points[idx];
+  const auto & traj = get_reference_trajectory();
+  for (; idx < traj.points.size(); ++idx) {
+    const TrajectoryPoint & target_point = traj.points[idx];
     // judge wheter the target point is in the forward of the traveling direction
     if (in_traveling_direction(current_point, target_point)) {
       is_travel_direct = true;
@@ -333,10 +328,10 @@ bool8_t PurePursuit::compute_target_point(const TrajectoryPoint & current_point)
 
   bool8_t is_success = true;
   // If all points are within the distance threshold,
-  if (idx == m_traj.points.size()) {
+  if (idx == traj.points.size()) {
     if (is_travel_direct) {
       // use the farthest target index in the traveling direction
-      m_target_point = m_traj.points[last_idx_for_noupdate];
+      m_target_point = traj.points[last_idx_for_noupdate];
       m_reference_idx = last_idx_for_noupdate;
     } else {
       // If the trajectory was not updated and there is no point in the traveling direction

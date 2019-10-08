@@ -48,9 +48,6 @@ public:
   /// \brief Default constructor
   /// \param[in] cfg Pure pursuit configuration parameters
   explicit PurePursuit(const Config & cfg);
-  /// \brief get the current trajectory
-  /// \return the current trajectory
-  const Trajectory & get_trajectory() const;
   /// \brief Get the diagnosis of the controller
   /// \return the diagnosis result of the controller
   const ControllerDiagnostic & get_diagnostic() const;
@@ -62,9 +59,6 @@ protected:
   /// \param[in] state The current position and velocity information
   /// \return the command for the vehicle control
   VehicleControlCommand compute_command_impl(const TrajectoryPointStamped & state) override;
-  /// \brief Set the trajectory that the controller will refer to.
-  /// \param[in] traj The trajectory
-  Trajectory handle_new_trajectory(const Trajectory & traj) override;
 
 private:
   /// \brief Find the nearest neighbor trajectory point from the current vehicle position
@@ -141,7 +135,6 @@ private:
     const bool8_t is_emergency) const;
 
   float32_t m_lookahead_distance;
-  Trajectory m_traj;
   TrajectoryPoint m_target_point;
   VehicleControlCommand m_command;
   ControllerDiagnostic m_diag;

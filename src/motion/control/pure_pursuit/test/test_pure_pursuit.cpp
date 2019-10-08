@@ -158,7 +158,7 @@ TEST_F(PurePursuitTest, simple)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
   diag = controller.get_diagnostic();
-  const Trajectory & traj_result = controller.get_trajectory();
+  const Trajectory & traj_result = controller.get_reference_trajectory();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.0F * dist_front_rear_wheels));
