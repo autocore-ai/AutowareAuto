@@ -16,6 +16,7 @@
 
     <build_depend>builtin_interfaces</build_depend>
     <build_depend>motion_common</build_depend>
+    <build_depend>motion_testing</build_depend>
     <build_depend>osrf_testing_tools_cpp</build_depend>
     <build_depend>time_utils</build_depend>
 

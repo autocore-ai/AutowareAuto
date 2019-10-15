@@ -28,6 +28,7 @@ if(BUILD_TESTING)
   set(PURE_PURSUIT_GTEST pure_pursuit_gtest)
   ament_add_gtest(${PURE_PURSUIT_GTEST}
     test/gtest_main.cpp
+    test/sanity_checks.cpp
     test/test_pure_pursuit.cpp)
   target_include_directories(${PURE_PURSUIT_GTEST} PRIVATE "include")
   target_link_libraries(${PURE_PURSUIT_GTEST} ${PROJECT_NAME} osrf_testing_tools_cpp::memory_tools)
