@@ -61,7 +61,10 @@ build_barebones:
           cmake
           build-essential
           python-rosdep
+          git
+          clang-tidy
       '
+    - 'git submodule update --init --recursive'
     - 'rosdep init && rosdep update'
     - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
     - 'source /opt/ros/dashing/setup.bash'
@@ -76,6 +79,11 @@ build:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          git
+          clang-tidy
+      '
+    - 'git submodule update --init --recursive'
     # build and test
     - 'colcon build
            --merge-install
@@ -125,6 +133,11 @@ coverage:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          git
+          clang-tidy
+      '
+    - 'git submodule update --init --recursive'
     - 'colcon build
            --cmake-args
              -DCMAKE_BUILD_TYPE=Debug
