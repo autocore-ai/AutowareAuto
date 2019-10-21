@@ -13,10 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
+#include <limits>
+#include <utility>
 
-int main(int argc, char * argv[])
+#include "xsens_driver/xsens_gps_translator.hpp"
+
+
+namespace autoware
 {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+namespace drivers
+{
+namespace xsens_driver
+{
+////////////////////////////////////////////////////////////////////////////////
+XsensGpsTranslator::Config::Config()
+{
 }
+
+}  // namespace xsens_driver
+}  // namespace drivers
+}  // namespace autoware

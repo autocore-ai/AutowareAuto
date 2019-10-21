@@ -67,31 +67,73 @@ class SerialDriverNode : public rclcpp_lifecycle::LifecycleNode,
   public autoware::common::helper_functions::crtp<Derived>
 {
 public:
+  class SerialPortConfig
+  {
+public:
+    /// \brief Default constructor, configuration class
+    /// \param[in] baud_rate Baud rate to read from the serial port.
+    /// \param[in] flow_control Whether to use hardware, software or no flow control.
+    /// \param[in] parity Parity of the serial transmission.
+    /// \param[in] stop_bits Stop bits of the serial transmission.
+    SerialPortConfig(
+      uint32_t baud_rate,
+      flow_control_t flow_control,
+      parity_t parity,
+      stop_bits_t stop_bits
+    )
+    : baud_rate_(baud_rate),
+      flow_control_(flow_control),
+      parity_(parity),
+      stop_bits_(stop_bits)
+    {}
+
+    uint32_t get_baud_rate() const
+    {
+      return baud_rate_;
+    }
+    flow_control_t get_flow_control() const
+    {
+      return flow_control_;
+    }
+    parity_t get_parity() const
+    {
+      return parity_;
+    }
+    stop_bits_t get_stop_bits() const
+    {
+      return stop_bits_;
+    }
+
+private:
+    uint32_t baud_rate_;
+    flow_control_t flow_control_;
+    parity_t parity_;
+    stop_bits_t stop_bits_;
+  };
+
   /// \brief Default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals.
   /// \param[in] topic Name of the topic to publish output on.
   /// \param[in] device_name Name of the serial device.
-  /// \param[in] baud_rate Baud rate to read from the serial port.
-  /// \param[in] flow_control Whether to use hardware, software or no flow control.
-  /// \param[in] parity Parity of the serial transmission.
-  /// \param[in] stop_bits Stop bits of the serial transmission.
   /// \param[in] history_depth Size of the publisher's queue.
+  /// \param[in] history_depth Size of the publisher's queue.
+  /// \param[in] serial_port_config config struct with baud_rate, flow_control, parity and
+  /// stop_bits params
   /// \throw runtime error if failed to start threads or configure driver.
   SerialDriverNode(
     const std::string & node_name,
     const std::string & topic,
     const std::string & device_name,
-    uint32_t baud_rate,
-    flow_control_t flow_control,
-    parity_t parity,
-    stop_bits_t stop_bits,
+    const SerialPortConfig & serial_port_config,
     size_t history_depth = 10)
   : LifecycleNode(node_name),
     m_pub_ptr(this->create_publisher<OutputT>(topic, rclcpp::QoS(history_depth))),
     m_io_service(),
     m_serial_port(m_io_service)
   {
-    init_port(device_name, baud_rate, flow_control, parity, stop_bits);
+    init_port(device_name, serial_port_config.get_baud_rate(),
+      serial_port_config.get_flow_control(),
+      serial_port_config.get_parity(), serial_port_config.get_stop_bits());
   }
 
   /// \brief Constructor
@@ -202,7 +244,7 @@ private:
   {
     boost::system::error_code serial_error;
     constexpr size_t max_data_size = 64 * 1024;
-    const size_t len = boost::asio::read(m_serial_port, boost::asio::buffer(&pkt,
+    const size_t len = boost::asio::read(port, boost::asio::buffer(&pkt,
         max_data_size), boost::asio::transfer_exactly(sizeof(pkt)),
         serial_error);
 
@@ -214,7 +256,7 @@ private:
   }
 
   void init_port(
-    const std::string & device_name, uint16_t baud_rate, flow_control_t flow_control,
+    const std::string & device_name, uint32_t baud_rate, flow_control_t flow_control,
     parity_t parity, stop_bits_t stop_bits)
   {
     m_serial_port.open(device_name);

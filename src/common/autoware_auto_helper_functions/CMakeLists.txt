@@ -22,6 +22,15 @@ find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 
 if(BUILD_TESTING)
+  # Unit tests
+  find_package(ament_cmake_gtest REQUIRED)
+  set(TEST_BYTE_READER_EXE test_byte_reader)
+  ament_add_gtest(${TEST_BYTE_READER_EXE}
+          test/gtest_main.cpp
+          test/test_byte_reader.cpp)
+  target_include_directories(${TEST_BYTE_READER_EXE} PRIVATE include)
+  target_link_libraries(${TEST_BYTE_READER_EXE} ${TEST_LIB} util)
+
   # run linters
   autoware_static_code_analysis()
 endif()

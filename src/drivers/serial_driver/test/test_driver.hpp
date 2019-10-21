@@ -43,10 +43,7 @@ public:
     const std::string & node_name,
     const std::string & topic,
     const std::string & device_name,
-    uint32_t baud_rate,
-    flow_control_t flow_control,
-    parity_t parity,
-    stop_bits_t stop_bits);
+    const SerialPortConfig & serial_port_config);
 
   int32_t times_init_called() const;
   int32_t get_last_value() const;

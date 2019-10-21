@@ -13,10 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
+#include "xsens_node/xsens_imu_node.hpp"
 
-int main(int argc, char * argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+template class autoware::drivers::xsens_node::XsensCommonNode<
+    autoware::drivers::xsens_driver::XsensImuTranslator, sensor_msgs::msg::Imu
+>;
