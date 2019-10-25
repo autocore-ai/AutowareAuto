@@ -65,6 +65,7 @@ The following metrics are defined:
 1. Mean/max/95% algorithm runtime
 2. Mean/max/95% algorithm iterations
 3. Mean/max/95% algorithm runtime/iteration
+4. Algorithm complexity (e.g. Big O)
 
 ## Localization algorithm metrics
 
