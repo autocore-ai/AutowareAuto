@@ -55,6 +55,7 @@ build_barebones:
           ca-certificates
       '
     - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
+    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros-latest.list'
     - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
     - 'apt-get update && apt-get -y --no-install-recommends install
           python3-colcon-common-extensions
