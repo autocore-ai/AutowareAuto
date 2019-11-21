@@ -234,14 +234,23 @@ namespace geometry
 namespace point_adapter
 {
 template<>
-EUCLIDEAN_CLUSTER_PUBLIC float32_t x_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt);
+inline EUCLIDEAN_CLUSTER_PUBLIC auto x_(
+  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+{
+  return pt.get_point().x;
+}
 template<>
-EUCLIDEAN_CLUSTER_PUBLIC float32_t y_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt);
+inline EUCLIDEAN_CLUSTER_PUBLIC auto y_(
+  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+{
+  return pt.get_point().y;
+}
 template<>
-EUCLIDEAN_CLUSTER_PUBLIC float32_t z_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt);
+inline EUCLIDEAN_CLUSTER_PUBLIC auto z_(
+  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+{
+  return pt.get_point().z;
+}
 }  // namespace point_adapter
 }  // namespace geometry
 }  // namespace common

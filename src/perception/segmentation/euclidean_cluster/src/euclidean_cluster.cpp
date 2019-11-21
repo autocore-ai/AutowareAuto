@@ -23,31 +23,6 @@
 
 namespace autoware
 {
-namespace common
-{
-namespace geometry
-{
-namespace point_adapter
-{
-//lint -e1576 NOLINT TODO(c.ho) how to fix without circular dependency?
-template<>
-float32_t x_(const perception::segmentation::euclidean_cluster::PointXYZII & pt)
-{
-  return pt.get_point().x;
-}
-template<>
-float32_t y_(const perception::segmentation::euclidean_cluster::PointXYZII & pt)
-{
-  return pt.get_point().y;
-}
-template<>
-float32_t z_(const perception::segmentation::euclidean_cluster::PointXYZII & pt)
-{
-  return pt.get_point().z;
-}
-}  // namespace point_adapter
-}  // namespace geometry
-}  // namespace common
 namespace perception
 {
 namespace segmentation
