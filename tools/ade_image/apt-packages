@@ -1,5 +1,6 @@
 bash-completion
 clang
+clang-tidy
 curl
 doxygen
 emacs
