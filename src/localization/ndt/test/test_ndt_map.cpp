@@ -33,23 +33,24 @@ TEST_F(TestMapValid, map_pcl_meta_validation) {
   using PointField = sensor_msgs::msg::PointField;
 
   // Some invalid fields:
-  const auto pf10 = make_pf("x", 8U, PointField::FLOAT32, 1U);
   const auto pf11 = make_pf("x", 4U, PointField::FLOAT64, 1U);
   const auto pf12 = make_pf("x", 8U, PointField::FLOAT64, 2U);
   const auto pf13 = make_pf("xyz", 8U, PointField::FLOAT64, 1U);
+  const auto pf14 = make_pf("x", 8U, PointField::FLOAT32, 1U);
 
-  const std::vector<PointField> correct_field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
+  const std::vector<PointField> correct_field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9,
+    pf10};
 
   const std::vector<std::vector<PointField>> incorrect_field_sets{
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Extra field
-    {pf2, pf1, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Misordered
-    {pf10, pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in start
-    {pf1, pf2, pf10, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in middle
-    {pf10, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
-    {pf11, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
-    {pf12, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
+    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10, pf11},  // Extra field
+    {pf2, pf1, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Misordered
+    {pf14, pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Extra field in start
+    {pf1, pf2, pf14, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Extra field in middle
+    {pf14, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
+    {pf11, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
+    {pf12, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
+    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
+    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
     {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8},  // missing field
     {}
   };
@@ -72,26 +73,20 @@ TEST_F(TestMapValid, map_pcl_meta_validation) {
 }
 
 TEST_F(TestMapValid, map_pcl_size_validation) {
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
 
   EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size, row_step, width,
     point_step)), num_points);
 
   // Data larger than expected means that the return value will exclude the excess data
-  // data.size(), row_step and width should be consistent, otherwise the minimum of 3 will
-  // determine the returned size
+  // data.size(), row_step and width * point_step should be consistent, otherwise the
+  // minimum of 3 will determine the returned size
   EXPECT_EQ(validate_pcl_map(
       make_pcl(field_set, 1U, data_size + point_step, row_step, width, point_step)), num_points);
   EXPECT_EQ(validate_pcl_map(
       make_pcl(field_set, 1U, data_size, row_step + point_step, width, point_step)), num_points);
   EXPECT_EQ(validate_pcl_map(
-      make_pcl(field_set, 1U, data_size, row_step, width + point_step, point_step)), num_points);
-
-  // Even if the metadata and the data size is consistent, if the size is not divisible to
-  // point_step, the excess data will be ignored.
-  ASSERT_NE((data_size + 1U) % point_step, 0U);  // Required for the test to work.
-  EXPECT_EQ(validate_pcl_map(
-      make_pcl(field_set, 1U, data_size + 1U, row_step + 1U, width + 1U, point_step)), num_points);
+      make_pcl(field_set, 1U, data_size, row_step, width + 1U, point_step)), num_points);
 
   // Data shorter than expected: return the greatest number of points that can be read
   // given the point_step
