@@ -51,7 +51,7 @@ using environment variables to define the configuration.
 
 ```
 $ cd adehome
-$ git clone git@gitlab.com:autowarefoundation/autoware.auto/AutowareAuto.git
+$ git clone --recurse-submodules git@gitlab.com:autowarefoundation/autoware.auto/AutowareAuto.git
 $ cd AutowareAuto
 $ ade start
 $ ade enter
