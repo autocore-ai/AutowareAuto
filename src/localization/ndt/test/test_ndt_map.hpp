@@ -100,15 +100,14 @@ using PointXYZ = geometry_msgs::msg::Point32;
 
 common::lidar_utils::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  common::lidar_utils::PointXYZIF pt;
-  pt.x = v(0);
-  pt.y = v(1);
-  pt.z = v(2);
-  return pt;
+  return common::lidar_utils::PointXYZIF{
+    static_cast<float>(v(0)),
+    static_cast<float>(v(1)),
+    static_cast<float>(v(2))};
 }
 
 // add the point `center` and 4 additional points in a fixed distance from the center
-// resulting in 5 points with random but bounded covariance
+// resulting in 7 points with random but bounded covariance
 void add_cell(
   sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
   const Eigen::Vector3d & center, double fixed_deviation)
@@ -161,9 +160,9 @@ protected:
   void build_pc(const perception::filters::voxel_grid::Config & cfg)
   {
     uint32_t pc_idx = 0U;
-    for (auto x = 1; x <= POINTS_PER_DIM; x++) {
-      for (auto y = 1; y <= POINTS_PER_DIM; y++) {
-        for (auto z = 1; z <= POINTS_PER_DIM; z++) {
+    for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
+      for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
+        for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
           Eigen::Vector3d center{static_cast<double>(x), static_cast<double>(y),
             static_cast<double>(z)};
           add_cell(m_pc, m_pc_idx, center, FIXED_DEVIATION);
@@ -181,29 +180,6 @@ protected:
   PointXYZ m_voxel_size;
   uint64_t m_capacity{1024U};
 };
-
-
-// Return set of adjacent cell indices
-std::set<uint64_t> get_neighbours(
-  int x, int y, int z, PointXYZ min, PointXYZ max,
-  perception::filters::voxel_grid::Config & cfg)
-{
-  std::set<uint64_t> ret;
-
-  for (auto cur_x = x - 1; cur_x <= x + 1; cur_x++) {
-    for (auto cur_y = y - 1; cur_y <= y + 1; cur_y++) {
-      for (auto cur_z = z - 1; cur_z <= z + 1; cur_z++) {
-        if (min.x <= cur_x && max.x >= cur_x &&
-          min.y <= cur_y && max.y >= cur_y &&
-          min.z <= cur_z && max.z >= cur_z)
-        {
-          ret.insert(cfg.index(Eigen::Vector3d(cur_x, cur_y, cur_z)));
-        }
-      }
-    }
-  }
-  return ret;
-}
 
 
 }  // namespace ndt

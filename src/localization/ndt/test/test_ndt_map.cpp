@@ -132,6 +132,7 @@ TEST(NDTVoxelTest, ndt_voxel_basic_io) {
 // Add the same point until the voxel has sufficient number of points
   for (uint64_t i = 1U; i < NDTVoxel::NUM_POINT_THRESHOLD; i++) {
     voxel.add_observation(point);
+    EXPECT_ANY_THROW(voxel.covariance());
   }
 
   EXPECT_EQ(voxel.count(), NDTVoxel::NUM_POINT_THRESHOLD);
@@ -214,21 +215,13 @@ TEST_F(NDTMapTest, map_lookup) {
   auto grid_config = perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size,
       m_capacity);
 
-  // Spatial hash is set to have a radius of sqrt(3) + 0.1. This way the radius(~1.8) is big enough to cover its
-  // diagonal neighbour but still less than 2.0, meaning it will cover all the adjacent cells including diagonal ones
-  // but exclude non-=adjacent cells
-  NDTVoxelMap ndt_map(grid_config,
-    common::geometry::spatial_hash::Config3d(m_min_point.x, m_max_point.x, m_min_point.y,
-    m_max_point.y,
-    m_min_point.z, m_max_point.z,
-    1.83, 1024U)
-  );
+  NDTVoxelMap ndt_map(grid_config);
 
-  EXPECT_EQ(ndt_map.cells(1, 1, 1).size(), 0U);
+  EXPECT_EQ(ndt_map.cell(1, 1, 1).count(), 0U);
 
   // build a pointcloud map.
-  // It contains 5*5*5*7 points where each cell would have a center and 6 surrounding points with a
-  // 0.3 distance from the center
+  // It contains 5*5*5*7 points where each cell would have a center (ranging from (1,1,1) to (5,5,5))
+  // and 6 surrounding points with a 0.3 distance from the center
   build_pc(grid_config);
 
   // The center points are added to a map with their voxel indices for easy lookup
@@ -263,21 +256,15 @@ TEST_F(NDTMapTest, map_lookup) {
   }
 
   // Iterate the grid and do lookups:
-
   for (auto x = 1; x <= POINTS_PER_DIM; x++) {
     for (auto y = 1; y <= POINTS_PER_DIM; y++) {
       for (auto z = 1; z <= POINTS_PER_DIM; z++) {
-        // Get a list of adjacent cells in the grid manually.
-        auto neighbor_indices = get_neighbours(x, y, z, m_min_point, m_max_point, grid_config);
-        // Do a distance based lookup in the map
-        auto cells = ndt_map.cells(x, y, z);
-        // Convert the lookup result to a list of voxel IDs for comparison
-        std::set<uint64_t> cell_indices;
-        for (const auto & cell : cells) {
-          cell_indices.insert(grid_config.index(cell.centroid()));
-        }
-        // Map lookup returned a list of adjacent cells.
-        EXPECT_EQ(neighbor_indices, cell_indices);
+        // Query the idx of the expected centroid via the config object:
+        auto expected_idx = grid_config.index(Eigen::Vector3d(x, y, z));
+        // Get the cell index ndt map estimated:
+        auto cell = ndt_map.cell(x, y, z);
+        auto map_idx = grid_config.index(cell.centroid());
+        EXPECT_EQ(expected_idx, map_idx);
       }
     }
   }

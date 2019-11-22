@@ -140,12 +140,10 @@ private:
 };
 /////////////////////////////////////////////
 
-class NDT_PUBLIC NDTVoxelMapOutput;
-
 /// Class representing an NDT map. It utilizes a voxel grid for organizing the cells and a spatial
 /// hash for managing the beighboring cells lookup. `NDTVoxelMapOutput` is used to wrap the output.
 class NDT_PUBLIC NDTVoxelMap : public perception::filters::voxel_grid::VoxelGrid<NDTVoxel>,
-  public NDTMapBase<NDTVoxelMap, NDTVoxel, NDTVoxelMapOutput>
+  public NDTMapBase<NDTVoxelMap, NDTVoxel>
 {
 public:
   using GridT = perception::filters::voxel_grid::VoxelGrid<NDTVoxel>;
@@ -155,10 +153,8 @@ public:
   /// \param voxel_grid_config config instance for the voxel grid
   /// \param hash_config config instance for the spatial hash
   NDTVoxelMap(
-    const perception::filters::voxel_grid::Config & voxel_grid_config,
-    const common::geometry::spatial_hash::Config3d & hash_config)
-  : VoxelGrid(voxel_grid_config),
-    m_hash(hash_config) {}
+    const perception::filters::voxel_grid::Config & voxel_grid_config)
+  : VoxelGrid(voxel_grid_config) {}
 
   /// Insert the point cloud to the map. It works by first adding the points to the cells
   /// they correspond to and then Adding the pointers to these cells to a spatial hash to allow
@@ -167,7 +163,6 @@ public:
   void insert(const sensor_msgs::msg::PointCloud2 & msg)
   {
     insert_to_grid(msg);
-    update_hash();
   }
   /// Return the nearest neighbouring cells given coordinates. Search radius is set in the spatial
   /// hash config.
@@ -175,16 +170,15 @@ public:
   /// \param y y coordinate
   /// \param z z coordinate
   /// \return A vector containing NDT voxels. Each element conforms to the API of NDTUnit
-  const std::vector<NDTVoxelMapOutput> & cells_(float_t x, float_t y, float_t z)
+  const NDTVoxel & cell_(float_t x, float_t y, float_t z)
   {
-    return m_hash.near(x, y, z);
+    return get_voxel(Eigen::Vector3d({x, y, z}));
   }
 
   /// Clear the data from the map.
   void clear()
   {
     VoxelGrid::clear();
-    m_hash.clear();
   }
 
 private:
@@ -200,8 +194,7 @@ private:
       z_it != z_it.end() &&
       intensity_it != intensity_it.end())
     {
-      Eigen::Vector3d pt({*x_it, *y_it, *z_it});
-      VoxelGrid::insert(pt);
+      VoxelGrid::insert(Eigen::Vector3d({*x_it, *y_it, *z_it}));
 
       ++x_it;
       ++y_it;
@@ -241,40 +234,7 @@ private:
       ++intensity_it;
     }
   }
-
-  void update_hash()
-  {
-    for (auto it = begin(); it != end(); ++it) {
-      m_hash.insert(it);
-    }
-  }
-
-
-// Hash holding the iterators instead of directly the voxels to avoid copying data
-// Point adapters for the iterator are implemented for centroid lookup in spatial hash
-  common::geometry::spatial_hash::SpatialHash3d<GridT::IT, NDTVoxelMapOutput> m_hash;
 };
-
-/// Wrapper for the Spatial Hash output to give direct access to the centroid and covariance.
-class NDTVoxelMapOutput
-  : private common::geometry::spatial_hash::HashOutput<NDTVoxelMap::GridT::IT>,
-  public NDTNormal<NDTVoxelMapOutput>
-{
-public:
-  // Using the parent's output
-  using HashOutput::HashOutput;
-
-  const NDTNormal<NDTVoxelMapOutput>::Point & centroid_() const
-  {
-    return get_point()->second.centroid();
-  }
-
-  const NDTNormal<NDTVoxelMapOutput>::Covariance & covariance_() const
-  {
-    return get_point()->second.covariance();
-  }
-};
-
 }  // namespace ndt
 }  // namespace localization
 
