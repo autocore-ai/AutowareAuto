@@ -78,7 +78,7 @@ Follows the equations from [this](http://www.diva-portal.org/smash/get/diva2:276
 
 High level workflow:
 
-* Minimal documentation/comments
+* Minimal documentation/comments.
 * Relies heavily on [global variables](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L81-239) that get modified by different static callbacks.
 * Almost entire high level workflow of ndt localization occurs in the [pointcloud callback](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L925) without utilizing any helper functions.
   * Low readability
