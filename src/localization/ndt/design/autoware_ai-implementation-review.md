@@ -86,7 +86,7 @@ High level workflow:
   * Interleaved steps.
 * A lot of repeating code for [different configurations/implementations](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L1025-1096).
 * Somewhat cryptic parameter names.
-* Vehicle kinematic state relies on differentiating two consecutive transforms over a time delta
+* Vehicle kinematic state relies on differentiating two consecutive transforms over a time delta.
 
 Low level workflow:
 * Redundant operations occur in the run-time loop:
