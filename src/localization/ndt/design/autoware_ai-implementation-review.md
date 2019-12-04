@@ -69,7 +69,7 @@ Follows the equations from [this](http://www.diva-portal.org/smash/get/diva2:276
 
 
 ## Positive Impressions
-* Concerns are somewhat [separated](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/tree/master/ndt_cpu/include/ndt_cpu) on the algorithm level
+* Concerns are somewhat [separated](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/tree/master/ndt_cpu/include/ndt_cpu) on the algorithm level.
 * Having a base class of [registration](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/include/ndt_cpu/Registration.h) that the [NDT entity](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/include/ndt_cpu/NormalDistributionsTransform.h)  is derived from seems like the start of a good inheritance structure for future extensions.
 * Parameter naming and calculations are taken from an actual [paper](http://www.diva-portal.org/smash/get/diva2:276162/FULLTEXT02.pdf) making it easier to read, review and reproduce.
 
