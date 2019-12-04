@@ -81,9 +81,9 @@ High level workflow:
 * Minimal documentation/comments.
 * Relies heavily on [global variables](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L81-239) that get modified by different static callbacks.
 * Almost entire high level workflow of ndt localization occurs in the [pointcloud callback](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L925) without utilizing any helper functions.
-  * Low readability
-  * Hard to distinguish separate functionality
-  * Interleaved steps
+  * Low readability.
+  * Hard to distinguish separate functionality.
+  * Interleaved steps.
 * A lot of repeating code for [different configurations/implementations](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp#L1025-1096).
 * Somewhat cryptic parameter names.
 * Vehicle kinematic state relies on differentiating two consecutive transforms over a time delta
