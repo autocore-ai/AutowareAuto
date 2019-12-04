@@ -51,7 +51,7 @@ Follows the equations from [this](http://www.diva-portal.org/smash/get/diva2:276
    1. [Compute coefficients for computing the Jacobian and Hessian matrices](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/src/NormalDistributionsTransform.cpp#L305-426). (Eq. 6.19)
    1. For each point in the translated point cloud:
      1. Search for a list of neighbors for a fixed radius in the voxel grid:
-     1. For each neighbouring voxel
+     1. For each neighboring voxel
         1. [Compute the first and second order derivatives using the pre-calculated coefficients](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/src/NormalDistributionsTransform.cpp#L235-266)
            * [Using the point derivatives and pre-computed gauss paramters, update the elements of the Hessian matrix.](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/src/NormalDistributionsTransform.cpp#L269-300)
            * [Update the gradient of the NDT score function](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/src/NormalDistributionsTransform.cpp#L288). (Eq. 6.12)
