@@ -42,7 +42,7 @@ Notes:
 
 ## Lower Level Workflow
 
-Follows the equations from [this](http://www.diva-portal.org/smash/get/diva2:276162/FULLTEXT02.pdf)  paper, section 6.2.
+Follows the equations from [this](http://www.diva-portal.org/smash/get/diva2:276162/FULLTEXT02.pdf) paper, section 6.2.
 
 1. [Compute the gauss parameters](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/blob/master/ndt_cpu/src/NormalDistributionsTransform.cpp#L112-118)
    * The gaussian probability function is modified to account for outliers. See Eq. 6.7 and 6.8 on details of this.
