@@ -16,12 +16,14 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 set(NDT_NODES_LIB_SRC
     src/ndt.cpp
     src/ndt_map.cpp
+    src/ndt_voxel.cpp
 )
 
 set(NDT_NODES_LIB_HEADERS
     include/ndt/visibility_control.hpp
     include/ndt/ndt_representations.hpp
     include/ndt/ndt_optimization_problem.hpp
+    include/ndt/ndt_voxel.hpp
     include/ndt/ndt_map.hpp
     include/ndt/ndt_localizer.hpp)
 

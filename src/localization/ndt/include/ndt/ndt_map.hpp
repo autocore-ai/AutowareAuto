@@ -17,11 +17,13 @@
 #define NDT__NDT_MAP_HPP_
 
 #include <ndt/ndt_representations.hpp>
-#include <voxel_grid/voxels.hpp>
-#include <voxel_grid/voxel_grid.hpp>
+#include <ndt/ndt_voxel.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <geometry/spatial_hash.hpp>
 #include <vector>
+#include <limits>
+#include <unordered_map>
+#include <utility>
 
 namespace autoware
 {
@@ -38,200 +40,241 @@ namespace ndt
 /// If the cloud is assessed to be invalid (i.e. due to invalid fields), then 0 is returned.
 uint32_t NDT_PUBLIC validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg);
 
-/// Voxel implementation for the NDT map. This class fuses the voxel and NDTNormal
-/// APIs to fully represent an NDT grid cell
-class NDT_PUBLIC NDTVoxel : public perception::filters::voxel_grid::Voxel<Eigen::Vector3d>,
-  public NDTNormal<NDTVoxel>
-{
-public:
-  using PointT = Eigen::Vector3d;
-
-  // TODO(yunus.caliskan): make this configurable.
-  // Number of points a voxel should have to count as occupied. Set to the dimension of a 3D point.
-  static constexpr uint32_t NUM_POINT_THRESHOLD = 3U;
-
-  /// Add a point to the cell
-  /// \param pt Point to add to the voxel.
-  void add_observation(const PointT & pt)
-  {
-    if (m_cov_computed) {
-      m_covariance.setZero();
-      m_cov_point_count = 0U;
-      m_cov_computed = false;
-    }
-    // TODO(yunus.caliskan): Resolve the overload resolution issue!
-    // compute the centroid
-    // This section is identical to the CentroidVoxel. However calling
-    // `CentroidVoxel<Eigen::Vector3d>::add_observation(pt);` overloeads eigen's arithmetic
-    // operators due to overload resolution.
-    const auto last = static_cast<Real>(Voxel<PointT>::count());
-    Voxel<PointT>::set_count(Voxel<PointT>::count() + 1U);
-    const auto count_inv = Real{1.0} / static_cast<Real>(Voxel<PointT>::count());
-    // Incremental update: u' = ((u * n) + x) / (n + 1), u = mean, x = obs, n = count
-    const PointT centroid = ((Voxel<PointT>::get() * last) + pt) * count_inv;
-    Voxel<PointT>::set_centroid(centroid);
-  }
-
-  /// \brief Use Config and index to set up any important information, in this case no-op
-  /// \param[in] cfg The configuration object for the parent voxel grid
-  /// \param[in] idx The index for this particular voxel
-  //lint -e{9175} NOLINT this is to match a parent API
-  void configure(const perception::filters::voxel_grid::Config & cfg, const uint64_t idx)
-  {
-    (void)cfg;
-    (void)idx;
-  }
-
-  /// Adds the effect of one point to the covariance of the voxel. All points residing in the
-  /// voxel should be included in the covariance computation for a correct result.
-  /// \param pt point to add for covariance calculation.
-  void add_point_for_covariance(const PointT & pt)
-  {
-    const auto inv_count = Real{1.0} / static_cast<Real>(count() - 1U);
-    const auto & centroid = centroid_();
-    m_covariance += inv_count * ((pt - centroid) * ((pt - centroid).transpose()));
-    ++m_cov_point_count;
-    if (m_cov_point_count == count()) {
-      m_cov_computed = true;
-    }
-  }
-
-  // Hiding the original function with a modified version that uses a custom threshold for
-  // interfacing with NDTMap
-  bool occupied() const
-  {
-    return count() >= NUM_POINT_THRESHOLD;
-  }
-
-  /// Returns the covariance of the points in the voxel.
-  /// \return covariance of the cell
-  const Eigen::Matrix3d & covariance_() const
-  {
-    if (!occupied()) {
-      throw std::out_of_range("NDTVoxel: Cannot get covariance from an unoccupied voxel");
-    }
-    if (count() != m_cov_point_count) {
-      throw std::length_error("NDTVoxel: Not all points are used in the covariance computation. "
-              "Make sure to call `add_point_for_covariance() for each point in the voxel.`");
-    }
-    return m_covariance;
-  }
-  /// Returns the mean of the points in the cell
-  /// \return centroid of the cell
-  const Eigen::Vector3d & centroid_() const
-  {
-    // Using the overloaded function as the parent function will use the hidden occupancy check
-    if (!occupied()) {
-      throw std::out_of_range("NDTVoxel: Cannot get centroid from an unoccupied voxel");
-    }
-    return get();
-  }
-
-  /// Returns true if enough points are used in the covariance computation.
-  bool cov_computed() const
-  {
-    return m_cov_computed;
-  }
-
-private:
-  size_t m_cov_point_count{0U};
-  bool m_cov_computed{false};
-  Eigen::Matrix3d m_covariance;
-};
 /////////////////////////////////////////////
 
-/// Class representing an NDT map. It utilizes a voxel grid for organizing the cells and a spatial
-/// hash for managing the beighboring cells lookup. `NDTVoxelMapOutput` is used to wrap the output.
-class NDT_PUBLIC NDTVoxelMap : public perception::filters::voxel_grid::VoxelGrid<NDTVoxel>,
-  public NDTMapBase<NDTVoxelMap, NDTVoxel>
+
+template<typename Derived, typename VoxelT>
+class NDTMapBase : public common::helper_functions::crtp<Derived>
 {
 public:
-  using GridT = perception::filters::voxel_grid::VoxelGrid<NDTVoxel>;
-  using HashT = common::geometry::spatial_hash::SpatialHash3d<GridT::IT>;
+  using Grid = std::unordered_map<uint64_t, VoxelT>;
+  using Point = Eigen::Vector3d;
+  using Config = autoware::perception::filters::voxel_grid::Config;
 
   /// Constructor
-  /// \param voxel_grid_config config instance for the voxel grid
-  /// \param hash_config config instance for the spatial hash
-  NDTVoxelMap(
-    const perception::filters::voxel_grid::Config & voxel_grid_config)
-  : VoxelGrid(voxel_grid_config) {}
+  /// \param voxel_grid_config Voxel grid config to configure the underlying voxel grid.
+  explicit NDTMapBase(const Config & voxel_grid_config)
+  : m_output_vector(1U), m_config(voxel_grid_config), m_map(m_config.get_capacity()) {}
 
-  /// Insert the point cloud to the map. It works by first adding the points to the cells
-  /// they correspond to and then Adding the pointers to these cells to a spatial hash to allow
-  /// for fast lookup later.
-  /// \param msg PointCloud2 message to add.
-  void insert(const sensor_msgs::msg::PointCloud2 & msg)
-  {
-    insert_to_grid(msg);
-  }
-  /// Return the nearest neighbouring cells given coordinates. Search radius is set in the spatial
-  /// hash config.
+  /// Lookup the cell at location.
   /// \param x x coordinate
   /// \param y y coordinate
   /// \param z z coordinate
-  /// \return A vector containing NDT voxels. Each element conforms to the API of NDTUnit
-  const NDTVoxel & cell_(float_t x, float_t y, float_t z)
+  /// \return A vector containing the cell at given coordinates. A vector is used to support
+  /// near-neighbour cell queries in the future.
+  const std::vector<VoxelT> & cell(float_t x, float_t y, float_t z) const
   {
-    return get_voxel(Eigen::Vector3d({x, y, z}));
+    return cell(Point({x, y, z}));
   }
 
-  /// Clear the data from the map.
-  void clear()
+  /// Lookup the cell at location.
+  /// \param pt point to lookup
+  /// \return A vector containing the cell at given coordinates. A vector is used to support
+  /// near-neighbour cell queries in the future.
+  const std::vector<VoxelT> & cell(const Point & pt) const
   {
-    VoxelGrid::clear();
+    // TODO(yunus.caliskan): revisit after multi-cell lookup support.
+    m_output_vector.clear();
+    const auto vx_it = m_map.find(m_config.index(pt));
+    // Only return a voxel if it's occupied (i.e. has enough points to compute covariance.)
+    if (vx_it != m_map.end() && vx_it->second.usable()) {
+      m_output_vector.push_back(vx_it->second);
+    }
+    return m_output_vector;
+  }
+
+  /// Insert a point cloud to the map.
+  /// \param msg PointCloud2 message to add.
+  void insert(const sensor_msgs::msg::PointCloud2 & msg)
+  {
+    this->impl().insert_(msg);
+  }
+
+  /// Get size of the map
+  /// \return Number of voxels in the map. This number includes the voxels that do not have
+  /// enough numbers to be used yet.
+  uint64_t size() const noexcept
+  {
+    return m_map.size();
+  }
+
+  /// \brief Returns an iterator to the first element of the map
+  /// \return Iterator
+  typename Grid::const_iterator begin() const noexcept
+  {
+    return cbegin();
+  }
+  /// \brief Returns an iterator to the first element of the map
+  /// \return Iterator
+  typename Grid::const_iterator cbegin() const noexcept
+  {
+    return m_map.cbegin();
+  }
+  /// \brief Returns an iterator to one past the last element of the map
+  /// \return Iterator
+  typename Grid::const_iterator end() const noexcept
+  {
+    return cend();
+  }
+  /// \brief Returns an iterator to one past the last element of the map
+  /// \return Iterator
+  typename Grid::const_iterator cend() const noexcept
+  {
+    return m_map.cend();
+  }
+
+  /// Clear all voxels in the map
+  void clear() noexcept
+  {
+    m_map.clear();
+  }
+
+protected:
+  /// Get voxel index given a point.
+  /// \param pt point
+  /// \return voxel index
+  auto index(const Point & pt) const
+  {
+    return m_config.index(pt);
+  }
+
+  /// Get a reference to the voxel at the given index. If no voxel exists, a default constructed
+  /// Voxel is inserted.
+  /// \param idx
+  /// \return
+  VoxelT & voxel(uint64_t idx)
+  {
+    return m_map[idx];
+  }
+
+  auto emplace(uint64_t key, const VoxelT && vx)
+  {
+    return m_map.emplace(key, std::move(vx));
   }
 
 private:
-  void insert_to_grid(const sensor_msgs::msg::PointCloud2 & msg)
+  mutable std::vector<VoxelT> m_output_vector;
+  const Config m_config;
+  Grid m_map;
+};
+
+
+/// Ndt Map for a dynamic voxel type. This map representation is only to be used
+/// when a dense point cloud is intended to be represented as a map. (i.e. by the map publisher)
+class NDT_PUBLIC DynamicNDTMap
+  : public NDTMapBase<DynamicNDTMap, DynamicNDTVoxel>
+{
+public:
+  using Voxel = DynamicNDTVoxel;
+  using Grid = std::unordered_map<uint64_t, Voxel>;
+  using Config = autoware::perception::filters::voxel_grid::Config;
+  using Point = Eigen::Vector3d;
+
+  using NDTMapBase::NDTMapBase;
+
+  /// Insert the dense point cloud to the map. This is intended for converting a dense
+  /// point cloud into the ndt representation. Ideal for reading dense pcd files.
+  /// \param msg PointCloud2 message to add.
+  void insert_(const sensor_msgs::msg::PointCloud2 & msg)
   {
     sensor_msgs::PointCloud2ConstIterator<float> x_it(msg, "x");
     sensor_msgs::PointCloud2ConstIterator<float> y_it(msg, "y");
     sensor_msgs::PointCloud2ConstIterator<float> z_it(msg, "z");
-    sensor_msgs::PointCloud2ConstIterator<float> intensity_it(msg, "intensity");
 
     while (x_it != x_it.end() &&
       y_it != y_it.end() &&
-      z_it != z_it.end() &&
-      intensity_it != intensity_it.end())
+      z_it != z_it.end())
     {
-      VoxelGrid::insert(Eigen::Vector3d({*x_it, *y_it, *z_it}));
+      const auto pt = Point({*x_it, *y_it, *z_it});
+      const auto voxel_idx = index(pt);
+      voxel(voxel_idx).add_observation(pt);  // Add or insert new voxel.
 
       ++x_it;
       ++y_it;
       ++z_it;
-      ++intensity_it;
+    }
+  }
+};
+
+/// NDT map using StaticNDTVoxels. This class is to be used when the pointcloud
+/// messages to be inserted already have the correct format (see validate_pcl_map(...)) and
+/// represent a transformed map. No centroid/covariance computation is done during run-time.
+class NDT_PUBLIC StaticNDTMap
+  : public NDTMapBase<StaticNDTMap, StaticNDTVoxel>
+{
+public:
+  using NDTMapBase::NDTMapBase;
+  using Voxel = StaticNDTVoxel;
+
+  /// Insert point cloud message representing the map to the map representation instance.
+  /// Map is assumed to have correct format (see `validate_pcl_map(...)`) and was generated
+  /// by a dense map representation with identical configuration to this representation.
+  /// \param msg PointCloud2 message to add. Each point in this cloud should correspond to a
+  /// single voxel in the underlying voxel grid. This is checked via the `cell_id` field in the pcl
+  /// message which is expected to be equal to the voxel grid ID in the map's voxel grid.
+  void insert_(const sensor_msgs::msg::PointCloud2 & msg)
+  {
+    if (validate_pcl_map(msg) == 0U) {
+      // throwing rather than silently failing since ndt matching cannot be done with an
+      // empty/incorrect map
+      throw std::runtime_error("Point cloud representing the ndt map is either empty"
+              "or does not have the correct format.");
     }
 
-    // TODO(yunus.caliskan): this pointcloud iteration mess will be refactored in #102
-    x_it = sensor_msgs::PointCloud2ConstIterator<float>(msg, "x");
-    y_it = sensor_msgs::PointCloud2ConstIterator<float>(msg, "y");
-    z_it = sensor_msgs::PointCloud2ConstIterator<float>(msg, "z");
-    intensity_it = sensor_msgs::PointCloud2ConstIterator<float>(msg, "intensity");
+    sensor_msgs::PointCloud2ConstIterator<Real> x_it(msg, "x");
+    sensor_msgs::PointCloud2ConstIterator<Real> y_it(msg, "y");
+    sensor_msgs::PointCloud2ConstIterator<Real> z_it(msg, "z");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_xx_it(msg, "cov_xx");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_xy_it(msg, "cov_xy");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_xz_it(msg, "cov_xz");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_yy_it(msg, "cov_yy");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_yz_it(msg, "cov_yz");
+    sensor_msgs::PointCloud2ConstIterator<Real> cov_zz_it(msg, "cov_zz");
+    sensor_msgs::PointCloud2ConstIterator<uint32_t> cell_id_it(msg, "cell_id");
 
-    // TODO(yunus.caliskan) explore incremental covariance calculation methods instead
-    // Covariance has to be computed after the mean is computed. The pointcloud is iterated
-    // for a second time instead of having and managing a history of points in the voxel.
     while (x_it != x_it.end() &&
       y_it != y_it.end() &&
       z_it != z_it.end() &&
-      intensity_it != intensity_it.end())
+      cov_xx_it != cov_xx_it.end() &&
+      cov_xy_it != cov_xy_it.end() &&
+      cov_xz_it != cov_xz_it.end() &&
+      cov_yy_it != cov_yy_it.end() &&
+      cov_yz_it != cov_yz_it.end() &&
+      cov_zz_it != cov_zz_it.end() &&
+      cell_id_it != cell_id_it.end())
     {
-      Eigen::Vector3d pt({*x_it, *y_it, *z_it});
-      auto & vx = get_voxel(pt);
-      // Only compute covariance if there are enough points in a voxel.
-      if (vx.count() == 0U) {
-        // All of the points are inserted above, so each point should return a voxel
-        // that contains at least itself.
-        throw std::length_error("A used voxel cannot be empty.");
+      const Point centroid{*x_it, *y_it, *z_it};
+      const auto voxel_idx = index(centroid);
+      // If the pointcloud does not represent a voxel grid of identical configuration,
+      // report the error
+      if (voxel_idx != static_cast<decltype(voxel_idx)>(*cell_id_it)) {
+        throw std::domain_error("NDTVoxelMap: Pointcloud representing the ndt map"
+                "does not have a matching grid configuration with "
+                "the map representation it is being inserted to. The cell IDs do not matchb");
       }
-      if (vx.occupied()) {
-        vx.add_point_for_covariance(pt);
+
+      Eigen::Matrix3d covariance;
+      covariance << *cov_xx_it, *cov_xy_it, *cov_xz_it,
+        *cov_xy_it, *cov_yy_it, *cov_yz_it,
+        *cov_xz_it, *cov_yz_it, *cov_zz_it;
+      const Voxel vx{centroid, covariance};
+
+      const auto insert_res = emplace(voxel_idx, Voxel{centroid, covariance});
+      if (!insert_res.second) {
+        // if a voxel already exist at this point, replace.
+        insert_res.first->second = vx;
       }
 
       ++x_it;
       ++y_it;
       ++z_it;
-      ++intensity_it;
+      ++cov_xx_it;
+      ++cov_xy_it;
+      ++cov_xz_it;
+      ++cov_yy_it;
+      ++cov_yz_it;
+      ++cov_zz_it;
+      ++cell_id_it;
     }
   }
 };
@@ -282,48 +325,6 @@ inline NDT_PUBLIC auto & zr_(const Eigen::Vector3d & pt)
 {
   return pt(2);
 }
-
-
-/// Point adapters for NDTVoxel grid iterator.
-
-template<>
-inline NDT_PUBLIC auto x_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return static_cast<float32_t>(pt->second.get()(0));
-}
-template<>
-inline NDT_PUBLIC auto y_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return static_cast<float32_t>(pt->second.get()(1));
-}
-template<>
-inline NDT_PUBLIC auto z_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return static_cast<float32_t>(pt->second.get()(2));
-}
-
-template<>
-inline NDT_PUBLIC auto & xr_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return pt->second.get()(0);
-}
-template<>
-inline NDT_PUBLIC auto & yr_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return pt->second.get()(1);
-}
-template<>
-inline NDT_PUBLIC auto & zr_(
-  const perception::filters::voxel_grid::VoxelGrid<localization::ndt::NDTVoxel>::IT & pt)
-{
-  return pt->second.get()(2);
-}
-
 }  // namespace point_adapter
 }  // namespace geometry
 }  // namespace common

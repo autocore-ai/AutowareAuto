@@ -23,13 +23,13 @@ namespace localization
 {
 namespace ndt
 {
-constexpr uint32_t TestMapValid::point_step;
-constexpr uint32_t TestMapValid::num_points;
-constexpr uint32_t TestMapValid::data_size;
-constexpr uint32_t TestMapValid::width;
-constexpr uint32_t TestMapValid::row_step;
+constexpr uint32_t MapValidationContext::point_step;
+constexpr uint32_t MapValidationContext::num_points;
+constexpr uint32_t MapValidationContext::data_size;
+constexpr uint32_t MapValidationContext::width;
+constexpr uint32_t MapValidationContext::row_step;
 
-TEST_F(TestMapValid, map_pcl_meta_validation) {
+TEST_F(MapValidationTest, map_pcl_meta_validation) {
   using PointField = sensor_msgs::msg::PointField;
 
   // Some invalid fields:
@@ -72,7 +72,7 @@ TEST_F(TestMapValid, map_pcl_meta_validation) {
     point_step - 1U)), 0U);
 }
 
-TEST_F(TestMapValid, map_pcl_size_validation) {
+TEST_F(MapValidationTest, map_pcl_size_validation) {
   const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
 
   EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size, row_step, width,
@@ -104,75 +104,48 @@ TEST_F(TestMapValid, map_pcl_size_validation) {
       point_step)), num_points - 3U);
 }
 
-TEST(NDTVoxelTest, ndt_voxel_basic_io) {
+TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic_io) {
   constexpr auto eps = 1e-6;
 
-  NDTVoxel voxel;
+  DynamicNDTVoxel voxel;
 
   EXPECT_THROW(voxel.centroid(), std::out_of_range);
-// Empty state corresponds to multiple failure states for the covariance function so `any_throw`
-// is used to reflect that.
-  EXPECT_ANY_THROW(voxel.covariance());
+  EXPECT_THROW(voxel.covariance(), std::out_of_range);
   EXPECT_EQ(voxel.count(), 0U);
   Eigen::Vector3d point({5, 5, 5});
 
   voxel.add_observation(point);
 
-// voxel is considered unoccupied when it has less point than its point threshold
-  if (NDTVoxel::NUM_POINT_THRESHOLD > 1U) {
+  // voxel is considered unoccupied when it has less point than its point threshold
+  if (DynamicNDTVoxel::NUM_POINT_THRESHOLD > 1U) {
     EXPECT_THROW(voxel.centroid(), std::out_of_range);
-    EXPECT_ANY_THROW(voxel.covariance());
+    EXPECT_THROW(voxel.covariance(), std::out_of_range);
   }
 
-// Add the same point until the voxel has sufficient number of points
-  for (uint64_t i = 1U; i < NDTVoxel::NUM_POINT_THRESHOLD; i++) {
+  // Add the same point until the voxel has sufficient number of points
+  for (uint64_t i = 1U; i < DynamicNDTVoxel::NUM_POINT_THRESHOLD; i++) {
+    EXPECT_THROW(voxel.covariance(), std::out_of_range);
     voxel.add_observation(point);
-    EXPECT_ANY_THROW(voxel.covariance());
   }
 
-  EXPECT_EQ(voxel.count(), NDTVoxel::NUM_POINT_THRESHOLD);
-// Centroid should equal to the point as we added the same point multiple times.
+  EXPECT_EQ(voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
+  // Centroid should equal to the point as we added the same point multiple times.
   EXPECT_TRUE(point.isApprox(voxel.centroid(), eps));
-// Covariance cannot be computed until all points in the voxel are fed back to the voxel
-// for covariance update
-  EXPECT_THROW(voxel.covariance(), std::length_error);
 
-// Update the covariance using all the points in the voxel but one.
-  for (uint64_t i = 0U; i < NDTVoxel::NUM_POINT_THRESHOLD - 1; i++) {
-    voxel.add_point_for_covariance(point);
-  }
-
-// covariance can't be accessed because one point is not included in the covariance yet.
-  EXPECT_FALSE(voxel.cov_computed());
-  EXPECT_THROW(voxel.covariance(), std::length_error);
-
-// add the last point to the covariance calculation
-  voxel.add_point_for_covariance(point);
-
-// Covariance can now be computed. Its values are zero since all points are the same
-// and there's no variance.
-  EXPECT_TRUE(voxel.cov_computed());
+  // Covariance values are zero since all points are the same
+  // and there's no variance.
   EXPECT_NO_THROW(
     EXPECT_LT(voxel.covariance().norm(), eps);
   );
-
-// adding another point after the covariance computation is done which resets the covariance
-// computation.
-  voxel.add_observation(point);
-  voxel.add_point_for_covariance(point);
-// Covariance computation needs all the other points to compute the covariance from scratch
-// since the computation is not incremental
-  EXPECT_FALSE(voxel.cov_computed());
-  EXPECT_THROW(voxel.covariance(), std::length_error);
 }
 
 ///////////////////////////////////
 
-TEST(NDTVoxelTest, ndt_voxel_basic) {
+TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
   constexpr auto eps = 1e-6;
-  NDTVoxel voxel;
+  DynamicNDTVoxel voxel;
   auto num_points = 5U;
-  EXPECT_GE(num_points, NDTVoxel::NUM_POINT_THRESHOLD);
+  EXPECT_GE(num_points, DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
   std::vector<Eigen::Vector3d> points;
   // Add points to the voxel ([0,0,0]... to [4,4,4])
@@ -181,11 +154,6 @@ TEST(NDTVoxelTest, ndt_voxel_basic) {
       Eigen::Vector3d{static_cast<double>(i), static_cast<double>(i), static_cast<double>(i)};
     points.push_back(point);
     voxel.add_observation(point);
-  }
-
-  // Update voxel covariance with all the points
-  for (const auto & point : points) {
-    voxel.add_point_for_covariance(point);
   }
 
   // validate the mean in numpy
@@ -204,15 +172,16 @@ TEST(NDTVoxelTest, ndt_voxel_basic) {
 }
 
 
-TEST_F(NDTMapTest, map_lookup) {
+TEST_F(DenseNDTMapTest, map_lookup) {
   constexpr auto eps = 1e-5;
   // The idea is to have a 5x5x5 grid with cell edge length of 1
   auto grid_config = perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size,
       m_capacity);
 
-  NDTVoxelMap ndt_map(grid_config);
+  DynamicNDTMap ndt_map(grid_config);
 
-  EXPECT_EQ(ndt_map.cell(1, 1, 1).count(), 0U);
+  // No map is added, so a lookup should return an empty vector.
+  EXPECT_TRUE(ndt_map.cell(0.0, 0.0, 0.0).empty());
 
   // build a pointcloud map.
   // It contains 5*5*5*7 points where each cell would have a center (ranging from (1,1,1) to (5,5,5))
@@ -236,7 +205,7 @@ TEST_F(NDTMapTest, map_lookup) {
     0.0, 0.03, 0.0,
     0.0, 0.0, 0.03;
 
-  for (auto & voxel_it : ndt_map) {
+  for (const auto & voxel_it : ndt_map) {
     Eigen::Vector3d center;
     // Each voxel has 7 points
     EXPECT_EQ(voxel_it.second.count(), 7U);
@@ -246,7 +215,7 @@ TEST_F(NDTMapTest, map_lookup) {
     EXPECT_TRUE(m_voxel_centers[voxel_idx].isApprox(center, eps));
     // Check if covariance matches the pre-computed value
     EXPECT_NO_THROW(
-      EXPECT_TRUE(voxel_it.second.covariance().isApprox(expected_cov, eps))
+      EXPECT_TRUE(voxel_it.second.covariance().isApprox(expected_cov, eps));
     );
   }
 
@@ -258,11 +227,152 @@ TEST_F(NDTMapTest, map_lookup) {
         auto expected_idx = grid_config.index(Eigen::Vector3d(x, y, z));
         // Get the cell index ndt map estimated:
         auto cell = ndt_map.cell(x, y, z);
-        auto map_idx = grid_config.index(cell.centroid());
+        auto map_idx = grid_config.index(cell[0].centroid());
         EXPECT_EQ(expected_idx, map_idx);
       }
     }
   }
+}
+
+
+///////////////////////////////////////
+
+TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
+  StaticNDTVoxel vx;
+  Eigen::Vector3d pt{5.0, 5.0, 5.0};
+  Eigen::Matrix3d cov;
+  cov(0, 0) = 7.0; // just making it nonzero
+
+  // default constructor zero-initializes and doesn't set the voxel as occupied
+  EXPECT_FALSE(vx.usable());
+  EXPECT_THROW(vx.centroid(), std::out_of_range);
+  EXPECT_THROW(vx.covariance(), std::out_of_range);
+
+  StaticNDTVoxel vx2{pt, cov};
+  EXPECT_TRUE(vx2.usable());
+  EXPECT_TRUE(vx2.centroid().isApprox(pt, std::numeric_limits<Real>::epsilon()));
+  EXPECT_TRUE(vx2.covariance().isApprox(cov, std::numeric_limits<Real>::epsilon()));
+
+  // Copying is legal as we replace the voxels in the map via copy constructors.
+  vx = vx2;
+  EXPECT_TRUE(vx.usable());
+  EXPECT_TRUE(vx.centroid().isApprox(pt, std::numeric_limits<Real>::epsilon()));
+  EXPECT_TRUE(vx.covariance().isApprox(cov, std::numeric_limits<Real>::epsilon()));
+}
+
+TEST_F(NDTMapTest, map_representation_bad_input) {
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
+
+  auto grid_config =
+    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+
+  StaticNDTMap map_grid(grid_config);
+
+  // Map with invalid field set
+  auto invalid_pc1 = make_pcl({pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
+      1U, data_size, row_step, width, point_step);
+  // Empty map
+  auto invalid_pc2 = make_pcl(field_set, 1U, 0U, 0U, 0U, point_step);
+  // Single point map but with invalid cell ID
+  auto invalid_pc3 = make_pcl(field_set, 1U, point_step, point_step, point_step, point_step);
+  sensor_msgs::PointCloud2Iterator<uint32_t> invalid_cell_it(invalid_pc3, "cell_id");
+  const auto actual_idx = grid_config.index(Eigen::Vector3d{});
+  *invalid_cell_it = actual_idx + 1U;
+  ASSERT_NE(actual_idx, *invalid_cell_it);
+
+  EXPECT_THROW(map_grid.insert(invalid_pc1), std::runtime_error);
+  EXPECT_THROW(map_grid.insert(invalid_pc2), std::runtime_error);
+  EXPECT_THROW(map_grid.insert(invalid_pc3), std::domain_error);
+}
+
+TEST_F(NDTMapTest, map_representation_basics) {
+
+  auto add_pt = [](sensor_msgs::msg::PointCloud2 & pc,
+      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_its,
+      Real value) {
+      for (auto & it : pc_its) {
+        *it = value;
+        ++it;
+      }
+    };
+
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
+  auto msg = make_pcl(field_set, 1U, data_size, row_step, width, point_step);
+
+  auto grid_config =
+    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+
+  // This grid will be used to generate
+  DynamicNDTMap generator_grid(grid_config);
+  StaticNDTMap map_grid(grid_config);
+
+  // No map is added, so a lookup should return an empty vector.
+  EXPECT_TRUE(map_grid.cell(0.0, 0.0, 0.0).empty());
+
+  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_its{
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "x"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "y"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "z"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xx"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xy"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xz"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_yy"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_yz"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_zz")
+  };
+  sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
+
+  auto value = Real{1.0};
+  while (std::all_of(pc_its.begin(), pc_its.end(), [](auto & it) {return it != it.end();}) &&
+    cell_id_it != cell_id_it.end())
+  {
+
+    const Eigen::Vector3d added_pt{value, value, value};
+    // Turn the point into a pointcloud to insert. The point should be inserted enough to make
+    // the voxel usable. (equal to NUM_POINT_THRESHOLD)
+    generator_grid.insert(make_pcl(std::vector<Eigen::Vector3d>{
+            DynamicNDTVoxel::NUM_POINT_THRESHOLD, added_pt}));
+
+    // For simplicity, the inserted points already correspond to the centroids and there's point per voxel.
+    const auto & generating_voxel = generator_grid.cell(added_pt)[0U];
+    ASSERT_TRUE(generating_voxel.centroid().isApprox(added_pt,
+      std::numeric_limits<Real>::epsilon()));
+    ASSERT_EQ(generating_voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
+
+    add_pt(msg, pc_its, value);
+    *cell_id_it = static_cast<uint32_t>(grid_config.index(added_pt));
+    ++cell_id_it;
+
+    ++value;
+  }
+
+  // Each point should correspond to a single voxel for this test case
+  ASSERT_EQ(generator_grid.size(), num_points);
+
+  // All points should be able to be inserted since
+  EXPECT_NO_THROW(map_grid.insert(msg));
+  EXPECT_EQ(map_grid.size(), generator_grid.size());
+
+  // dif to be used for grid lookup.
+  auto diff = 0.1;
+  // Ensure, when added, the diff doesn't drift a centroid to another voxel.
+  ASSERT_LT(diff, grid_config.get_voxel_size().x);
+
+  // Check if every voxel in the generator grid is passed to the map representation.
+  for (auto & vx : generator_grid) {
+    EXPECT_NE(std::find_if(map_grid.begin(), map_grid.end(), [&vx](const auto & map_elem) {
+        return map_elem.first == vx.first;
+      }), map_grid.end());
+
+    auto pt = vx.second.centroid();
+    // slightly move the point before looking up to check if it gets the correct voxel.
+    pt(0) += diff;
+    EXPECT_TRUE(map_grid.cell(pt(0), pt(1), pt(2))[0].centroid().isApprox(vx.second.centroid(),
+      std::numeric_limits<Real>::epsilon()));
+  }
+
+  map_grid.clear();
+  EXPECT_EQ(map_grid.size(), 0U);
 }
 
 

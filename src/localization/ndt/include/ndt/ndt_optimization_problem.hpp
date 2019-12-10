@@ -40,7 +40,7 @@ public:
   using Jacobian = typename ExpressionT::Jacobian;
   using Hessian = typename ExpressionT::Hessian;
 
-  P2DNDTObjective(const DomainValue & init_guess, const P2DNDTScan & scan, const NDTVoxelMap & map)
+  P2DNDTObjective(const DomainValue & init_guess, const P2DNDTScan & scan, const StaticNDTMap & map)
   : m_init_guess_ref(init_guess),
     m_scan_ref(scan),
     m_map_ref(map) {}
@@ -53,7 +53,7 @@ private:
   // references as class members to be initialized at constructor.
   const DomainValue & m_init_guess_ref;
   const P2DNDTScan & m_scan_ref;
-  const NDTVoxelMap & m_map_ref;
+  const StaticNDTMap & m_map_ref;
 };
 
 // Here the class P2DNDTObjective

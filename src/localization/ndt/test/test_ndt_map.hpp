@@ -42,7 +42,7 @@ sensor_msgs::msg::PointCloud2 make_pcl(
   uint32_t point_step)
 {
   sensor_msgs::msg::PointCloud2 msg;
-  msg.data.resize(data_size);
+  msg.data.resize(data_size, uint8_t{0U});
   msg.fields = fields;
   msg.row_step = row_step;
   msg.height = height;
@@ -50,6 +50,20 @@ sensor_msgs::msg::PointCloud2 make_pcl(
   msg.point_step = point_step;
   return msg;
 }
+
+sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
+{
+  sensor_msgs::msg::PointCloud2 cloud;
+  common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
+  auto idx = 0U;
+  for (const auto & pt : pts) {
+    autoware::common::lidar_utils::PointXYZIF ptF{.x = static_cast<float>(pt(0U)),
+      .y = static_cast<float>(pt(1U)), .z = static_cast<float>(pt(2U))};
+    common::lidar_utils::add_point_to_cloud(cloud, ptF, idx);
+  }
+  return cloud;
+}
+
 
 sensor_msgs::msg::PointField make_pf(
   std::string name, uint32_t offset, uint8_t datatype,
@@ -63,11 +77,20 @@ sensor_msgs::msg::PointField make_pf(
   return pf;
 }
 
-class TestMapValid : public ::testing::Test
+void populate_pc(
+  sensor_msgs::msg::PointCloud2 & pc,
+  size_t num_points)
+{
+  if (validate_pcl_map(pc) != num_points) {
+    throw std::runtime_error("make sure you use a valid pcl format.");
+  }
+}
+
+class MapValidationContext
 {
 public:
   using PointField = sensor_msgs::msg::PointField;
-  TestMapValid()
+  MapValidationContext()
   : pf1{make_pf("x", 0U, PointField::FLOAT64, 1U)},
     pf2{make_pf("y", 1U * sizeof(float64_t), PointField::FLOAT64, 1U)},
     pf3{make_pf("z", 2U * sizeof(float64_t), PointField::FLOAT64, 1U)},
@@ -134,14 +157,14 @@ void add_cell(
 }
 
 
-class NDTMapTest : public ::testing::Test
+class DenseNDTMapContext
 {
 protected:
   static constexpr int POINTS_PER_DIM{5U};
   // how much should the points diverge from the center. It's fixed as there's no randomness.
   static constexpr float FIXED_DEVIATION{0.3};
 
-  NDTMapTest()
+  DenseNDTMapContext()
   {
     // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
     // init with a size to account for all the points in the map
@@ -182,6 +205,23 @@ protected:
   PointXYZ m_max_point;
   PointXYZ m_voxel_size;
   uint64_t m_capacity{1024U};
+};
+
+
+class NDTMapContext : protected DenseNDTMapContext, protected MapValidationContext {};
+
+class DenseNDTMapTest : public DenseNDTMapContext, public ::testing::Test {};
+class MapValidationTest : public MapValidationContext, public ::testing::Test {};
+class NDTMapTest : public NDTMapContext, public ::testing::Test
+{
+public:
+  NDTMapTest()
+  {
+    // Make voxel grid's max point to include points up to 50.0
+    m_max_point.x = num_points + 0.5F;
+    m_max_point.y = num_points + 0.5F;
+    m_max_point.z = num_points + 0.5F;
+  }
 };
 
 

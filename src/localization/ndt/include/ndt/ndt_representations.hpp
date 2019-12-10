@@ -59,22 +59,6 @@ public:
   }
 };
 
-/// Base class for an NDT map.
-/// \tparam Derived Implementation class
-/// \tparam NdtUnit NDT map cell representation. Must implement NDTNormal.
-/// \tparam OutputNdtUnit NDT map output representation. Must implement NDTNormal.
-template<typename Derived, typename NdtUnit>
-class NDTMapBase : public common::helper_functions::crtp<Derived>
-{
-public:
-  // TODO(cvasfi): add multiple cell lookup in a neighbourhood like in PCL implementation
-  const NdtUnit & cell(double_t x, double_t y, double_t z)
-  {
-    return this->impl().cell_(x, y, z);
-  }
-};
-
-
 template<typename Derived, typename NdtUnit = common::lidar_utils::PointXYZIF>
 class NDTScanBase
 {
