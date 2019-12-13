@@ -50,6 +50,9 @@ strace
 sudo
 vim
 
+# ndt localization dependency for loading pcd files
+libpcl-dev
+
 # Doxygen
 bison
 flex

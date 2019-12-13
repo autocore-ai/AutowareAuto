@@ -14,9 +14,12 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <gtest/gtest.h>
 #include "test_ndt_map.hpp"
 #include <vector>
 #include <set>
+#include <fstream>
+
 namespace autoware
 {
 namespace localization
@@ -103,6 +106,8 @@ TEST_F(MapValidationTest, map_pcl_size_validation) {
       make_pcl(field_set, 1U, data_size - 2 * point_step - 1U, row_step, width,
       point_step)), num_points - 3U);
 }
+
+////////////////////////////////////
 
 TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic_io) {
   constexpr auto eps = 1e-6;

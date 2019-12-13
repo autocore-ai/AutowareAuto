@@ -19,7 +19,6 @@
 #include <ndt/ndt_representations.hpp>
 #include <ndt/ndt_voxel.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <geometry/spatial_hash.hpp>
 #include <vector>
 #include <limits>
 #include <unordered_map>
@@ -41,7 +40,6 @@ namespace ndt
 uint32_t NDT_PUBLIC validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg);
 
 /////////////////////////////////////////////
-
 
 template<typename Derived, typename VoxelT>
 class NDTMapBase : public common::helper_functions::crtp<Derived>
@@ -278,6 +276,7 @@ public:
     }
   }
 };
+
 }  // namespace ndt
 }  // namespace localization
 

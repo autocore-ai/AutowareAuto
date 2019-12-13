@@ -16,6 +16,7 @@
 #include <ndt/ndt_map.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <algorithm>
+#include <string>
 
 namespace autoware
 {

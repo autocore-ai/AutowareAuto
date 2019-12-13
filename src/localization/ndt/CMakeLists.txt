@@ -7,16 +7,18 @@ project(ndt)
 #dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(PCL 1.8 REQUIRED COMPONENTS io)
 ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
 
 set(NDT_NODES_LIB_SRC
     src/ndt.cpp
     src/ndt_map.cpp
     src/ndt_voxel.cpp
+    src/map_publisher.cpp
 )
 
 set(NDT_NODES_LIB_HEADERS
@@ -25,6 +27,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_optimization_problem.hpp
     include/ndt/ndt_voxel.hpp
     include/ndt/ndt_map.hpp
+    include/ndt/map_publisher.hpp
     include/ndt/ndt_localizer.hpp)
 
 ament_auto_add_library(
@@ -32,7 +35,10 @@ ${PROJECT_NAME} SHARED
         ${NDT_NODES_LIB_SRC}
         ${NDT_NODES_LIB_HEADERS}
 )
+
 autoware_set_compile_options(${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
   # run linters
@@ -43,7 +49,9 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(${NDT_TEST} test/test_ndt_map.hpp test/test_ndt_map.cpp)
+  ament_add_gtest(${NDT_TEST} test/test_ndt_map.hpp
+          test/test_ndt_map.cpp
+          test/test_map_publisher.cpp)
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME})
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
 endif()
