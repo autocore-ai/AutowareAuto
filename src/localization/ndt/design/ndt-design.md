@@ -43,6 +43,7 @@ representation.
  Outputs:
  * Set of voxels given a point.
 
-
 # Related issues
-
+- #137: NDT Map format validation
+- #138: Implement NDTMapRepresentation
+- #136: Implement NDT Map Publisher

@@ -14,5 +14,4 @@
 # limitations under the License.
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.8 REQUIRED COMPONENTS io)
-list(APPEND ndt_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
+list(APPEND ndt_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})

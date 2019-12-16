@@ -1,24 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>ndt</name>
+    <name>ndt_nodes</name>
     <version>0.0.2</version>
-    <description>Implementation of ndt localization</description>
+    <description>NDT related ROS2 nodes</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2.0</license>
 
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
-    <build_depend>eigen</build_depend>
+    <build_depend>libpcl-all-dev</build_depend>
 
-    <depend>localization_common</depend>
-    <depend>optimization</depend>
-    <depend>lidar_utils</depend>
-    <depend>sensor_msgs</depend>
-    <depend>geometry_msgs</depend>
-    <depend>voxel_grid</depend>
-    <depend>autoware_auto_geometry</depend>
-    <depend>autoware_auto_helper_functions</depend>
+    <depend>rclcpp</depend>
+    <depend>ndt</depend>
 
     <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_lint_auto</test_depend>
