@@ -42,18 +42,11 @@ void init_pcl_msg(
   const std::string & frame_id,
   const std::size_t size)
 {
-  msg.height = 1U;
-  msg.is_bigendian = false;
-  msg.is_dense = false;
-  msg.header.frame_id = frame_id;
-  // set the fields
-  sensor_msgs::PointCloud2Modifier modifier(msg);
-  modifier.setPointCloud2Fields(4U, "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
+  init_pcl_msg(msg, frame_id, size, 4U,
+    "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
-  // allocate memory so that iterators can be used
-  modifier.resize(size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -81,6 +81,36 @@ LIDAR_UTILS_PUBLIC void init_pcl_msg(
   const std::string & frame_id,
   const std::size_t size = static_cast<std::size_t>(MAX_SCAN_POINTS));
 
+/// initializes header information for point cloud given frame id, size, number of frames and
+///  a parameter pack of fields.
+/// \tparam Fields Template paramater pack containing field types.
+/// \param msg Point cloud message.
+/// \param frame_id Frame ID of the point cloud.
+/// \param size Size of the initialized point cloud.
+/// \param num_fields Number of fields.
+/// \param fields Set of parameters defining the fields. Each field must contain the following
+/// parameters in strict order: `field_name, count, data_type`. These parameters should
+/// be provided for each field
+template<typename ... Fields>
+LIDAR_UTILS_PUBLIC void init_pcl_msg(
+  sensor_msgs::msg::PointCloud2 & msg,
+  const std::string & frame_id,
+  const std::size_t size,
+  const uint32_t num_fields,
+  Fields const & ... fields
+)
+{
+  msg.height = 1U;
+  msg.is_bigendian = false;
+  msg.is_dense = false;
+  msg.header.frame_id = frame_id;
+  // set the fields
+  sensor_msgs::PointCloud2Modifier modifier(msg);
+  modifier.setPointCloud2Fields(num_fields, fields ...);
+  // allocate memory so that iterators can be used
+  modifier.resize(size);
+}
+
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   PointCloudIts & cloud_its,
   const autoware::common::lidar_utils::PointXYZIF & pt,
