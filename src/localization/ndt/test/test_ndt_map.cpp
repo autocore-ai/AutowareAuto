@@ -17,8 +17,6 @@
 #include <gtest/gtest.h>
 #include "test_ndt_map.hpp"
 #include <vector>
-#include <set>
-#include <fstream>
 
 namespace autoware
 {
@@ -32,6 +30,7 @@ constexpr uint32_t MapValidationContext::data_size;
 constexpr uint32_t MapValidationContext::width;
 constexpr uint32_t MapValidationContext::row_step;
 
+/////////////////////////////
 TEST_F(MapValidationTest, map_pcl_meta_validation) {
   using PointField = sensor_msgs::msg::PointField;
 
@@ -378,6 +377,94 @@ TEST_F(NDTMapTest, map_representation_basics) {
 
   map_grid.clear();
   EXPECT_EQ(map_grid.size(), 0U);
+}
+
+
+///////////////////////////// Function definitions:
+
+sensor_msgs::msg::PointCloud2 make_pcl(
+  const std::vector<sensor_msgs::msg::PointField> & fields,
+  uint32_t height,
+  uint32_t data_size,
+  uint32_t row_step,
+  uint32_t width,
+  uint32_t point_step)
+{
+  sensor_msgs::msg::PointCloud2 msg;
+  msg.data.resize(data_size, uint8_t{0U});
+  msg.fields = fields;
+  msg.row_step = row_step;
+  msg.height = height;
+  msg.width = width;
+  msg.point_step = point_step;
+  return msg;
+}
+
+sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
+{
+  sensor_msgs::msg::PointCloud2 cloud;
+  common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
+  auto idx = 0U;
+  for (const auto & pt : pts) {
+    autoware::common::lidar_utils::PointXYZIF ptF{.x = static_cast<float>(pt(0U)),
+      .y = static_cast<float>(pt(1U)), .z = static_cast<float>(pt(2U))};
+    common::lidar_utils::add_point_to_cloud(cloud, ptF, idx);
+  }
+  return cloud;
+}
+
+
+sensor_msgs::msg::PointField make_pf(
+  std::string name, uint32_t offset, uint8_t datatype,
+  uint32_t count)
+{
+  sensor_msgs::msg::PointField pf;
+  pf.name = name;
+  pf.offset = offset;
+  pf.datatype = datatype;
+  pf.count = count;
+  return pf;
+}
+
+void populate_pc(
+  sensor_msgs::msg::PointCloud2 & pc,
+  size_t num_points)
+{
+  if (validate_pcl_map(pc) != num_points) {
+    throw std::runtime_error("make sure you use a valid pcl format.");
+  }
+}
+
+common::lidar_utils::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
+{
+  return common::lidar_utils::PointXYZIF{
+    static_cast<float>(v(0)),
+    static_cast<float>(v(1)),
+    static_cast<float>(v(2))};
+}
+
+// add the point `center` and 4 additional points in a fixed distance from the center
+// resulting in 7 points with random but bounded covariance
+void add_cell(
+  sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
+  const Eigen::Vector3d & center, double fixed_deviation)
+{
+  common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
+
+  std::vector<Eigen::Vector3d> points;
+  for (auto idx = 0U; idx < 3U; idx++) {
+    for (auto mode = 0u; mode < 2u; mode++) {
+      auto deviated_pt = center;
+      if (mode == 0U) {
+        deviated_pt(idx) += fixed_deviation;
+      } else {
+        deviated_pt(idx) -= fixed_deviation;
+      }
+      points.push_back(deviated_pt);
+      EXPECT_TRUE(common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(deviated_pt),
+        pc_idx));
+    }
+  }
 }
 
 

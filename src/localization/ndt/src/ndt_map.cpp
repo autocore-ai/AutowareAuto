@@ -57,7 +57,7 @@ uint32_t validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg)
       ((double_field_idx--) * double_field_size), 1U);
     }) ||
     !field_valid(msg.fields[9U], sensor_msgs::msg::PointField::UINT32,  // check the cell id field
-    (8U * double_field_size + uint_field_size), 1U) )
+    (9U * double_field_size), 1U) )
   {
     return 0U;
   }
