@@ -43,7 +43,19 @@ representation.
  Outputs:
  * Set of voxels given a point.
 
+## Scan
+
+An NDT scan is a data structure to represent a lidar scan. The implementations depend on the optimization problem.
+All implementations must provide basic iterating abilities which is necessary for all ndt optimization problems.
+
+### P2DNDTScan
+
+#### Algorithm Design
+[P2DNDTScan](@ref autoware::localization::ndt::P2DNDTScan) is a wrapper around a vector of points(`Eigen::Vector3d`).
+The class allows iterating through the internal container by exposing the iterators of its vector.
+
 # Related issues
 - #137: NDT Map format validation
 - #138: Implement NDTMapRepresentation
 - #136: Implement NDT Map Publisher
+- #166: Implement P2D NDT scan

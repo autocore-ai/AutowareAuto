@@ -58,44 +58,6 @@ public:
     return this->impl().covariance_();
   }
 };
-
-template<typename Derived, typename NdtUnit = common::lidar_utils::PointXYZIF>
-class NDTScanBase
-{
-public:
-  using Point = NdtUnit;
-  using IterT = typename std::vector<NdtUnit>::iterator;
-  // get the point for a given index.
-  NdtUnit & get(size_t index);
-
-  IterT begin();
-
-  IterT end();
-
-private:
-  const Derived & impl() const
-  {
-    return *static_cast<const Derived *>(this);
-  }
-};
-
-
-class P2DNDTScan : public NDTScanBase<P2DNDTScan, common::lidar_utils::PointXYZIF>
-{
-  using PointT = common::lidar_utils::PointXYZIF;
-  const std::vector<PointT> & cells(double x, double y, double z);
-
-  void advance(size_t advancement);
-  PointT next();
-  PointT prev();
-  PointT front();
-  PointT back();
-  void transform(const geometry_msgs::msg::Transform &);
-
-private:
-  sensor_msgs::msg::PointCloud2 m_cloud;
-};
-
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

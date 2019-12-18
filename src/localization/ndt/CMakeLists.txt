@@ -25,6 +25,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_optimization_problem.hpp
     include/ndt/ndt_voxel.hpp
     include/ndt/ndt_map.hpp
+    include/ndt/ndt_scan.hpp
     include/ndt/ndt_localizer.hpp)
 
 ament_auto_add_library(
@@ -44,8 +45,11 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(${NDT_TEST} test/test_ndt_map.hpp
-          test/test_ndt_map.cpp)
+  ament_add_gtest(${NDT_TEST}
+          test/test_ndt_map.hpp
+          test/test_ndt_scan.hpp
+          test/test_ndt_map.cpp
+          test/test_ndt_scan.cpp)
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME})
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
 endif()

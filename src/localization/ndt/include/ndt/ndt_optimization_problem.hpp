@@ -17,6 +17,7 @@
 #define NDT__NDT_OPTIMIZATION_PROBLEM_HPP_
 
 #include <ndt/ndt_map.hpp>
+#include <ndt/ndt_scan.hpp>
 #include <optimization/optimization_problem.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <Eigen/Core>
