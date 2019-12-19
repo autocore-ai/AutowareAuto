@@ -74,7 +74,7 @@ public:
     pf7{make_pf("cov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
     pf8{make_pf("cov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
     pf9{make_pf("cov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf10{make_pf("cell_id", 9U * sizeof(float64_t), PointField::UINT32, 1U)} {}
+    pf10{make_pf("cell_id", 9U * sizeof(float64_t), PointField::UINT32, 2U)} {}
 
 protected:
   // Correct fields.
@@ -89,7 +89,7 @@ protected:
   const PointField pf9;
   const PointField pf10;
   static constexpr uint32_t point_step{static_cast<uint32_t>(9 * sizeof(float64_t)) +
-    sizeof(uint32_t)};
+    2 * sizeof(uint32_t)};
   static constexpr uint32_t num_points{50U};
   static constexpr uint32_t data_size{point_step * num_points};
   static constexpr uint32_t width{num_points};

@@ -209,7 +209,9 @@ public:
   /// by a dense map representation with identical configuration to this representation.
   /// \param msg PointCloud2 message to add. Each point in this cloud should correspond to a
   /// single voxel in the underlying voxel grid. This is checked via the `cell_id` field in the pcl
-  /// message which is expected to be equal to the voxel grid ID in the map's voxel grid.
+  /// message which is expected to be equal to the voxel grid ID in the map's voxel grid. Since
+  /// the grid's index will be a long value to avoid overflows, `cell_id` field should be an array
+  /// of 2 unsigned integers. That is because there is no direct long support as a PointField.
   void insert_(const sensor_msgs::msg::PointCloud2 & msg)
   {
     if (validate_pcl_map(msg) == 0U) {
@@ -243,9 +245,16 @@ public:
     {
       const Point centroid{*x_it, *y_it, *z_it};
       const auto voxel_idx = index(centroid);
+
+      // Since no native usigned long support is vailable for a point field
+      // the `cell_id_it` points to an array of two 32 bit integers to represent
+      // a long number. So the assignments must be done via memcpy.
+      Grid::key_type received_idx = 0U;
+      std::memcpy(&received_idx, &cell_id_it[0U], sizeof(received_idx));
+
       // If the pointcloud does not represent a voxel grid of identical configuration,
       // report the error
-      if (voxel_idx != static_cast<decltype(voxel_idx)>(*cell_id_it)) {
+      if (voxel_idx != received_idx) {
         throw std::domain_error("NDTVoxelMap: Pointcloud representing the ndt map"
                 "does not have a matching grid configuration with "
                 "the map representation it is being inserted to. The cell IDs do not matchb");

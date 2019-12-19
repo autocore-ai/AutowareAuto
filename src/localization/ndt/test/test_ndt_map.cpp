@@ -280,10 +280,10 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
   // Single point map but with invalid cell ID
   auto invalid_pc3 = make_pcl(field_set, 1U, point_step, point_step, point_step, point_step);
   sensor_msgs::PointCloud2Iterator<uint32_t> invalid_cell_it(invalid_pc3, "cell_id");
+  EXPECT_NE(invalid_cell_it, invalid_cell_it.end());
   const auto actual_idx = grid_config.index(Eigen::Vector3d{});
-  *invalid_cell_it = actual_idx + 1U;
-  ASSERT_NE(actual_idx, *invalid_cell_it);
-
+  const auto invalid_id = actual_idx + 1U;
+  std::memcpy(&invalid_cell_it[0], &invalid_id, sizeof(actual_idx));
   EXPECT_THROW(map_grid.insert(invalid_pc1), std::runtime_error);
   EXPECT_THROW(map_grid.insert(invalid_pc2), std::runtime_error);
   EXPECT_THROW(map_grid.insert(invalid_pc3), std::domain_error);
@@ -344,7 +344,9 @@ TEST_F(NDTMapTest, map_representation_basics) {
     ASSERT_EQ(generating_voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
     add_pt(msg, pc_its, value);
-    *cell_id_it = static_cast<uint32_t>(grid_config.index(added_pt));
+    // cell_id_it is of type unsigned int[2], so we need to convert from long.
+    const auto vidx = grid_config.index(added_pt);
+    std::memcpy(&cell_id_it[0U], &vidx, sizeof(vidx));
     ++cell_id_it;
 
     ++value;
