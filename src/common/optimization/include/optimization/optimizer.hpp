@@ -33,8 +33,10 @@ public:
   using StepT = float_t;
 
   // Solves x for an objective `optimziation_problem` and an initial value `x0`
-  template <typename OptimizationProblemT, typename DomainValueT>
-  void solve(OptimizationProblemT & optimization_problem, const DomainValueT & x0, DomainValueT & x_out)
+  template<typename OptimizationProblemT, typename DomainValueT>
+  void solve(
+    OptimizationProblemT & optimization_problem, const DomainValueT & x0,
+    DomainValueT & x_out)
   {
     impl().solve(optimization_problem, x0, x_out);
   }
@@ -57,22 +59,25 @@ private:
 template<typename LineSearchT>
 class NewtonsMethod : public Optimizer<NewtonsMethod<LineSearchT>, LineSearchT>
 {
-  template <typename OptimizationProblemT, typename DomainValueT>
-  void solve(OptimizationProblemT & optimization_problem, const DomainValueT & x0, DomainValueT & x_out);
+  template<typename OptimizationProblemT, typename DomainValueT>
+  void solve(
+    OptimizationProblemT & optimization_problem, const DomainValueT & x0,
+    DomainValueT & x_out);
 };
 
 
 // Class to mange the step length during optimization.
-template <typename Derived>
-class OPTIMIZATION_PUBLIC LineSearch{
-    using value = double;
-    template <typename OptimizationProblemT>
-    value compute_step_length(OptimizationProblemT &);
+template<typename Derived>
+class OPTIMIZATION_PUBLIC LineSearch
+{
+  using value = double;
+  template<typename OptimizationProblemT>
+  value compute_step_length(OptimizationProblemT &);
 };
 
 
-}          // namespace autoware
-}      // namespace common
 }  // namespace optimization
+}  // namespace common
+}  // namespace autoware
 
-#endif
+#endif  // OPTIMIZATION__OPTIMIZER_HPP_
