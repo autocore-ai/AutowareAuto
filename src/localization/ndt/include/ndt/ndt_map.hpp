@@ -96,6 +96,13 @@ public:
     return m_map.size();
   }
 
+  /// Get size of the cell.
+  /// \return A point representing the dimensions of the cell.
+  auto cell_size() const noexcept
+  {
+    return m_config.get_voxel_size();
+  }
+
   /// \brief Returns an iterator to the first element of the map
   /// \return Iterator
   typename Grid::const_iterator begin() const noexcept

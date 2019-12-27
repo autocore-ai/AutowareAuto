@@ -95,7 +95,7 @@ StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & covariance)
   m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
   if (!invertible) {
     m_occupied = false;
-//    throw std::runtime_error("StaticNDTVoxel: Cannot set voxel with invalid covariance");
+    // TODO(yunus.caliskan): Move this to the dynamic voxel in #216
   }
 }
 

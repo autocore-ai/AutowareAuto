@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ndt)
 
 #dependencies
+find_package(Eigen3 REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
@@ -39,6 +40,8 @@ autoware_set_compile_options(${PROJECT_NAME})
 if(BUILD_TESTING)
   # run linters
   autoware_static_code_analysis()
+  find_package(PCL 1.8 REQUIRED COMPONENTS registration)
+  include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 
   # gtest
   set(NDT_TEST ndt_gtest)
@@ -49,8 +52,11 @@ if(BUILD_TESTING)
           test/test_ndt_map.hpp
           test/test_ndt_scan.hpp
           test/test_ndt_map.cpp
-          test/test_ndt_scan.cpp)
-  target_link_libraries(${NDT_TEST} ${PROJECT_NAME})
+          test/test_ndt_scan.cpp
+          test/test_ndt_optimization.hpp
+          test/test_ndt_optimization.cpp)
+  target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
+
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
 endif()
 

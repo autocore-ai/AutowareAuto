@@ -60,21 +60,15 @@ void add_cell(
   sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
   const Eigen::Vector3d & center, double fixed_deviation);
 
+void dynamic_to_static(
+  const DynamicNDTMap & dynamic_map,
+  StaticNDTMap & static_map);
+
 class MapValidationContext
 {
 public:
   using PointField = sensor_msgs::msg::PointField;
-  MapValidationContext()
-  : pf1{make_pf("x", 0U, PointField::FLOAT64, 1U)},
-    pf2{make_pf("y", 1U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf3{make_pf("z", 2U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf4{make_pf("cov_xx", 3U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf5{make_pf("cov_xy", 4U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf6{make_pf("cov_xz", 5U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf7{make_pf("cov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf8{make_pf("cov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf9{make_pf("cov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-    pf10{make_pf("cell_id", 9U * sizeof(float64_t), PointField::UINT32, 2U)} {}
+  MapValidationContext();
 
 protected:
   // Correct fields.
@@ -106,39 +100,9 @@ protected:
   // how much should the points diverge from the center. It's fixed as there's no randomness.
   static constexpr float FIXED_DEVIATION{0.3};
 
-  DenseNDTMapContext()
-  {
-    // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
-    // init with a size to account for all the points in the map
-    common::lidar_utils::init_pcl_msg(m_pc, "map",
-      POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
-    // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
-    // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1
-    m_min_point.x = 0.5F;
-    m_min_point.y = 0.5F;
-    m_min_point.z = 0.5F;
-    m_max_point.x = 5.5F;
-    m_max_point.y = 5.5F;
-    m_max_point.z = 5.5F;
-    m_voxel_size.x = 1.0F;
-    m_voxel_size.y = 1.0F;
-    m_voxel_size.z = 1.0F;
-  }
+  DenseNDTMapContext();
 
-  void build_pc(const perception::filters::voxel_grid::Config & cfg)
-  {
-    uint32_t pc_idx = 0U;
-    for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
-      for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
-        for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
-          Eigen::Vector3d center{static_cast<double>(x), static_cast<double>(y),
-            static_cast<double>(z)};
-          add_cell(m_pc, m_pc_idx, center, FIXED_DEVIATION);
-          m_voxel_centers[cfg.index(center)] = center;
-        }
-      }
-    }
-  }
+  void build_pc(const perception::filters::voxel_grid::Config & cfg);
 
   uint32_t m_pc_idx{0U};
   sensor_msgs::msg::PointCloud2 m_pc;
@@ -151,22 +115,6 @@ protected:
 
 
 class NDTMapContext : protected DenseNDTMapContext, protected MapValidationContext {};
-
-class DenseNDTMapTest : public DenseNDTMapContext, public ::testing::Test {};
-class MapValidationTest : public MapValidationContext, public ::testing::Test {};
-class NDTMapTest : public NDTMapContext, public ::testing::Test
-{
-public:
-  NDTMapTest()
-  {
-    // Make voxel grid's max point to include points up to 50.0
-    m_max_point.x = num_points + 0.5F;
-    m_max_point.y = num_points + 0.5F;
-    m_max_point.z = num_points + 0.5F;
-  }
-};
-
-
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

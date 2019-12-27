@@ -34,8 +34,6 @@ are inserted into their corresponding voxels for lookup. Input point cloud is va
 [validate_pcl_map()](@ref autoware::localization::ndt::validate_pcl_map) function before converting it into the map
 representation.
 
-### Assumptions / Known limits
-
 ### Inputs / Outputs / API
  Inputs:
  * Pointcloud
@@ -53,6 +51,29 @@ All implementations must provide basic iterating abilities which is necessary fo
 #### Algorithm Design
 [P2DNDTScan](@ref autoware::localization::ndt::P2DNDTScan) is a wrapper around a vector of points(`Eigen::Vector3d`).
 The class allows iterating through the internal container by exposing the iterators of its vector.
+
+
+## Optimization Problem
+
+### P2D Optimization Problem
+
+#### Algorithm Design
+
+The algorithm is defined in detail in the paper "The Three-Dimensional Normal-Distributions Transform" [Magnusson 2009].
+The actual implementation is based on the [PCL](https://github.com/PointCloudLibrary/pcl/tree/master/registration/include/pcl/registration)
+and [autoware.ai](https://gitlab.com/autowarefoundation/autoware.ai/core_perception/tree/master/ndt_cpu) implementations.
+
+A [CachedExpression](@ref autoware::common::optimization::CachedExpression) is used to represent the optimization problem. As a result,
+score, jacobian and hessian are given the option to be computed all computed together to make use of the synergy stemming from the shared terms within the computation.
+
+#### Inputs / Outputs / API
+Inputs:
+ * Scan
+ * Map
+Outputs:
+ * Score
+ * Jacobian
+ * Hessian
 
 # Related issues
 - #137: NDT Map format validation
