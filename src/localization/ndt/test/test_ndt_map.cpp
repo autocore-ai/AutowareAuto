@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include "test_ndt_map.hpp"
+#include <Eigen/LU>
 #include <vector>
 
 namespace autoware
@@ -245,8 +246,9 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
   StaticNDTVoxel vx;
   Eigen::Vector3d pt{5.0, 5.0, 5.0};
   Eigen::Matrix3d cov;
-  cov(0, 0) = 7.0; // just making it nonzero
-
+  cov(0, 0) = 7.0;
+  cov(1, 2) = 17.0;
+  cov(2, 1) = 3.0;
   // default constructor zero-initializes and doesn't set the voxel as occupied
   EXPECT_FALSE(vx.usable());
   EXPECT_THROW(vx.centroid(), std::out_of_range);
@@ -262,6 +264,39 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
   EXPECT_TRUE(vx.usable());
   EXPECT_TRUE(vx.centroid().isApprox(pt, std::numeric_limits<Real>::epsilon()));
   EXPECT_TRUE(vx.covariance().isApprox(cov, std::numeric_limits<Real>::epsilon()));
+}
+
+TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance) {
+  // Use a DynamicNDTVoxel to compute a valid covariance
+  {
+    DynamicNDTVoxel generator_voxel;
+    generator_voxel.add_observation(Eigen::Vector3d{1.0, 1.0, 7.0});
+    generator_voxel.add_observation(Eigen::Vector3d{2.0, 9.0, 2.0});
+    generator_voxel.add_observation(Eigen::Vector3d{0.0, 3.0, 5.0});
+    generator_voxel.add_observation(Eigen::Vector3d{4.0, 5.0, 8.0});
+    const auto & centroid = generator_voxel.centroid();
+    const auto & covariance = generator_voxel.covariance();
+    StaticNDTVoxel::Covariance inv_covariance;
+    bool invertible{false};
+    covariance.computeInverseWithCheck(inv_covariance, invertible);
+    ASSERT_TRUE(invertible);
+    StaticNDTVoxel voxel(centroid, covariance);
+    EXPECT_EQ(voxel.inverse_covariance(), inv_covariance);
+    EXPECT_TRUE(voxel.usable());
+  }
+
+  {
+    StaticNDTVoxel::Covariance bad_covariance;
+    StaticNDTVoxel::Covariance bad_covariance_inv;
+    bad_covariance << 1.0, 1.0, 1.0,
+      1.0, 1.0, 1.0,
+      1.0, 1.0, 1.0;
+    bool invertible{false};
+    bad_covariance.computeInverseWithCheck(bad_covariance_inv, invertible);
+    ASSERT_FALSE(invertible);
+    StaticNDTVoxel voxel{Eigen::Vector3d{1.0, 1.0, 1.0}, bad_covariance};
+    EXPECT_FALSE(voxel.usable());
+  }
 }
 
 TEST_F(NDTMapTest, map_representation_bad_input) {
@@ -292,10 +327,16 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
 TEST_F(NDTMapTest, map_representation_basics) {
 
   auto add_pt = [](sensor_msgs::msg::PointCloud2 & pc,
-      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_its,
+      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
+      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
       Real value) {
-      for (auto & it : pc_its) {
+      for (auto & it : pc_pt_its) {
         *it = value;
+        ++it;
+      }
+      // TODO(yunus.caliskan): Assert that the covariance is invertible with the values below.
+      for (auto & it : pc_cov_its) {
+        *it = value++;
         ++it;
       }
     };
@@ -313,10 +354,12 @@ TEST_F(NDTMapTest, map_representation_basics) {
   // No map is added, so a lookup should return an empty vector.
   EXPECT_TRUE(map_grid.cell(0.0, 0.0, 0.0).empty());
 
-  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_its{
+  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_point_its{
     sensor_msgs::PointCloud2Iterator<Real>(msg, "x"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "y"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "z"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "z")
+  };
+  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_cov_its{
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xx"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xy"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xz"),
@@ -327,7 +370,9 @@ TEST_F(NDTMapTest, map_representation_basics) {
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
 
   auto value = Real{1.0};
-  while (std::all_of(pc_its.begin(), pc_its.end(), [](auto & it) {return it != it.end();}) &&
+  while (std::all_of(pc_point_its.begin(), pc_point_its.end(), [](auto & it) {
+      return it != it.end();
+    }) &&
     cell_id_it != cell_id_it.end())
   {
 
@@ -343,7 +388,8 @@ TEST_F(NDTMapTest, map_representation_basics) {
       std::numeric_limits<Real>::epsilon()));
     ASSERT_EQ(generating_voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
-    add_pt(msg, pc_its, value);
+    add_pt(msg, pc_point_its, pc_cov_its, value);
+
     // cell_id_it is of type unsigned int[2], so we need to convert from long.
     const auto vidx = grid_config.index(added_pt);
     std::memcpy(&cell_id_it[0U], &vidx, sizeof(vidx));

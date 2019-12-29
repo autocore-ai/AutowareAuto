@@ -68,6 +68,7 @@ private:
   Point m_centroid;
   Cov m_M2;  // Used in covariance computation.
   Cov m_covariance;
+  Cov m_inv_covariance;
   uint64_t m_num_points{0U};
 };
 
@@ -93,6 +94,8 @@ public:
   /// \return centroid of the cell
   const Point & centroid_() const;
 
+  const Cov & inverse_covariance() const;
+
   /// Check if the voxel is usable.
   /// \return true if the voxel is not empty
   bool usable() const noexcept;
@@ -100,6 +103,7 @@ public:
 private:
   Point m_centroid;
   Cov m_covariance;
+  Cov m_inv_covariance;
   bool m_occupied{false};
 };
 

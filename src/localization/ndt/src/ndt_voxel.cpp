@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include <ndt/ndt_voxel.hpp>
+#include <Eigen/LU>
 #include <limits>
 
 namespace autoware
@@ -84,11 +85,19 @@ StaticNDTVoxel::StaticNDTVoxel()
 {
   m_covariance.setZero();
   m_centroid.setZero();
+  m_inv_covariance.setZero();
 }
 
 StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & covariance)
-: m_centroid(centroid), m_covariance(covariance), m_occupied{true}
-{}
+: m_centroid{centroid}, m_covariance{covariance}, m_occupied{true}
+{
+  bool invertible{false};
+  m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
+  if (!invertible) {
+    m_occupied = false;
+//    throw std::runtime_error("StaticNDTVoxel: Cannot set voxel with invalid covariance");
+  }
+}
 
 const Eigen::Matrix3d & StaticNDTVoxel::covariance_() const
 {
@@ -104,6 +113,15 @@ const Eigen::Vector3d & StaticNDTVoxel::centroid_() const
     throw std::out_of_range("StaticNDTVoxel: Cannot get centroid from an unoccupied voxel");
   }
   return m_centroid;
+}
+
+const Eigen::Matrix3d & StaticNDTVoxel::inverse_covariance() const
+{
+  if (!m_occupied) {
+    throw std::out_of_range("StaticNDTVoxel: Cannot get inverse covariance. "
+            "The voxel is either empty or has singular covariance.");
+  }
+  return m_inv_covariance;
 }
 
 bool StaticNDTVoxel::usable() const noexcept
