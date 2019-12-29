@@ -179,7 +179,7 @@ void NDTMapPublisherNode::map_to_pc()
     *(cov_xz_it) = covariance(0U, 2U);
     *(cov_yy_it) = covariance(1U, 1U);
     *(cov_yz_it) = covariance(1U, 2U);
-    *(cov_zz_it) = covariance(2U, 1U);
+    *(cov_zz_it) = covariance(2U, 2U);
     std::memcpy(&cell_id_it[0U], &(vx_it.first), sizeof(vx_it.first));
     ++x_it;
     ++y_it;
