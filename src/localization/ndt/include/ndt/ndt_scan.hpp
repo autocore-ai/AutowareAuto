@@ -40,14 +40,14 @@ public:
   using Point = NDTUnit;
   /// Get iterator pointing to the beginning of the internal container.
   /// \return Begin iterator.
-  IteratorT begin()
+  IteratorT begin() const
   {
     return this->impl().begin_();
   }
 
   /// Get iterator pointing to the end of the internal container.
   /// \return End iterator.
-  IteratorT end()
+  IteratorT end() const
   {
     return this->impl().end_();
   }
@@ -75,7 +75,7 @@ public:
 
   /// Number of points inside the scan.
   /// \return Number of points
-  uint32_t size()
+  uint32_t size() const
   {
     return this->impl().size_();
   }
@@ -84,11 +84,11 @@ public:
 /// Represents a lidar scan in a P2D optimization problem. It is a wrapper around an
 /// std::vector<Eigen::Vector3d>
 class NDT_PUBLIC P2DNDTScan : public NDTScanBase<P2DNDTScan,
-    Eigen::Vector3d, std::vector<Eigen::Vector3d>::iterator>
+    Eigen::Vector3d, std::vector<Eigen::Vector3d>::const_iterator>
 {
 public:
   using Container = std::vector<Eigen::Vector3d>;
-  using iterator = Container::iterator;
+  using iterator = Container::const_iterator;
 
   // Make sure the given iterator type in the template is compatible with the used container.
   // container should have `iterator` type/alias defined.
@@ -104,14 +104,17 @@ public:
     const sensor_msgs::msg::PointCloud2 & msg,
     std::size_t capacity)
   {
-    insert_(msg);
     m_points.reserve(capacity);
+    insert_(msg);
   }
 
   /// Constructor
   /// \param capacity Capacity of the scan. It should be configured according to the max. expected
   /// point cloud message size from the lidar.
-  explicit P2DNDTScan(std::size_t capacity) {m_points.reserve(capacity);}
+  explicit P2DNDTScan(std::size_t capacity)
+  {
+    m_points.reserve(capacity);
+  }
 
   /// Insert a point cloud into the NDTScan. This is the step where the pointcloud is
   /// converted into the ndt scan representation.
@@ -151,16 +154,16 @@ public:
 
   /// Get iterator pointing to the beginning of the internal container.
   /// \return Begin iterator.
-  iterator begin_()
+  iterator begin_() const
   {
-    return m_points.begin();
+    return m_points.cbegin();
   }
 
   /// Get iterator pointing to the end of the internal container.
   /// \return End iterator.
-  iterator end_()
+  iterator end_() const
   {
-    return m_points.end();
+    return m_points.cend();
   }
 
   /// Check if there is any data in the scan.
@@ -178,7 +181,7 @@ public:
 
   /// Number of points inside the scan.
   /// \return Number of points
-  uint32_t size_()
+  uint32_t size_() const
   {
     return m_points.size();
   }
