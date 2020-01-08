@@ -15,7 +15,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 ### Export headers
-project(autoware_auto_helper_functions)
+project(autoware_auto_common)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)

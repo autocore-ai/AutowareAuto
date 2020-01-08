@@ -28,7 +28,7 @@ include_directories(include)
 
 ### Build driver library
 set(required_dependencies
-  "autoware_auto_helper_functions"
+  "autoware_auto_common"
   "lidar_utils"
   "sensor_msgs"
 )

@@ -11,7 +11,7 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <depend>autoware_auto_msgs</depend>
-    <depend>autoware_auto_helper_functions</depend>
+    <depend>autoware_auto_common</depend>
     <depend>geometry_msgs</depend>
 
     <test_depend>ament_cmake_gtest</test_depend>
