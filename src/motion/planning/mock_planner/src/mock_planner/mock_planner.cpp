@@ -1,4 +1,4 @@
-// Copyright 2019 Christopher Ho
+// Copyright 2019 Christopher Ho, changes by Sandro Merkli
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ void MockPlanner::set_config_impl() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_zero_references() noexcept
 {
+  // TODO mock implementation
   //static_assert(ACADO_NY == 1, "Unexpected number of reference variables");
   //constexpr auto NY = static_cast<Index>(ACADO_NY);
   //std::fill(&acadoVariables.y[0U], &acadoVariables.y[HORIZON * NY], AcadoReal{});
@@ -111,6 +112,7 @@ void MockPlanner::set_zero_references() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_parameters(const motion_common::VehicleConfig & cfg) noexcept
 {
+  // TODO mock implementation
   //constexpr auto NOD = static_cast<Index>(ACADO_NOD);
   //static_assert(NOD == 2U, "Unexpected value for number of parameters");
   //for (std::size_t i = {}; i < HORIZON; ++i) {
@@ -125,6 +127,7 @@ void MockPlanner::set_parameters(const motion_common::VehicleConfig & cfg) noexc
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_limits(const motion_common::LimitsConfig & cfg) noexcept
 {
+  // TODO mock implementation
   //static_assert(ACADO_HARDCODED_CONSTRAINT_VALUES == 0, "Constraints not hard coded");
   //constexpr auto NUM_CTRL_CONSTRAINTS = 2U;
   //constexpr auto NUM_STATE_CONSTRAINTS = 1U;
@@ -157,6 +160,7 @@ void MockPlanner::set_limits(const motion_common::LimitsConfig & cfg) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_nominal_weights(const motion_common::StateWeight & cfg) noexcept
 {
+  // TODO mock implementation
   //static_assert(ACADO_WEIGHTING_MATRICES_TYPE == 1, "Weighting matrix should be fixed");
   //static_assert(ACADO_NY == 1, "Unexpected number of reference variables");
   //acadoVariables.W[0U] = static_cast<AcadoReal>(cfg.longitudinal_velocity());
@@ -164,6 +168,7 @@ void MockPlanner::set_nominal_weights(const motion_common::StateWeight & cfg) no
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_terminal_weights(const motion_common::StateWeight & cfg) noexcept
 {
+  // TODO mock implementation
   //static_assert(ACADO_NYN == 4, "Unexpected number of terminal reference variables");
   //acadoVariables.WN[(IDYN_X * NYN) + IDYN_X] = static_cast<AcadoReal>(cfg.pose());
   //acadoVariables.WN[(IDYN_Y * NYN) + IDYN_Y] = static_cast<AcadoReal>(cfg.pose());
@@ -175,6 +180,7 @@ void MockPlanner::set_terminal_weights(const motion_common::StateWeight & cfg) n
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_reference_velocity(Real velocity) noexcept
 {
+  // TODO mock implementation
   //constexpr auto NY = static_cast<Index>(ACADO_NY);
   //static_assert(NY == 1U, "Unexpected value for number of nominal references");
   //const auto vel = static_cast<AcadoReal>(velocity);
@@ -186,6 +192,7 @@ void MockPlanner::set_target(
   const Point & target,
   const motion::motion_common::Heading ref_heading) noexcept
 {
+  // TODO mock implementation
   //acadoVariables.yN[IDYN_X] = static_cast<AcadoReal>(target.x);
   //acadoVariables.yN[IDYN_Y] = static_cast<AcadoReal>(target.y);
   //const auto dth = motion_common::to_angle(target.heading - ref_heading);
@@ -197,6 +204,7 @@ void MockPlanner::set_target(
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::set_x0(const Point & state)
 {
+  // TODO mock implementation
   //// Set x0
   //acadoVariables.x0[IDX_X] = static_cast<AcadoReal>(state.x);
   //acadoVariables.x0[IDX_Y] = static_cast<AcadoReal>(state.y);
@@ -213,6 +221,7 @@ void MockPlanner::set_x0(const Point & state)
 ////////////////////////////////////////////////////////////////////////////////
 void MockPlanner::solve()
 {
+  // TODO mock implementation
   //// Cold start
   //{
     //std::fill(&acadoVariables.u[0U], &acadoVariables.u[HORIZON * NU], AcadoReal{});
@@ -235,6 +244,7 @@ void MockPlanner::solve()
 ////////////////////////////////////////////////////////////////////////////////
 const Trajectory & MockPlanner::from_solution(const std_msgs::msg::Header & header)
 {
+  // TODO mock implementation
   //auto & traj = m_trajectory;
   //traj.header = header;
   //for (std::size_t i = {}; i < HORIZON; ++i) {
