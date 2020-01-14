@@ -90,10 +90,8 @@ private:
   MOCK_PLANNER_LOCAL void set_reference_velocity(Real velocity) noexcept;
   /// Sets current state
   MOCK_PLANNER_LOCAL void set_x0(const Point & state);
-  /// Solves (?) 
-  MOCK_PLANNER_LOCAL void solve();
   /// Deserializes a vector version of a solution into a trajectory message
-  MOCK_PLANNER_LOCAL const Trajectory & from_solution(const std_msgs::msg::Header & header);
+  MOCK_PLANNER_LOCAL const Trajectory & compute_trajectory(const std_msgs::msg::Header & header);
 
   PlannerConfig m_config;
   Trajectory m_trajectory{};
