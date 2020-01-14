@@ -40,8 +40,8 @@ constexpr auto NU = static_cast<Index>(2);
 static_assert(NU == 2U, "Unexpected value for number of controls");
 constexpr auto IDU_ACCEL = 0U;
 constexpr auto IDU_WHEEL_ANGLE = 1U;
-constexpr auto NYN = static_cast<Index>(4);
-static_assert(NYN == 4U, "Unexpected value for number of terminal references");
+//constexpr auto NYN = static_cast<Index>(4);
+//static_assert(NYN == 4U, "Unexpected value for number of terminal references");
 constexpr auto IDYN_X = 0U;
 constexpr auto IDYN_Y = 1U;
 constexpr auto IDYN_HEADING = 2U;
@@ -52,7 +52,7 @@ MockPlanner::MockPlanner(const PlannerConfig & config)
 {
   set_zero_references();
   set_config_impl();
-  static_assert(HORIZON <= Trajectory::CAPACITY, "MOCK Solution cannot fit in Trajectory");
+  static_assert(HORIZON <= Trajectory::CAPACITY, "Mock Solution cannot fit in Trajectory");
   m_trajectory.points.resize(HORIZON);
   for (auto idx = Index{}; idx < m_trajectory.points.size(); ++idx) {
     auto & pt = m_trajectory.points[idx];
