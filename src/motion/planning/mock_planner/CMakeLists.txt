@@ -22,19 +22,19 @@ string(CONCAT checks
   "-modernize-deprecated-headers,"
   "-hicpp-deprecated-headers,"
   "-cppcoreguidelines-pro-bounds-constant-array-index") # Will bring back #8
-#target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_PATH})
 
 ### Test
 if(BUILD_TESTING)
   # Linters
-  #find_package(ament_lint_auto REQUIRED)
-  #ament_lint_auto_find_test_dependencies()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
   ## Unit test
-  #ament_add_gtest(mock_planner_unit_tests
-    #test/gtest_main.cpp
-    #test/sanity_checks.cpp)
-  #ament_target_dependencies(mock_planner_unit_tests "planner_common")
-  #target_include_directories(mock_planner_unit_tests PRIVATE "include")
+  ament_add_gtest(mock_planner_unit_tests
+    test/gtest_main.cpp
+    test/sanity_checks.cpp)
+  ament_target_dependencies(mock_planner_unit_tests "planning_common")
+  target_link_libraries(mock_planner_unit_tests ${PROJECT_NAME})
+  target_include_directories(mock_planner_unit_tests PRIVATE "include")
 endif()
 
 ament_auto_package()

@@ -121,9 +121,9 @@ TEST_P(sanity_checks_constraint_free, oneshot)
     heading_tol = 0.0001F;
   }
   EXPECT_EQ(progresses_towards_target(traj, p.target.state, heading_tol), traj.points.size());
-  if (HasFailure()) {
-    planner_.debug_print(std::cout);
-  }
+  //if (HasFailure()) {
+    //planner_.debug_print(std::cout);
+  //}
 }
 
 TEST_P(sanity_checks_constraint_free, simulation)
@@ -157,7 +157,7 @@ TEST_P(sanity_checks_constraint_free, simulation)
     }
     EXPECT_EQ(progresses_towards_target(traj, p.target.state, heading_tol), traj.points.size());
     if (HasFailure()) {
-      planner_.debug_print(std::cout);
+      //planner_.debug_print(std::cout);
       break;
     }
 
