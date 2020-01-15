@@ -1,0 +1,8 @@
+
+recordreplay_planner:
+  ros__parameters:
+    some_topic: "vehicle_kinematic_state"
+    tf_topic: "tf"
+    diagnostic_topic: "planner_diagnostic"
+    planner:
+
