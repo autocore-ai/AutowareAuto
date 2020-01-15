@@ -16,6 +16,10 @@
 
 #include <recordreplay_planner_node/visibility_control.hpp>
 #include <recordreplay_planner/recordreplay_planner.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
+#include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -29,6 +33,10 @@ namespace planning
 namespace recordreplay_planner_node
 {
 using PlannerPtr = std::unique_ptr<motion::planning::recordreplay_planner::RecordReplayPlanner>;
+using tf2_msgs::msg::TFMessage;
+using State = autoware_auto_msgs::msg::VehicleKinematicState;
+using Trajectory = autoware_auto_msgs::msg::Trajectory;
+using Transform = geometry_msgs::msg::TransformStamped;
 
 class RECORDREPLAY_PLANNER_NODE_PUBLIC RecordReplayPlannerNode : public rclcpp::Node
 {
@@ -39,14 +47,21 @@ public:
   RecordReplayPlannerNode(
     const std::string & name,
     const std::string & ns,
-    const std::string & some_topic,
     const std::string & tf_topic,
-    const std::string & diagnostic_topic);
+    const std::string & trajectory_topic);
 
 protected:
   void set_planner(PlannerPtr && planner) noexcept;
 
+  rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
+  rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
   PlannerPtr m_planner{nullptr};
+
+private:
+  RECORDREPLAY_PLANNER_NODE_LOCAL void init(
+    const std::string & tf_topic,
+    const std::string & trajectory_topic
+  );
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

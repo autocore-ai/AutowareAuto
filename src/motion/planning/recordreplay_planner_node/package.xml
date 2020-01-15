@@ -13,6 +13,9 @@
 
   <depend>recordreplay_planner</depend>
   <depend>rclcpp</depend>
+  <depend>autoware_auto_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

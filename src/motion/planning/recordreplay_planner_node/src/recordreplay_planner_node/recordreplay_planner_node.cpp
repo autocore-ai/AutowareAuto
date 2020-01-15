@@ -26,19 +26,43 @@ namespace recordreplay_planner_node
 RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const std::string & ns)
 : Node{name, ns}
 {
-  set_planner(std::make_unique<recordreplay_planner::RecordReplayPlanner>());
+  // TODO(s.me) get topics from parameters
+  const std::string tf_topic = "some_invalid_tf";
+  const std::string trajectory_topic = "some_invalid_trajectory_topic";
+  init(tf_topic, trajectory_topic);
 }
 ////////////////////////////////////////////////////////////////////////////////
 RecordReplayPlannerNode::RecordReplayPlannerNode(
   const std::string & name,
   const std::string & ns,
-  const std::string & some_topic,
   const std::string & tf_topic,
-  const std::string & diagnostic_topic)
+  const std::string & trajectory_topic)
 : Node{name, ns}
 {
+  // set_planner(std::make_unique<recordreplay_planner::RecordReplayPlanner>());
+  init(tf_topic, trajectory_topic);
+}
+
+void RecordReplayPlannerNode::init(
+  const std::string & tf_topic,
+  const std::string & trajectory_topic)
+{
+  using rclcpp::QoS;
+
+  // Set up subscribers
+  using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
+  m_tf_sub = create_subscription<TFMessage>(tf_topic, QoS{10}.transient_local(),
+      [this](const TFMessage::SharedPtr msg) {(void)msg;}, SubAllocT{});
+
+  // Set up publishers
+  using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
+  m_trajectory_pub =
+    create_publisher<Trajectory>(trajectory_topic, QoS{10}.transient_local(), PubAllocT{});
+
+  // Create and set a planner object that we'll talk to
   set_planner(std::make_unique<recordreplay_planner::RecordReplayPlanner>());
 }
+
 
 void RecordReplayPlannerNode::set_planner(PlannerPtr && planner) noexcept
 {
