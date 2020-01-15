@@ -24,7 +24,7 @@ if(BUILD_TESTING)
   # ament_add_gtest(mock_planner_node_unit_tests
   #   test/gtest_main.cpp
   #   test/sanity_check.cpp)
-   #target_link_libraries(mock_planner_node_unit_tests ${PROJECT_NAME})
+  #target_link_libraries(mock_planner_node_unit_tests ${PROJECT_NAME})
   # add_dependencies(mock_planner_node_unit_tests ${PROJECT_NAME})
 endif()
 
