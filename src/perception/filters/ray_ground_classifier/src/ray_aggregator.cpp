@@ -118,9 +118,12 @@ void RayAggregator::insert(const PointXYZIFR & pt)
     m_num_ready = 0U;
     for (std::size_t idx = 0U; idx < m_rays.size(); ++idx) {
       const std::size_t jdx = idx;  // Fix for MISRA Fp, idx modified in loop
-      if (!m_rays[jdx].empty()) {
-        m_ready_indices[m_num_ready] = idx;
-        ++m_num_ready;
+      // Add all non empty "NOT_READY" rays to the ready list since the end of scan in reached.
+      if (RayState::RESET != m_ray_state[jdx]) {
+        if (!m_rays[jdx].empty()) {
+          m_ready_indices[m_num_ready] = idx;
+          ++m_num_ready;
+        }
       }
     }
   } else {
