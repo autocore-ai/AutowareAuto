@@ -28,10 +28,10 @@ namespace localization
 namespace localization_common
 {
 // The class could be templated on the optimizationproblem/solver as well.
-template<typename MsgT, typename MapT, typename PoseInitializationT = VehicleOdometryPoseInitialization>
+template<typename MsgT, typename MapT, typename PoseInitializationT = BestEffortInitializer>
 class RelativeLocalizerBase
 {
-    using PoseT = geometry_msgs::msg::Transform;
+  using PoseT = geometry_msgs::msg::Transform;
   using ScoreT = double;
 
   // Use the observation message to localize base_link in map.
@@ -39,16 +39,18 @@ class RelativeLocalizerBase
 
   virtual void set_map(const MapT & msg) = 0;
 
-  // The function to calculate/return a fitness score indicating the confidence in the produced result.
+  // The function to calculate/return a fitness score indicating the confidence
+  // in the produced result.
   virtual ScoreT get_fitness_score();
 
-  // Function to evaluate the estimated relative transform and decide if it's an outlier/faulty or a valid transform
-  // i.e. A relative transform that is too far away from the initial guess could be caused by a faulty measurement/computation
+  // Function to evaluate the estimated relative transform and decide if it's an outlier/faulty
+  // or a valid transform i.e. A relative transform that is too far away from the initial guess
+  // could be caused by a faulty measurement/computation
   virtual bool validate_result();
 };
 
-}          // namespace autoware
-}      // namespace localization
 }  // namespace localization_common
+}  // namespace localization
+}  // namespace autoware
 
-#endif
+#endif  // LOCALIZATION_COMMON__LOCALIZER_BASE_HPP_
