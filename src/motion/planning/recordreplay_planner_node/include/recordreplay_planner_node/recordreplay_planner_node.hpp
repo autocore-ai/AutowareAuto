@@ -47,6 +47,7 @@ public:
   RecordReplayPlannerNode(
     const std::string & name,
     const std::string & ns,
+    const std::string & ego_topic,
     const std::string & tf_topic,
     const std::string & trajectory_topic);
 
@@ -54,14 +55,19 @@ protected:
   void set_planner(PlannerPtr && planner) noexcept;
 
   rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
+  rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
   PlannerPtr m_planner{nullptr};
 
 private:
   RECORDREPLAY_PLANNER_NODE_LOCAL void init(
+    const std::string & ego_topic,
     const std::string & tf_topic,
     const std::string & trajectory_topic
   );
+
+
+  RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning
