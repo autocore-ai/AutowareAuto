@@ -7,6 +7,7 @@ project(ray_ground_classifier_nodes)
 
 ## dependencies
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ray_ground_classifier REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
@@ -23,6 +24,7 @@ add_library(${CLOUD_NODE_LIB} SHARED
   src/ray_ground_classifier_cloud_node.cpp)
 autoware_set_compile_options(${CLOUD_NODE_LIB})
 ament_target_dependencies(${CLOUD_NODE_LIB}
+  "autoware_auto_common"
   "sensor_msgs"
   "rclcpp"
   "ray_ground_classifier"

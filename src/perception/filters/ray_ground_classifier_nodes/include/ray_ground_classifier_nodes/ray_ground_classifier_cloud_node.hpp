@@ -19,6 +19,7 @@
 #ifndef RAY_GROUND_CLASSIFIER_NODES__RAY_GROUND_CLASSIFIER_CLOUD_NODE_HPP_
 #define RAY_GROUND_CLASSIFIER_NODES__RAY_GROUND_CLASSIFIER_CLOUD_NODE_HPP_
 
+#include <common/types.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
 #include <lifecycle_msgs/msg/transition.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
@@ -32,6 +33,9 @@
 
 #include "ray_ground_classifier_nodes/visibility_control.hpp"
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+
 namespace autoware
 {
 namespace perception
@@ -42,6 +46,12 @@ namespace ray_ground_classifier_nodes
 {
 
 using sensor_msgs::msg::PointCloud2;
+
+// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
+// the pointcloud msg has intensity field, otherwise return false
+RAY_GROUND_CLASSIFIER_PUBLIC bool8_t
+has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
+
 /// \brief A node that takes in unstructured point clouds and partitions them into ground and
 ///        nonground points
 class RAY_GROUND_CLASSIFIER_PUBLIC RayGroundClassifierCloudNode

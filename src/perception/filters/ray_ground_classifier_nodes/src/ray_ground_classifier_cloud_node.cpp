@@ -34,6 +34,49 @@ using std::placeholders::_1;
 
 using autoware::common::lidar_utils::init_pcl_msg;
 
+// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
+// the pointcloud msg has intensity field, otherwise return false
+bool8_t has_intensity_and_throw_if_no_xyz(
+  const PointCloud2::SharedPtr & cloud)
+{
+  bool8_t ret = true;
+  // Validate point step
+  if (cloud->fields.size() < 3U) {
+    throw std::runtime_error("RayGroundClassifierNode: invalid PointCloud msg");
+  }
+
+  const auto check_field = [](
+    const sensor_msgs::msg::PointField & field,
+    const char8_t * const name,
+    const uint32_t offset) -> bool8_t {
+      bool8_t res = true;
+      if ((name != field.name) || (offset != field.offset) ||
+        (sensor_msgs::msg::PointField::FLOAT32 != field.datatype) || (1U != field.count))
+      {
+        res = false;
+      }
+      return res;
+    };
+
+  if (!check_field(cloud->fields[0U], "x", 0U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct x field");
+  } else if (!check_field(cloud->fields[1U], "y", 4U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct y field");
+  } else if (!check_field(cloud->fields[2U], "z", 8U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct z field");
+  } else {
+    // do nothing
+  }
+  if (cloud->fields.size() >= 4U) {
+    if (!check_field(cloud->fields[3U], "intensity", 12U)) {
+      ret = false;
+    }
+  } else {
+    ret = false;
+  }
+  return ret;
+}
+
 RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   const std::string & node_name,
   const std::string & node_namespace)
@@ -124,6 +167,19 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     if (msg->header.frame_id != m_ground_msg.header.frame_id) {
       throw std::runtime_error("RayGroundClassifierCloudNode: raw topic from unexpected frame");
     }
+    // Verify the consistency of PointCloud msg
+    const auto data_length = msg->width * msg->height * msg->point_step;
+    if ((msg->data.size() != msg->row_step) || (data_length != msg->row_step)) {
+      throw std::runtime_error("RayGroundClassifierCloudNode: Malformed PointCloud2");
+    }
+    // Verify the point cloud format and assign correct point_step
+    constexpr auto field_size = sizeof(decltype(PointXYZIF::x));
+    auto point_step = 4U * field_size;
+    if (!has_intensity_and_throw_if_no_xyz(msg)) {
+      point_step = 3U * field_size;
+      RCLCPP_WARN(this->get_logger(),
+        "RayGroundClassifierNode Warning: PointCloud doesn't have intensity field");
+    }
     // Harvest timestamp
     m_nonground_msg.header.stamp = msg->header.stamp;
     m_ground_msg.header.stamp = msg->header.stamp;
@@ -135,7 +191,7 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
       (void)memmove(
         static_cast<void *>(&pt.x),
         static_cast<const void *>(&msg->data[idx]),
-        msg->point_step);
+        point_step);
       m_aggregator.insert(pt);
     }
     // Add end of scan
