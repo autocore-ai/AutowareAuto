@@ -29,7 +29,8 @@ using autoware::drivers::socketcan::StandardFrame;
 using autoware::drivers::socketcan::ExtendedFrame;
 using autoware::drivers::socketcan::FrameType;
 
-class receiver : public ::testing::Test
+// Requires elevated kernel permissions normal containers can't provide
+class DISABLED_receiver : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -45,7 +46,7 @@ protected:
   std::chrono::milliseconds receive_timeout_{10LL};
 };  // class receiver
 
-TEST_F(receiver, basic_typed)
+TEST_F(DISABLED_receiver, basic_typed)
 {
   constexpr uint32_t send_msg = 0x5A'5A'5A'5AU;
   const CanId send_id{};
@@ -60,7 +61,7 @@ TEST_F(receiver, basic_typed)
   }
 }
 
-TEST_F(receiver, ping_pong)
+TEST_F(DISABLED_receiver, ping_pong)
 {
   for (uint64_t idx = 0U; idx < 100U; ++idx) {
     CanId send_id{};

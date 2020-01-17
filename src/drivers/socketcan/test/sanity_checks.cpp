@@ -98,7 +98,8 @@ TEST(socket_can_sender, bad_constructor)
   }
 }
 
-class sender_test : public ::testing::Test
+// Requires elevated kernel permissions normal containers can't provide
+class DISABLED_sender_test : public ::testing::Test
 {
 public:
   using MsgT = uint64_t;
@@ -180,7 +181,7 @@ protected:
 };  // class sender_test
 
 // Minimal usage
-TEST_F(sender_test, basic_untyped)
+TEST_F(DISABLED_sender_test, basic_untyped)
 {
   constexpr MsgT data = 0xA5A5A5A5A5A5A5A5U;
   // Use untyped interface
@@ -198,7 +199,7 @@ TEST_F(sender_test, basic_untyped)
   }
 }
 
-TEST_F(sender_test, basic_typed)
+TEST_F(DISABLED_sender_test, basic_typed)
 {
   constexpr MsgT data = 0xA5A5A5A5A5A5A5A5U;
   // Use typed interface
@@ -213,7 +214,7 @@ TEST_F(sender_test, basic_typed)
 }
 
 // Ensure there's no funny stateful stuff happening
-TEST_F(sender_test, sequential)
+TEST_F(DISABLED_sender_test, sequential)
 {
   for (MsgT idx = 1UL; idx < 100UL; ++idx) {
     sender_->send(idx, std::chrono::milliseconds{1LL});
