@@ -44,6 +44,21 @@ target_compile_options(${CLOUD_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conve
 if(BUILD_TESTING)
   # run linters
   autoware_static_code_analysis()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(autoware_auto_common REQUIRED)
+
+  ament_add_gtest(test_ray_ground_classifier_nodes_gtest
+    test/src/test_ray_ground_classifier_nodes.cpp
+  )
+  target_include_directories(test_ray_ground_classifier_nodes_gtest
+    PRIVATE "test/include" "include"
+  )
+  ament_target_dependencies(test_ray_ground_classifier_nodes_gtest
+    "autoware_auto_common"
+    "rclcpp"
+    "ray_ground_classifier"
+  )
 endif()
 
 ## install stuff
