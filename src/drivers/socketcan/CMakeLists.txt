@@ -15,8 +15,7 @@ ament_auto_add_library(${PROJECT_NAME}
 autoware_set_compile_options(${PROJECT_NAME})
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+  autoware_static_code_analysis()
 
   # TODO(c.ho) Make this into a pytest
   ament_add_gtest(socketcan_test
