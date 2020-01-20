@@ -76,7 +76,9 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
   // TODO(s.me)
   // In recording mode, this would record the ego state in the planner.
   // In replay mode, this would potentially output a new trajectory in a receding horizon fashion
-  (void)msg;
+  if (m_planner->is_recording()) {
+    m_planner->record_state(*msg);  // TODO(s.me) check if this is OK
+  }
 }
 
 

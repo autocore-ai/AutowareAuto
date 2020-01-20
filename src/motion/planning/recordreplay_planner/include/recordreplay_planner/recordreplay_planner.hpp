@@ -31,11 +31,27 @@ namespace recordreplay_planner
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 
+enum class RecordReplayState
+{
+  IDLE,
+  RECORDING,
+  REPLAYING
+};  // enum class RecordReplayState
+
 /// \brief A class for recording trajectories and replaying them as plans
 class RECORDREPLAY_PLANNER_PUBLIC RecordReplayPlanner
 {
 public:
   RecordReplayPlanner();
+
+  // Record and replay control
+  bool is_recording() noexcept;
+  bool is_replaying() noexcept;
+  void start_recording() noexcept;
+  void stop_recording() noexcept;
+  void start_replaying() noexcept;
+  void stop_replaying() noexcept;
+
   // Clear the internal recording buffer
   void clear_record() noexcept;
 
@@ -54,6 +70,8 @@ private:
 
   std::vector<State> m_record_buffer;
   Trajectory m_trajectory{};
+  // TODO(s.me) is this preferred over initialization in the constructor?
+  RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
 };  // class PlannerBase
 }  // namespace recordreplay_planner
 }  // namespace planning
