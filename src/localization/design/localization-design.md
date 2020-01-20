@@ -527,6 +527,12 @@ away from the last road sequence which can keep the vehicle within the bounds of
 If the use case does not require map switching, then map switching may not be needed, and only
 simple loading and publishing of data.
 
+**Behavior**: If a solved transform is near the boundaries of a reference map, a warning should be
+communicated to the larger stack. "Near" can be defined as being within 10 seconds away from the
+physical limits of the map (in which case a system may come to a stop), or being within 10 seconds
+away from the last road sequence which can keep the vehicle within the bounds of the reference map
+(in which case a system may reroute the vehicle in the absence of a new map).
+
 **Behavior**: The `/earth`-`/base_link` transform should be used to determine when map switching
 should occur
 
@@ -538,6 +544,9 @@ this component with respect to various use cases
 
 **Rationale**: A paired update is needed to maintain consistency of the `/base_link` coordinate
 frame in the absolute or global frame.
+
+**Rationale**: Loss of localization is a critical error. This situation should be proactively
+avoided by properly notifying the larger system.
 
 ### TF Manager
 
@@ -654,12 +663,6 @@ sensor input, this transform should be used to initialize the algorithm.
 **Behavior**: If no initial pose estimate is available for the time stamp of the sensor input,
 then the behavior is implementation defined.
 
-**Behavior**: If a solved transform is near the boundaries of a reference map, a warning should be
-communicated to the larger stack. "Near" can be defined as being within 10 seconds away from the
-physical limits of the map (in which case a system may come to a stop), or being within 10 seconds
-away from the last road sequence which can keep the vehicle within the bounds of the reference map
-(in which case a system may reroute the vehicle in the absence of a new map).
-
 **Rationale**: A number of methods can be used for cold start initialization, including zero-
 initialization, or reading a file written upon shutdown. The appropriateness of these methods
 are use-case dependent, and thus cannot be pre-specified for all implementations
@@ -667,9 +670,6 @@ are use-case dependent, and thus cannot be pre-specified for all implementations
 **Rationale**: Similarly, a number of methods can be used for extrapolation, such as using
 the last transform, or predicting the current pose using a motion model. The appropriateness of
 any method depends on the use case.
-
-**Rationale**: Loss of localization is a critical error. This situation should be proactively
-avoided by properly notifying the larger system.
 
 The inputs to a (relative/local) localization algorithm are implementation-defined. These inputs
 may include, but are not limited to:
