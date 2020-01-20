@@ -1,5 +1,4 @@
-# TrajectoryPoint.msg
-
+# Representation of a trajectory point for the controller
 builtin_interfaces/Duration time_from_start
 float32 x 0.0
 float32 y 0.0

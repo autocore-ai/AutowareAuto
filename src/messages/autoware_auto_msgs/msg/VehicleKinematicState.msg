@@ -1,5 +1,5 @@
 # VehicleKinematicState.msg
-
+# Representation of a trajectory point with timestamp for the controller
 std_msgs/Header header
 TrajectoryPoint state
 geometry_msgs/Transform delta
