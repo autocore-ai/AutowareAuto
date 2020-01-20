@@ -128,7 +128,8 @@ private:
     const auto val_raw = msg.axes[axis_idx] * scale;
     const auto offset_it = m_axis_offset_map.find(axis);
     const auto offset = m_axis_offset_map.end() == offset_it ? DEFAULT_OFFSET : offset_it->second;
-    value = static_cast<std::decay_t<decltype(value)>>(val_raw + offset);
+    using ValT = std::decay_t<decltype(value)>;
+    value = static_cast<ValT>(val_raw + offset);
   }
   /// Compute control command
   template<typename T>
