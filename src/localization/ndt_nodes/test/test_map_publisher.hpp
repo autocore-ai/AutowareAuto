@@ -1,3 +1,18 @@
+// Copyright 2017-2019 Apex.AI, Inc.
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #ifndef TEST_NDT_NODES_MAP_HPP_
 #define TEST_NDT_NODES_MAP_HPP_
 
@@ -19,9 +34,9 @@ namespace localization
 namespace ndt_nodes
 {
 
-common::lidar_utils::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
+common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  return common::lidar_utils::PointXYZIF{
+  return common::types::PointXYZIF{
     static_cast<float>(v(0)),
     static_cast<float>(v(1)),
     static_cast<float>(v(2))};

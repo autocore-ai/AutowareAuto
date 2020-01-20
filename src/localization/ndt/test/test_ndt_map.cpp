@@ -465,7 +465,7 @@ sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
   common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
   auto idx = 0U;
   for (const auto & pt : pts) {
-    autoware::common::lidar_utils::PointXYZIF ptF{.x = static_cast<float>(pt(0U)),
+    autoware::common::types::PointXYZIF ptF{.x = static_cast<float>(pt(0U)),
       .y = static_cast<float>(pt(1U)), .z = static_cast<float>(pt(2U))};
     common::lidar_utils::add_point_to_cloud(cloud, ptF, idx);
   }
@@ -494,9 +494,9 @@ void populate_pc(
   }
 }
 
-common::lidar_utils::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
+common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  return common::lidar_utils::PointXYZIF{
+  return common::types::PointXYZIF{
     static_cast<float>(v(0)),
     static_cast<float>(v(1)),
     static_cast<float>(v(2))};

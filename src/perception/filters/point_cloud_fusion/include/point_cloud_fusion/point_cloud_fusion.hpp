@@ -63,7 +63,7 @@ public:
     const uint32_t cloud_size);
 
 private:
-  using PointT = common::lidar_utils::PointXYZIF;
+  using PointT = common::types::PointXYZIF;
   using PointCloudMsgT = sensor_msgs::msg::PointCloud2;
   using PointCloudT = sensor_msgs::msg::PointCloud2;
   using SyncPolicyT = message_filters::sync_policies::ApproximateTime<PointCloudMsgT,

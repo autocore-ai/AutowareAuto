@@ -22,12 +22,12 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-#include <lidar_utils/lidar_types.hpp>
+#include <common/types.hpp>
 #include <lidar_utils/visibility_control.hpp>
 
-#include <string>
 #include <atomic>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace autoware
@@ -125,12 +125,12 @@ LIDAR_UTILS_PUBLIC void init_pcl_msg(
 
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   PointCloudIts & cloud_its,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC void reset_pcl_msg(

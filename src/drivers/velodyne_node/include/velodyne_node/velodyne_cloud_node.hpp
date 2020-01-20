@@ -24,7 +24,7 @@
 
 #include <string>
 #include <vector>
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "udp_driver/udp_driver_node.hpp"
 #include "velodyne_driver/vlp16_translator.hpp"
@@ -81,7 +81,7 @@ protected:
 
 private:
   velodyne_driver::Vlp16Translator m_translator;
-  std::vector<autoware::common::lidar_utils::PointXYZIF> m_point_block;
+  std::vector<autoware::common::types::PointXYZIF> m_point_block;
 
   // These next two variables are a minor hack to maintain stateful information across convert()
   // calls. Specifically, it signals to reset any stateful information on the data vector at the top

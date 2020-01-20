@@ -20,7 +20,7 @@
 #include <vector>
 #include <tuple>
 
-#include <lidar_utils/lidar_types.hpp>
+#include <common/types.hpp>
 
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 #include "ray_ground_classifier/ray_ground_classifier.hpp"
@@ -28,8 +28,8 @@
 namespace test_ray_ground_classifier
 {
 
-using autoware::common::lidar_utils::PointXYZIF;
-using autoware::common::lidar_utils::POINT_BLOCK_CAPACITY;
+using autoware::common::types::PointXYZIF;
+using autoware::common::types::POINT_BLOCK_CAPACITY;
 using autoware::perception::filters::ray_ground_classifier::Config;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
@@ -55,7 +55,7 @@ public:
 
 protected:
   std::vector<std::tuple<float, float, int>> dat;
-  std::vector<autoware::common::lidar_utils::PointXYZIF> pts;
+  std::vector<autoware::common::types::PointXYZIF> pts;
   std::vector<bool> labels;
   Config cfg;
 };

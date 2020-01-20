@@ -37,7 +37,7 @@ void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 
 
   auto id = 0U;
   for (const auto & pt : cloud) {
-    common::lidar_utils::PointXYZIF point{pt.x, pt.y, pt.z, pt.intensity,
+    common::types::PointXYZIF point{pt.x, pt.y, pt.z, pt.intensity,
       static_cast<uint16_t>(id)};
     common::lidar_utils::add_point_to_cloud(msg, point, id);    // id is incretemented inside
   }

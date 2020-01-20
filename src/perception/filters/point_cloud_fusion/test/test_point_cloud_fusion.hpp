@@ -46,7 +46,7 @@ stamp)
 
   uint32_t pidx = 0;
   for (auto seed : seeds) {
-    autoware::common::lidar_utils::PointXYZIF pt;
+    autoware::common::types::PointXYZIF pt;
     pt.x = seed;
     pt.y = seed;
     pt.z = seed;

@@ -52,7 +52,7 @@ void populate_pc(
   sensor_msgs::msg::PointCloud2 & pc,
   size_t num_points);
 
-common::lidar_utils::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v);
+common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v);
 
 // add the point `center` and 4 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance

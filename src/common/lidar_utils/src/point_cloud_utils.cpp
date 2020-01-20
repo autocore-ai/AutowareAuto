@@ -17,7 +17,7 @@
 #include <string>
 
 #include "sensor_msgs/point_cloud2_iterator.hpp"
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 
 namespace autoware
@@ -64,7 +64,7 @@ void init_pcl_msg(
 ////////////////////////////////////////////////////////////////////////////////
 bool add_point_to_cloud(
   PointCloudIts & cloud_its,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
   bool ret = false;
@@ -78,7 +78,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::lidar_utils::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&
@@ -106,7 +106,7 @@ bool add_point_to_cloud(
 
 bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
   bool ret = false;
@@ -125,7 +125,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::lidar_utils::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&

@@ -180,7 +180,7 @@ points to come in order of increasing radial distance. The list is sorted by inc
 if radial distance is approximately the same. This invariant is checked to not be broken
 at the beginning of the core labeling method. It is worth noting that there is some threshold
 to compensate for floating point error. The radial distance is allowed to shrink by as much
-as [FEPS](autoware::common::lidar_utils::FEPS) in order to handle the case when radial
+as [FEPS](autoware::common::types::FEPS) in order to handle the case when radial
 distance is approximately equal. While this allows for an invariant to be broken, in practice
 this should not cause issues, because if the maximum recession occurs for 1000 points, the net
 recession would be no more than 1 mm, which is negligible, considering the VLP16-HiRes'

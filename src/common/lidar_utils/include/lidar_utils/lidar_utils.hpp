@@ -18,8 +18,9 @@
 #ifndef LIDAR_UTILS__LIDAR_UTILS_HPP_
 #define LIDAR_UTILS__LIDAR_UTILS_HPP_
 
-#include "lidar_utils/lidar_types.hpp"
 #include <cmath>
+
+#include "common/types.hpp"
 
 namespace autoware
 {
@@ -57,7 +58,7 @@ float fast_atan2(float y, float x)
     }
 
     // x is zero so we are either at pi/2 for (y > 0) or -pi/2 for (y < 0)
-    return ::std::copysign(autoware::common::lidar_utils::PI_2, y);
+    return ::std::copysign(autoware::common::types::PI_2, y);
   }
 
   // Calculate quotient of y and x
@@ -72,13 +73,13 @@ float fast_atan2(float y, float x)
 
     // If we are in 4 or 5 we need to add pi or -pi respectively
     if (x < 0.0f) {
-      return ::std::copysign(autoware::common::lidar_utils::PI, y) + atan;
+      return ::std::copysign(autoware::common::types::PI, y) + atan;
     }
     return atan;
   }
 
   // We are in 2,3,6 or 7
-  return ::std::copysign(autoware::common::lidar_utils::PI_2, y) -
+  return ::std::copysign(autoware::common::types::PI_2, y) -
          div / (div * div + scaling_constant);
 }
 
