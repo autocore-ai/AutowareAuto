@@ -46,7 +46,7 @@ TEST_P(sanity_checks_constraint_free, sometest)
 
   auto t0 = system_clock::from_time_t({});
 
-  // Build 
+  // Build a trajectory
   for (uint32_t k = {}; k < 10; ++k) {
     constexpr auto ms100 = std::chrono::milliseconds{100LL};
     const auto next_state = make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0 + k * ms100);

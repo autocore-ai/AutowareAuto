@@ -42,7 +42,7 @@ public:
   // Add a new state to the record
   void record_state(const State & state_to_record);
 
-  // Replay trajectory from stored plan. 
+  // Replay trajectory from stored plan.
   const Trajectory & plan();
 
   // Return the number of currently-recorded State messages
