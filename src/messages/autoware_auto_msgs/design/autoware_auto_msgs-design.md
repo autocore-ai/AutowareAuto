@@ -132,6 +132,86 @@ due to having a bounded size.
 
 For more details, see [Controller design](@ref controller-design)
 
+### RawControlCommand
+
+This message type is defined as follows:
+
+```
+builtin_interfaces/Time stamp
+uint32 throttle
+uint32 brake
+int32 front_steer
+int32 rear_steer
+```
+
+This type is intended to be used when direct control of the vehicle hardware is required. As such,
+no assumptions about units are made. It is the responsibility of the system integrator to ensure
+that the values used are appropriate for the vehicle platform.
+
+**Source**: Controller
+
+**Recipient(s)**: Vehicle Interface
+
+**Default Values**: The default value for all fields is 0
+
+**Rationale**: A time stamp field is provided because a control command should be generated in
+response to the input of a vehicle kinematic state. Retaining the time of the triggering data
+should aid with diagnostics and traceability.
+
+**Rationale**: The rear wheel angle is also provided to enable support for rear drive vehicles,
+such as forklifts.
+
+**Rationale**: A frame is not provided since it is implied that it is fixed to the vehicle frame.
+
+**Rationale**: Throttle and brake are separated as they are fundamentally controlled by two
+different actuators
+
+**Rationale**: This is intended to be compatible with using the triggers of a gamepad as a first
+pass for vehicle platform validation.
+
+**Rationale**: Integer values are used to be more compatible with discrete, or byte-level
+representation that is more common with CAN interfaces.
+
+**Rationale**: Units are not provided since byte-level representations are generally platform-
+specific.
+
+For more details see [vehicle interface design]().
+
+### HighLevelControlCommand
+
+This message type is defined as follows:
+
+```
+builtin_interfaces/Time stamp
+# should be negative when reversed
+float32 velocity_mps 0.0
+float32 curvature
+```
+
+This type is intended to be used as an interface when only simple control is required, and thus
+abstracts away more direct control of the vehicle.
+
+**Source**: Controller
+
+**Recipient(s)**: Vehicle Interface
+
+**Default Values**: The default value for all fields is 0
+
+**Rationale**: A time stamp field is provided because a control command should be generated in
+response to the input of a vehicle kinematic state. Retaining the time of the triggering data
+should aid with diagnostics and traceability.
+
+**Rationale**: A frame is not provided since it is implied that it is fixed to the vehicle frame.
+
+**Rationale**: Curvature is used as a control target as it does not require any vehicle-specific
+information. This is inspired by the AutonomousStuff Low Level Controller
+
+**Rationale**: Velocity is used as a longitudinal control target to allow the vehicle to minimally
+follow a geometric reference path.
+
+For more details see [vehicle interface design]().
+
+
 ## Vehicle Control Command
 ```
 builtin_interfaces/Time stamp
@@ -315,6 +395,9 @@ to autonomous, false requests a disengagement to manual.
 gears, etc.), this message only prescribes the minimal set of states that most or all vehicles
 can satisfy.
 
+**Rationale**: Since commands here represent a state transition, a command of NONE denotion "no
+state transition" is also valid
+
 
 ## Vehicle State Report
 
@@ -331,30 +414,30 @@ bool horn
 
 ### Definitions
 # Blinker
-uint8 BLINKER_OFF = 0
-uint8 BLINKER_LEFT = 1
-uint8 BLINKER_RIGHT = 2
-uint8 BLINKER_HAZARD = 3
+uint8 BLINKER_OFF = 1
+uint8 BLINKER_LEFT = 2
+uint8 BLINKER_RIGHT = 3
+uint8 BLINKER_HAZARD = 4
 # Headlight
-uint8 HEADLIGHT_OFF = 0
-uint8 HEADLIGHT_ON = 1
-uint8 HEADLIGHT_HIGH = 2
+uint8 HEADLIGHT_OFF = 1
+uint8 HEADLIGHT_ON = 2
+uint8 HEADLIGHT_HIGH = 3
 # Wiper
-uint8 WIPER_OFF = 0
-uint8 WIPER_LOW = 1
-uint8 WIPER_HIGH = 2
-uint8 WIPER_CLEAN = 3
+uint8 WIPER_OFF = 1
+uint8 WIPER_LOW = 2
+uint8 WIPER_HIGH = 3
+uint8 WIPER_CLEAN = 4
 # Gear
-uint8 GEAR_DRIVE = 0
-uint8 GEAR_REVERSE = 0
-uint8 GEAR_PARK = 2
-uint8 GEAR_LOW = 3
-uint8 GEAR_NEUTRAL = 4
+uint8 GEAR_DRIVE = 1
+uint8 GEAR_REVERSE = 2
+uint8 GEAR_PARK = 3
+uint8 GEAR_LOW = 4
+uint8 GEAR_NEUTRAL = 5
 # Autonomous
-uint8 MODE_MANUAL = 0
-uint8 MODE_NOT_READY = 1
-uint8 MODE_AUTONOMOUS = 2
+uint8 MODE_AUTONOMOUS = 1
+uint8 MODE_MANUAL = 2
 uint8 MODE_DISENGAGED = 3
+uint8 MODE_NOT_READY = 4
 ```
 
 **Source**: Vehicle interface
@@ -368,6 +451,9 @@ uint8 MODE_DISENGAGED = 3
 **Rationale**: A simple state machine is provided to ensure that disambiguate between intentionally
 manual, and two modes of unintentionally being in manual mode: due to preconditions not being met,
 or due to some failure of the autonomous driving stack.
+
+**Rationale**: Constants are kept the same as VehicleStateCommand to prevent subtle bugs from being
+introduced.
 
 # References
 

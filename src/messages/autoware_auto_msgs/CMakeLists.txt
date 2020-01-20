@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   # Interfaces
   "msg/BoundingBoxArray.msg"
   "msg/ControlDiagnostic.msg"
+  "msg/HighLevelControlCommand.msg"
+  "msg/RawControlCommand.msg"
   "msg/Trajectory.msg"
   "msg/VehicleControlCommand.msg"
   "msg/VehicleKinematicState.msg"
