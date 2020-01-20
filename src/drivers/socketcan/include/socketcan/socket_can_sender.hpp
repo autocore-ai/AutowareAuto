@@ -74,8 +74,8 @@ public:
   ///                    durations are treated the same as zero timeout
   /// \throw SocketCanTimeout On timeout
   /// \throw std::runtime_error on other errors
-  template<typename T>
-  std::enable_if_t<!std::is_pointer<T>::value, void> send(
+  template<typename T, typename = std::enable_if_t<!std::is_pointer<T>::value>>
+  void send(
     const T & data,
     const std::chrono::nanoseconds timeout = std::chrono::nanoseconds::zero()) const
   {
@@ -90,8 +90,8 @@ public:
   /// \param[in] id The id field for the CAN frame
   /// \throw SocketCanTimeout On timeout
   /// \throw std::runtime_error on other errors
-  template<typename T>
-  std::enable_if_t<!std::is_pointer<T>::value, void> send(
+  template<typename T, typename = std::enable_if_t<!std::is_pointer<T>::value>>
+  void send(
     const T & data,
     const CanId id,
     const std::chrono::nanoseconds timeout = std::chrono::nanoseconds::zero()) const

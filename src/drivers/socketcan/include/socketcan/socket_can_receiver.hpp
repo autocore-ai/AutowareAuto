@@ -61,8 +61,8 @@ public:
   /// \throw SocketCanTimeout On timeout
   /// \throw std::runtime_error If received data would not fit into provided type
   /// \throw std::runtime_error on other errors
-  template<typename T>
-  std::enable_if_t<!std::is_pointer<T>::value, CanId> receive(
+  template<typename T, typename = std::enable_if_t<!std::is_pointer<T>::value>>
+  CanId receive(
     T & data,
     const std::chrono::nanoseconds timeout = std::chrono::nanoseconds::zero()) const
   {
