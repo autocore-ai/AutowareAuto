@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "recordreplay_planner/recordreplay_planner.hpp"
+#include "time_utils/time_utils.hpp"
 
 
 namespace motion
@@ -26,19 +27,43 @@ RecordReplayPlanner::RecordReplayPlanner()
   // Does nothing yet
 }
 
-void RecordReplayPlanner::some_public_method()
+void RecordReplayPlanner::clear_record() noexcept
 {
-  // Does nothing yet
+  m_record_buffer.clear();
 }
 
-void RecordReplayPlanner::some_protected_method()
+void RecordReplayPlanner::record_state(const State & state_to_record)
 {
-  // Does nothing yet
+  m_record_buffer.push_back(state_to_record);
 }
 
-void RecordReplayPlanner::some_private_method()
+const uint32_t RecordReplayPlanner::get_record_length() noexcept
 {
-  // Does nothing yet
+  return m_record_buffer.size();
+}
+
+// TODO(s.me) this currently just creates a single trajectory from the entire
+// record. This will not work for longer recordings, we'll need to create the
+// trajectories in a receding horizon way from the record.
+//
+// Another issue is whether it has to be resampled in time.
+const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header & header)
+{
+  auto & traj = m_trajectory;
+  const auto record_length = get_record_length();
+  traj.points.resize(record_length);  // TODO(s.me) this will fail if record_length > 100
+  traj.header = header;
+  auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
+  for (std::size_t i = {}; i < record_length; ++i) {
+    auto & pt = m_trajectory.points[i];
+
+    // Make the time spacing of the points as they were recorded
+    pt.time_from_start = time_utils::to_message(
+      time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
+    traj.points[i] = m_record_buffer[i].state;
+  }
+
+  return traj;
 }
 
 }  // namespace recordreplay_planner

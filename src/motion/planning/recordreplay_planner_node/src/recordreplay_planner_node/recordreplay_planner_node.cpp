@@ -52,7 +52,7 @@ void RecordReplayPlannerNode::init(
   using rclcpp::QoS;
 
   // Set up subscribers
-  // TODO(s.me) implement doing something with tf - probably using motion_common 
+  // TODO(s.me) implement doing something with tf - probably using motion_common
   // or planning_common functionality
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
   m_tf_sub = create_subscription<TFMessage>(tf_topic, QoS{10}.transient_local(),

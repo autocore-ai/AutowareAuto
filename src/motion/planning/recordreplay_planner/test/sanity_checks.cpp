@@ -14,11 +14,13 @@
 
 #include <gtest/gtest.h>
 #include <recordreplay_planner/recordreplay_planner.hpp>
+#include <motion_testing/motion_testing.hpp>
 
 #include <chrono>
 
 using motion::planning::recordreplay_planner::RecordReplayPlanner;
 using std::chrono::system_clock;
+using motion::motion_testing::make_state;
 
 class sanity_checks_base : public ::testing::Test
 {
@@ -36,11 +38,22 @@ class sanity_checks_constraint_free
 {
 };
 
+// TODO(s.me) more tests, also of from_record()
 TEST_P(sanity_checks_constraint_free, sometest)
 {
   const auto t = system_clock::now();
   auto p = GetParam();
-  EXPECT_EQ(1, 1);
+
+  auto t0 = system_clock::from_time_t({});
+
+  // Build 
+  for (uint32_t k = {}; k < 10; ++k) {
+    constexpr auto ms100 = std::chrono::milliseconds{100LL};
+    const auto next_state = make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0 + k * ms100);
+    planner_.record_state(next_state);
+  }
+
+  EXPECT_EQ(planner_.get_record_length(), 10);
 }
 
 INSTANTIATE_TEST_CASE_P(
