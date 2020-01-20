@@ -54,6 +54,8 @@ if(BUILD_TESTING)
   target_include_directories(test_ray_ground_classifier_nodes_gtest
     PRIVATE "test/include" "include"
   )
+  target_link_libraries(test_ray_ground_classifier_nodes_gtest
+    ${CLOUD_NODE_LIB})
   ament_target_dependencies(test_ray_ground_classifier_nodes_gtest
     "autoware_auto_common"
     "rclcpp"
