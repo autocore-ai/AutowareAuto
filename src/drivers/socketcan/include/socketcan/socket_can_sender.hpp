@@ -42,10 +42,10 @@ public:
   ~SocketCanSender() noexcept;
 
   /// Send raw data with the default id
-  /// \param[in] data The data to send
+  /// \param[in] data A pointer to the beginning of the data to send
   /// \param[in] timeout Maximum duration to wait for file descriptor to be free for write. Negative
   ///                    durations are treated the same as zero timeout
-  /// \param[in] length The amount of data to read
+  /// \param[in] length The amount of data to send starting from the data pointer
   /// \throw std::domain_error If length is > 8
   /// \throw SocketCanTimeout On timeout
   /// \throw std::runtime_error on other errors
@@ -53,12 +53,12 @@ public:
     const void * const data,
     const std::size_t length,
     const std::chrono::nanoseconds timeout = std::chrono::nanoseconds::zero()) const;
-  /// Send raw data with the default id
-  /// \param[in] data The data to send
+  /// Send raw data with an explicit CAN id
+  /// \param[in] data A pointer to the beginning of the data to send
   /// \param[in] timeout Maximum duration to wait for file descriptor to be free for write. Negative
   ///                    durations are treated the same as zero timeout
   /// \param[in] id The id field for the CAN frame
-  /// \param[in] length The amount of data to read
+  /// \param[in] length The amount of data to send starting from the data pointer
   /// \throw std::domain_error If length is > 8
   /// \throw SocketCanTimeout On timeout
   /// \throw std::runtime_error on other errors
@@ -82,7 +82,7 @@ public:
     send(data, m_default_id, timeout);
   }
 
-  /// Send typed data with the default id
+  /// Send typed data with an explicit CAN Id
   /// \tparam Type of data to send, must be 8 bytes or smaller
   /// \param[in] data The data to send
   /// \param[in] timeout Maximum duration to wait for file descriptor to be free for write. Negative
