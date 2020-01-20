@@ -71,8 +71,8 @@ public:
   /// \param[in] ground_topic Name of output topic of ground points
   /// \param[in] nonground_topic Name of output topic of nonground points
   /// \param[in] frame_id Name of coordinate frame id for outgoing clouds
-  /// \param[in] pcl_size Number of points to preallocate in pointcloud messages
   /// \param[in] timeout Timeout for waitset, i.e. max period between messages on raw_topic
+  /// \param[in] pcl_size Number of points to preallocate in pointcloud messages
   /// \param[in] cfg Configuration class for ground classifier
   /// \param[in] agg_cfg Configuration class for ray aggregator
   /// \throw std::runtime_error if configuration fails

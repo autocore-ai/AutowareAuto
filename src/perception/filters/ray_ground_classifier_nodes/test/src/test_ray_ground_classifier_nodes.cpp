@@ -114,6 +114,26 @@ protected:
     msg->header.frame_id = "base_link";
     return msg;
   }
+  using Config = autoware::perception::filters::ray_ground_classifier::Config;
+  const Config m_ray_config{
+    0.0,
+    20.0,
+    7.0,
+    70.0,
+    0.05,
+    3.3,
+    3.6,
+    5.0,
+    -2.5,
+    3.5
+  };
+  using RayAggregator = autoware::perception::filters::ray_ground_classifier::RayAggregator;
+  const RayAggregator::Config m_ray_agg_config{
+    -3.14159,
+    3.14159,
+    0.01,
+    512
+  };
   using RayGroundClassifierCloudNode = autoware::perception::filters::ray_ground_classifier_nodes
     ::RayGroundClassifierCloudNode;
   std::shared_ptr<RayGroundClassifierCloudNode> m_ray_gnd_ptr;
@@ -179,14 +199,9 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
     m_nonground_pcl_topic,
     m_frame_id,
     std::chrono::milliseconds(110),
-    m_period,
-    m_init_timeout,
     m_cloud_size,
     m_ray_config,
-    m_ray_agg_config,
-    1U,
-    1U,
-    1U
+    m_ray_agg_config
   );
   m_ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
   m_exec.add_node(m_ray_gnd_validation_tester);
@@ -201,7 +216,6 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   uint32_t expected_nongnd_pcl_size = 0U;  // no points will be classified as nonground
   uint32_t expected_num_of_pcl = 2U;
 
-  m_ray_gnd_ptr->run();
   m_ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
   // wait for ray_gnd_filter to process 1st pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
@@ -209,8 +223,6 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   // wait for ray_gnd_filter to process 2nd pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
   m_exec.spin_some();  // for tester to collect data
-  m_ray_gnd_ptr->stop();
-  m_ray_gnd_ptr->join();
 
   // Check all published nonground / ground pointclouds have the expected sizes
   EXPECT_TRUE(m_ray_gnd_validation_tester->receive_correct_ground_pcls(

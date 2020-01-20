@@ -58,6 +58,7 @@ if(BUILD_TESTING)
     "autoware_auto_common"
     "rclcpp"
     "ray_ground_classifier"
+    "sensor_msgs"
   )
 endif()
 
