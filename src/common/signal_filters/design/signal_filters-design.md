@@ -33,7 +33,7 @@ these filters are intended to work with the vehicle interface on data arriving a
 If these filters are needed to work on data at a higher rate, then the child classes should directly
 be used or a specialized filter intended for speed should be implemented.
 
-Filters take in a `Clock` template argument. The purpose of this is two fold:
+Filters take in a `Clock` template argument. The purpose of this is two-fold:
 1. To provide support for various clocks without having to refactor (i.e. steady vs wall clock)
 2. To ensure a time_point-based API is not mixed with a duration-based API
 
