@@ -186,18 +186,9 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   const std::string ground_pcl_topic{"ground_cloud"};
   const std::string nonground_pcl_topic{"nonground_cloud"};
   const uint32_t mini_cloud_size = 10U;
-  std::chrono::microseconds period = std::chrono::milliseconds(200);
 
   const uint32_t cloud_size{55000U};
-  const char8_t * const ip{"127.0.0.1"};
-  const uint16_t port{3550U};
-  const std::chrono::seconds init_timeout{std::chrono::seconds(5)};
   const char8_t * const frame_id{"base_link"};
-  const uint32_t sensor_id{0U};
-  const std::chrono::nanoseconds runtime{std::chrono::seconds(10)};
-  const std::string raw_topic{"raw_block"};
-  const std::string ground_topic{"ground_block"};
-  const std::string nonground_topic{"block_nonground"};
 
   ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
     "ray_ground_classifier_cloud_node",
