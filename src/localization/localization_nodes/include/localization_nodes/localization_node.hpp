@@ -27,15 +27,30 @@ namespace localization
 namespace localization_nodes
 {
 
-// Node that publishes map->base_link relative transform messages for a given observation source and map
-template <typename MsgT, typename MapT, typename LocalizerT>
-class RelativeLocalizerNode : rclcpp::Node{
+/// Base relative localizer node that publishes map->base_link relative
+/// transform messages for a given observation source and map.
+/// \tparam MsgT Message type to register against a map.
+/// \tparam MapT Map type
+/// \tparam LocalizerT Localizer type.
+/// \tparam LocalizerConfigT Localizer configuration type.
+template<typename MsgT, typename MapT, typename LocalizerT, typename LocalizerConfigT>
+class RelativeLocalizerNode : rclcpp::Node
+{
+public:
+  using LocalizerPtr = std::unique_ptr<localization_common::RelativeLocalizerBase<MsgT, MapT>>;
 
-    template <typename LocalizerConfigT>
-    RelativeLocalizerNode(LocalizerConfigT & localizer_config):
-    m_localizer(std::make_unique<LocalizerT>(localizer_config)){}
+  RelativeLocalizerNode(const std::string & node_name, const std::string & name_space)
+  : Node(node_name, name_space) {}
+
+protected:
+  void set_localizer(LocalizerPtr && localizer_ptr)
+  {
+    m_localizer = localizer_ptr;
+  }
+
 private:
-  void core_callback(){
+  void core_callback()
+  {
     // get msg
     // check and update maps
     // update_transforms()
@@ -54,12 +69,11 @@ private:
   // check the validity of current_map, warn/throw or request a new map
   bool validate_map();
 
-   // tf buffer and map as well as pubs subs
+  // tf buffer and map as well as pubs subs
   std::unique_ptr<localization_common::RelativeLocalizerBase<MsgT, MapT>> m_localizer;
   tf2::BufferCore m_tf_buffer;
   MapT m_map;
 };
-
 }          // namespace autoware
 }      // namespace localization
 }  // namespace localization_nodes
