@@ -59,7 +59,7 @@ public:
   void record_state(const State & state_to_record);
 
   // Replay trajectory from stored plan.
-  const Trajectory & plan();
+  const Trajectory & plan(const State & current_state);
 
   // Return the number of currently-recorded State messages
   const uint32_t get_record_length() noexcept;

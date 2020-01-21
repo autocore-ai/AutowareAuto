@@ -64,21 +64,28 @@ void RecordReplayPlanner::clear_record() noexcept
   m_record_buffer.clear();
 }
 
-void RecordReplayPlanner::record_state(const State & state_to_record)
-{
-  m_record_buffer.push_back(state_to_record);
-}
-
 const uint32_t RecordReplayPlanner::get_record_length() noexcept
 {
   return m_record_buffer.size();
 }
 
+void RecordReplayPlanner::record_state(const State & state_to_record)
+{
+  m_record_buffer.push_back(state_to_record);
+}
+
+const Trajectory & RecordReplayPlanner::plan(const State & current_state)
+{
+  return from_record(current_state.header);
+}
+
+
 // TODO(s.me) this currently just creates a single trajectory from the entire
-// record. This will not work for longer recordings, we'll need to create the
-// trajectories in a receding horizon way from the record.
+// record. This will not work for longer recordings and does not fit the receding
+// horizon idea.
 //
-// Another issue is whether it has to be resampled in time.
+// Another issue is whether it has to be resampled in time or if the data rates are
+// constant enough so that this is not an issue.
 const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header & header)
 {
   auto & traj = m_trajectory;
