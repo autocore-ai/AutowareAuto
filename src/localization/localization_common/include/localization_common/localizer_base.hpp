@@ -27,28 +27,29 @@ namespace localization
 {
 namespace localization_common
 {
+using Real = double;
 // The class could be templated on the optimizationproblem/solver as well.
-template<typename MsgT, typename MapT, typename PoseInitializationT = BestEffortInitializer>
+template<typename InputMsgT, typename MapMsgT>
 class RelativeLocalizerBase
 {
-  using PoseT = geometry_msgs::msg::Transform;
-  using ScoreT = double;
+public:
+  // TODO(yunus.caliskan): Use a transform message with covariance
+  using PoseT = geometry_msgs::msg::TransformStamped;
+  /// Registers a measurement to the current map and returns the
+  /// estimated pose of the vehicle and its validity.
+  /// \param[in] msg Measurement message to register.
+  /// \param[in] initial_guess Initial guess of the pose to initialize the localizer with
+  /// in iterative processes like solving optimization problems.
+  /// \param[out] pose_out Resulting pose estimate after registration.
+  /// \return If the returning pose estimate is deemed valid or not.
+  /// Details are implementation defined.
+  virtual bool register_measurement(
+    const InputMsgT & msg, const PoseT & initial_guess, PoseT & pose_out) = 0;
 
-  // Use the observation message to localize base_link in map.
-  virtual PoseT register_measurement(const MsgT & msg, const PoseT & initial_guess) = 0;
-
-  virtual void set_map(const MapT & msg) = 0;
-
-  // The function to calculate/return a fitness score indicating the confidence
-  // in the produced result.
-  virtual ScoreT get_fitness_score();
-
-  // Function to evaluate the estimated relative transform and decide if it's an outlier/faulty
-  // or a valid transform i.e. A relative transform that is too far away from the initial guess
-  // could be caused by a faulty measurement/computation
-  virtual bool validate_result();
+  /// Set map.
+  /// \param msg Map message.
+  virtual void set_map(const MapMsgT & msg) = 0;
 };
-
 }  // namespace localization_common
 }  // namespace localization
 }  // namespace autoware
