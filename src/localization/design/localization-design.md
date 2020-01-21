@@ -580,8 +580,14 @@ the position of the `/odom` frame and child transforms
 `/odom`-`/base_link` transform, the resulting transform is added to the frame graph, and to a
 message containing cached map and odometry frame transforms and published
 
-**Behavior**: When a relative localization input is received, the odometry transform at the
-appropriate time stamp is subtracted from it to provide a `/map`-`/odom` transform
+**Behavior**: When a relative localization input is received, the `/map`-`/odom` frame is updated in
+an implementation-defined way, for example:
+1. The odometry transform at the appropriate time stamp subtracted from it to provide a `/map`-
+`/odom` transform
+2. A minimum uncertainty optimization problem is solved to determine update contributions to the
+`/map`-`/odom`, and the `/odom`-`/base_link` frames
+3. `/map`-`/odom` is considered fixed, `/odom`-`/base_link` is updated via a state estimator.
+An update is used to update `/map`-`/odom` via (1) if the state estimator innovation is too large
 
 **Behavior**: When an absolute localization input is received, the map and odometry components of
 the transform can be subtracted to provide a `/map`-`/odom` transform
