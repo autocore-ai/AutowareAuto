@@ -22,7 +22,7 @@
 #include <cmath>
 #include <vector>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "ray_ground_classifier/visibility_control.hpp"
 
 namespace autoware
@@ -36,9 +36,9 @@ namespace perception
 ///        but in the future it may include filtering for images and other functionality
 namespace filters
 {
-using autoware::common::lidar_utils::PI;
-using autoware::common::lidar_utils::TAU;
-using autoware::common::lidar_utils::PointXYZIF;
+using autoware::common::types::PI;
+using autoware::common::types::TAU;
+using autoware::common::types::PointXYZIF;
 
 /// \brief Resources for the ray ground filter algorithm used for
 ///        ground filtering in point clouds
@@ -183,7 +183,7 @@ private:
 /// \return True if lhs < rhs: if lhs.r < rhs.r, if nearly same radius then lhs.z < rhs.z
 inline bool operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept
 {
-  return (fabsf(lhs.m_r_xy - rhs.m_r_xy) > autoware::common::lidar_utils::FEPS) ?
+  return (fabsf(lhs.m_r_xy - rhs.m_r_xy) > autoware::common::types::FEPS) ?
          (lhs.m_r_xy < rhs.m_r_xy) : (lhs.m_point.z < rhs.m_point.z);
 }
 

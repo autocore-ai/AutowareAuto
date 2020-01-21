@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "ray_ground_classifier/ray_ground_classifier.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
@@ -35,8 +35,8 @@ namespace ray_ground_classifier
 
 ////////////////////////////////////////////////////////////////////////////////
 RayGroundClassifier::RayGroundClassifier(const Config & cfg)
-: m_sort_array(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY),
-  m_ray_sorter(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY),
+: m_sort_array(autoware::common::types::POINT_BLOCK_CAPACITY),
+  m_ray_sorter(autoware::common::types::POINT_BLOCK_CAPACITY),
   m_point_classifier(cfg),
   m_min_height_m(cfg.get_min_height()),
   m_max_height_m(cfg.get_max_height())
@@ -63,7 +63,7 @@ bool RayGroundClassifier::can_fit_result(
   const PointBlock & nonground_block) const
 {
   return (ray.size() + std::max(ground_block.size(), nonground_block.size())) <=
-         autoware::common::lidar_utils::POINT_BLOCK_CAPACITY;
+         autoware::common::types::POINT_BLOCK_CAPACITY;
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool RayGroundClassifier::can_fit_result(
@@ -97,7 +97,7 @@ void RayGroundClassifier::structured_partition(
   for (const PointXYZIF & pt : raw_block) {
     const uint16_t id = pt.id;
     // terminal scan, add to both
-    if (static_cast<uint16_t>(autoware::common::lidar_utils::PointXYZIF::END_OF_SCAN_ID) == id) {
+    if (static_cast<uint16_t>(autoware::common::types::PointXYZIF::END_OF_SCAN_ID) == id) {
       insert(ground_block, pt);
       insert(nonground_block, pt);
       break;

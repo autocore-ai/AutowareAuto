@@ -55,25 +55,23 @@ protected:
 //tests serial_driver_node's get_packet function which receives serial packages
 TEST_F(serial_driver, basic)
 {
-    //rclcpp::init required to start the node
-    rclcpp::init(0, nullptr);
+  //rclcpp::init required to start the node
+  rclcpp::init(0, nullptr);
 
-    //setting values to send
-    std::vector<int32_t> values(10);
-    std::generate(values.begin(), values.end(), [n = 0] () mutable { return n++; });
+  //setting values to send
+  std::vector<int32_t> values(10);
+  std::generate(values.begin(), values.end(), [n = 0] () mutable { return n++; });
 
-    TestDriver driver(
-      "serial_driver_node",
-      "serial_topic",
-      name,
-      38400,
-      flow_control_t::software,
-      parity_t::even,
-      stop_bits_t::one);
+  TestDriver driver(
+    "serial_driver_node",
+    "serial_topic",
+    name,
+    TestDriver::SerialPortConfig {38400, flow_control_t::software, parity_t::even, stop_bits_t::one}
+    );
 
-    for (auto val : values) {
-      write(master_fd, reinterpret_cast<char *>(&val), sizeof(val));
-      driver.run(1U);
-      EXPECT_EQ(driver.get_last_value(), val);
-    }
+  for (auto val : values) {
+    write(master_fd, reinterpret_cast<char *>(&val), sizeof(val));
+    driver.run(1U);
+    EXPECT_EQ(driver.get_last_value(), val);
+  }
 }

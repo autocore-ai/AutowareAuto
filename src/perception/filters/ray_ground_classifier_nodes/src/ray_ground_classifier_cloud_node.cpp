@@ -14,7 +14,7 @@
 // limitations under the License.
 #include <string>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp"
 
@@ -27,7 +27,7 @@ namespace filters
 namespace ray_ground_classifier_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
-using autoware::common::lidar_utils::PointXYZIF;
+using autoware::common::types::PointXYZIF;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 
 using std::placeholders::_1;

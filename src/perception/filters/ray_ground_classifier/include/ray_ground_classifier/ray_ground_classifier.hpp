@@ -20,7 +20,7 @@
 #define RAY_GROUND_CLASSIFIER__RAY_GROUND_CLASSIFIER_HPP_
 
 #include <autoware_auto_algorithm/algorithm.hpp>
-#include <lidar_utils/lidar_types.hpp>
+#include <common/types.hpp>
 #include <ray_ground_classifier/ray_ground_point_classifier.hpp>
 
 namespace autoware
@@ -32,7 +32,7 @@ namespace filters
 namespace ray_ground_classifier
 {
 
-using autoware::common::lidar_utils::PointBlock;
+using autoware::common::types::PointBlock;
 
 /// \brief Given a ray, partitions into ground and nonground points
 class RAY_GROUND_CLASSIFIER_PUBLIC RayGroundClassifier

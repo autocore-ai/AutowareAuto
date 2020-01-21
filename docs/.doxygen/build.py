@@ -34,7 +34,7 @@ def build():
                     field.text = title
                     page.append(field)
             html.write(XMLTEMPLATE.format(etree.tostring(root).decode('utf8')))
-    print('\nDocumentation has been built in: {}\n'.format(os.path.join(builddir, 'index.html')))
+    print('\nDocumentation has been built in: {}\n'.format(os.path.join(builddir, 'html', 'index.html')))
 
 if __name__ == '__main__':
     build()

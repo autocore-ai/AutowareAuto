@@ -5,18 +5,18 @@ cmake_minimum_required(VERSION 3.5)
 project(autoware_auto_msgs)
 
 # Generate messages
-find_package(ament_cmake REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
-rosidl_generate_interfaces(autoware_auto_msgs
+rosidl_generate_interfaces(${PROJECT_NAME}
   # Helper types
+  "msg/BoundingBox.msg"
   "msg/Complex32.msg"
   "msg/DiagnosticHeader.msg"
+  "msg/Quaternion32.msg"
   "msg/TrajectoryPoint.msg"
   # Interfaces
+  "msg/BoundingBoxArray.msg"
   "msg/ControlDiagnostic.msg"
   "msg/Trajectory.msg"
   "msg/VehicleControlCommand.msg"
@@ -28,7 +28,4 @@ rosidl_generate_interfaces(autoware_auto_msgs
   "msg/PointClusters.msg"
   DEPENDENCIES "std_msgs" "geometry_msgs" "sensor_msgs")
 
-ament_export_dependencies("std_msgs" "geometry_msgs" "sensor_msgs")
-
-ament_package()
-
+ament_auto_package()

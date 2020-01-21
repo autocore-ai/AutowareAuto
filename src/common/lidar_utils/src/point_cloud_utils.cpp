@@ -1,11 +1,23 @@
 // Copyright 2017-2018 Apex.AI, Inc.
-// All rights reserved.
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //lint -e537 pclint vs cpplint NOLINT
 #include <string>
 
 #include "sensor_msgs/point_cloud2_iterator.hpp"
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 
 namespace autoware
@@ -42,24 +54,17 @@ void init_pcl_msg(
   const std::string & frame_id,
   const std::size_t size)
 {
-  msg.height = 1U;
-  msg.is_bigendian = false;
-  msg.is_dense = false;
-  msg.header.frame_id = frame_id;
-  // set the fields
-  sensor_msgs::PointCloud2Modifier modifier(msg);
-  modifier.setPointCloud2Fields(4U, "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
+  init_pcl_msg(msg, frame_id, size, 4U,
+    "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
-  // allocate memory so that iterators can be used
-  modifier.resize(size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 bool add_point_to_cloud(
   PointCloudIts & cloud_its,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
   bool ret = false;
@@ -73,7 +78,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::lidar_utils::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&
@@ -101,7 +106,7 @@ bool add_point_to_cloud(
 
 bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
   bool ret = false;
@@ -120,7 +125,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::lidar_utils::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&

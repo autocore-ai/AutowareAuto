@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.5)
 project(lidar_utils)
 
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -16,12 +17,12 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   include/lidar_utils/point_cloud_utils.hpp
-  include/lidar_utils/lidar_types.hpp
   include/lidar_utils/lidar_utils.hpp
   src/point_cloud_utils.cpp)
 
 autoware_set_compile_options(${PROJECT_NAME})
 ament_target_dependencies(${PROJECT_NAME}
+  "autoware_auto_common"
   "sensor_msgs"
   "rclcpp"
   "rclcpp_lifecycle"
@@ -39,6 +40,7 @@ if(BUILD_TESTING)
     target_include_directories(test_fast_atan2
       PRIVATE "include"
     )
+    ament_target_dependencies(test_fast_atan2 "autoware_auto_common")
 endif()
 
 autoware_install(
@@ -51,6 +53,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-convers
 
 # Ament Exporting
 ament_export_dependencies(
+  "autoware_auto_common"
   "rclcpp"
   "sensor_msgs"
   "rclcpp_lifecycle")

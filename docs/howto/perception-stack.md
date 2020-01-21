@@ -18,7 +18,7 @@ ADE Terminal 1 - start `rviz2`:
 ```bash
 $ ade enter
 ade$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64/  # see the note below
-ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/share/autoware_auto_examples/rviz2/autoware.rviz
+ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/autoware_auto_examples/share/autoware_auto_examples/rviz2/autoware.rviz
 ```
 \note
 Systems with an NVIDIA graphics card must set the `LD_LIBRARY_PATH` in order to load the correct

@@ -22,7 +22,7 @@ find_package(autoware_auto_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(lidar_utils REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 
 include_directories(include)
 
@@ -36,7 +36,7 @@ add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 ament_target_dependencies(${PROJECT_NAME}
   "geometry_msgs"
-  "lidar_utils"
+  "autoware_auto_common"
 )
 autoware_set_compile_options(${PROJECT_NAME})
 

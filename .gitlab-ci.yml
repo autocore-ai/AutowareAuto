@@ -17,7 +17,10 @@ ade:
     - '
       if [[ -n "$FORCE" ]]; then
           chmod og-w . -R;
-          docker build -t image .;
+          docker build
+              --label ade_image_commit_sha="$CI_COMMIT_SHA"
+              --label ade_image_commit_tag="$CI_COMMIT_TAG"
+              -t image .;
       else
           (
               docker pull $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA &&
@@ -27,7 +30,10 @@ ade:
               docker tag $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE image
           ) || (
               chmod og-w . -R;
-              docker build -t image .
+              docker build
+                  --label ade_image_commit_sha="$CI_COMMIT_SHA"
+                  --label ade_image_commit_tag="$CI_COMMIT_TAG"
+                  -t image .;
           );
       fi
       '
@@ -55,13 +61,17 @@ build_barebones:
           ca-certificates
       '
     - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
+    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros-latest.list'
     - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
     - 'apt-get update && apt-get -y --no-install-recommends install
           python3-colcon-common-extensions
           cmake
           build-essential
           python-rosdep
+          git
+          clang-tidy
       '
+    - 'git submodule update --init --recursive'
     - 'rosdep init && rosdep update'
     - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
     - 'source /opt/ros/dashing/setup.bash'
@@ -76,6 +86,11 @@ build:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          git
+          clang-tidy
+      '
+    - 'git submodule update --init --recursive'
     # build and test
     - 'colcon build
            --merge-install
@@ -125,6 +140,11 @@ coverage:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          git
+          clang-tidy
+      '
+    - 'git submodule update --init --recursive'
     - 'colcon build
            --cmake-args
              -DCMAKE_BUILD_TYPE=Debug
@@ -138,7 +158,10 @@ coverage:
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
     - 'lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total'
-    - 'lcov --config-file .lcovrc -r lcov.total "*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*" -o lcov.total.filtered'
+    - 'lcov --config-file .lcovrc -r lcov.total
+            "*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*" "*/AutowareAuto/build/mpc_planner" "*/AutowareAuto/build/mpc_controller"
+            "*/AutowareAuto/src/external/*"
+            -o lcov.total.filtered'
     - 'genhtml --config-file .lcovrc -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage'
   artifacts:
     name: "$CI_JOB_NAME"
@@ -193,7 +216,11 @@ volume:
       VOLUME /opt/AutowareAuto
       CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
       EOF
-    - docker build -t image .
+    - 'docker build
+          --label ade_image_commit_sha="$CI_COMMIT_SHA"
+          --label ade_image_commit_tag="$CI_COMMIT_TAG"
+          -t image .
+      '
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker tag image $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
     - docker tag image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG

@@ -1,11 +1,16 @@
 from setuptools import find_packages
 from setuptools import setup
 
+package_name = 'autoware_auto_create_pkg'
+
 setup(
-    name='autoware_auto_create_pkg',
+    name=package_name,
     version='0.0.1',
     packages=find_packages(exclude=['test']),
     install_requires=['setuptools'],
+    data_files=[
+        ('share/' + package_name, ['package.xml']),
+    ],
     package_data={'': [
         'template/*',
         'template/design/*',

@@ -27,7 +27,7 @@ uint8 WIPER_HIGH = 2
 uint8 WIPER_CLEAN = 3
 # Gear
 uint8 GEAR_DRIVE = 0
-uint8 GEAR_REVERSE = 0
+uint8 GEAR_REVERSE = 1
 uint8 GEAR_PARK = 2
 uint8 GEAR_LOW = 3
 uint8 GEAR_NEUTRAL = 4

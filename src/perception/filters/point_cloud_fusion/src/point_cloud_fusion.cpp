@@ -204,7 +204,7 @@ bool PointCloudFusionNode::concatenate_pointcloud(
       z_it_in != z_it_in.end() &&
       intensity_it_in != intensity_it_in.end())
     {
-      common::lidar_utils::PointXYZIF pt;
+      common::types::PointXYZIF pt;
       pt.x = *x_it_in;
       pt.y = *y_it_in;
       pt.z = *z_it_in;

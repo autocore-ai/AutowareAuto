@@ -95,7 +95,6 @@ Config::Config(
   m_max_point.y -= std::numeric_limits<float>::epsilon();
   m_max_point.z -= std::numeric_limits<float>::epsilon();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 const PointXYZ & Config::get_min_point() const
 {

@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <vector>
 #include "geometry_msgs/msg/point32.hpp"
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 
 namespace autoware
 {
@@ -174,7 +174,7 @@ private:
   /// \brief Convert a packet into a block of cartesian points
   /// \param[in] pkt A packet from a VLP16 HiRes sensor for conversion
   /// \param[out] output Gets filled with cartesian points and any additional flags
-  void convert(const Packet & pkt, std::vector<autoware::common::lidar_utils::PointXYZIF> & output);
+  void convert(const Packet & pkt, std::vector<autoware::common::types::PointXYZIF> & output);
 
 private:
   // make sure packet sizes are correct
@@ -194,7 +194,7 @@ private:
   /// \param[in] phi_ind the altitude angle index from lookup tables(angle orthogonal to z-axis)
   /// \return none
   inline void polar_to_xyz(
-    autoware::common::lidar_utils::PointXYZIF & pt,
+    autoware::common::types::PointXYZIF & pt,
     const float r_m,
     const uint32_t th_ind,
     const uint32_t phi_ind)

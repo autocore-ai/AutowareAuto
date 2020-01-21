@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>velodyne_driver</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <description>(Mostly) static memory implementation of a velodyne driver in one process</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>
@@ -11,11 +11,11 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <build_depend>geometry_msgs</build_depend>
-    <build_depend>lidar_utils</build_depend>
+    <build_depend>autoware_auto_common</build_depend>
     <build_depend>rclcpp</build_depend>
 
     <exec_depend>geometry_msgs</exec_depend>
-    <exec_depend>lidar_utils</exec_depend>
+    <exec_depend>autoware_auto_common</exec_depend>
     <exec_depend>rclcpp</exec_depend>
 
     <test_depend>ament_cmake_gtest</test_depend>

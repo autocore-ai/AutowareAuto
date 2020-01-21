@@ -18,7 +18,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
 namespace autoware
@@ -58,7 +58,7 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
 
   // a small fudge factor is added because we check in the sorting process for "almost zero"
   // This is because points which are almost collinear are sorted by height
-  const float dr_m = (radius_m - m_prev_radius_m) + autoware::common::lidar_utils::FEPS;
+  const float dr_m = (radius_m - m_prev_radius_m) + autoware::common::types::FEPS;
   if (dr_m < 0.0F) {
     throw std::runtime_error("Ray Ground filter must receive points in increasing radius");
   }

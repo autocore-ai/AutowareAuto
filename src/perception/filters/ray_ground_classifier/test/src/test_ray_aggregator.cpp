@@ -20,7 +20,7 @@
 namespace
 {
 
-using autoware::common::lidar_utils::PointXYZIF;
+using autoware::common::types::PointXYZIF;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 using autoware::perception::filters::ray_ground_classifier::Ray;
@@ -195,7 +195,7 @@ TEST(ray_aggregator, multi_insert)
 TEST(ray_aggregator, bad_cases)
 {
   const uint32_t capacity =
-    static_cast<uint32_t>(autoware::common::lidar_utils::POINT_BLOCK_CAPACITY);
+    static_cast<uint32_t>(autoware::common::types::POINT_BLOCK_CAPACITY);
   // small width
   EXPECT_THROW(RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.00000000001F, 10U}),
     std::runtime_error);
@@ -242,4 +242,52 @@ TEST(ray_aggregator, segfault)
 
   EXPECT_NO_THROW(agg.insert(pt));
 }
+
+// https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/217
+// Make sure rays with "NOT_READY" state does not get included as ready rays when we reach end of
+// scan.
+TEST(ray_aggregator, reset_bug) {
+  RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.005F, 10};
+  RayAggregator agg{cfg};
+
+  const size_t kNumPoints = 3;
+  // Call aggregator with the given points and check that there is only one ready ray and it
+  // contains the given points.
+  const auto check_one_ray_fn = [&agg, kNumPoints](const std::array<PointXYZIF, kNumPoints> & pts)
+    -> void {
+      agg.insert(pts.cbegin(), pts.cend());
+      EXPECT_TRUE(agg.is_ray_ready());
+
+      while (agg.is_ray_ready()) {
+        const auto & ray = agg.get_next_ray();
+        // Last point is just to mark end of scan. So it wont be included in any ray.
+        EXPECT_EQ(ray.size(), kNumPoints - 1);
+        for (size_t i = 0; i < kNumPoints - 1; ++i) {
+          EXPECT_EQ(ray[i].get_point_pointer()->x, pts[i].x);
+          EXPECT_EQ(ray[i].get_point_pointer()->y, pts[i].y);
+        }
+      }
+    };
+
+  {
+    // 2 points that fall in the same ray
+    std::array<PointXYZIF, kNumPoints> pts;
+    pts[0U].x = 1.0F; pts[0U].y = 5.0F;
+    pts[1U].x = 2.0F; pts[1U].y = 10.0F;
+    pts[2U].id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
+    check_one_ray_fn(pts);
+  }
+
+  {
+    // 2 points in the same ray but this ray is in different bin than the ray in the previous
+    // scan. This should verify that the ray from the previous scan is not included as ready in this
+    // scan.
+    std::array<PointXYZIF, kNumPoints> pts;
+    pts[0U].x = 1.0F; pts[0U].y = 2.0F;
+    pts[1U].x = 2.0F; pts[1U].y = 4.0F;
+    pts[2U].id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
+    check_one_ray_fn(pts);
+  }
+}
+
 }  // namespace

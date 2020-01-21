@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "common/types.hpp"
 #include "lidar_utils/lidar_utils.hpp"
 #include "ray_ground_classifier/ray_aggregator.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
@@ -31,9 +32,9 @@ namespace filters
 namespace ray_ground_classifier
 {
 
-using autoware::common::lidar_utils::FEPS;
-using autoware::common::lidar_utils::PI;
-using autoware::common::lidar_utils::POINT_BLOCK_CAPACITY;
+using autoware::common::types::FEPS;
+using autoware::common::types::PI;
+using autoware::common::types::POINT_BLOCK_CAPACITY;
 
 ////////////////////////////////////////////////////////////////////////////////
 RayAggregator::Config::Config(
@@ -118,9 +119,12 @@ void RayAggregator::insert(const PointXYZIFR & pt)
     m_num_ready = 0U;
     for (std::size_t idx = 0U; idx < m_rays.size(); ++idx) {
       const std::size_t jdx = idx;  // Fix for MISRA Fp, idx modified in loop
-      if (!m_rays[jdx].empty()) {
-        m_ready_indices[m_num_ready] = idx;
-        ++m_num_ready;
+      // Add all non empty "NOT_READY" rays to the ready list since the end of scan in reached.
+      if (RayState::RESET != m_ray_state[jdx]) {
+        if (!m_rays[jdx].empty()) {
+          m_ready_indices[m_num_ready] = idx;
+          ++m_num_ready;
+        }
       }
     }
   } else {
@@ -192,15 +196,15 @@ std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
   const float y = pt.get_point_pointer()->y;
   // (0, 0) is always bin 0
   float idx = 0.0F;
-  if ((fabsf(x) > autoware::common::lidar_utils::FEPS) ||
-    (fabsf(y) > autoware::common::lidar_utils::FEPS))
+  if ((fabsf(x) > autoware::common::types::FEPS) ||
+    (fabsf(y) > autoware::common::types::FEPS))
   {
     const float th = autoware::common::lidar_utils::fast_atan2(y, x);
     idx = th - m_cfg.get_min_angle();
     if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
       // Case where receptive field crosses the +PI/-PI singularity
       // [-PI, max_angle) domain
-      idx = idx + autoware::common::lidar_utils::TAU;
+      idx = idx + autoware::common::types::TAU;
     }
     // Avoid underflow
     idx = std::max(0.0F, idx);

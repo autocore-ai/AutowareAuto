@@ -22,7 +22,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_helper_functions REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -31,7 +31,7 @@ endif()
 
 include_directories(include)
 
-ament_export_dependencies("autoware_auto_helper_functions")
+ament_export_dependencies("autoware_auto_common")
 autoware_install(HAS_INCLUDE)
 
 if(BUILD_TESTING)
@@ -39,7 +39,7 @@ if(BUILD_TESTING)
     set(TEST_LIB "${PROJECT_NAME}_test")
     add_library(${TEST_LIB} SHARED test/test_driver.hpp test/test_driver.cpp)
 
-    ament_target_dependencies(${TEST_LIB} "autoware_auto_helper_functions" "rclcpp" "rclcpp_lifecycle" "std_msgs")
+    ament_target_dependencies(${TEST_LIB} "autoware_auto_common" "rclcpp" "rclcpp_lifecycle" "std_msgs")
     target_include_directories(${TEST_LIB} PRIVATE include)
     target_link_libraries(${TEST_LIB} ${Boost_LIBRARIES})
 

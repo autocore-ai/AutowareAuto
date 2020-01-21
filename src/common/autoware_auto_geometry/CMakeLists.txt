@@ -19,7 +19,7 @@ project(autoware_auto_geometry)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
-find_package(autoware_auto_helper_functions REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(autoware_auto_msgs REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -28,8 +28,13 @@ find_package(geometry_msgs REQUIRED)
 add_library(${PROJECT_NAME} SHARED
   include/geometry/spatial_hash.hpp
   include/geometry/spatial_hash_config.hpp
-  src/spatial_hash.cpp)
-ament_target_dependencies(${PROJECT_NAME} "autoware_auto_helper_functions" "geometry_msgs")
+  src/spatial_hash.cpp
+  src/bounding_box.cpp)
+ament_target_dependencies(${PROJECT_NAME}
+  "autoware_auto_common"
+  "autoware_auto_msgs"
+  "geometry_msgs"
+  "lidar_utils")
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 autoware_set_compile_options(${PROJECT_NAME})
@@ -50,14 +55,18 @@ if(BUILD_TESTING)
   )
   ament_add_gtest(${GEOMETRY_GTEST} ${GEOMETRY_SRC})
   target_include_directories(${GEOMETRY_GTEST} PRIVATE "test/include" "include")
-  ament_target_dependencies(${GEOMETRY_GTEST} "autoware_auto_helper_functions" "geometry_msgs")
+  ament_target_dependencies(${GEOMETRY_GTEST}
+    "autoware_auto_common"
+    "autoware_auto_msgs"
+    "geometry_msgs"
+    "osrf_testing_tools_cpp")
   target_link_libraries(${GEOMETRY_GTEST} ${PROJECT_NAME})
 endif()
 
 # Ament Exporting
 autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
 ament_export_dependencies(
-  "autoware_auto_helper_functions"
+  "autoware_auto_common"
   "autoware_auto_msgs"
   "geometry_msgs"
 )

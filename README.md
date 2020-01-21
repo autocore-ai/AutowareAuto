@@ -44,7 +44,7 @@ DBW interface.
 # Documentation
 
 The latest documentation corresponding to the ``master`` branch can be found here:
-https://autowareauto.gitlab.io/AutowareAuto/.
+https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/.
 
 # Roadmap
 Functional features in Autoware.Auto will be developed according to the below roadmap.

@@ -1,5 +1,17 @@
-/// \copyright Copyright 2017-2018 Apex.AI, Inc.
-/// All rights reserved.
+// Copyright 2017-2018 Apex.AI, Inc.
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 /// \file
 /// \brief This class defines common functions and classes to work with pointclouds
 
@@ -10,12 +22,12 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-#include <lidar_utils/lidar_types.hpp>
+#include <common/types.hpp>
 #include <lidar_utils/visibility_control.hpp>
 
-#include <string>
 #include <atomic>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace autoware
@@ -81,14 +93,44 @@ LIDAR_UTILS_PUBLIC void init_pcl_msg(
   const std::string & frame_id,
   const std::size_t size = static_cast<std::size_t>(MAX_SCAN_POINTS));
 
+/// initializes header information for point cloud given frame id, size, number of frames and
+///  a parameter pack of fields.
+/// \tparam Fields Template paramater pack containing field types.
+/// \param msg Point cloud message.
+/// \param frame_id Frame ID of the point cloud.
+/// \param size Size of the initialized point cloud.
+/// \param num_fields Number of fields.
+/// \param fields Set of parameters defining the fields. Each field must contain the following
+/// parameters in strict order: `field_name, count, data_type`. These parameters should
+/// be provided for each field
+template<typename ... Fields>
+LIDAR_UTILS_PUBLIC void init_pcl_msg(
+  sensor_msgs::msg::PointCloud2 & msg,
+  const std::string & frame_id,
+  const std::size_t size,
+  const uint32_t num_fields,
+  Fields const & ... fields
+)
+{
+  msg.height = 1U;
+  msg.is_bigendian = false;
+  msg.is_dense = false;
+  msg.header.frame_id = frame_id;
+  // set the fields
+  sensor_msgs::PointCloud2Modifier modifier(msg);
+  modifier.setPointCloud2Fields(num_fields, fields ...);
+  // allocate memory so that iterators can be used
+  modifier.resize(size);
+}
+
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   PointCloudIts & cloud_its,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::lidar_utils::PointXYZIF & pt,
+  const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);
 
 LIDAR_UTILS_PUBLIC void reset_pcl_msg(

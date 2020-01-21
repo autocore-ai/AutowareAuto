@@ -24,11 +24,8 @@ TestDriver::TestDriver(
   const std::string & node_name,
   const std::string & topic,
   const std::string & device_name,
-  uint32_t baud_rate,
-  flow_control_t flow_control,
-  parity_t parity,
-  stop_bits_t stop_bits)
-: TestDriverT(node_name, topic, device_name, baud_rate, flow_control, parity, stop_bits),
+  const SerialPortConfig & serial_port_config)
+: TestDriverT(node_name, topic, device_name, serial_port_config),
   m_last_value(-1),
   m_times_init_output_has_been_called(0)
 {

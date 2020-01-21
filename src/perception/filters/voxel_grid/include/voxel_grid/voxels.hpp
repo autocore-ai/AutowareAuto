@@ -19,7 +19,7 @@
 #ifndef VOXEL_GRID__VOXELS_HPP_
 #define VOXEL_GRID__VOXELS_HPP_
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "voxel_grid/config.hpp"
 #include "voxel_grid/visibility_control.hpp"
 #include "voxel_grid/voxel.hpp"
@@ -33,7 +33,7 @@ namespace filters
 namespace voxel_grid
 {
 
-using autoware::common::lidar_utils::PointXYZIF;
+using autoware::common::types::PointXYZIF;
 
 /// \brief Default addition operator for a point type for use with CentroidVoxel
 /// \tparam PointT Point type, assumed to have fields x, y, and z

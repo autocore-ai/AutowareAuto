@@ -17,7 +17,7 @@
 #include <chrono>
 #include <vector>
 
-#include "lidar_utils/lidar_types.hpp"
+#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "velodyne_node/velodyne_cloud_node.hpp"
@@ -107,7 +107,7 @@ bool VelodyneCloudNode::convert(
     // deserialize remainder into pointcloud
     m_published_cloud = false;
     for (uint32_t idx = m_remainder_start_idx; idx < m_point_block.size(); ++idx) {
-      const autoware::common::lidar_utils::PointXYZIF & pt = m_point_block[idx];
+      const autoware::common::types::PointXYZIF & pt = m_point_block[idx];
       (void)add_point_to_cloud(m_point_cloud_its, pt, m_point_cloud_idx);
       // Here I am ignoring the return value, because this operation should never fail.
       // In the constructor I ensure that cloud_size > PointBlock::CAPACITY. This means
@@ -118,8 +118,8 @@ bool VelodyneCloudNode::convert(
   }
   m_translator.convert(pkt, m_point_block);
   for (uint32_t idx = 0U; idx < m_point_block.size(); ++idx) {
-    const autoware::common::lidar_utils::PointXYZIF & pt = m_point_block[idx];
-    if (static_cast<uint16_t>(autoware::common::lidar_utils::PointXYZIF::END_OF_SCAN_ID) != pt.id) {
+    const autoware::common::types::PointXYZIF & pt = m_point_block[idx];
+    if (static_cast<uint16_t>(autoware::common::types::PointXYZIF::END_OF_SCAN_ID) != pt.id) {
       if (!add_point_to_cloud(m_point_cloud_its, pt, m_point_cloud_idx)) {
         m_published_cloud = true;
         m_remainder_start_idx = idx;

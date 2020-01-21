@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>voxel_grid</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <description>voxel grid filters</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>
@@ -12,6 +12,7 @@
 
     <depend>lidar_utils</depend>
     <depend>geometry_msgs</depend>
+    <depend>autoware_auto_geometry</depend>
 
     <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_lint_auto</test_depend>
