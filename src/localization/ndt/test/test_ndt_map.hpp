@@ -60,9 +60,8 @@ void add_cell(
   sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
   const Eigen::Vector3d & center, double fixed_deviation);
 
-void dynamic_to_static(
-  const DynamicNDTMap & dynamic_map,
-  StaticNDTMap & static_map);
+sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
+  const DynamicNDTMap & dynamic_map);
 
 class MapValidationContext
 {

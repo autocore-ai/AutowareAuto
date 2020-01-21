@@ -27,11 +27,6 @@ namespace localization
 {
 namespace ndt
 {
-template<typename T>
-void eig_to_tf2_trans(
-  const Eigen::Transform<T, 3, Eigen::Affine, Eigen::ColMajor> & t_eig,
-  geometry_msgs::msg::Transform & t_tf2);
-
 pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointCloud2 & msg);
 
 class OptimizationTestContext : public DenseNDTMapContext
@@ -63,7 +58,7 @@ public:
     m_dynamic_map.insert(m_pc);
 
     // Pass the dynamic map to a static one:
-    dynamic_to_static(m_dynamic_map, m_static_map);
+    m_static_map.insert(dynamic_map_to_cloud(m_dynamic_map));
   }
   perception::filters::voxel_grid::Config m_grid_config;
   sensor_msgs::msg::PointCloud2 m_downsampled_cloud;
@@ -107,6 +102,16 @@ void numerical_diff(
     }
   }
 }
+
+struct OptTestParams
+{
+  OptTestParams(
+    double x, double y, double z, double ang_x, double ang_y, double ang_z,
+    bool large, bool check_pcl);
+  EigenPose<Real> diff;
+  bool is_large;
+  bool check_pcl;
+};
 
 }  // namespace ndt
 }  // namespace localization

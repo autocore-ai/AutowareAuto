@@ -133,7 +133,7 @@ public:
       m_points.clear();
     }
 
-    m_stamp = time_utils::from_message(msg.header.stamp);
+    m_stamp = ::time_utils::from_message(msg.header.stamp);
 
     constexpr auto container_full_error = "received a lidar scan with more points than the "
       "ndt scan representation can contain. Please re-configure the scan"

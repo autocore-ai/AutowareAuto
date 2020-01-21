@@ -18,9 +18,10 @@
 
 #include <ndt/ndt_map.hpp>
 #include <ndt/ndt_scan.hpp>
+#include <ndt/ndt_config.hpp>
 #include <optimization/optimization_problem.hpp>
 #include <optimization/utils.hpp>
-#include <geometry_msgs/msg/transform.hpp>
+#include <ndt/utils.hpp>
 #include <experimental/optional>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -32,23 +33,6 @@ namespace localization
 {
 namespace ndt
 {
-template<typename T>
-using Pose = Eigen::Matrix<T, 6U, 1U>;
-
-/// Function that constructs an Eigen::Transform<> from a 6d 6U, 1U> vector
-/// \tparam T Vector point type
-/// \param pose Pose matrix
-/// \param transformation Transformation matrix.
-template<typename T>
-void pose_to_transform(
-  const Pose<T> & pose,
-  Eigen::Transform<T, 3, Eigen::Affine, Eigen::ColMajor> & transformation)
-{
-  transformation.translation() = pose.head(3);
-  transformation.rotate(Eigen::AngleAxisd(pose(3), Eigen::Vector3d::UnitX()));
-  transformation.rotate(Eigen::AngleAxisd(pose(4), Eigen::Vector3d::UnitY()));
-  transformation.rotate(Eigen::AngleAxisd(pose(5), Eigen::Vector3d::UnitZ()));
-}
 
 template<typename ScalarT>
 bool is_valid_probability(ScalarT p)
@@ -63,11 +47,11 @@ bool is_valid_probability(ScalarT p)
 /// P2D ndt objective. This class implements the P2D ndt score function, its analytical
 /// jacobian and hessian values.
 class P2DNDTObjective : public common::optimization::CachedExpression<P2DNDTObjective,
-    Pose<Real>, 1U, 6U, common::optimization::EigenComparator>
+    EigenPose<Real>, 1U, 6U, common::optimization::EigenComparator>
 {
 public:
   // getting aliases from the base class.
-  using ExpressionT = CachedExpression<P2DNDTObjective, Pose<Real>, 1U, 6U,
+  using ExpressionT = CachedExpression<P2DNDTObjective, EigenPose<Real>, 1U, 6U,
       common::optimization::EigenComparator>;
   using DomainValue = typename ExpressionT::DomainValue;
   using Value = typename ExpressionT::Value;
@@ -86,13 +70,14 @@ public:
   /// problem must not outlive the scan or the map.
   /// \param scan Scan to align with the map.
   /// \param map NDT map to be aligned.
-  /// \param outlier_ratio Outlier ratio to be used in the gaussian distribution variation
-  /// used in (eq. 6.7) [Magnusson 2009]
-  P2DNDTObjective(const P2DNDTScan & scan, const StaticNDTMap & map, Real outlier_ratio)
+  /// \param config Optimization config.
+  P2DNDTObjective(
+    const P2DNDTScan & scan, const StaticNDTMap & map,
+    const P2DNDTOptimizationConfig & config)
   : m_scan_ref(scan),
     m_map_ref(map)
   {
-    init(outlier_ratio);
+    init(config.outlier_ratio());
   }
 
   void evaluate_(const DomainValue & x, const ComputeMode & mode)
@@ -100,7 +85,7 @@ public:
     // Convert pose vector to transform matrix for easy point transformation
     Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> transform;
     transform.setIdentity();
-    pose_to_transform(x, transform);
+    transform_adapters::pose_to_transform(x, transform);
 
     Value score{0.0};
 
@@ -428,7 +413,7 @@ public:
 };
 
 using P2DNDTOptimizationProblem =
-  common::optimization::UnconstrainedOptimizationProblem<P2DNDTObjective, Pose<Real>, 6U>;
+  common::optimization::UnconstrainedOptimizationProblem<P2DNDTObjective, EigenPose<Real>, 6U>;
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

@@ -75,6 +75,23 @@ Outputs:
  * Jacobian
  * Hessian
 
+## NDT Localizer
+
+[NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) is a type of [RelativeLocalizerBase](@ref autoware::localization::localization_common::RelativeLocalizerBase).
+It is templated on scan, map and optimization problem types, allowing to register measurements using varying ndt methods. An implementation of
+[NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) can choose to override the message and guess validations as well as covariance computation steps.
+
+[P2DNDTLocalizer](@ref autoware::localization::ndt::P2DNDTLocalizer) is the [NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) implementation for P2D NDT objective.
+
+### Inputs / Outputs / API
+Inputs:
+ * Scan
+ * Map
+ * Initial estimate
+ * Optimizer
+Outputs:
+ * Pose with covariance.
+
 # Related issues
 - #137: NDT Map format validation
 - #138: Implement NDTMapRepresentation

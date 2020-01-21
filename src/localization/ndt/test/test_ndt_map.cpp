@@ -570,9 +570,8 @@ void DenseNDTMapContext::build_pc(const perception::filters::voxel_grid::Config 
     }
   }
 }
-void dynamic_to_static(
-  const DynamicNDTMap & dynamic_map,
-  StaticNDTMap & static_map)
+sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
+  const DynamicNDTMap & dynamic_map)
 {
   sensor_msgs::msg::PointCloud2 static_msg;
   common::lidar_utils::init_pcl_msg(static_msg, "map", dynamic_map.size(), 10U,
@@ -610,7 +609,8 @@ void dynamic_to_static(
       cell_id_it != cell_id_it.end()))
     {
       // This should not occur as the cloud is resized to the map's size.
-      ASSERT_FALSE(true);
+      EXPECT_FALSE(true);
+      return sensor_msgs::msg::PointCloud2{};
     }
 
     const auto & vx = vx_it.second;
@@ -641,7 +641,7 @@ void dynamic_to_static(
     ++cov_zz_it;
     ++cell_id_it;
   }
-  static_map.insert(static_msg);
+  return static_msg;
 }
 }  // namespace ndt
 }  // namespace localization

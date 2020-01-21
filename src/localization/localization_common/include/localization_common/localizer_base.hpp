@@ -20,6 +20,7 @@
 #include <tf2/buffer_core.h>
 #include <geometry_msgs/msg/transform.hpp>
 #include <localization_common/initialization.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 namespace autoware
 {
@@ -28,27 +29,31 @@ namespace localization
 namespace localization_common
 {
 using Real = double;
-// The class could be templated on the optimizationproblem/solver as well.
+/// The base class for relative localizers.
+/// \tparam InputMsgT Message type that will be registered against a map.
+/// \tparam MapMsgT Map type.
 template<typename InputMsgT, typename MapMsgT>
 class RelativeLocalizerBase
 {
 public:
-  // TODO(yunus.caliskan): Use a transform message with covariance
-  using PoseT = geometry_msgs::msg::TransformStamped;
+  using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using Transform = geometry_msgs::msg::TransformStamped;
+
   /// Registers a measurement to the current map and returns the
   /// estimated pose of the vehicle and its validity.
   /// \param[in] msg Measurement message to register.
-  /// \param[in] initial_guess Initial guess of the pose to initialize the localizer with
+  /// \param[in] transform_initial Initial guess of the pose to initialize the localizer with
   /// in iterative processes like solving optimization problems.
-  /// \param[out] pose_out Resulting pose estimate after registration.
-  /// \return If the returning pose estimate is deemed valid or not.
-  /// Details are implementation defined.
-  virtual bool register_measurement(
-    const InputMsgT & msg, const PoseT & initial_guess, PoseT & pose_out) = 0;
+  /// \return Resulting pose estimate after registration.
+  /// \throws If the result is invalid and cannot be used. Defined in the implementation.
+  virtual PoseWithCovarianceStamped register_measurement(
+    const InputMsgT & msg, const Transform & transform_initial) = 0;
 
   /// Set map.
   /// \param msg Map message.
   virtual void set_map(const MapMsgT & msg) = 0;
+
+  virtual ~RelativeLocalizerBase() = default;
 };
 }  // namespace localization_common
 }  // namespace localization

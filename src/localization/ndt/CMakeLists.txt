@@ -18,16 +18,19 @@ set(NDT_NODES_LIB_SRC
     src/ndt.cpp
     src/ndt_map.cpp
     src/ndt_voxel.cpp
+    src/ndt_config.cpp
 )
 
 set(NDT_NODES_LIB_HEADERS
     include/ndt/visibility_control.hpp
+    include/ndt/ndt_config.hpp
     include/ndt/ndt_representations.hpp
     include/ndt/ndt_optimization_problem.hpp
     include/ndt/ndt_voxel.hpp
     include/ndt/ndt_map.hpp
     include/ndt/ndt_scan.hpp
-    include/ndt/ndt_localizer.hpp)
+    include/ndt/ndt_localizer.hpp
+        include/ndt/utils.hpp)
 
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
@@ -54,7 +57,8 @@ if(BUILD_TESTING)
           test/test_ndt_map.cpp
           test/test_ndt_scan.cpp
           test/test_ndt_optimization.hpp
-          test/test_ndt_optimization.cpp)
+          test/test_ndt_optimization.cpp
+          test/test_ndt_localizer.cpp)
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
 
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})

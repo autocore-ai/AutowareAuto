@@ -24,6 +24,7 @@
 #include <limits>
 #include <unordered_map>
 #include <utility>
+#include <string>
 
 namespace autoware
 {
@@ -87,7 +88,8 @@ public:
   /// \param msg PointCloud2 message to add.
   void insert(const sensor_msgs::msg::PointCloud2 & msg)
   {
-    m_stamp = time_utils::from_message(msg.header.stamp);
+    m_stamp = ::time_utils::from_message(msg.header.stamp);
+    m_frame_id = msg.header.frame_id;
     this->impl().insert_(msg);
   }
 
@@ -137,9 +139,18 @@ public:
     m_map.clear();
   }
 
-  TimePoint stamp()
+  /// Get map's time stamp.
+  /// \return map's time stamp.
+  TimePoint stamp() const noexcept
   {
     return m_stamp;
+  }
+
+  /// Get map's frame id.
+  /// \return Frame id of the map.
+  const std::string & frame_id() const noexcept
+  {
+    return m_frame_id;
   }
 
 protected:
@@ -170,6 +181,7 @@ private:
   const Config m_config;
   Grid m_map;
   TimePoint m_stamp{};
+  std::string m_frame_id{};
 };
 
 

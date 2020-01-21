@@ -23,21 +23,14 @@ namespace localization
 {
 namespace ndt
 {
-
-struct OptTestParams
+OptTestParams::OptTestParams(
+  double x, double y, double z, double ang_x, double ang_y, double ang_z,
+  bool large, bool check_pcl)
+: is_large{large}, check_pcl{check_pcl}
 {
-  OptTestParams(
-    double x, double y, double z, double ang_x, double ang_y, double ang_z,
-    bool large, bool check_pcl)
-  : is_large{large}, check_pcl{check_pcl}
-  {
-    // euler angles XYZ
-    diff << x, y, z, ang_x, ang_y, ang_z;
-  }
-  Pose<Real> diff;
-  bool is_large;
-  bool check_pcl;
-};
+  // euler angles XYZ
+  diff << x, y, z, ang_x, ang_y, ang_z;
+}
 
 class P2DOptimizationTest : public OptimizationTestContext, public ::testing::Test
 {
@@ -69,9 +62,9 @@ TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
   {
     // m_pc is also used as the map, so this scan perfectly aligns with the map
     P2DNDTScan matching_scan(m_downsampled_cloud, m_downsampled_cloud.width);
-    P2DNDTOptimizationProblem problem{matching_scan, m_static_map, 0.55};
+    P2DNDTOptimizationProblem problem{matching_scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
 
-    Pose<Real> pose = GetParam().diff;
+    EigenPose<Real> pose = GetParam().diff;
     problem.evaluate(pose, common::optimization::ComputeMode{true, true, true});
     P2DNDTOptimizationProblem::Jacobian jacobian;
     P2DNDTOptimizationProblem::Hessian hessian;
@@ -101,15 +94,11 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
   using PclCloud = pcl::PointCloud<pcl::PointXYZ>;
   constexpr double PI = 3.14159265359;
   const auto & param = GetParam();
-  Pose<Real> diff = param.diff;
-
-  Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> diff_eig_trans;
-  diff_eig_trans.setIdentity();
-  pose_to_transform(diff, diff_eig_trans);
+  EigenPose<Real> diff = param.diff;
 
   geometry_msgs::msg::TransformStamped diff_tf2;
   diff_tf2.header.frame_id = "custom";
-  eig_to_tf2_trans(diff_eig_trans, diff_tf2.transform);
+  transform_adapters::pose_to_transform(diff, diff_tf2.transform);
 
   // Ensure the scan won't be translated out of its voxel
   ASSERT_LT(diff(0), m_voxel_size.x);
@@ -129,7 +118,7 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
   const auto num_iters = 50U;
   {
     P2DNDTScan scan(translated_cloud, translated_cloud.width);
-    P2DNDTOptimizationProblem problem{scan, m_static_map, 0.55};
+    P2DNDTOptimizationProblem problem{scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
     // Solve the problem in 50 iterations:
     for (auto i = 0U; i < num_iters; ++i) {
       problem.evaluate(guess,
@@ -245,18 +234,6 @@ pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointClo
     res.push_back(pt);
   }
   return res;
-}
-
-
-template<typename T>
-void eig_to_tf2_trans(
-  const Eigen::Transform<T, 3, Eigen::Affine, Eigen::ColMajor> & t_eig,
-  geometry_msgs::msg::Transform & t_tf2)
-{
-  const auto & t = t_eig.translation();
-  Eigen::Quaternion<T> r{t_eig.rotation()};
-  t_tf2.translation.set__x(t(0)).set__y(t(1)).set__z(t(2));
-  t_tf2.rotation.set__x(r.x()).set__y(r.y()).set__z(r.z()).set__w(r.w());
 }
 
 }  // namespace ndt
