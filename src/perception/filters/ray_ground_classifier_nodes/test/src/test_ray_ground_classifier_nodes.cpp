@@ -118,7 +118,7 @@ protected:
 
 TEST_F(ray_ground_classifier_pcl_validation, has_intensity_and_throw_if_no_xyz_test)
 {
-  const uint32_t m_mini_cloud_size = 10U;
+  const uint32_t mini_cloud_size = 10U;
 
   using autoware::perception::filters::ray_ground_classifier_nodes::
   has_intensity_and_throw_if_no_xyz;
@@ -131,14 +131,14 @@ TEST_F(ray_ground_classifier_pcl_validation, has_intensity_and_throw_if_no_xyz_t
   std::vector<std::string> wrong_x_field_names{"h", "y", "z"};
   std::vector<std::string> wrong_y_field_names{"x", "h", "z"};
   std::vector<std::string> wrong_z_field_names{"x", "y", "h"};
-  const auto correct_pc = create_custom_pcl(right_field_names, m_mini_cloud_size);
-  const auto not_intensity_pc = create_custom_pcl(not_intensity_field_names, m_mini_cloud_size);
-  const auto three_fields_pc = create_custom_pcl(three_field_names, m_mini_cloud_size);
-  const auto five_fields_pc = create_custom_pcl(five_field_names, m_mini_cloud_size);
-  const auto invalid_pc = create_custom_pcl(invalid_field_names, m_mini_cloud_size);
-  const auto no_x_pc = create_custom_pcl(wrong_x_field_names, m_mini_cloud_size);
-  const auto no_y_pc = create_custom_pcl(wrong_y_field_names, m_mini_cloud_size);
-  const auto no_z_pc = create_custom_pcl(wrong_z_field_names, m_mini_cloud_size);
+  const auto correct_pc = create_custom_pcl(right_field_names, mini_cloud_size);
+  const auto not_intensity_pc = create_custom_pcl(not_intensity_field_names, mini_cloud_size);
+  const auto three_fields_pc = create_custom_pcl(three_field_names, mini_cloud_size);
+  const auto five_fields_pc = create_custom_pcl(five_field_names, mini_cloud_size);
+  const auto invalid_pc = create_custom_pcl(invalid_field_names, mini_cloud_size);
+  const auto no_x_pc = create_custom_pcl(wrong_x_field_names, mini_cloud_size);
+  const auto no_y_pc = create_custom_pcl(wrong_y_field_names, mini_cloud_size);
+  const auto no_z_pc = create_custom_pcl(wrong_z_field_names, mini_cloud_size);
 
   EXPECT_THROW(has_intensity_and_throw_if_no_xyz(invalid_pc), std::runtime_error);
   EXPECT_THROW(has_intensity_and_throw_if_no_xyz(no_x_pc), std::runtime_error);
@@ -155,7 +155,7 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   rclcpp::init(0, nullptr);
 
   using Config = autoware::perception::filters::ray_ground_classifier::Config;
-  const Config m_ray_config{
+  const Config ray_config{
     0.0,
     20.0,
     7.0,
@@ -168,7 +168,7 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
     3.5
   };
   using RayAggregator = autoware::perception::filters::ray_ground_classifier::RayAggregator;
-  const RayAggregator::Config m_ray_agg_config{
+  const RayAggregator::Config ray_agg_config{
     -3.14159,
     3.14159,
     0.01,
@@ -176,69 +176,69 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   };
 
   using autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
-  std::shared_ptr<RayGroundClassifierCloudNode> m_ray_gnd_ptr;
-  std::shared_ptr<RayGroundPclValidationTester> m_ray_gnd_validation_tester;
-  rclcpp::executors::SingleThreadedExecutor m_exec;
-  const std::string m_raw_pcl_topic{"raw_cloud"};
-  const std::string m_ground_pcl_topic{"ground_cloud"};
-  const std::string m_nonground_pcl_topic{"nonground_cloud"};
-  const uint32_t m_mini_cloud_size = 10U;
-  std::chrono::microseconds m_period = std::chrono::milliseconds(200);
+  std::shared_ptr<RayGroundClassifierCloudNode> ray_gnd_ptr;
+  std::shared_ptr<RayGroundPclValidationTester> ray_gnd_validation_tester;
+  rclcpp::executors::SingleThreadedExecutor exec;
+  const std::string raw_pcl_topic{"raw_cloud"};
+  const std::string ground_pcl_topic{"ground_cloud"};
+  const std::string nonground_pcl_topic{"nonground_cloud"};
+  const uint32_t mini_cloud_size = 10U;
+  std::chrono::microseconds period = std::chrono::milliseconds(200);
 
-  const uint32_t m_cloud_size{55000U};
-  const char8_t * const m_ip{"127.0.0.1"};
-  const uint16_t m_port{3550U};
-  const std::chrono::seconds m_init_timeout{std::chrono::seconds(5)};
-  const char8_t * const m_frame_id{"base_link"};
-  const uint32_t m_sensor_id{0U};
-  const std::chrono::nanoseconds m_runtime{std::chrono::seconds(10)};
-  const std::string m_raw_topic{"raw_block"};
-  const std::string m_ground_topic{"ground_block"};
-  const std::string m_nonground_topic{"block_nonground"};
+  const uint32_t cloud_size{55000U};
+  const char8_t * const ip{"127.0.0.1"};
+  const uint16_t port{3550U};
+  const std::chrono::seconds init_timeout{std::chrono::seconds(5)};
+  const char8_t * const frame_id{"base_link"};
+  const uint32_t sensor_id{0U};
+  const std::chrono::nanoseconds runtime{std::chrono::seconds(10)};
+  const std::string raw_topic{"raw_block"};
+  const std::string ground_topic{"ground_block"};
+  const std::string nonground_topic{"block_nonground"};
 
-  m_ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
+  ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
     "ray_ground_classifier_cloud_node",
-    m_raw_pcl_topic,
-    m_ground_pcl_topic,
-    m_nonground_pcl_topic,
-    m_frame_id,
+    raw_pcl_topic,
+    ground_pcl_topic,
+    nonground_pcl_topic,
+    frame_id,
     std::chrono::milliseconds(110),
-    m_cloud_size,
-    m_ray_config,
-    m_ray_agg_config
+    cloud_size,
+    ray_config,
+    ray_agg_config
   );
-  m_ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
-  m_exec.add_node(m_ray_gnd_validation_tester);
+  ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
+  exec.add_node(ray_gnd_ptr->get_node_base_interface());
+  exec.add_node(ray_gnd_validation_tester);
 
   std::vector<std::string> five_field_names{"x", "y", "z", "intensity", "timestamp"};
   std::vector<std::string> three_field_names{"x", "y", "z"};
-  const auto three_fields_pc = create_custom_pcl(three_field_names, m_mini_cloud_size);
-  const auto five_fields_pc = create_custom_pcl(five_field_names, m_mini_cloud_size);
+  const auto three_fields_pc = create_custom_pcl(three_field_names, mini_cloud_size);
+  const auto five_fields_pc = create_custom_pcl(five_field_names, mini_cloud_size);
 
   // expected size = 4 bytes * 4 fields * cloud_size
-  uint32_t expected_gnd_pcl_size = 4U * 4U * m_mini_cloud_size;
+  uint32_t expected_gnd_pcl_size = 4U * 4U * mini_cloud_size;
   uint32_t expected_nongnd_pcl_size = 0U;  // no points will be classified as nonground
   uint32_t expected_num_of_pcl = 2U;
 
-  m_ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
+  ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
   // wait for ray_gnd_filter to process 1st pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
-  m_ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
+  ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
   // wait for ray_gnd_filter to process 2nd pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
-  m_exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
+  exec.spin_some();  // for tester to collect data
 
   // Check all published nonground / ground pointclouds have the expected sizes
-  EXPECT_TRUE(m_ray_gnd_validation_tester->receive_correct_ground_pcls(
+  EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_ground_pcls(
       expected_gnd_pcl_size, expected_num_of_pcl));
-  EXPECT_TRUE(m_ray_gnd_validation_tester->receive_correct_nonground_pcls(
+  EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_nonground_pcls(
       expected_nongnd_pcl_size, expected_num_of_pcl));
 }
