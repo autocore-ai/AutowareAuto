@@ -21,6 +21,10 @@
 #include <ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#include "lifecycle_msgs/msg/state.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+
 using autoware::common::types::float32_t;
 
 class RayGroundPclValidationTester : public rclcpp::Node
@@ -178,7 +182,6 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   using autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
   std::shared_ptr<RayGroundClassifierCloudNode> ray_gnd_ptr;
   std::shared_ptr<RayGroundPclValidationTester> ray_gnd_validation_tester;
-  rclcpp::executors::SingleThreadedExecutor exec;
   const std::string raw_pcl_topic{"raw_cloud"};
   const std::string ground_pcl_topic{"ground_cloud"};
   const std::string nonground_pcl_topic{"nonground_cloud"};
@@ -207,7 +210,16 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
     ray_config,
     ray_agg_config
   );
+  if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != ray_gnd_ptr->configure().id()) {
+    throw std::runtime_error("Could not configure RayGroundClassifierCloudNode!");
+  }
+  if (lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE != ray_gnd_ptr->activate().id()) {
+    throw std::runtime_error("Could not activate RayGroundClassifierCloudNode!");
+  }
+
   ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
+
+  rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(ray_gnd_ptr->get_node_base_interface());
   exec.add_node(ray_gnd_validation_tester);
 
@@ -227,13 +239,6 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
   // wait for ray_gnd_filter to process 2nd pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
-  exec.spin_some();  // for tester to collect data
   exec.spin_some();  // for tester to collect data
 
   // Check all published nonground / ground pointclouds have the expected sizes
