@@ -114,51 +114,12 @@ protected:
     msg->header.frame_id = "base_link";
     return msg;
   }
-  using Config = autoware::perception::filters::ray_ground_classifier::Config;
-  const Config m_ray_config{
-    0.0,
-    20.0,
-    7.0,
-    70.0,
-    0.05,
-    3.3,
-    3.6,
-    5.0,
-    -2.5,
-    3.5
-  };
-  using RayAggregator = autoware::perception::filters::ray_ground_classifier::RayAggregator;
-  const RayAggregator::Config m_ray_agg_config{
-    -3.14159,
-    3.14159,
-    0.01,
-    512
-  };
-  using RayGroundClassifierCloudNode = autoware::perception::filters::ray_ground_classifier_nodes
-    ::RayGroundClassifierCloudNode;
-  std::shared_ptr<RayGroundClassifierCloudNode> m_ray_gnd_ptr;
-  std::shared_ptr<RayGroundPclValidationTester> m_ray_gnd_validation_tester;
-  rclcpp::executors::SingleThreadedExecutor m_exec;
-  const std::string m_raw_pcl_topic{"raw_cloud"};
-  const std::string m_ground_pcl_topic{"ground_cloud"};
-  const std::string m_nonground_pcl_topic{"nonground_cloud"};
-  const uint32_t m_mini_cloud_size = 10U;
-  std::chrono::microseconds m_period = std::chrono::milliseconds(200);
-
-  const uint32_t m_cloud_size{55000U};
-  const char8_t * const m_ip{"127.0.0.1"};
-  const uint16_t m_port{3550U};
-  const std::chrono::seconds m_init_timeout{std::chrono::seconds(5)};
-  const char8_t * const m_frame_id{"base_link"};
-  const uint32_t m_sensor_id{0U};
-  const std::chrono::nanoseconds m_runtime{std::chrono::seconds(10)};
-  const std::string m_raw_topic{"raw_block"};
-  const std::string m_ground_topic{"ground_block"};
-  const std::string m_nonground_topic{"block_nonground"};
 };
 
 TEST_F(ray_ground_classifier_pcl_validation, has_intensity_and_throw_if_no_xyz_test)
 {
+  const uint32_t m_mini_cloud_size = 10U;
+
   using autoware::perception::filters::ray_ground_classifier_nodes::
   has_intensity_and_throw_if_no_xyz;
 
@@ -191,7 +152,50 @@ TEST_F(ray_ground_classifier_pcl_validation, has_intensity_and_throw_if_no_xyz_t
 
 TEST_F(ray_ground_classifier_pcl_validation, filter_test)
 {
+  rclcpp::init(0, nullptr);
+
+  using Config = autoware::perception::filters::ray_ground_classifier::Config;
+  const Config m_ray_config{
+    0.0,
+    20.0,
+    7.0,
+    70.0,
+    0.05,
+    3.3,
+    3.6,
+    5.0,
+    -2.5,
+    3.5
+  };
+  using RayAggregator = autoware::perception::filters::ray_ground_classifier::RayAggregator;
+  const RayAggregator::Config m_ray_agg_config{
+    -3.14159,
+    3.14159,
+    0.01,
+    512
+  };
+
   using autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
+  std::shared_ptr<RayGroundClassifierCloudNode> m_ray_gnd_ptr;
+  std::shared_ptr<RayGroundPclValidationTester> m_ray_gnd_validation_tester;
+  rclcpp::executors::SingleThreadedExecutor m_exec;
+  const std::string m_raw_pcl_topic{"raw_cloud"};
+  const std::string m_ground_pcl_topic{"ground_cloud"};
+  const std::string m_nonground_pcl_topic{"nonground_cloud"};
+  const uint32_t m_mini_cloud_size = 10U;
+  std::chrono::microseconds m_period = std::chrono::milliseconds(200);
+
+  const uint32_t m_cloud_size{55000U};
+  const char8_t * const m_ip{"127.0.0.1"};
+  const uint16_t m_port{3550U};
+  const std::chrono::seconds m_init_timeout{std::chrono::seconds(5)};
+  const char8_t * const m_frame_id{"base_link"};
+  const uint32_t m_sensor_id{0U};
+  const std::chrono::nanoseconds m_runtime{std::chrono::seconds(10)};
+  const std::string m_raw_topic{"raw_block"};
+  const std::string m_ground_topic{"ground_block"};
+  const std::string m_nonground_topic{"block_nonground"};
+
   m_ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
     "ray_ground_classifier_cloud_node",
     m_raw_pcl_topic,
@@ -222,6 +226,14 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   m_ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
   // wait for ray_gnd_filter to process 2nd pc and publish data
   std::this_thread::sleep_for(std::chrono::milliseconds(100LL));
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
+  m_exec.spin_some();  // for tester to collect data
   m_exec.spin_some();  // for tester to collect data
 
   // Check all published nonground / ground pointclouds have the expected sizes
