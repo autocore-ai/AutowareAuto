@@ -41,7 +41,7 @@ public:
     if (T{} >= cutoff_frequency_hz) {
       throw std::domain_error{"Cutoff frequency is non-positve"};
     }
-    constexpr T TAU{2.0 * 3.14159};
+    constexpr T TAU{static_cast<T>(2.0 * 3.14159)};
     m_rc_inv = TAU * cutoff_frequency_hz;
   }
   /// Destructor
