@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.5)
+project(lgsvl_interface)
+set(CMAKE_CXX_STANDARD 17)
+# find dependencies
+find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
+ament_auto_find_build_dependencies()
+
+# Generate library
+ament_auto_add_library(lgsvl_interface
+  src/lgsvl_interface.cpp
+  src/lgsvl_interface_node.cpp)
+autoware_set_compile_options(lgsvl_interface)
+
+# Generate executalbe
+ament_auto_add_executable(lgsvl_interface_exe src/lgsvl_interface_main.cpp)
+autoware_set_compile_options(lgsvl_interface)
+
+if(BUILD_TESTING)
+  autoware_static_code_analysis()
+endif()
+
+ament_auto_package(INSTALL_TO_SHARE param/ launch/)

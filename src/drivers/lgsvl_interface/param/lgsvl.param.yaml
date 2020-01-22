@@ -1,0 +1,48 @@
+# based on vehicle_interface.param.template.yaml
+lgsvl_interface:
+  ros__parameters:
+    cycle_time_ms: 10
+    # Only one of the three control command topics need be specified
+    # high_level_command:
+    #   name: "high_level_command"
+    # basic_command:
+    #   name: "vehicle_command"
+    raw_command:
+      name: "raw_command"
+    state_command:
+      name: "state_command"
+    odometry:
+      name: "odometry"
+    state_report:
+      name: "state_report"
+    lgsvl:
+      command_topic: "vehicle_cmd"
+      can_topic: "lgsvl_can"
+      translator:
+        # Axes (throttle, brake, steer) go from 0 to 100 (integer)
+        # Scale implies max/min value for accel/decel/steer angle
+        throttle_scale: 1.0
+        brake_scale: 1.0
+        steer_scale: 0.01
+        # Max velocity is only respected during forward motion, min velocity is implicitly 0
+        velocity_max: 35.0
+        # Min velocity is only respected during reverse motion, max velocity is implicitly 0
+        velocity_min: -5.0
+        # LGSVL obeys (translational, rotational) velocities verbatim. As such we must track and
+        # compute them internally. Internally this uses a kinematic bicycle model for simplicity
+        cg_to_front: 1.2
+        cg_to_rear: 1.5
+    state_machine:
+      gear_shift_velocity_threshold_mps: 0.5
+      acceleration_limits:
+        min: -3.0
+        max: 3.0
+        threshold: 1.0
+      front_steer_limits:
+        min: -0.331
+        max: 0.331
+        threshold: 0.3
+      time_step_ms: 100
+      timeout_acceleration_mps2: 3.0
+      state_transition_timeout_ms: 3000
+      gear_shift_accel_deadzone_mps2: 0.5
