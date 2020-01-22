@@ -63,9 +63,8 @@ public:
   /// \throw std::domain_error If time_stamp goes back in time
   /// \throw std::domain_error If value is not normal
   /// \tparam DummyT Dummy type to get SFINAE to work
-  template<typename DummyT = T>
-  std::enable_if_t<use_time_point_api, DummyT>
-  filter(DummyT value, typename clock_type::time_point time_stamp)
+  template<typename DummyT = T, typename = std::enable_if_t<use_time_point_api, DummyT>>
+  T filter(T value, typename clock_type::time_point time_stamp)
   {
     const auto dt = time_stamp - m_last_observation_stamp;
     const auto ret = filter_impl_checked(value, dt);
@@ -79,9 +78,8 @@ public:
   /// \throw std::domain_error If duration is negative
   /// \throw std::domain_error If value is not normal
   /// \tparam DummyT Dummy type to get SFINAE to work
-  template<typename DummyT = T>
-  std::enable_if_t<!use_time_point_api, DummyT>
-  filter(DummyT value, std::chrono::nanoseconds duration)
+  template<typename DummyT = T, typename = std::enable_if_t<!use_time_point_api, DummyT>>
+  T filter(T value, std::chrono::nanoseconds duration)
   {
     return filter_impl_checked(value, duration);
   }

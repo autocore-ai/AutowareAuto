@@ -72,13 +72,13 @@ template<typename T>
 class filter_checks : public ::testing::Test
 {
 protected:
-  template<typename ClockT>
-  std::enable_if_t<!std::is_same<ClockT, DummyClock>::value, typename ClockT::time_point> one()
+  template<typename ClockT, typename = std::enable_if_t<!std::is_same<ClockT, DummyClock>::value>>
+  typename ClockT::time_point one()
   {
     return typename ClockT::time_point{} + std::chrono::nanoseconds{1LL};
   }
-  template<typename ClockT>
-  std::enable_if_t<std::is_same<ClockT, DummyClock>::value, std::chrono::nanoseconds> one()
+  template<typename ClockT, typename = std::enable_if_t<std::is_same<ClockT, DummyClock>::value>>
+  std::chrono::nanoseconds one()
   {
     return std::chrono::nanoseconds{1LL};
   }
