@@ -56,7 +56,7 @@ than 2 weeks.
 # Documentation {#index-documentation}
 
 The latest documentation corresponding to the `master` branch of `AutowareAuto` is located here:
-https://autowareauto.gitlab.io/AutowareAuto/.
+https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/.
 
 
 # Roadmap  {#index-roadmap}
