@@ -19,6 +19,7 @@
 #include <ndt/ndt_representations.hpp>
 #include <ndt/ndt_voxel.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <time_utils/time_utils.hpp>
 #include <vector>
 #include <limits>
 #include <unordered_map>
@@ -48,6 +49,7 @@ public:
   using Grid = std::unordered_map<uint64_t, VoxelT>;
   using Point = Eigen::Vector3d;
   using Config = autoware::perception::filters::voxel_grid::Config;
+  using TimePoint = std::chrono::system_clock::time_point;
 
   /// Constructor
   /// \param voxel_grid_config Voxel grid config to configure the underlying voxel grid.
@@ -85,6 +87,7 @@ public:
   /// \param msg PointCloud2 message to add.
   void insert(const sensor_msgs::msg::PointCloud2 & msg)
   {
+    m_stamp = time_utils::from_message(msg.header.stamp);
     this->impl().insert_(msg);
   }
 
@@ -134,6 +137,11 @@ public:
     m_map.clear();
   }
 
+  TimePoint stamp()
+  {
+    return m_stamp;
+  }
+
 protected:
   /// Get voxel index given a point.
   /// \param pt point
@@ -161,6 +169,7 @@ private:
   mutable std::vector<VoxelT> m_output_vector;
   const Config m_config;
   Grid m_map;
+  TimePoint m_stamp{};
 };
 
 

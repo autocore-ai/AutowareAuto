@@ -20,6 +20,7 @@
 #include <ndt/visibility_control.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <time_utils/time_utils.hpp>
 #include <Eigen/Core>
 #include <vector>
 
@@ -38,6 +39,8 @@ class NDTScanBase : public common::helper_functions::crtp<Derived>
 {
 public:
   using Point = NDTUnit;
+  using TimePoint = std::chrono::system_clock::time_point;
+
   /// Get iterator pointing to the beginning of the internal container.
   /// \return Begin iterator.
   IteratorT begin() const
@@ -75,9 +78,14 @@ public:
 
   /// Number of points inside the scan.
   /// \return Number of points
-  uint32_t size() const
+  std::size_t size() const
   {
     return this->impl().size_();
+  }
+
+  TimePoint stamp()
+  {
+    return this->impl().stamp_();
   }
 };
 
@@ -124,6 +132,9 @@ public:
     if (!m_points.empty()) {
       m_points.clear();
     }
+
+    m_stamp = time_utils::from_message(msg.header.stamp);
+
     constexpr auto container_full_error = "received a lidar scan with more points than the "
       "ndt scan representation can contain. Please re-configure the scan"
       "representation accordingly.";
@@ -181,13 +192,19 @@ public:
 
   /// Number of points inside the scan.
   /// \return Number of points
-  uint32_t size_() const
+  std::size_t size_() const
   {
     return m_points.size();
   }
 
+  TimePoint stamp_()
+  {
+    return m_stamp;
+  }
+
 private:
   Container m_points;
+  NDTScanBase::TimePoint m_stamp{};
 };
 
 }  // namespace ndt
