@@ -1,0 +1,5 @@
+int32 example_input
+---
+int32[] current_length
+---
+int32 final_length
