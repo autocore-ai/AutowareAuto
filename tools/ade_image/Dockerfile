@@ -69,6 +69,28 @@ RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
 COPY gdbinit /etc/gdb/
 
 
+# ===================== CLEAN UP ZONE ===================== #
+# Commands in the cleanup zone will be cleaned up before every release
+# and put into the correct place.
+RUN apt-get update \
+  && apt-get install -y \
+    unzip \
+    ca-certificates \
+    libx11-6 \
+    libxau6 \
+    libxcb1 \
+    libxdmcp6 \
+    libxext6 \
+    libvulkan1 \
+    libgl1 \
+    libgtk2.0-0 \
+    vulkan-utils \
+  && apt-get clean
+
+ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/master/nvidia_icd.json" /etc/vulkan/icd.d/nvidia_icd.json
+RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
+# ===================== END OF CLEAN UP ZONE ===================== #
+
 COPY env.sh /etc/profile.d/ade_env.sh
 COPY gitconfig /etc/gitconfig
 COPY entrypoint /ade_entrypoint
