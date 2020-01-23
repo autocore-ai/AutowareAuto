@@ -42,7 +42,7 @@ public:
       throw std::domain_error{"Cutoff frequency is non-positve"};
     }
     constexpr T TAU{2.0 * 3.14159};
-    m_rc = T{1.0} / (TAU * cutoff_frequency_hz);
+    m_rc_inv = TAU * cutoff_frequency_hz;
   }
   /// Destructor
   virtual ~LowPassFilter() = default;
@@ -52,13 +52,13 @@ protected:
   {
     const auto dt = std::chrono::duration_cast<std::chrono::duration<T>>(duration).count();
     // From https://stackoverflow.com/a/1027808
-    const auto alpha = T{1.0} - std::exp(-dt / m_rc);
+    const auto alpha = T{1.0} - std::exp(-dt * m_rc_inv);
     m_signal += alpha * (value - m_signal);
     return m_signal;
   }
 
 private:
-  T m_rc{};
+  T m_rc_inv{};
   T m_signal{};
 };
 }  // namespace signal_filters
