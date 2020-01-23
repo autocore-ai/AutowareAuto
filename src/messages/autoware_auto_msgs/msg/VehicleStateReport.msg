@@ -11,6 +11,8 @@ bool hand_brake
 bool horn
 
 ### Definitions
+## Constants match that of VehicleStateCommand; 0 is reserved for NO_COMMAND
+## (which is not relevant here)
 # Blinker
 uint8 BLINKER_OFF = 1
 uint8 BLINKER_LEFT = 2

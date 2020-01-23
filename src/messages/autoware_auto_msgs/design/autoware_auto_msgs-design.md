@@ -453,7 +453,7 @@ manual, and two modes of unintentionally being in manual mode: due to preconditi
 or due to some failure of the autonomous driving stack.
 
 **Rationale**: Constants are kept the same as VehicleStateCommand to prevent subtle bugs from being
-introduced.
+introduced. The constant 0 is reserved for NO_COMMAND in VehicleStateCommand.
 
 # References
 
