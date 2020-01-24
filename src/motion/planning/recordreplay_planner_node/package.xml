@@ -25,16 +25,6 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
-      <!-- FIXME(s.me) Without the member_of_group below, I get "you need member_of_group", 
-          and when it's added I get "The manifest of package "recordreplay_planner_node" 
-          (with format version 2) must not contain the following tags: member_of_group".
-
-          When I change manifest to version 3, it says I'm trying to register the 
-          library twice. I compared with other packages and they seem to use a different 
-          set of actions like autoware_auto_cmake as compared to the ament_cmake_auto here.
-          I attempted to make things look like the other packages, but without success so 
-          far.
-      -->
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export><build_type>ament_cmake</build_type></export>
