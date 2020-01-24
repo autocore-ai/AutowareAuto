@@ -62,7 +62,7 @@ public:
   const Trajectory & plan(const State & current_state);
 
   // Return the number of currently-recorded State messages
-  const uint32_t get_record_length() noexcept;
+  uint32_t get_record_length() noexcept;
 
 private:
   // Obtain a trajectory from the internally-stored recording buffer

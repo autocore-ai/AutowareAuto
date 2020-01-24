@@ -64,7 +64,7 @@ void RecordReplayPlanner::clear_record() noexcept
   m_record_buffer.clear();
 }
 
-const uint32_t RecordReplayPlanner::get_record_length() noexcept
+uint32_t RecordReplayPlanner::get_record_length() noexcept
 {
   return m_record_buffer.size();
 }
