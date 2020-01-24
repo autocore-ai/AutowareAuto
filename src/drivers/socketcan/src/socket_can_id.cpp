@@ -125,8 +125,14 @@ CanId & CanId::frame_type(const FrameType type)
 ////////////////////////////////////////////////////////////////////////////////
 CanId & CanId::identifier(const IdT id)
 {
-  const auto mask = is_extended() ? EXTENDED_ID_MASK : STANDARD_ID_MASK;
-  if ((id & mask) != id) {
+  // Can specification: http://esd.cs.ucr.edu/webres/can20.pdf
+  // says "The 7 most significant bits cannot all be recessive (value of 1)", pg 11
+  constexpr auto MAX_EXTENDED = 0x1FBF'FFFFU;
+  constexpr auto MAX_STANDARD = 0x07EFU;
+  static_assert(MAX_EXTENDED <= EXTENDED_ID_MASK, "Max extended id value is wrong");
+  static_assert(MAX_STANDARD <= STANDARD_ID_MASK, "Max extended id value is wrong");
+  const auto max_id = is_extended() ? MAX_EXTENDED : MAX_STANDARD;
+  if (max_id < id) {
     throw std::domain_error{"CanId would be truncated!"};
   }
   // Clear and set
