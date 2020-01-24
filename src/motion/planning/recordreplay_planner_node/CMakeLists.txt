@@ -6,17 +6,17 @@ project(recordreplay_planner_node)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-#find_package(rosidl_default_generators REQUIRED)
-#find_package(rclcpp REQUIRED)
-#find_package(rcl_action REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rcl_action REQUIRED)
 
 ### Compile options
 set(CMAKE_CXX_STANDARD 14)
 
 ### Build
-#rosidl_generate_interfaces(${PROJECT_NAME}
-    #"action/RecordTrajectory.action"
-#)
+rosidl_generate_interfaces(${PROJECT_NAME}
+    "action/RecordTrajectory.action"
+)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner_node/recordreplay_planner_node.cpp)
