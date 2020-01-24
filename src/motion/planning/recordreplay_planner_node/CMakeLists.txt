@@ -11,7 +11,12 @@ find_package(rclcpp REQUIRED)
 find_package(rcl_action REQUIRED)
 
 ### Compile options
-set(CMAKE_CXX_STANDARD 14)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 ### Build
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -33,4 +38,5 @@ if(BUILD_TESTING)
   # TODO(s.me) do we do those for nodes?
 endif()
 
+ament_export_dependencies(rosidl_default_runtime)
 ament_auto_package(INSTALL_TO_SHARE param/)
