@@ -1,4 +1,5 @@
-int32 example_input
+# RecordTrajectory.action
+
 ---
 int32[] current_length
 ---
