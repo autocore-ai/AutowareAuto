@@ -231,8 +231,8 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
 
   std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
 
-  while (ray_gnd_validation_tester->m_nonground_points.size() < 1 &&
-    ray_gnd_validation_tester->m_ground_points.size() < 1)
+  while (ray_gnd_validation_tester->m_nonground_points.size() < (expected_num_of_pcl - 1) &&
+    ray_gnd_validation_tester->m_ground_points.size() < (expected_num_of_pcl - 1))
   {
     ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
     // wait for ray_gnd_filter to process 1st pc and publish data
@@ -242,8 +242,8 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
 
   std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
 
-  while (ray_gnd_validation_tester->m_nonground_points.size() < 2 &&
-    ray_gnd_validation_tester->m_ground_points.size() < 2)
+  while (ray_gnd_validation_tester->m_nonground_points.size() < expected_num_of_pcl &&
+    ray_gnd_validation_tester->m_ground_points.size() < expected_num_of_pcl)
   {
     ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
     // wait for ray_gnd_filter to process 2nd pc and publish data
