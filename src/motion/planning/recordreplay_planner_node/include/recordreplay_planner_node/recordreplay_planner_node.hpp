@@ -16,6 +16,10 @@
 
 #include <recordreplay_planner_node/visibility_control.hpp>
 #include <recordreplay_planner/recordreplay_planner.hpp>
+#include <recordreplay_planner_actions/action/record_trajectory.hpp>
+#include <recordreplay_planner_actions/action/replay_trajectory.hpp>
+
+
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
@@ -37,6 +41,8 @@ using tf2_msgs::msg::TFMessage;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 using Transform = geometry_msgs::msg::TransformStamped;
+using RecordTrajectory = recordreplay_planner_actions::action::RecordTrajectory;
+using ReplayTrajectory = recordreplay_planner_actions::action::ReplayTrajectory;
 
 class RECORDREPLAY_PLANNER_NODE_PUBLIC RecordReplayPlannerNode : public rclcpp::Node
 {
@@ -54,6 +60,10 @@ public:
 protected:
   void set_planner(PlannerPtr && planner) noexcept;
 
+  // TODO(s.me) uncomment these once rclcpp_action is in the ADE image
+  // rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
+  // rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
+
   rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
@@ -69,6 +79,23 @@ private:
 
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_tf(const TFMessage::SharedPtr & msg);
+
+  // TODO(s.me) there does not seem to be a RecordTrajectory::SharedPtr? Also
+  // the return types need to be changed to the rclcpp_action types once the package 
+  // is available.
+  RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_goal(
+    const std::shared_ptr<RecordTrajectory> goal_handle);
+  RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_cancel(
+    const std::shared_ptr<RecordTrajectory> goal_handle);
+  RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_accepted(
+    const std::shared_ptr<RecordTrajectory> goal_handle);
+
+  RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_goal(
+    const std::shared_ptr<ReplayTrajectory> goal_handle);
+  RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_cancel(
+    const std::shared_ptr<ReplayTrajectory> goal_handle);
+  RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_accepted(
+    const std::shared_ptr<ReplayTrajectory> goal_handle);
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

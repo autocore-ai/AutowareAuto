@@ -51,7 +51,11 @@ void RecordReplayPlannerNode::init(
 {
   using rclcpp::QoS;
 
-  // Set up subscribers
+  // Set up action for control of recording and replaying
+  // TODO(s.me) Add a listener for a RecordTrajectory action
+  // TODO(s.me) Add a listener for a ReplayTrajectory action
+
+  // Set up subscribers for the actual recording
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
   m_tf_sub = create_subscription<TFMessage>(tf_topic, QoS{10}.transient_local(),
       [this](const TFMessage::SharedPtr msg) {on_tf(msg);}, SubAllocT{});
@@ -87,6 +91,65 @@ void RecordReplayPlannerNode::on_tf(const TFMessage::SharedPtr & msg)
   (void)msg;
 }
 
+void RecordReplayPlannerNode::record_handle_goal(
+  const std::shared_ptr<RecordTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // if (m_planner->is_recording()) {
+  //   // Can't start recording if we already are
+  //   return rclcpp_action::GoalResponse::REJECT;
+  // }
+
+  // return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+}
+
+void RecordReplayPlannerNode::record_handle_cancel(
+  const std::shared_ptr<RecordTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // if (m_planner->is_recording()) {
+  //   m_planner->stop_recording();
+  // }
+
+  // return rclcpp_action::CancelResponse::ACCEPT;
+}
+
+void RecordReplayPlannerNode::record_handle_accepted(
+  const std::shared_ptr<RecordTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // TODO(s.me) what to do here? Is this where we actually trigger something?
+}
+
+void RecordReplayPlannerNode::replay_handle_goal(
+  const std::shared_ptr<ReplayTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // if (m_planner->is_replaying()) {
+  //   // Can't start replaying if we already are
+  //   return rclcpp_action::GoalResponse::REJECT;
+  // }
+
+  // return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+}
+
+void RecordReplayPlannerNode::replay_handle_cancel(
+  const std::shared_ptr<ReplayTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // if (m_planner->is_replaying()) {
+  //   m_planner->stop_replaying();
+  // }
+
+  // return rclcpp_action::CancelResponse::ACCEPT;
+}
+
+void RecordReplayPlannerNode::replay_handle_accepted(
+  const std::shared_ptr<ReplayTrajectory> goal_handle)
+{
+  (void)goal_handle;
+  // TODO(s.me) what to do here? Is this where we actually trigger something?
+}
 
 void RecordReplayPlannerNode::set_planner(PlannerPtr && planner) noexcept
 {

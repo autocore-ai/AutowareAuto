@@ -22,6 +22,7 @@ endif()
 ### Build
 rosidl_generate_interfaces(${PROJECT_NAME}_action
     "action/RecordTrajectory.action"
+    "action/ReplayTrajectory.action"
 )
 
 ament_export_dependencies(rosidl_default_runtime)
