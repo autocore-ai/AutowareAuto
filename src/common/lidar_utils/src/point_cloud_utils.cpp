@@ -27,6 +27,51 @@ namespace common
 namespace lidar_utils
 {
 
+using autoware::common::types::bool8_t;
+
+// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
+// the pointcloud msg has intensity field, otherwise return false
+bool8_t has_intensity_and_throw_if_no_xyz(
+  const PointCloud2::SharedPtr & cloud)
+{
+  bool8_t ret = true;
+  // Validate point step
+  if (cloud->fields.size() < 3U) {
+    throw std::runtime_error("RayGroundClassifierNode: invalid PointCloud msg");
+  }
+
+  const auto check_field = [](
+    const sensor_msgs::msg::PointField & field,
+    const char8_t * const name,
+    const uint32_t offset) -> bool8_t {
+      bool8_t res = true;
+      if ((name != field.name) || (offset != field.offset) ||
+        (sensor_msgs::msg::PointField::FLOAT32 != field.datatype) || (1U != field.count))
+      {
+        res = false;
+      }
+      return res;
+    };
+
+  if (!check_field(cloud->fields[0U], "x", 0U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct x field");
+  } else if (!check_field(cloud->fields[1U], "y", 4U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct y field");
+  } else if (!check_field(cloud->fields[2U], "z", 8U)) {
+    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct z field");
+  } else {
+    // do nothing
+  }
+  if (cloud->fields.size() >= 4U) {
+    if (!check_field(cloud->fields[3U], "intensity", 12U)) {
+      ret = false;
+    }
+  } else {
+    ret = false;
+  }
+  return ret;
+}
+
 PointCloudIts::PointCloudIts() {m_its.reserve(4);}
 
 void PointCloudIts::reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx)

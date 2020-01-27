@@ -36,6 +36,11 @@ namespace common
 {
 namespace lidar_utils
 {
+using sensor_msgs::msg::PointCloud2;
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+
 /// max number of points in a scan for VLP16s, assuming 300 rpm = 5hz: 57870.3703 points per full
 /// rotation
 static const uint32_t MAX_SCAN_POINTS = 57872U;
@@ -142,6 +147,10 @@ LIDAR_UTILS_PUBLIC void resize_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::size_t new_size);
 
+// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
+// the pointcloud msg has intensity field, otherwise return false
+LIDAR_UTILS_PUBLIC bool8_t
+has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
 }  // namespace lidar_utils
 }  // namespace common
 }  // namespace autoware

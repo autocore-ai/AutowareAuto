@@ -21,11 +21,13 @@
 #include <ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#include "lidar_utils/point_cloud_utils.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
 using autoware::common::types::float32_t;
+using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
 class RayGroundPclValidationTester : public rclcpp::Node
 {
@@ -52,6 +54,7 @@ public:
     if (m_ground_points.size() != expected_num) {
       std::cout << "expected num of pcl not matched" << std::endl;
       std::cout << "actual num = " << m_ground_points.size() << std::endl;
+      std::cout << "expected num = " << expected_num << std::endl;
       return false;
     }
     for (std::size_t i = 0; i < m_ground_points.size(); i++) {
@@ -67,6 +70,7 @@ public:
     if (m_nonground_points.size() != expected_num) {
       std::cout << "expected num of pcl not matched" << std::endl;
       std::cout << "actual num = " << m_nonground_points.size() << std::endl;
+      std::cout << "expected num = " << expected_num << std::endl;
       return false;
     }
     for (std::size_t i = 0; i < m_nonground_points.size(); i++) {
@@ -123,9 +127,6 @@ protected:
 TEST_F(ray_ground_classifier_pcl_validation, has_intensity_and_throw_if_no_xyz_test)
 {
   const uint32_t mini_cloud_size = 10U;
-
-  using autoware::perception::filters::ray_ground_classifier_nodes::
-  has_intensity_and_throw_if_no_xyz;
 
   std::vector<std::string> right_field_names{"x", "y", "z", "intensity"};
   std::vector<std::string> not_intensity_field_names{"x", "y", "z", "not_intensity"};
@@ -238,6 +239,8 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
     std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
     exec.spin_some();  // for tester to collect data
   }
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
 
   while (ray_gnd_validation_tester->m_nonground_points.size() < 2 &&
     ray_gnd_validation_tester->m_ground_points.size() < 2)
