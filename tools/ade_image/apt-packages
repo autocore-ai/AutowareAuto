@@ -27,7 +27,10 @@ ros-dashing-ament-flake8
 ros-dashing-ament-lint-auto
 ros-dashing-ament-lint-common
 ros-dashing-ament-pep257
+ros-dashing-angles
 ros-dashing-demo-nodes-cpp
+ros-dashing-diagnostic-updater
+ros-dashing-geographic-msgs
 ros-dashing-launch
 ros-dashing-launch-ros
 ros-dashing-launch-testing
