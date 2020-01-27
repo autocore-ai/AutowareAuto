@@ -224,17 +224,29 @@ TEST_F(ray_ground_classifier_pcl_validation, filter_test)
   uint32_t expected_nongnd_pcl_size = 0U;  // no points will be classified as nonground
   uint32_t expected_num_of_pcl = 2U;
 
+  while (ray_gnd_validation_tester->m_pub_raw_points->get_subscription_count() < 1) {
+    std::this_thread::sleep_for(std::chrono::milliseconds{1LL});
+  }
+
   std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
 
-  ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
-  // wait for ray_gnd_filter to process 1st pc and publish data
-  std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-  exec.spin_some();  // for tester to collect data
+  while (ray_gnd_validation_tester->m_nonground_points.size() < 1 &&
+    ray_gnd_validation_tester->m_ground_points.size() < 1)
+  {
+    ray_gnd_validation_tester->m_pub_raw_points->publish(five_fields_pc);
+    // wait for ray_gnd_filter to process 1st pc and publish data
+    std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+    exec.spin_some();  // for tester to collect data
+  }
 
-  ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
-  // wait for ray_gnd_filter to process 2nd pc and publish data
-  std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-  exec.spin_some();  // for tester to collect data
+  while (ray_gnd_validation_tester->m_nonground_points.size() < 2 &&
+    ray_gnd_validation_tester->m_ground_points.size() < 2)
+  {
+    ray_gnd_validation_tester->m_pub_raw_points->publish(three_fields_pc);
+    // wait for ray_gnd_filter to process 2nd pc and publish data
+    std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+    exec.spin_some();  // for tester to collect data
+  }
 
   // Check all published nonground / ground pointclouds have the expected sizes
   EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_ground_pcls(
