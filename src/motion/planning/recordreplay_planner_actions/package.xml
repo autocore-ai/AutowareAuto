@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>recordreplay_planner_actions</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>RecordReplayPlanner related action definitions</description>
   <maintainer email="merkli@embotech.com">Sandro Merkli</maintainer>
   <license>Apache License 2.0</license>
@@ -13,7 +13,7 @@
 
   <depend>recordreplay_planner</depend>
   <depend>rclcpp</depend>
-  <!--<depend>rclcpp_actions</depend>-->
+  <depend>rclcpp_actions</depend>
   <depend>rcl_actions</depend>
   <depend>action_msgs</depend>
 

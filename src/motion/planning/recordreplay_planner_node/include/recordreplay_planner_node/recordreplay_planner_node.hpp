@@ -1,4 +1,4 @@
-// Copyright 2020 Sandro Merkli, inspired by Christopher Ho's mpc code
+// Copyright 2020 Embotech AG, Zurich, Switzerland, inspired by Christopher Ho's mpc code
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <string>
@@ -60,9 +61,8 @@ public:
 protected:
   void set_planner(PlannerPtr && planner) noexcept;
 
-  // TODO(s.me) uncomment these once rclcpp_action is in the ADE image
-  // rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
-  // rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
+  rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
+  rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
 
   rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
@@ -81,18 +81,18 @@ private:
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_tf(const TFMessage::SharedPtr & msg);
 
   // TODO(s.me) there does not seem to be a RecordTrajectory::SharedPtr? Also
-  // the return types need to be changed to the rclcpp_action types once the package 
+  // the return types need to be changed to the rclcpp_action types once the package
   // is available.
-  RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_goal(
+  RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::GoalResponse record_handle_goal(
     const std::shared_ptr<RecordTrajectory> goal_handle);
-  RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_cancel(
+  RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::CancelResponse record_handle_cancel(
     const std::shared_ptr<RecordTrajectory> goal_handle);
   RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_accepted(
     const std::shared_ptr<RecordTrajectory> goal_handle);
 
-  RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_goal(
+  RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::GoalResponse replay_handle_goal(
     const std::shared_ptr<ReplayTrajectory> goal_handle);
-  RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_cancel(
+  RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::CancelResponse replay_handle_cancel(
     const std::shared_ptr<ReplayTrajectory> goal_handle);
   RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_accepted(
     const std::shared_ptr<ReplayTrajectory> goal_handle);

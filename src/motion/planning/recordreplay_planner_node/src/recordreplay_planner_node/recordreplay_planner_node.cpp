@@ -1,4 +1,4 @@
-// Copyright 2020 Sandro Merkli, inspired by Christopher Ho's mpc code
+// Copyright 2020 Embotech AG, Zurich, Switzerland, inspired by Christopher Ho's mpc code
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,27 +91,25 @@ void RecordReplayPlannerNode::on_tf(const TFMessage::SharedPtr & msg)
   (void)msg;
 }
 
-void RecordReplayPlannerNode::record_handle_goal(
+rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(
   const std::shared_ptr<RecordTrajectory> goal_handle)
 {
-  (void)goal_handle;
-  // if (m_planner->is_recording()) {
-  //   // Can't start recording if we already are
-  //   return rclcpp_action::GoalResponse::REJECT;
-  // }
+   if (m_planner->is_recording()) {
+     // Can't start recording if we already are
+     return rclcpp_action::GoalResponse::REJECT;
+   }
 
-  // return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-void RecordReplayPlannerNode::record_handle_cancel(
+rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
   const std::shared_ptr<RecordTrajectory> goal_handle)
 {
-  (void)goal_handle;
-  // if (m_planner->is_recording()) {
-  //   m_planner->stop_recording();
-  // }
+   if (m_planner->is_recording()) {
+     m_planner->stop_recording();
+   }
 
-  // return rclcpp_action::CancelResponse::ACCEPT;
+   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void RecordReplayPlannerNode::record_handle_accepted(
@@ -121,27 +119,26 @@ void RecordReplayPlannerNode::record_handle_accepted(
   // TODO(s.me) what to do here? Is this where we actually trigger something?
 }
 
-void RecordReplayPlannerNode::replay_handle_goal(
+rclcpp_action::GoalResponse RecordReplayPlannerNode::replay_handle_goal(
   const std::shared_ptr<ReplayTrajectory> goal_handle)
 {
-  (void)goal_handle;
-  // if (m_planner->is_replaying()) {
-  //   // Can't start replaying if we already are
-  //   return rclcpp_action::GoalResponse::REJECT;
-  // }
+   if (m_planner->is_replaying()) {
+     // Can't start replaying if we already are
+     return rclcpp_action::GoalResponse::REJECT;
+   }
 
-  // return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-void RecordReplayPlannerNode::replay_handle_cancel(
+rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
   const std::shared_ptr<ReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
-  // if (m_planner->is_replaying()) {
-  //   m_planner->stop_replaying();
-  // }
+   if (m_planner->is_replaying()) {
+     m_planner->stop_replaying();
+   }
 
-  // return rclcpp_action::CancelResponse::ACCEPT;
+   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void RecordReplayPlannerNode::replay_handle_accepted(

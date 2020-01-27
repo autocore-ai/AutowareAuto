@@ -1,4 +1,4 @@
-// Copyright 2020 Sandro Merkli, inspired by Christopher Ho's mpc code
+// Copyright 2020 Embotech AG, Zurich, Switzerland, inspired by Christopher Ho's mpc code
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,21 +88,21 @@ const Trajectory & RecordReplayPlanner::plan(const State & current_state)
 // constant enough so that this is not an issue.
 const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header & header)
 {
-  auto & traj = m_trajectory;
+  auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
-  traj.points.resize(record_length);  // TODO(s.me) this will fail if record_length > 100
-  traj.header = header;
+  trajectory.points.resize(record_length);  // TODO(s.me) this will fail if record_length > 100
+  trajectory.header = header;
   auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
   for (std::size_t i = {}; i < record_length; ++i) {
-    auto & pt = m_trajectory.points[i];
+    auto & point = m_trajectory.points[i];
 
     // Make the time spacing of the points as they were recorded
-    pt.time_from_start = time_utils::to_message(
+    point.time_from_start = time_utils::to_message(
       time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
-    traj.points[i] = m_record_buffer[i].state;
+    trajectory.points[i] = m_record_buffer[i].state;
   }
 
-  return traj;
+  return trajectory;
 }
 
 }  // namespace recordreplay_planner
