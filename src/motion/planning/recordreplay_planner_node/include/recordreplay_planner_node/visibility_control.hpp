@@ -1,4 +1,4 @@
-// Copyright 2020 Sandro Merkli, inspired by Christopher Ho's mpc code
+// Copyright 2020 Embotech AG, Zurich, Switzerland, inspired by Christopher Ho's mpc code
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
