@@ -68,6 +68,7 @@ private:
 
 
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);
+  RECORDREPLAY_PLANNER_NODE_LOCAL void on_tf(const TFMessage::SharedPtr & msg);
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

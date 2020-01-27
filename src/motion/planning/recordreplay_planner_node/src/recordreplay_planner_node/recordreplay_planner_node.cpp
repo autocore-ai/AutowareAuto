@@ -52,11 +52,9 @@ void RecordReplayPlannerNode::init(
   using rclcpp::QoS;
 
   // Set up subscribers
-  // TODO(s.me) implement doing something with tf - probably using motion_common
-  // or planning_common functionality
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
   m_tf_sub = create_subscription<TFMessage>(tf_topic, QoS{10}.transient_local(),
-      [this](const TFMessage::SharedPtr msg) {(void)msg;}, SubAllocT{});
+      [this](const TFMessage::SharedPtr msg) {on_tf(msg);}, SubAllocT{});
 
   m_ego_sub = create_subscription<State>(ego_topic, QoS{10}.transient_local(),
       [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
@@ -81,6 +79,12 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
     const auto & traj = m_planner->plan(*msg);
     m_trajectory_pub->publish(traj);
   }
+}
+
+void RecordReplayPlannerNode::on_tf(const TFMessage::SharedPtr & msg)
+{
+  // TODO(s.me) Implement something here?
+  (void)msg;
 }
 
 
