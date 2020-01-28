@@ -13,3 +13,4 @@ For a guide on how we port algorithms from Autoware.AI and ROS 1 to Autoware.Aut
 - @subpage how-to-write-tests-and-measure-coverage
 - @subpage perception-stack
 - @subpage ros1_bridge_title
+- @subpage lgsvl
