@@ -37,3 +37,11 @@ Start the ROS 2 web bridge from inside ADE:
 * `cd ros2-web-bridge`
 * `npm install`
 * `node bin/rosbridge.js &`
+
+Start the LGSVL simulator:
+
+* `/opt/lgsvl/simulator`
+
+Now start your favorite browser and go to http://localhost:8080 where simulations can be configured.
+
+Follow the instructions in https://www.lgsvlsimulator.com/docs/autoware-auto-instructions/#run-simulator-alongside-autowareauto to configure the Lexus model to use the ROS 2 bridge.
