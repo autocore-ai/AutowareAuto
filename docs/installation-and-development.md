@@ -15,14 +15,7 @@ Autoware.Auto applications.
 [ADE](https://ade-cli.readthedocs.io/en/latest/) is a modular Docker-based tool to ensure that all developers in a project have a common, consistent development environment.
 Please confirm [the requirements](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) for installing the tool.
 
-ADE is published on PyPI, and requires Python >= 3.5.2 and `pip`. Other dependencies are fetched by
-`pip`.
-
-```
-$ sudo apt-get install python3-pip
-$ pip3 install ade-cli
-```
-
+ADE is published as [Gitlab releases](https://gitlab.com/ApexAI/ade-cli/-/releases), download the statically-linked executable for your architecture and install it in your `PATH`.
 
 # Setup ADE home and project checkout {#installation-and-development-setup-ade-home-and-project-checkout}
 
