@@ -14,8 +14,19 @@ The following guide assumes that the LGSVL simulator will be run from inside an 
 
 ## Instructions
 
-Run ADE as described in the [installation section](installation-and-development.html#installation-and-development-install-ade):
+Install ADE as described in the [installation section](installation-and-development.html#installation-and-development-install-ade):
 
+Start ADE with the LGSVL volume:
+
+* `export ADE_DOCKER_RUN_ARGS="--cap-add=SYS_PTRACE"`
+* `export ADE_GITLAB=gitlab.com`
+* `export ADE_REGISTRY=registry.gitlab.com`
+* `export ADE_IMAGES="
+  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/ade:master
+  registry.gitlab.com/apexai/ade-atom:latest
+  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto:master
+  registry.gitlab.com/apexai/ade-lgsvl:2019.12
+ "`
 * `cd AutowareAuto`
-* `ade start --update`
+* `ade start --update -- --net=host`
 * `ade enter`
