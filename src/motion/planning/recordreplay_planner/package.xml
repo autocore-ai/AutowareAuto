@@ -6,7 +6,7 @@
   <description>
     RecordReplay trajectory planner
   </description>
-  <maintainer email="merkli@embotech.com">Sandro Merkli</maintainer>
+  <maintainer email="opensource@embotech.com">Embotech AG</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

@@ -4,7 +4,7 @@
   <name>recordreplay_planner_node</name>
   <version>0.0.2</version>
   <description>Instantiation of recordreplay_planner as a ROS 2 node</description>
-  <maintainer email="merkli@embotech.com">Sandro Merkli</maintainer>
+  <maintainer email="opensource@embotech.com">Embotech AG</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
