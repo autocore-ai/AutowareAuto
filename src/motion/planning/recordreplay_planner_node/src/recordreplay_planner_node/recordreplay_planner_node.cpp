@@ -94,22 +94,24 @@ void RecordReplayPlannerNode::on_tf(const TFMessage::SharedPtr & msg)
 rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(
   const std::shared_ptr<RecordTrajectory> goal_handle)
 {
-   if (m_planner->is_recording()) {
-     // Can't start recording if we already are
-     return rclcpp_action::GoalResponse::REJECT;
-   }
+  (void)goal_handle;
+  if (m_planner->is_recording()) {
+    // Can't start recording if we already are
+    return rclcpp_action::GoalResponse::REJECT;
+  }
 
-   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
   const std::shared_ptr<RecordTrajectory> goal_handle)
 {
-   if (m_planner->is_recording()) {
-     m_planner->stop_recording();
-   }
+  (void)goal_handle;
+  if (m_planner->is_recording()) {
+    m_planner->stop_recording();
+  }
 
-   return rclcpp_action::CancelResponse::ACCEPT;
+  return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void RecordReplayPlannerNode::record_handle_accepted(
@@ -122,23 +124,24 @@ void RecordReplayPlannerNode::record_handle_accepted(
 rclcpp_action::GoalResponse RecordReplayPlannerNode::replay_handle_goal(
   const std::shared_ptr<ReplayTrajectory> goal_handle)
 {
-   if (m_planner->is_replaying()) {
-     // Can't start replaying if we already are
-     return rclcpp_action::GoalResponse::REJECT;
-   }
+  (void)goal_handle;
+  if (m_planner->is_replaying()) {
+    // Can't start replaying if we already are
+    return rclcpp_action::GoalResponse::REJECT;
+  }
 
-   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
   const std::shared_ptr<ReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
-   if (m_planner->is_replaying()) {
-     m_planner->stop_replaying();
-   }
+  if (m_planner->is_replaying()) {
+    m_planner->stop_replaying();
+  }
 
-   return rclcpp_action::CancelResponse::ACCEPT;
+  return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void RecordReplayPlannerNode::replay_handle_accepted(
