@@ -1,6 +1,5 @@
 # ReplayTrajectory.action
 
-int32 example_input
 ---
 int32[] current_length
 ---

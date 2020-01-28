@@ -13,6 +13,7 @@
 
   <depend>recordreplay_planner</depend>
   <depend>recordreplay_planner_actions</depend>
+  <depend>rclcpp_action</depend>
   <depend>autoware_auto_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_msgs</depend>

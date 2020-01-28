@@ -50,10 +50,29 @@ void RecordReplayPlannerNode::init(
   const std::string & trajectory_topic)
 {
   using rclcpp::QoS;
+  using std::placeholders::_1;
+  using std::placeholders::_2;
 
   // Set up action for control of recording and replaying
-  // TODO(s.me) Add a listener for a RecordTrajectory action
-  // TODO(s.me) Add a listener for a ReplayTrajectory action
+  m_recordserver = rclcpp_action::create_server<RecordTrajectory>(
+    this->get_node_base_interface(),
+    this->get_node_clock_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    "recordtrajectory",
+    std::bind(&RecordReplayPlannerNode::record_handle_goal, this, _1, _2),
+    std::bind(&RecordReplayPlannerNode::record_handle_cancel, this, _1),
+    std::bind(&RecordReplayPlannerNode::record_handle_accepted, this, _1));
+
+  m_replayserver = rclcpp_action::create_server<ReplayTrajectory>(
+    this->get_node_base_interface(),
+    this->get_node_clock_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    "replaytrajectory",
+    std::bind(&RecordReplayPlannerNode::replay_handle_goal, this, _1, _2),
+    std::bind(&RecordReplayPlannerNode::replay_handle_cancel, this, _1),
+    std::bind(&RecordReplayPlannerNode::replay_handle_accepted, this, _1));
 
   // Set up subscribers for the actual recording
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
@@ -92,9 +111,11 @@ void RecordReplayPlannerNode::on_tf(const TFMessage::SharedPtr & msg)
 }
 
 rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(
-  const std::shared_ptr<RecordTrajectory> goal_handle)
+  const rclcpp_action::GoalUUID & uuid,
+  const std::shared_ptr<const RecordTrajectory::Goal> goal)
 {
-  (void)goal_handle;
+  (void)goal;
+  (void)uuid;
   if (m_planner->is_recording()) {
     // Can't start recording if we already are
     return rclcpp_action::GoalResponse::REJECT;
@@ -104,7 +125,7 @@ rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(
 }
 
 rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
-  const std::shared_ptr<RecordTrajectory> goal_handle)
+  const std::shared_ptr<GoalHandleRecordTrajectory> goal_handle)
 {
   (void)goal_handle;
   if (m_planner->is_recording()) {
@@ -115,16 +136,19 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
 }
 
 void RecordReplayPlannerNode::record_handle_accepted(
-  const std::shared_ptr<RecordTrajectory> goal_handle)
+  const std::shared_ptr<GoalHandleRecordTrajectory> goal_handle)
 {
   (void)goal_handle;
   // TODO(s.me) what to do here? Is this where we actually trigger something?
+  m_planner->start_recording();
 }
 
 rclcpp_action::GoalResponse RecordReplayPlannerNode::replay_handle_goal(
-  const std::shared_ptr<ReplayTrajectory> goal_handle)
+  const rclcpp_action::GoalUUID & uuid,
+  const std::shared_ptr<const ReplayTrajectory::Goal> goal)
 {
-  (void)goal_handle;
+  (void)goal;
+  (void)uuid;
   if (m_planner->is_replaying()) {
     // Can't start replaying if we already are
     return rclcpp_action::GoalResponse::REJECT;
@@ -134,7 +158,7 @@ rclcpp_action::GoalResponse RecordReplayPlannerNode::replay_handle_goal(
 }
 
 rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
-  const std::shared_ptr<ReplayTrajectory> goal_handle)
+    const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
   if (m_planner->is_replaying()) {
@@ -145,10 +169,11 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
 }
 
 void RecordReplayPlannerNode::replay_handle_accepted(
-  const std::shared_ptr<ReplayTrajectory> goal_handle)
+  const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
   // TODO(s.me) what to do here? Is this where we actually trigger something?
+  m_planner->start_replaying();
 }
 
 void RecordReplayPlannerNode::set_planner(PlannerPtr && planner) noexcept

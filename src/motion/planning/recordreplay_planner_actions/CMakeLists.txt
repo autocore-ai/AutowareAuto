@@ -8,8 +8,7 @@ ament_auto_find_build_dependencies()
 
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
-#find_package(rclcpp_action REQUIRED)
-find_package(rcl_action REQUIRED)
+find_package(rclcpp_action REQUIRED)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)

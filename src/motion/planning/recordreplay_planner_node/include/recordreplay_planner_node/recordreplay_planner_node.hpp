@@ -48,6 +48,9 @@ using ReplayTrajectory = recordreplay_planner_actions::action::ReplayTrajectory;
 class RECORDREPLAY_PLANNER_NODE_PUBLIC RecordReplayPlannerNode : public rclcpp::Node
 {
 public:
+  using GoalHandleRecordTrajectory = rclcpp_action::ServerGoalHandle<RecordTrajectory>;
+  using GoalHandleReplayTrajectory = rclcpp_action::ServerGoalHandle<ReplayTrajectory>;
+
   /// Parameter file constructor
   RecordReplayPlannerNode(const std::string & name, const std::string & ns);
   /// Explicit constructor
@@ -84,18 +87,20 @@ private:
   // the return types need to be changed to the rclcpp_action types once the package
   // is available.
   RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::GoalResponse record_handle_goal(
-    const std::shared_ptr<RecordTrajectory> goal_handle);
+    const rclcpp_action::GoalUUID & uuid,
+    const std::shared_ptr<const RecordTrajectory::Goal> goal);
   RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::CancelResponse record_handle_cancel(
-    const std::shared_ptr<RecordTrajectory> goal_handle);
+    const std::shared_ptr<GoalHandleRecordTrajectory> goal_handle);
   RECORDREPLAY_PLANNER_NODE_LOCAL void record_handle_accepted(
-    const std::shared_ptr<RecordTrajectory> goal_handle);
+    const std::shared_ptr<GoalHandleRecordTrajectory> goal_handle);
 
   RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::GoalResponse replay_handle_goal(
-    const std::shared_ptr<ReplayTrajectory> goal_handle);
+    const rclcpp_action::GoalUUID & uuid,
+    const std::shared_ptr<const ReplayTrajectory::Goal> goal);
   RECORDREPLAY_PLANNER_NODE_LOCAL rclcpp_action::CancelResponse replay_handle_cancel(
-    const std::shared_ptr<ReplayTrajectory> goal_handle);
+    const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle);
   RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_accepted(
-    const std::shared_ptr<ReplayTrajectory> goal_handle);
+    const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle);
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

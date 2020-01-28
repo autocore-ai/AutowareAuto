@@ -13,8 +13,7 @@
 
   <depend>recordreplay_planner</depend>
   <depend>rclcpp</depend>
-  <depend>rclcpp_actions</depend>
-  <depend>rcl_actions</depend>
+  <depend>rclcpp_action</depend>
   <depend>action_msgs</depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
