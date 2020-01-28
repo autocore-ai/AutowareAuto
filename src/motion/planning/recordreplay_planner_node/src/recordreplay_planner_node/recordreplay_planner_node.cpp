@@ -158,7 +158,7 @@ rclcpp_action::GoalResponse RecordReplayPlannerNode::replay_handle_goal(
 }
 
 rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
-    const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle)
+  const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
   if (m_planner->is_replaying()) {
