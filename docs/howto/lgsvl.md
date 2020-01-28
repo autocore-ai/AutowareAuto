@@ -30,3 +30,10 @@ Start ADE with the LGSVL volume:
 * `cd AutowareAuto`
 * `ade start --update -- --net=host`
 * `ade enter`
+
+Start the ROS 2 web bridge from inside ADE:
+
+* `git clone -b 0.2.7 https://github.com/RobotWebTools/ros2-web-bridge.git`
+* `cd ros2-web-bridge`
+* `npm install`
+* `node bin/rosbridge.js &`
