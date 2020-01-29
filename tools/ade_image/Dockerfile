@@ -50,11 +50,6 @@ RUN pip3 install -U \
         $(cut -d# -f1 </tmp/pip3-packages) \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
-COPY npm-packages /tmp/
-RUN npm i \
-        $(cut -d# -f1 </tmp/npm-packages) \
-    && rm -rf /tmp/npm-packages
-
 RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.linux.bin.tar.gz | tar -xzf - --directory=/usr/local/bin --strip-components=2 doxygen-1.8.14/bin/doxygen
 RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.src.tar.gz | tar -xzf - && \
     cd doxygen-1.8.14 && cmake . && make && mv bin/doxygen /usr/local/bin && cd .. && \
@@ -96,6 +91,13 @@ RUN apt-get update \
 
 ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/master/nvidia_icd.json" /etc/vulkan/icd.d/nvidia_icd.json
 RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
+
+COPY npm-packages /tmp/
+RUN . /opt/ros/dashing/setup.sh && \
+    npm install -g --unsafe \
+        $(cut -d# -f1 </tmp/npm-packages) && \
+    rm -rf /tmp/npm-packages
+
 # ===================== END OF CLEAN UP ZONE ===================== #
 
 COPY env.sh /etc/profile.d/ade_env.sh
