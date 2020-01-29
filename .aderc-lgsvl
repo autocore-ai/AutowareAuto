@@ -5,5 +5,5 @@ export ADE_IMAGES="
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/ade:master
   registry.gitlab.com/apexai/ade-atom:latest
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto:master
-  registry.gitlab.com/apexai/ade-lgsvl:2019.11
+  registry.gitlab.com/apexai/ade-lgsvl:2019.12
 "
