@@ -97,9 +97,9 @@ const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header 
     auto & point = m_trajectory.points[i];
 
     // Make the time spacing of the points as they were recorded
-    point.time_from_start = time_utils::to_message(
-      time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
     trajectory.points[i] = m_record_buffer[i].state;
+    trajectory.points[i].time_from_start = time_utils::to_message(
+      time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
   }
 
   return trajectory;
