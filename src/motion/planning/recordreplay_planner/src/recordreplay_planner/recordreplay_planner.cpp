@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "recordreplay_planner/recordreplay_planner.hpp"
+
+#include <algorithm>
+
 #include "time_utils/time_utils.hpp"
 
 
@@ -90,16 +93,29 @@ const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header 
 {
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
-  trajectory.points.resize(record_length);  // TODO(s.me) this will fail if record_length > 100
+
+  // Determine how long the published trajectory will be
+  auto publication_length =
+    std::min(record_length, static_cast<uint32_t>(trajectory.points.max_size()));
+
+  // Assemble the trajectory as desired
+  trajectory.points.resize(publication_length);
   trajectory.header = header;
   auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
-  for (std::size_t i = {}; i < record_length; ++i) {
+  for (std::size_t i = {}; i < publication_length; ++i) {
     auto & point = m_trajectory.points[i];
 
-    // Make the time spacing of the points as they were recorded
+    // Make the time spacing of the points match the recorded timing
     trajectory.points[i] = m_record_buffer[i].state;
     trajectory.points[i].time_from_start = time_utils::to_message(
       time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
+  }
+
+  // Remove the first point from the trajectory buffer to emulate a receding horizon
+  // publication of the trajectory. TODO(s.me) this is easy, but won't allow multiple
+  // playbacks of the same recorded trajectory.
+  if (publication_length > 0) {
+    m_record_buffer.pop_front();
   }
 
   return trajectory;

@@ -20,7 +20,7 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 
 #include <ostream>
-#include <vector>
+#include <deque>
 
 namespace motion
 {
@@ -68,9 +68,8 @@ private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const std_msgs::msg::Header & header);
 
-  std::vector<State> m_record_buffer;
+  std::deque<State> m_record_buffer;
   Trajectory m_trajectory{};
-  // TODO(s.me) is this preferred over initialization in the constructor?
   RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
 };  // class PlannerBase
 }  // namespace recordreplay_planner

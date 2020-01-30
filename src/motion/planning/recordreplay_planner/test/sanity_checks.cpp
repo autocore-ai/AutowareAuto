@@ -18,6 +18,7 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 
 #include <chrono>
+#include <algorithm>
 
 using motion::planning::recordreplay_planner::RecordReplayPlanner;
 using std::chrono::system_clock;
@@ -30,22 +31,21 @@ protected:
   RecordReplayPlanner planner_{};
 };
 
-struct RecordTestParameters
+
+//------------------ Test basic properties of a recorded, then replayed trajectory
+struct PropertyTestParameters
 {
   uint64_t time_spacing_ms;
 };
 
-class sanity_checks_constraint_free
-  : public sanity_checks_base, public testing::WithParamInterface<RecordTestParameters>
-{
-};
+class sanity_checks_trajectory_properties
+  : public sanity_checks_base, public testing::WithParamInterface<PropertyTestParameters>
+{};
 
-// TODO(s.me) more tests, also of from_record()
-TEST_P(sanity_checks_constraint_free, sometest)
+TEST_P(sanity_checks_trajectory_properties, basicproperties)
 {
   const auto t = system_clock::now();
   const auto p = GetParam();
-
   auto t0 = system_clock::from_time_t({});
 
   // Build a trajectory
@@ -68,9 +68,72 @@ TEST_P(sanity_checks_constraint_free, sometest)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  constraint_free,
-  sanity_checks_constraint_free,
+  trajectory_properties,
+  sanity_checks_trajectory_properties,
   testing::Values(
-    RecordTestParameters{100},
-    RecordTestParameters{200}
+    PropertyTestParameters{100},
+    PropertyTestParameters{200}
 ));
+
+
+//------------------ Test that length cropping properly works
+struct LengthTestParameters
+{
+  // The number of points to be recorded
+  uint32_t number_of_points;
+};
+
+
+class sanity_checks_trajectory_length
+  : public sanity_checks_base, public testing::WithParamInterface<LengthTestParameters>
+{};
+
+TEST_P(sanity_checks_trajectory_length, length)
+{
+  const auto t = system_clock::now();
+  const auto p = GetParam();
+  const auto N = p.number_of_points;
+  const auto dummy_state = make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+      system_clock::from_time_t({}));
+
+  for (uint32_t k = {}; k < N; ++k) {
+    planner_.record_state(dummy_state);
+  }
+
+  // Test: Check that the length is equal to the number of states we fed in
+  EXPECT_EQ(planner_.get_record_length(), N);
+  auto trajectory = planner_.plan(dummy_state);
+
+  EXPECT_EQ(trajectory.points.size(),
+    std::min(N, static_cast<uint32_t>(trajectory.points.max_size())));
+}
+
+INSTANTIATE_TEST_CASE_P(
+  trajectory_length,
+  sanity_checks_trajectory_length,
+  testing::Values(
+    LengthTestParameters{80},
+    LengthTestParameters{200}
+));
+
+
+//------------------ Test that "receding horizon" planning properly works
+TEST(recordreplay_sanity_checks, receding_horizon)
+{
+  auto planner = RecordReplayPlanner();
+
+  // Record some states
+  const auto t0 = system_clock::now();
+  const auto N = 3;
+  for (uint32_t k = {}; k < N; ++k) {
+    planner.record_state(make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+      t0 + k * std::chrono::milliseconds{100LL}));
+  }
+
+  // Call "plan" multiple times in sequence, expecting the states to come back out in order
+  for (uint32_t k = {}; k < N; ++k) {
+    auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    // normally don't check float equality but we _just_ pushed this float so it ought not to have changed
+    EXPECT_EQ(1.0F * k, trajectory.points[0].x);
+  }
+}
