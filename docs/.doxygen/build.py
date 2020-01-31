@@ -5,10 +5,12 @@
 import os
 import shutil
 import subprocess
+import sys
 
 from lxml import etree
 
 XMLTEMPLATE = '<script id="searchdata_xml" type="text/xmldata">{}</script>'
+
 
 def build():
     ws = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,7 +18,11 @@ def build():
     builddir = os.path.join(ws, 'docs', '_build')
     if not os.path.exists(builddir):
         os.makedirs(builddir)
-    subprocess.run(['doxygen', 'docs/.doxygen/Doxyfile'], cwd=ws)
+    try:
+        subprocess.run(['doxygen', 'docs/.doxygen/Doxyfile'], cwd=ws, check=True)
+    except subprocess.CalledProcessError as err:
+        print('\nDoxygen failed to generate documentation: {}\n'.format(err))
+        return 1
     shutil.copyfile(
         os.path.join(ws, 'docs', '.doxygen', 'search.js'),
         os.path.join(builddir, 'html', 'search', 'search.js'))
@@ -35,7 +41,8 @@ def build():
                     page.append(field)
             html.write(XMLTEMPLATE.format(etree.tostring(root).decode('utf8')))
     print('\nDocumentation has been built in: {}\n'.format(os.path.join(builddir, 'html', 'index.html')))
+    return 0
+
 
 if __name__ == '__main__':
-    build()
-
+    sys.exit(build())
