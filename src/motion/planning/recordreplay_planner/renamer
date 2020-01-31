@@ -1,5 +1,0 @@
-:%s/MOCK/RECORDREPLAY/g
-:%s/Mock/RecordReplay/g
-:%s/mock/recordreplay/g
-:wq
-

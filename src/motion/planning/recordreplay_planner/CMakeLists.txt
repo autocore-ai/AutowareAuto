@@ -12,15 +12,6 @@ set(CMAKE_CXX_STANDARD 14)
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner/recordreplay_planner.cpp
 )
-string(CONCAT checks
-  "-misc-macro-parentheses," # Generally good, but doesn't work for default method stuff
-  "-clang-diagnostic-padded," # Good to know, but not helpful
-  "-fuchsia-default-arguments," # Lazy
-  "-modernize-use-using," # Acado from here on down
-  "-readability-avoid-const-params-in-decls,"
-  "-modernize-deprecated-headers,"
-  "-hicpp-deprecated-headers,"
-  "-cppcoreguidelines-pro-bounds-constant-array-index") # Will bring back #8
 
 ### Test
 if(BUILD_TESTING)

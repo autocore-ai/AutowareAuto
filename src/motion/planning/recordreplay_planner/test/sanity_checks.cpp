@@ -133,7 +133,8 @@ TEST(recordreplay_sanity_checks, receding_horizon)
   // Call "plan" multiple times in sequence, expecting the states to come back out in order
   for (uint32_t k = {}; k < N; ++k) {
     auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
-    // normally don't check float equality but we _just_ pushed this float so it ought not to have changed
+    // normally don't check float equality but we _just_ pushed this float so it ought not
+    // to have changed
     EXPECT_EQ(1.0F * k, trajectory.points[0].x);
   }
 }

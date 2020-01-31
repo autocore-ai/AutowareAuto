@@ -42,11 +42,11 @@ enum class RecordReplayState
 class RECORDREPLAY_PLANNER_PUBLIC RecordReplayPlanner
 {
 public:
-  RecordReplayPlanner();
+  RecordReplayPlanner() = default;
 
   // Record and replay control
-  bool is_recording() noexcept;
-  bool is_replaying() noexcept;
+  bool is_recording() const noexcept;
+  bool is_replaying() const noexcept;
   void start_recording() noexcept;
   void stop_recording() noexcept;
   void start_replaying() noexcept;
@@ -62,7 +62,7 @@ public:
   const Trajectory & plan(const State & current_state);
 
   // Return the number of currently-recorded State messages
-  uint32_t get_record_length() noexcept;
+  uint32_t get_record_length() const noexcept;
 
 private:
   // Obtain a trajectory from the internally-stored recording buffer

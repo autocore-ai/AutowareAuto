@@ -60,9 +60,9 @@ void RecordReplayPlannerNode::init(
     this->get_node_logging_interface(),
     this->get_node_waitables_interface(),
     "recordtrajectory",
-    std::bind(&RecordReplayPlannerNode::record_handle_goal, this, _1, _2),
-    std::bind(&RecordReplayPlannerNode::record_handle_cancel, this, _1),
-    std::bind(&RecordReplayPlannerNode::record_handle_accepted, this, _1));
+    [this](auto uuid, auto goal) {return this->record_handle_goal(uuid, goal);},
+    [this](auto goal_handle) {return this->record_handle_cancel(goal_handle);},
+    [this](auto goal_handle) {return this->record_handle_accepted(goal_handle);});
 
   m_replayserver = rclcpp_action::create_server<ReplayTrajectory>(
     this->get_node_base_interface(),
@@ -70,9 +70,9 @@ void RecordReplayPlannerNode::init(
     this->get_node_logging_interface(),
     this->get_node_waitables_interface(),
     "replaytrajectory",
-    std::bind(&RecordReplayPlannerNode::replay_handle_goal, this, _1, _2),
-    std::bind(&RecordReplayPlannerNode::replay_handle_cancel, this, _1),
-    std::bind(&RecordReplayPlannerNode::replay_handle_accepted, this, _1));
+    [this](auto uuid, auto goal) {return this->replay_handle_goal(uuid, goal);},
+    [this](auto goal_handle) {return this->replay_handle_cancel(goal_handle);},
+    [this](auto goal_handle) {return this->replay_handle_accepted(goal_handle);});
 
   // Set up subscribers for the actual recording
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;

@@ -25,19 +25,13 @@ namespace planning
 namespace recordreplay_planner
 {
 
-RecordReplayPlanner::RecordReplayPlanner()
-{
-  // Does nothing yet
-}
-
-
 // These may do more in the future
-bool RecordReplayPlanner::is_recording() noexcept
+bool RecordReplayPlanner::is_recording() const noexcept
 {
   return m_recordreplaystate == RecordReplayState::RECORDING;
 }
 
-bool RecordReplayPlanner::is_replaying() noexcept
+bool RecordReplayPlanner::is_replaying() const noexcept
 {
   return m_recordreplaystate == RecordReplayState::REPLAYING;
 }
@@ -67,7 +61,7 @@ void RecordReplayPlanner::clear_record() noexcept
   m_record_buffer.clear();
 }
 
-uint32_t RecordReplayPlanner::get_record_length() noexcept
+uint32_t RecordReplayPlanner::get_record_length() const noexcept
 {
   return m_record_buffer.size();
 }
@@ -95,16 +89,14 @@ const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header 
   const auto record_length = get_record_length();
 
   // Determine how long the published trajectory will be
-  auto publication_length =
+  const auto publication_length =
     std::min(record_length, static_cast<uint32_t>(trajectory.points.max_size()));
 
   // Assemble the trajectory as desired
   trajectory.points.resize(publication_length);
   trajectory.header = header;
-  auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
+  const auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
   for (std::size_t i = {}; i < publication_length; ++i) {
-    auto & point = m_trajectory.points[i];
-
     // Make the time spacing of the points match the recorded timing
     trajectory.points[i] = m_record_buffer[i].state;
     trajectory.points[i].time_from_start = time_utils::to_message(
