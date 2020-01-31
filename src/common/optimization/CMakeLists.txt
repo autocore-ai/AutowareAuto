@@ -42,6 +42,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${OPTIMIZATION_TEST}
+          test/test_newton_optimization.hpp
+          test/test_newton_optimization.cpp
           test/test_cache_states.hpp
           test/test_cache_states.cpp)
   target_link_libraries(${OPTIMIZATION_TEST} ${PROJECT_NAME})

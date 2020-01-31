@@ -50,6 +50,7 @@ public:
   using Hessian = Eigen::Matrix<Value, NumVars, NumVars>;
   using JacobianRef = Eigen::Ref<Jacobian>;
   using HessianRef = Eigen::Ref<Hessian>;
+
   /// Get the result of an expression for a given parameter value.
   /// \param x Parameter value
   /// \return Evaluated score
@@ -198,7 +199,6 @@ class OPTIMIZATION_PUBLIC OptimizationProblem;
 // Template specialization is used for type deduction and forwarding constraint parameter packs
 // to the tuples. This way "std::tuple" is enforced to be used on the constrained
 // OptimizationProblem implementations.
-
 template<typename Derived,
   typename ... EqualityConstraints,
   typename ... InequalityConstraints,
@@ -336,4 +336,5 @@ class UnconstrainedOptimizationProblem : public
 }  // namespace optimization
 }  // namespace common
 }  // namespace autoware
+
 #endif  // OPTIMIZATION__OPTIMIZATION_PROBLEM_HPP_

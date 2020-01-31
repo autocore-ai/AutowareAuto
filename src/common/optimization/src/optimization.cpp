@@ -13,5 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "optimization/optimization_problem.hpp"
 #include "optimization/optimizer.hpp"
+
+namespace autoware
+{
+namespace common
+{
+namespace optimization
+{
+
+////////////////////////////////////////////////////////////////////////////////
+// Instantiation of common types
+template class NewtonsMethod<FixedLineSearch>;
+template class Optimizer<NewtonsMethod<FixedLineSearch>>;
+// TODO(zozen) will it be used like below as well?
+template class LineSearch<FixedLineSearch>;
+template class NewtonsMethod<LineSearch<FixedLineSearch>>;
+template class Optimizer<NewtonsMethod<LineSearch<FixedLineSearch>>>;
+
+}  // namespace optimization
+}  // namespace common
+}  // namespace autoware
