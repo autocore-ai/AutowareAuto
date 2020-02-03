@@ -15,17 +15,21 @@
 # This file contains tests for the record and replay behavior of the containing node.
 # I'll start by conceptually documenting the tests I want to add, then implement them.
 
+import unittest
 
 # TODO(s.me): Test: Check if "happy case" of recording, then replaying works
-# - Start recordreplay_planner_node exe
-# - Use ros2 commandline to send it a "start recording" action request
-# - Use ros2 commandline to publish a few VehicleKinematicState messages
-# - Cancel action by sending a signal SIGTERM to the ros2 commandline action process
-# - Use ros2 commandline or python to listen on the specified trajectory topic, storing to memory
-# - Use ros2 commandline or python to send it a "start replaying" action request
-# - Use ros2 commandline or python to publish a few VehicleKinematicState messages
-# - Cancel action by sending a signal to the ros2 commandline process
-# - Verify that the replayed trajectories behaved as expected
+class TestHappyCase(unittest.TestCase):
+    def test_basics(self):
+        self.assertEqual(1, 1)  # currently a nop
+        # - Start recordreplay_planner_node exe
+        # - Send it a "start recording" action request
+        # - Publish a few VehicleKinematicState messages
+        # - Cancel action by sending a signal SIGTERM to the ros2 commandline action process
+        # - Use ros2 commandline or python to listen on the specified trajectory topic, storing to memory
+        # - Use ros2 commandline or python to send it a "start replaying" action request
+        # - Use ros2 commandline or python to publish a few VehicleKinematicState messages
+        # - Cancel action by sending a signal to the ros2 commandline process
+        # - Verify that the replayed trajectories behaved as expected
 
 
 # TODO(s.me): Test: Check if an additional record action is rejected if one is already running

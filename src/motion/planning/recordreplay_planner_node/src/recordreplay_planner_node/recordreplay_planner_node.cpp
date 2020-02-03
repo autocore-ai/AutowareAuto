@@ -27,9 +27,9 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
 : Node{name, ns}
 {
   // TODO(s.me) get topics from parameters
-  const std::string tf_topic = "some_invalid_tf";
-  const std::string ego_topic = "some_invalid_ego";
-  const std::string trajectory_topic = "some_invalid_trajectory";
+  const auto tf_topic = declare_parameter("tf_topic").get<std::string>();
+  const auto ego_topic = declare_parameter("ego_topic").get<std::string>();
+  const auto trajectory_topic = declare_parameter("trajectory_topic").get<std::string>();
   init(ego_topic, tf_topic, trajectory_topic);
 }
 ////////////////////////////////////////////////////////////////////////////////
