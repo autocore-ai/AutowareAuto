@@ -17,19 +17,110 @@
 
 import unittest
 
+import ament_index_python
+import launch
+import launch.actions
+import launch_ros.actions
+from launch_ros.default_launch_description import ROSSpecificLaunchStartup
+
+import launch_testing.event_handlers
+import subprocess
+
+
+def generate_test_description(ready_fn):
+    test_nodes = launch_ros.actions.Node(
+        package="recordreplay_planner_node",
+        node_executable="recordreplay_planner_node_exe",
+        node_name="recordreplay_planner",
+        parameters=[
+            "{}/defaults.param.yaml".format(
+                ament_index_python.get_package_share_directory(
+                    "recordreplay_planner_node"
+                )
+            )
+        ],
+    )
+
+    # integration test
+    ld = launch.LaunchDescription(
+        [
+            ROSSpecificLaunchStartup(),
+            test_nodes,
+            launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
+        ]
+    )
+
+    # An array of all the checkers to be enumerated by the tests
+    return ld
+
+
+def helper_start_action_goal(name: str, goal: str, parameters: str):
+    """Start an action call and return the started process object, non-blocking"""
+    return subprocess.Popen(["ros2", "action", "send_goal", name, goal, parameters,])
+
+
+def helper_publish_one_default_msg(topic: str, msgtype: str):
+    """Publish a single default message on a given topic, blocking"""
+    subprocess.run(["ros2", "topic", "pub", "-1", topic, msgtype])
+
+
+def helper_echo_topic(name: str, msgtype: str):
+    return subprocess.Popen(
+        ["ros2", "topic", "echo", name, msgtype], stdout=subprocess.PIPE
+    )
+
+
 # TODO(s.me): Test: Check if "happy case" of recording, then replaying works
 class TestHappyCase(unittest.TestCase):
-    def test_basics(self):
-        self.assertEqual(1, 1)  # currently a nop
-        # - Start recordreplay_planner_node exe
+    def test_happy_case(self):
+        # - Start recordreplay_planner_node exe (done in test description)
         # - Send it a "start recording" action request
+        recording_action = helper_start_action_goal(
+            "/recordtrajectory",
+            "recordreplay_planner_actions/action/RecordTrajectory",
+            "{}",
+        )
+
         # - Publish a few VehicleKinematicState messages
+        for k in range(2):
+            helper_publish_one_default_msg(
+                "/vehicle_kinematic_state",
+                "autoware_auto_msgs/msg/VehicleKinematicState",
+            )
+
         # - Cancel action by sending a signal SIGTERM to the ros2 commandline action process
-        # - Use ros2 commandline or python to listen on the specified trajectory topic, storing to memory
-        # - Use ros2 commandline or python to send it a "start replaying" action request
-        # - Use ros2 commandline or python to publish a few VehicleKinematicState messages
+        recording_action.terminate()
+        recording_action.wait()
+
+        # - Listen on the specified trajectory topic, storing to memory
+        listener_process = helper_echo_topic(
+            "/trajectory", "autoware_auto_msgs/msg/Trajectory",
+        )
+
+        # - Send it a "start replaying" action request
+        replaying_action = helper_start_action_goal(
+            "/replaytrajectory",
+            "recordreplay_planner_actions/action/ReplayTrajectory",
+            "{}",
+        )
+
+        # - Publish a few VehicleKinematicState messages
+        for k in range(2):
+            helper_publish_one_default_msg(
+                "/vehicle_kinematic_state",
+                "autoware_auto_msgs/msg/VehicleKinematicState",
+            )
+
         # - Cancel action by sending a signal to the ros2 commandline process
-        # - Verify that the replayed trajectories behaved as expected
+        replaying_action.terminate()
+        replaying_action.wait()
+
+        # - Verify that the replayed trajectories behaved as expected. FIXME this does not
+        #   properly capture the output, so I can't quite verify yet.
+        listener_process.terminate()
+        listener_process.wait()
+        stdout = listener_process.communicate()[0]
+        print("stdout is: {}.".format(stdout))
 
 
 # TODO(s.me): Test: Check if an additional record action is rejected if one is already running

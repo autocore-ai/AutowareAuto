@@ -132,6 +132,9 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
     m_planner->stop_recording();
   }
 
+  // Free this handle, we don't need it anymore
+  m_recordgoalhandle = nullptr;
+
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -139,6 +142,10 @@ void RecordReplayPlannerNode::record_handle_accepted(
   const std::shared_ptr<GoalHandleRecordTrajectory> goal_handle)
 {
   (void)goal_handle;
+
+  // Store the goal handle otherwise the action gets canceled
+  m_recordgoalhandle = goal_handle;
+
   // TODO(s.me) what to do here? Is this where we actually trigger something?
   m_planner->start_recording();
 }
@@ -165,6 +172,9 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
     m_planner->stop_replaying();
   }
 
+  // Free this handle, we don't need it anymore
+  m_replaygoalhandle = nullptr;
+
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -172,6 +182,10 @@ void RecordReplayPlannerNode::replay_handle_accepted(
   const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle)
 {
   (void)goal_handle;
+
+  // Store the goal handle otherwise the action gets canceled
+  m_replaygoalhandle = goal_handle;
+
   // TODO(s.me) what to do here? Is this where we actually trigger something?
   m_planner->start_replaying();
 }

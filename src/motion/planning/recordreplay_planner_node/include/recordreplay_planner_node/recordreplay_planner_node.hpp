@@ -66,6 +66,8 @@ protected:
 
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
   rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
+  std::shared_ptr<GoalHandleRecordTrajectory> m_recordgoalhandle{nullptr};
+  std::shared_ptr<GoalHandleReplayTrajectory> m_replaygoalhandle{nullptr};
 
   rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
