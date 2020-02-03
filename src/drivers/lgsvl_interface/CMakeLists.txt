@@ -11,10 +11,13 @@ ament_auto_add_library(lgsvl_interface
   src/lgsvl_interface.cpp
   src/lgsvl_interface_node.cpp)
 autoware_set_compile_options(lgsvl_interface)
+target_compile_options(lgsvl_interface PRIVATE
+  -Wno-useless-cast -Wno-double-promotion -Wno-old-style-cast -Wno-sign-conversion)
 
 # Generate executalbe
 ament_auto_add_executable(lgsvl_interface_exe src/lgsvl_interface_main.cpp)
 autoware_set_compile_options(lgsvl_interface)
+target_compile_options(lgsvl_interface PRIVATE -Wno-useless-cast -Wno-double-promotion) # tf2...
 
 if(BUILD_TESTING)
   autoware_static_code_analysis()

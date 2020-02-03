@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace lgsvl_interface
 {
@@ -27,19 +28,40 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
   const std::string & node_namespace)
 : VehicleInterfaceNode{node_name, node_namespace}
 {
-  const auto sim_cmd_topic = declare_parameter("lgsvl.command_topic").get<std::string>();
-  const auto sim_can_topic = declare_parameter("lgsvl.can_topic").get<std::string>();
-  const Config cfg{
-    declare_parameter("lgsvl.translator.throttle_scale").get<double>(),
-    declare_parameter("lgsvl.translator.brake_scale").get<double>(),
-    declare_parameter("lgsvl.translator.steer_scale").get<double>(),
-    declare_parameter("lgsvl.translator.velocity_max").get<double>(),
-    declare_parameter("lgsvl.translator.velocity_min").get<double>(),
-    declare_parameter("lgsvl.translator.cg_to_front").get<double>(),
-    declare_parameter("lgsvl.translator.cg_to_rear").get<double>(),
-  };
+  const auto sim_ctrl_cmd_topic =
+    declare_parameter("lgsvl.control_command_topic").get<std::string>();
+  const auto sim_state_cmd_topic =
+    declare_parameter("lgsvl.state_command_topic").get<std::string>();
+  const auto sim_state_rpt_topic =
+    declare_parameter("lgsvl.state_report_topic").get<std::string>();
+  // Optional
+  const auto sim_odom_topic_param =
+    declare_parameter("lgsvl.odometry_topic");
+  const std::string sim_odom_topic =
+    rclcpp::ParameterType::PARAMETER_NOT_SET == sim_odom_topic_param.get_type() ?
+    "" :
+    sim_odom_topic_param.get<std::string>();
+  const auto kinematic_state_topic =
+    declare_parameter("lgsvl.kinematic_state_topic").get<std::string>();
+  const auto table = [this](const std::string & prefix_raw) -> Table1D {
+      const std::string prefix = "lgsvl." + prefix_raw + ".";
+      return Table1D{
+      declare_parameter(prefix + "domain").get<std::vector<double>>(),
+      declare_parameter(prefix + "range").get<std::vector<double>>()
+      };
+    };
   // Set up interface
-  set_interface(std::make_unique<LgsvlInterface>(*this, sim_cmd_topic, sim_can_topic, cfg));
+  set_interface(std::make_unique<LgsvlInterface>(
+      *this,
+      sim_ctrl_cmd_topic,
+      sim_state_cmd_topic,
+      sim_state_rpt_topic,
+      sim_odom_topic,
+      kinematic_state_topic,
+      table("throttle"),
+      table("brake"),
+      table("steer")
+  ));
   // TODO(c.ho) low pass filter and velocity controller
 }
 

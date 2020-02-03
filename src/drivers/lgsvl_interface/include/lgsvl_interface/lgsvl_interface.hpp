@@ -19,10 +19,14 @@
 
 #include <lgsvl_interface/visibility_control.hpp>
 
-#include <autoware_msgs/msg/vehicle_cmd.hpp>
-#include <builtin_interfaces/msg/time.hpp>
-// TODO(c.ho) CanBusData or apollo::canbus::Chassis
+#include <autoware_auto_msgs/msg/raw_control_command.hpp>
+#include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
+#include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
+#include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
 
+#include <helper_functions/lookup_table.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_interface/platform_interface.hpp>
 
@@ -32,19 +36,7 @@
 namespace lgsvl_interface
 {
 
-using VehicleCmd = autoware_msgs::msg::VehicleCmd;
-
-// TODO(c.ho) Make this a proper class...
-struct Config
-{
-  double m_throttle_scale{1.0};
-  double m_brake_scale{1.0};
-  double m_steer_scale{1.0};
-  double m_velocity_max{35.0};
-  double m_velocity_min{-5.0};
-  double m_cg_to_front{1.0};
-  double m_cg_to_rear{1.0};
-};  // struct Config
+using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
 
 class LGSVL_INTERFACE_PUBLIC LgsvlInterface
   : public ::autoware::drivers::vehicle_interface::PlatformInterface
@@ -53,8 +45,13 @@ public:
   LgsvlInterface(
     rclcpp::Node & node,
     const std::string & sim_cmd_topic,
-    const std::string & sim_can_topic,
-    const Config & config);
+    const std::string & sim_state_cmd_topic,
+    const std::string & sim_state_report_topic,
+    const std::string & sim_odom_topic,
+    const std::string & kinematic_state_topic,
+    Table1D && throttle_table,
+    Table1D && brake_table,
+    Table1D && steer_table);
 
   ~LgsvlInterface() noexcept override = default;
   /// Receives data from ROS 2 subscriber, and updates output messages.
@@ -70,18 +67,23 @@ public:
   bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override;
 
 private:
-  void publish_and_update(
-    const builtin_interfaces::msg::Time stamp,
-    const double accel_mps2,
-    const double steer_rad);
+  // Convert odometry into vehicle kinematic state and tf
+  void on_odometry(const nav_msgs::msg::Odometry & msg);
 
-  rclcpp::Publisher<VehicleCmd>::SharedPtr m_cmd_pub{};
-  // TODO(c.ho) subscriber
-  Config m_config;
-  VehicleCmd m_msg{};
+  rclcpp::Publisher<autoware_auto_msgs::msg::RawControlCommand>::SharedPtr m_cmd_pub{};
+  rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_pub{};
+  rclcpp::Publisher<autoware_auto_msgs::msg::VehicleKinematicState>::SharedPtr
+    m_kinematic_state_pub{};
+  rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_pub{};
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_odom_sub{};
+  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_sub{};
 
-  double m_velocity_mps{};
-  std::chrono::nanoseconds m_last_stamp{};
+  Table1D m_throttle_table;
+  Table1D m_brake_table;
+  Table1D m_steer_table;
+
+  bool m_odom_set{false};  // TODO(c.ho) this should be optional<Vector3>
+  geometry_msgs::msg::Vector3 m_odom_zero{};
 };  // class LgsvlInterface
 
 }  // namespace lgsvl_interface
