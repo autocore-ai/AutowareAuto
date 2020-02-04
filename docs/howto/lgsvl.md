@@ -27,7 +27,7 @@ Start ADE with the LGSVL volume:
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto:master
   registry.gitlab.com/apexai/ade-lgsvl:2019.12
  "`
-* `cd AutowareAuto`
+* `cd adehome/AutowareAuto`
 * `ade start --update -- --net=host`
 * `ade enter`
 
