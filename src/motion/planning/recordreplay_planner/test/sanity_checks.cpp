@@ -182,3 +182,32 @@ TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
     EXPECT_EQ(0.0F, trajectory.points[0].y);
   }
 }
+
+//------------------ Test that "receding horizon" planning properly works:
+TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
+{
+  const auto N = 3;
+  auto planner = helper_create_and_record_example(N);
+
+  const auto t0 = system_clock::from_time_t({});
+
+  // Check: State we have not recorded, but is closest to the (0,0) state
+  {
+    auto trajectory = planner.plan(make_state(-1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ(0.0F, trajectory.points[0].x);
+  }
+
+  // Check: State we have not recorded, but is closest to the (0,0) state
+  {
+    auto trajectory = planner.plan(make_state(0.1F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ(0.0F, trajectory.points[0].x);
+    EXPECT_EQ(0.0F, trajectory.points[0].y);
+  }
+
+  // Check: State we have not recorded, but is closest to the (N,0) state
+  {
+    auto trajectory = planner.plan(make_state(1.0F * N + 5.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ((N - 1) * 1.0F, trajectory.points[0].x);
+    EXPECT_EQ(0.0F, trajectory.points[0].y);
+  }
+}
