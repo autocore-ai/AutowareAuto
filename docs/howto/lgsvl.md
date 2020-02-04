@@ -28,7 +28,7 @@ Start ADE with the LGSVL volume:
   registry.gitlab.com/apexai/ade-lgsvl:2019.12
  "`
 * `cd adehome/AutowareAuto`
-* `ade start --update -- --net=host`
+* `ade start --update -- --net=host --privileged`
 * `ade enter`
 
 Start the ROS 2 web bridge from inside ADE:
