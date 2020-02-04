@@ -86,3 +86,4 @@ Guidelines for contributing to Autoware.Auto.
 - @subpage tutorials
 - @subpage design "Design documents"
 - @subpage coverage "Coverage reports"
+- @subpage demos "Demonstrations"
