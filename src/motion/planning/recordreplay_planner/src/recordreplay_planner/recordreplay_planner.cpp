@@ -92,6 +92,7 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   const auto distance_from_current_state =
     [&current_state](State & other_state) {
       auto s1 = current_state.state, s2 = other_state.state;
+      // TODO(s.me) Include heading or not? If yes, by what difference metric?
       return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y);
     };
 
