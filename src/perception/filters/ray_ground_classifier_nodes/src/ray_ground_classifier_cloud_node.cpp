@@ -194,7 +194,7 @@ RayGroundClassifierCloudNode::on_activate_internal(const rclcpp_lifecycle::State
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 RayGroundClassifierCloudNode::on_deactivate_internal(const rclcpp_lifecycle::State &)
 {
-  RCLCPP_INFO(this->get_logger(), "RayGroundClassifier has activated");
+  RCLCPP_INFO(this->get_logger(), "RayGroundClassifier has deactivated");
   m_ground_pub_ptr->on_deactivate();
   m_nonground_pub_ptr->on_deactivate();
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
