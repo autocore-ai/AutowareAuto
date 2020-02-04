@@ -23,7 +23,6 @@ import launch.actions
 import launch_ros.actions
 from launch_ros.default_launch_description import ROSSpecificLaunchStartup
 
-import launch_testing.event_handlers
 import subprocess
 
 
@@ -54,31 +53,42 @@ def generate_test_description(ready_fn):
     return ld
 
 
-def helper_start_action_goal(name: str, goal: str, parameters: str):
-    """Start an action call and return the started process object, non-blocking"""
-    return subprocess.Popen(["ros2", "action", "send_goal", name, goal, parameters,])
+def helper_start_action_goal(
+    name: str, goal: str, parameters: str, redirect_stdout: bool = False
+):
+    """Start an action call and return the started process object, non-blocking."""
+    if redirect_stdout:
+        mystdout = subprocess.PIPE
+    else:
+        mystdout = None
+    return subprocess.Popen(
+        ["ros2", "action", "send_goal", name, goal, parameters], stdout=mystdout
+    )
 
 
 def helper_publish_one_default_msg(topic: str, msgtype: str):
-    """Publish a single default message on a given topic, blocking"""
+    """Publish a single default message on a given topic, blocking."""
     subprocess.run(["ros2", "topic", "pub", "-1", topic, msgtype])
 
 
 def helper_echo_topic(name: str, msgtype: str):
     return subprocess.Popen(
-        ["ros2", "topic", "echo", name, msgtype], stdout=subprocess.PIPE
+        ["ros2", "topic", "echo", name, msgtype],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
 
 # TODO(s.me): Test: Check if "happy case" of recording, then replaying works
-class TestHappyCase(unittest.TestCase):
-    def test_happy_case(self):
+class TestBasicUsage(unittest.TestCase):
+    def test_happy_case_works(self):
         # - Start recordreplay_planner_node exe (done in test description)
         # - Send it a "start recording" action request
         recording_action = helper_start_action_goal(
             "/recordtrajectory",
             "recordreplay_planner_actions/action/RecordTrajectory",
             "{}",
+            False,
         )
 
         # - Publish a few VehicleKinematicState messages
@@ -90,7 +100,7 @@ class TestHappyCase(unittest.TestCase):
 
         # - Cancel action by sending a signal SIGTERM to the ros2 commandline action process
         recording_action.terminate()
-        recording_action.wait()
+        recording_action.wait(timeout=3)
 
         # - Listen on the specified trajectory topic, storing to memory
         listener_process = helper_echo_topic(
@@ -102,6 +112,7 @@ class TestHappyCase(unittest.TestCase):
             "/replaytrajectory",
             "recordreplay_planner_actions/action/ReplayTrajectory",
             "{}",
+            False,
         )
 
         # - Publish a few VehicleKinematicState messages
@@ -113,14 +124,44 @@ class TestHappyCase(unittest.TestCase):
 
         # - Cancel action by sending a signal to the ros2 commandline process
         replaying_action.terminate()
-        replaying_action.wait()
+        replaying_action.wait(timeout=3)
 
         # - Verify that the replayed trajectories behaved as expected. FIXME this does not
-        #   properly capture the output, so I can't quite verify yet.
+        #   properly seem to capture the output, so I can't quite verify yet.
         listener_process.terminate()
-        listener_process.wait()
-        stdout = listener_process.communicate()[0]
+        listener_process.wait(timeout=3)
+        stdout = (
+            listener_process.stdout.read()
+        )  # this is empty - does ros2 echo not output if piped?
         print("stdout is: {}.".format(stdout))
+
+    def test_two_concurrent_recordings_fail(self):
+        # - Start recordreplay_planner_node exe (done in test description)
+        # - Send it a "start recording" action request
+        recording_action = helper_start_action_goal(
+            "/recordtrajectory",
+            "recordreplay_planner_actions/action/RecordTrajectory",
+            "{}",
+            False,
+        )
+
+        # - Attempt to start another recording action, this should fail
+        second_recording_action = helper_start_action_goal(
+            "/recordtrajectory",
+            "recordreplay_planner_actions/action/RecordTrajectory",
+            "{}",
+            True,
+        )
+
+        # Get the standard output of the second recording action, which should exit on its own
+        second_recording_output = second_recording_action.communicate(timeout=10)[0]
+
+        recording_action.terminate()
+        recording_action.wait(timeout=3)
+
+        self.assertTrue("rejected" in second_recording_output.decode())
+        second_recording_action.terminate()
+        second_recording_action.wait(timeout=1)
 
 
 # TODO(s.me): Test: Check if an additional record action is rejected if one is already running
