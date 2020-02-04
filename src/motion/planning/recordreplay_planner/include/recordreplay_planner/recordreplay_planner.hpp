@@ -58,7 +58,9 @@ public:
   // Add a new state to the record
   void record_state(const State & state_to_record);
 
-  // Replay trajectory from stored plan.
+  // Replay trajectory from stored plan. The current state of the vehicle is given
+  // and the trajectory will be chosen from the stored plan such that the starting
+  // point of the trajectory is as close as possible to this current state.
   const Trajectory & plan(const State & current_state);
 
   // Return the number of currently-recorded State messages
@@ -66,7 +68,7 @@ public:
 
 private:
   // Obtain a trajectory from the internally-stored recording buffer
-  RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const std_msgs::msg::Header & header);
+  RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
 
   std::deque<State> m_record_buffer;
   Trajectory m_trajectory{};

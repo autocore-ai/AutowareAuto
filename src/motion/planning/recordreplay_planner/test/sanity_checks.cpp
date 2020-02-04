@@ -90,7 +90,6 @@ class sanity_checks_trajectory_length
 
 TEST_P(sanity_checks_trajectory_length, length)
 {
-  const auto t = system_clock::now();
   const auto p = GetParam();
   const auto N = p.number_of_points;
   const auto dummy_state = make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
@@ -117,24 +116,65 @@ INSTANTIATE_TEST_CASE_P(
 ));
 
 
-//------------------ Test that "receding horizon" planning properly works
-TEST(recordreplay_sanity_checks, receding_horizon)
+// Test setup helper function. This creates a planner and records a trajectory
+// that goes along the points (0,0), (1,0), .... (N-1,0) with the heading set to
+// 0 throughout - for testing purposes
+RecordReplayPlanner helper_create_and_record_example(uint32_t N)
 {
   auto planner = RecordReplayPlanner();
+  auto t0 = system_clock::from_time_t({});
 
-  // Record some states
-  const auto t0 = system_clock::now();
-  const auto N = 3;
+  // Record some states going from
   for (uint32_t k = {}; k < N; ++k) {
     planner.record_state(make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
       t0 + k * std::chrono::milliseconds{100LL}));
   }
 
+  return planner;
+}
+
+
+//------------------ Test that "receding horizon" planning properly works: happy case
+TEST(recordreplay_sanity_checks, receding_horizon_happycase)
+{
+  const auto N = 3;
+  auto planner = helper_create_and_record_example(N);
+
   // Call "plan" multiple times in sequence, expecting the states to come back out in order
+  const auto t0 = system_clock::from_time_t({});
   for (uint32_t k = {}; k < N; ++k) {
-    auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    auto trajectory = planner.plan(make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
     // normally don't check float equality but we _just_ pushed this float so it ought not
     // to have changed
     EXPECT_EQ(1.0F * k, trajectory.points[0].x);
+  }
+}
+
+//------------------ Test that "receding horizon" planning properly works:
+TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
+{
+  const auto N = 3;
+  auto planner = helper_create_and_record_example(N);
+
+  const auto t0 = system_clock::from_time_t({});
+
+  // Check: State we have not recorded, but is closest to the (0,0) state
+  {
+    auto trajectory = planner.plan(make_state(-1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ(0.0F, trajectory.points[0].x);
+  }
+
+  // Check: State we have not recorded, but is closest to the (0,0) state
+  {
+    auto trajectory = planner.plan(make_state(0.1F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ(0.0F, trajectory.points[0].x);
+    EXPECT_EQ(0.0F, trajectory.points[0].y);
+  }
+
+  // Check: State we have not recorded, but is closest to the (N,0) state
+  {
+    auto trajectory = planner.plan(make_state(1.0F * N + 5.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+    EXPECT_EQ((N - 1) * 1.0F, trajectory.points[0].x);
+    EXPECT_EQ(0.0F, trajectory.points[0].y);
   }
 }

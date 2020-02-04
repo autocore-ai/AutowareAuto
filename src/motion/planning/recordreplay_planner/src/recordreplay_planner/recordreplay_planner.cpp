@@ -73,7 +73,7 @@ void RecordReplayPlanner::record_state(const State & state_to_record)
 
 const Trajectory & RecordReplayPlanner::plan(const State & current_state)
 {
-  return from_record(current_state.header);
+  return from_record(current_state);
 }
 
 
@@ -83,31 +83,41 @@ const Trajectory & RecordReplayPlanner::plan(const State & current_state)
 //
 // Another issue is whether it has to be resampled in time or if the data rates are
 // constant enough so that this is not an issue.
-const Trajectory & RecordReplayPlanner::from_record(const std_msgs::msg::Header & header)
+const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
 
+  // Find the closest point to the current state in the stored states buffer
+  const auto distance_from_current_state =
+    [&current_state](State & other_state) {
+      auto s1 = current_state.state, s2 = other_state.state;
+      return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y);
+    };
+
+  ssize_t minimum_idx = 0;
+  double minimum_distance = distance_from_current_state(m_record_buffer[0]);
+  for (auto k = 1; k < record_length; ++k) {
+    const auto d = distance_from_current_state(m_record_buffer[k]);
+    if (d < minimum_distance) {
+      minimum_distance = d;
+      minimum_idx = k;
+    }
+  }
+
   // Determine how long the published trajectory will be
   const auto publication_length =
-    std::min(record_length, static_cast<uint32_t>(trajectory.points.max_size()));
+    std::min(record_length - minimum_idx, static_cast<ssize_t>(trajectory.points.max_size()));
 
   // Assemble the trajectory as desired
   trajectory.points.resize(publication_length);
-  trajectory.header = header;
-  const auto t0 = time_utils::from_message(m_record_buffer[0].header.stamp);
+  trajectory.header = current_state.header;
+  const auto t0 = time_utils::from_message(m_record_buffer[minimum_idx].header.stamp);
   for (std::size_t i = {}; i < publication_length; ++i) {
     // Make the time spacing of the points match the recorded timing
-    trajectory.points[i] = m_record_buffer[i].state;
+    trajectory.points[i] = m_record_buffer[minimum_idx + i].state;
     trajectory.points[i].time_from_start = time_utils::to_message(
-      time_utils::from_message(m_record_buffer[i].header.stamp) - t0);
-  }
-
-  // Remove the first point from the trajectory buffer to emulate a receding horizon
-  // publication of the trajectory. TODO(s.me) this is easy, but won't allow multiple
-  // playbacks of the same recorded trajectory.
-  if (publication_length > 0) {
-    m_record_buffer.pop_front();
+      time_utils::from_message(m_record_buffer[minimum_idx + i].header.stamp) - t0);
   }
 
   return trajectory;
