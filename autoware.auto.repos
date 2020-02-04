@@ -1,0 +1,9 @@
+repositories:
+  autowareauto:
+    type: git
+    url: https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
+    version: master
+  robot_localization:
+    type: git
+    url: https://github.com/cra-ros-pkg/robot_localization.git
+    version: dashing-devel
