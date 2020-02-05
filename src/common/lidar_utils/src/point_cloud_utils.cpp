@@ -37,9 +37,15 @@ using autoware::common::types::float32_t;
 bool8_t has_intensity_and_throw_if_no_xyz(
   const PointCloud2::SharedPtr & cloud)
 {
+  return has_intensity_and_throw_if_no_xyz(*cloud);
+}
+
+bool8_t has_intensity_and_throw_if_no_xyz(
+  const PointCloud2 & cloud)
+{
   bool8_t ret = true;
   // Validate point step
-  if (cloud->fields.size() < 3U) {
+  if (cloud.fields.size() < 3U) {
     throw std::runtime_error("RayGroundClassifierNode: invalid PointCloud msg");
   }
 
@@ -56,17 +62,17 @@ bool8_t has_intensity_and_throw_if_no_xyz(
       return res;
     };
 
-  if (!check_field(cloud->fields[0U], "x", 0U)) {
+  if (!check_field(cloud.fields[0U], "x", 0U)) {
     throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct x field");
-  } else if (!check_field(cloud->fields[1U], "y", 4U)) {
+  } else if (!check_field(cloud.fields[1U], "y", 4U)) {
     throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct y field");
-  } else if (!check_field(cloud->fields[2U], "z", 8U)) {
+  } else if (!check_field(cloud.fields[2U], "z", 8U)) {
     throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct z field");
   } else {
     // do nothing
   }
-  if (cloud->fields.size() >= 4U) {
-    if (!check_field(cloud->fields[3U], "intensity", 12U)) {
+  if (cloud.fields.size() >= 4U) {
+    if (!check_field(cloud.fields[3U], "intensity", 12U)) {
       ret = false;
     }
   } else {

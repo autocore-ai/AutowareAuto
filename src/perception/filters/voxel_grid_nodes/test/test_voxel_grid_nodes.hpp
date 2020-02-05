@@ -167,15 +167,15 @@ TEST_F(CloudAlgorithm, approximate)
   // check initial
   EXPECT_EQ(alg_ptr->get().width, 0U);
   // add points
-  alg_ptr->insert(cloud1);
+  alg_ptr->insert(cloud1, cloud1.point_step);
   // get
   EXPECT_TRUE(check(alg_ptr->get(), 4U));
   // check empty
   EXPECT_EQ(alg_ptr->get().width, 0U);
   // add more points
-  alg_ptr->insert(cloud1);
-  alg_ptr->insert(cloud2);
-  // get again
+  alg_ptr->insert(cloud1, cloud1.point_step);
+  alg_ptr->insert(cloud2, cloud2.point_step);
+  // get aga2n
   EXPECT_TRUE(check(alg_ptr->get(), ref_points1.size()));
   // check empty
   EXPECT_EQ(alg_ptr->get().width, 0U);
@@ -196,14 +196,14 @@ TEST_F(CloudAlgorithm, centroid)
   // check empty
   EXPECT_EQ(alg_ptr->get().width, 0U);
   // add points
-  alg_ptr->insert(cloud1);
+  alg_ptr->insert(cloud1, cloud1.point_step);
   // get
   EXPECT_TRUE(check(alg_ptr->get(), 4U));
   // check empty
   EXPECT_EQ(alg_ptr->get().width, 0U);
   // add more points
-  alg_ptr->insert(cloud1);
-  alg_ptr->insert(cloud2);
+  alg_ptr->insert(cloud1, cloud1.point_step);
+  alg_ptr->insert(cloud2, cloud2.point_step);
   // get again
   EXPECT_TRUE(check(alg_ptr->get(), ref_points1.size()));
   // check empty

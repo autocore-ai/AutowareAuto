@@ -41,16 +41,17 @@ VoxelCloudApproximate::VoxelCloudApproximate(const voxel_grid::Config & cfg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VoxelCloudApproximate::insert(const sensor_msgs::msg::PointCloud2 & msg)
+void VoxelCloudApproximate::insert(
+  const sensor_msgs::msg::PointCloud2 & msg, std::size_t point_step)
 {
   m_cloud.header = msg.header;
-  for (std::size_t idx = 0U; idx < msg.data.size(); idx += msg.point_step) {
+  for (std::size_t idx = 0U; idx < msg.data.size(); idx += point_step) {
     PointXYZIF pt;
     //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
     (void)memmove(
       static_cast<void *>(&pt.x),
       static_cast<const void *>(&msg.data[idx]),
-      msg.point_step);
+      point_step);
     m_grid.insert(pt);
   }
   // TODO(c.ho) overlay?

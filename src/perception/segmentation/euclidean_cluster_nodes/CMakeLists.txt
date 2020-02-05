@@ -36,6 +36,9 @@ add_library(${CLUSTER_NODE_LIB} SHARED
   src/euclidean_cluster_node.cpp)
 target_include_directories(${CLUSTER_NODE_LIB} PUBLIC "include")
 autoware_set_compile_options(${CLUSTER_NODE_LIB})
+target_compile_options(
+  ${CLUSTER_NODE_LIB} PUBLIC "-Wno-sign-conversion" "-Wno-conversion")
+
 ament_target_dependencies(${CLUSTER_NODE_LIB}
   "rclcpp"
   "autoware_auto_msgs"
