@@ -17,53 +17,10 @@
 #include "lidar_utils/lidar_utils.hpp"
 #include <gtest/gtest.h>
 
-namespace autoware
-{
-namespace common
-{
-namespace lidar_utils
-{
-PointCloud2::SharedPtr create_custom_pcl(
-    const std::vector<std::string> field_names,
-    const uint32_t cloud_size)
-{
-  using sensor_msgs::msg::PointCloud2;
-  PointCloud2::SharedPtr msg = std::make_shared<PointCloud2>();
-  const auto field_size = field_names.size();
-  msg->height = 1U;
-  msg->width = cloud_size;
-  msg->fields.resize(field_size);
-  for (uint32_t i = 0U; i < field_size; i++)
-  {
-    msg->fields[i].name = field_names[i];
-  }
-  msg->point_step = 0U;
-  for (uint32_t idx = 0U; idx < field_size; ++idx)
-  {
-    msg->fields[idx].offset = static_cast<uint32_t>(idx * sizeof(float32_t));
-    msg->fields[idx].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    msg->fields[idx].count = 1U;
-    msg->point_step += static_cast<uint32_t>(sizeof(float32_t));
-  }
-  const std::size_t capacity = msg->point_step * cloud_size;
-  msg->data.clear();
-  msg->data.reserve(capacity);
-  for (std::size_t i = 0; i < capacity; ++i)
-  {
-    msg->data.emplace_back(0U); // initialize all values equal to 0
-  }
-  msg->row_step = msg->point_step * msg->width;
-  msg->is_bigendian = false;
-  msg->is_dense = false;
-  msg->header.frame_id = "base_link";
-  return msg;
-}
-
-} // namespace lidar_utils
-} // namespace common
-
 TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
 {
+  using autoware::common::lidar_utils::create_custom_pcl;
+
   const uint32_t mini_cloud_size = 10U;
 
   std::vector<std::string> right_field_names{"x", "y", "z", "intensity"};
@@ -93,18 +50,6 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
   EXPECT_TRUE(has_intensity_and_throw_if_no_xyz(five_fields_pc));
 }
 
-ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
-                  atan2f(0.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(1.0f, 0.0f) -
-                  atan2f(1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(-1.0f, 0.0f) -
-                  atan2f(-1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 1.0f) -
-                  atan2f(0.0f, 1.0f)) < FAST_ATAN2_MAX_ERROR);
-ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, -1.0f) -
-                  atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
-} // namespace autoware
-
 TEST(fast_atan2, max_error)
 {
   float max_error = 0;
@@ -116,5 +61,17 @@ TEST(fast_atan2, max_error)
         max_error,
         fabsf(atan2f(y, x) - autoware::common::lidar_utils::fast_atan2(y, x)));
   }
+
   ASSERT_TRUE(max_error < FAST_ATAN2_MAX_ERROR);
+
+  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
+                    atan2f(0.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(1.0f, 0.0f) -
+                    atan2f(1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(-1.0f, 0.0f) -
+                    atan2f(-1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 1.0f) -
+                    atan2f(0.0f, 1.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, -1.0f) -
+                    atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
 }

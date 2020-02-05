@@ -151,6 +151,10 @@ LIDAR_UTILS_PUBLIC void resize_pcl_msg(
 // the pointcloud msg has intensity field, otherwise return false
 LIDAR_UTILS_PUBLIC bool8_t
 has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
+
+LIDAR_UTILS_PUBLIC sensor_msgs::msg::PointCloud2::SharedPtr create_custom_pcl(
+  const std::vector<std::string> & field_names,
+  const uint32_t cloud_size);
 }  // namespace lidar_utils
 }  // namespace common
 }  // namespace autoware
