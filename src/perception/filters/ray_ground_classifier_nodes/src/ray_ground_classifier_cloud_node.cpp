@@ -142,6 +142,12 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     m_nonground_msg.header.stamp = msg->header.stamp;
     m_ground_msg.header.stamp = msg->header.stamp;
     // Add all points to aggregator
+    // Iterate through the data, but skip intensity in case the point cloud does not have it.
+    // For example:
+    //
+    // point_step = 4
+    // x y z i a b c x y z i a b c
+    // ^------       ^------
     for (std::size_t idx = 0U; idx < msg->data.size(); idx += msg->point_step) {
       PointXYZIF pt;
       // TODO(c.ho) Fix below deviation after #2131 is in

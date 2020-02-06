@@ -45,7 +45,14 @@ void VoxelCloudCentroid::insert(
   const sensor_msgs::msg::PointCloud2 & msg, std::size_t point_step)
 {
   m_cloud.header = msg.header;
-  for (std::size_t idx = 0U; idx < msg.data.size(); idx += point_step) {
+
+  // Iterate through the data, but skip intensity in case the point cloud does not have it.
+  // For example:
+  //
+  // point_step = 4
+  // x y z i a b c x y z i a b c
+  // ^------       ^------
+  for (std::size_t idx = 0U; idx < msg.data.size(); idx += msg.point_step) {
     PointXYZIF pt;
     //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
     (void)memmove(
