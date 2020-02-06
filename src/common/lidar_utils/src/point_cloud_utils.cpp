@@ -46,7 +46,7 @@ bool8_t has_intensity_and_throw_if_no_xyz(
   bool8_t ret = true;
   // Validate point step
   if (cloud.fields.size() < 3U) {
-    throw std::runtime_error("RayGroundClassifierNode: invalid PointCloud msg");
+    throw std::runtime_error("Invalid PointCloud msg");
   }
 
   const auto check_field = [](
@@ -63,11 +63,11 @@ bool8_t has_intensity_and_throw_if_no_xyz(
     };
 
   if (!check_field(cloud.fields[0U], "x", 0U)) {
-    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct x field");
+    throw std::runtime_error("PointCloud doesn't have correct x field");
   } else if (!check_field(cloud.fields[1U], "y", 4U)) {
-    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct y field");
+    throw std::runtime_error("PointCloud doesn't have correct y field");
   } else if (!check_field(cloud.fields[2U], "z", 8U)) {
-    throw std::runtime_error("RayGroundClassifierNode: PointCloud doesn't have correct z field");
+    throw std::runtime_error("PointCloud doesn't have correct z field");
   } else {
     // do nothing
   }
