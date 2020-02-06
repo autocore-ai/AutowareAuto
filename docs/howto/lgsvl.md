@@ -37,7 +37,7 @@ Start the ROS 2 web bridge from inside ADE:
 
 Start the LGSVL simulator:
 
-* `/opt/lgsvl/simulator`
+* `/opt/lgsvl/simulator &`
 
 Now start your favorite browser and go to http://localhost:8080 where simulations can be configured.
 
