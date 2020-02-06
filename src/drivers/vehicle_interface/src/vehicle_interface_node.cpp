@@ -14,8 +14,8 @@
 // limitations under the License.
 #include "vehicle_interface/vehicle_interface_node.hpp"
 
-#include <time_utils/time_utils.hpp>
 #include <signal_filters/filter_factory.hpp>
+#include <time_utils/time_utils.hpp>
 
 #include <memory>
 #include <string>

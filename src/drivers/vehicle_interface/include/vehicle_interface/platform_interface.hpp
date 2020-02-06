@@ -17,12 +17,12 @@
 #ifndef VEHICLE_INTERFACE__PLATFORM_INTERFACE_HPP_
 #define VEHICLE_INTERFACE__PLATFORM_INTERFACE_HPP_
 
-#include <vehicle_interface/visibility_control.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <vehicle_interface/visibility_control.hpp>
 
 #include <chrono>
 
