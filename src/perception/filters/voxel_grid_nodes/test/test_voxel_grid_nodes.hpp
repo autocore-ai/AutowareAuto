@@ -175,7 +175,7 @@ TEST_F(CloudAlgorithm, approximate)
   // add more points
   alg_ptr->insert(cloud1, cloud1.point_step);
   alg_ptr->insert(cloud2, cloud2.point_step);
-  // get aga2n
+  // get again
   EXPECT_TRUE(check(alg_ptr->get(), ref_points1.size()));
   // check empty
   EXPECT_EQ(alg_ptr->get().width, 0U);
