@@ -106,10 +106,6 @@ class MockActionCaller(Node):
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
 
-class MockReplayActionCaller(Node):
-    pass
-
-
 def generate_test_description(ready_fn):
     test_nodes = launch_ros.actions.Node(
         package="recordreplay_planner_node",
