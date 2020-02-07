@@ -223,41 +223,6 @@ void resize_pcl_msg(
   pc_modifier.resize(new_size);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-
-PointCloud2::SharedPtr create_custom_pcl(
-  const std::vector<std::string> & field_names,
-  const uint32_t cloud_size)
-{
-  using sensor_msgs::msg::PointCloud2;
-  PointCloud2::SharedPtr msg = std::make_shared<PointCloud2>();
-  const auto field_size = field_names.size();
-  msg->height = 1U;
-  msg->width = cloud_size;
-  msg->fields.resize(field_size);
-  for (uint32_t i = 0U; i < field_size; i++) {
-    msg->fields[i].name = field_names[i];
-  }
-  msg->point_step = 0U;
-  for (uint32_t idx = 0U; idx < field_size; ++idx) {
-    msg->fields[idx].offset = static_cast<uint32_t>(idx * sizeof(float32_t));
-    msg->fields[idx].datatype = sensor_msgs::msg::PointField::FLOAT32;
-    msg->fields[idx].count = 1U;
-    msg->point_step += static_cast<uint32_t>(sizeof(float32_t));
-  }
-  const std::size_t capacity = msg->point_step * cloud_size;
-  msg->data.clear();
-  msg->data.reserve(capacity);
-  for (std::size_t i = 0; i < capacity; ++i) {
-    msg->data.emplace_back(0U);  // initialize all values equal to 0
-  }
-  msg->row_step = msg->point_step * msg->width;
-  msg->is_bigendian = false;
-  msg->is_dense = false;
-  msg->header.frame_id = "base_link";
-  return msg;
-}
-
 }  // namespace lidar_utils
 }  // namespace common
 }  // namespace autoware

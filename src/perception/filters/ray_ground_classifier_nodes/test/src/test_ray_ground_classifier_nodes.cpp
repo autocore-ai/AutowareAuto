@@ -150,8 +150,8 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
 
   std::vector<std::string> five_field_names{"x", "y", "z", "intensity", "timestamp"};
   std::vector<std::string> three_field_names{"x", "y", "z"};
-  const auto three_fields_pc = create_custom_pcl(three_field_names, mini_cloud_size);
-  const auto five_fields_pc = create_custom_pcl(five_field_names, mini_cloud_size);
+  const auto three_fields_pc = create_custom_pcl<float32_t>(three_field_names, mini_cloud_size);
+  const auto five_fields_pc = create_custom_pcl<float32_t>(five_field_names, mini_cloud_size);
 
   // expected size = 4 bytes * 4 fields * cloud_size
   uint32_t expected_gnd_pcl_size = 4U * 4U * mini_cloud_size;

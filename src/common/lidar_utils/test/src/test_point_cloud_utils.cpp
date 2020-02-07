@@ -31,14 +31,14 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
   std::vector<std::string> wrong_x_field_names{"h", "y", "z"};
   std::vector<std::string> wrong_y_field_names{"x", "h", "z"};
   std::vector<std::string> wrong_z_field_names{"x", "y", "h"};
-  const auto correct_pc = create_custom_pcl(right_field_names, mini_cloud_size);
-  const auto not_intensity_pc = create_custom_pcl(not_intensity_field_names, mini_cloud_size);
-  const auto three_fields_pc = create_custom_pcl(three_field_names, mini_cloud_size);
-  const auto five_fields_pc = create_custom_pcl(five_field_names, mini_cloud_size);
-  const auto invalid_pc = create_custom_pcl(invalid_field_names, mini_cloud_size);
-  const auto no_x_pc = create_custom_pcl(wrong_x_field_names, mini_cloud_size);
-  const auto no_y_pc = create_custom_pcl(wrong_y_field_names, mini_cloud_size);
-  const auto no_z_pc = create_custom_pcl(wrong_z_field_names, mini_cloud_size);
+  const auto correct_pc = create_custom_pcl<float32_t>(right_field_names, mini_cloud_size);
+  const auto not_intensity_pc = create_custom_pcl<float32_t>(not_intensity_field_names, mini_cloud_size);
+  const auto three_fields_pc = create_custom_pcl<float32_t>(three_field_names, mini_cloud_size);
+  const auto five_fields_pc = create_custom_pcl<float32_t>(five_field_names, mini_cloud_size);
+  const auto invalid_pc = create_custom_pcl<float32_t>(invalid_field_names, mini_cloud_size);
+  const auto no_x_pc = create_custom_pcl<float32_t>(wrong_x_field_names, mini_cloud_size);
+  const auto no_y_pc = create_custom_pcl<float32_t>(wrong_y_field_names, mini_cloud_size);
+  const auto no_z_pc = create_custom_pcl<float32_t>(wrong_z_field_names, mini_cloud_size);
 
   EXPECT_THROW(has_intensity_and_throw_if_no_xyz(invalid_pc), std::runtime_error);
   EXPECT_THROW(has_intensity_and_throw_if_no_xyz(no_x_pc), std::runtime_error);
