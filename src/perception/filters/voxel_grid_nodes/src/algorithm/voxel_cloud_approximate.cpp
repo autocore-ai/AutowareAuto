@@ -19,6 +19,7 @@
 #include "voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp"
 
 using autoware::common::lidar_utils::add_point_to_cloud;
+using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
 namespace autoware
 {
@@ -54,10 +55,8 @@ void VoxelCloudApproximate::insert(
   // Verify the point cloud format and assign correct point_step
   constexpr auto field_size = sizeof(decltype(autoware::common::types::PointXYZIF::x));
   auto point_step = 4U * field_size;
-  if (!has_intensity_and_throw_if_no_xyz(cloud)) {
+  if (!has_intensity_and_throw_if_no_xyz(msg)) {
     point_step = 3U * field_size;
-    RCLCPP_WARN(this->get_logger(),
-      "VoxelCloudApproximate Warning: PointCloud doesn't have intensity field");
   }
 
   // Iterate through the data, but skip intensity in case the point cloud does not have it.

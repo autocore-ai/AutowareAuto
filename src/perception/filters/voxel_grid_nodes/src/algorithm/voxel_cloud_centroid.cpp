@@ -19,6 +19,7 @@
 #include "voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp"
 
 using autoware::common::lidar_utils::add_point_to_cloud;
+using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
 namespace autoware
 {
@@ -56,8 +57,6 @@ void VoxelCloudCentroid::insert(
   auto point_step = 4U * field_size;
   if (!has_intensity_and_throw_if_no_xyz(msg)) {
     point_step = 3U * field_size;
-    RCLCPP_WARN(this->get_logger(),
-      "VoxelCloudCentroid Warning: PointCloud doesn't have intensity field");
   }
 
   // Iterate through the data, but skip intensity in case the point cloud does not have it.

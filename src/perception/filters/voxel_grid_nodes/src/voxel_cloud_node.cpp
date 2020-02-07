@@ -24,8 +24,6 @@
 
 #include "lidar_utils/point_cloud_utils.hpp"
 
-using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
-
 namespace autoware
 {
 namespace perception
@@ -86,7 +84,7 @@ VoxelCloudNode::VoxelCloudNode(
 void VoxelCloudNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
   try {
-    m_voxelgrid_ptr->insert(*msg, point_step);
+    m_voxelgrid_ptr->insert(*msg);
     m_pub_ptr->publish(m_voxelgrid_ptr->get());
   } catch (const std::exception & e) {
     std::string err_msg{get_name()};

@@ -21,8 +21,6 @@
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 
-using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
-
 namespace autoware
 {
 namespace perception

@@ -28,7 +28,6 @@
 
 using autoware::common::types::float32_t;
 using autoware::common::lidar_utils::create_custom_pcl;
-using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
 class RayGroundPclValidationTester : public rclcpp::Node
 {
