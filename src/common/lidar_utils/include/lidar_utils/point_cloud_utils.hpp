@@ -40,6 +40,8 @@ using sensor_msgs::msg::PointCloud2;
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 /// max number of points in a scan for VLP16s, assuming 300 rpm = 5hz: 57870.3703 points per full
 /// rotation
@@ -155,8 +157,59 @@ has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
 LIDAR_UTILS_PUBLIC bool8_t
 has_intensity_and_throw_if_no_xyz(const PointCloud2 & cloud);
 
-LIDAR_UTILS_PUBLIC
 template <typename T>
+struct _create_custom_pcl_datatype;
+
+template <>
+struct _create_custom_pcl_datatype<int8_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT8;
+};
+
+template <>
+struct _create_custom_pcl_datatype<uint8_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT8;
+};
+
+template <>
+struct _create_custom_pcl_datatype<int16_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT16;
+};
+
+template <>
+struct _create_custom_pcl_datatype<uint16_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT16;
+};
+
+template <>
+struct _create_custom_pcl_datatype<int32_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT32;
+};
+
+template <>
+struct _create_custom_pcl_datatype<uint32_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT32;
+};
+
+template <>
+struct _create_custom_pcl_datatype<float32_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::FLOAT32;
+};
+
+template <>
+struct _create_custom_pcl_datatype<float64_t>
+{
+  static constexpr auto DATATYPE = sensor_msgs::msg::PointField::FLOAT64;
+};
+
+template <typename T>
+LIDAR_UTILS_PUBLIC
 sensor_msgs::msg::PointCloud2::SharedPtr create_custom_pcl(
   const std::vector<std::string> & field_names,
   const uint32_t cloud_size)
@@ -173,7 +226,7 @@ sensor_msgs::msg::PointCloud2::SharedPtr create_custom_pcl(
   msg->point_step = 0U;
   for (uint32_t idx = 0U; idx < field_size; ++idx) {
     msg->fields[idx].offset = static_cast<uint32_t>(idx * sizeof(T));
-    msg->fields[idx].datatype = sensor_msgs::msg::PointField::FLOAT32;
+    msg->fields[idx].datatype = _create_custom_pcl_datatype<T>::DATATYPE;
     msg->fields[idx].count = 1U;
     msg->point_step += static_cast<uint32_t>(sizeof(T));
   }
