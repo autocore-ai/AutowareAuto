@@ -18,18 +18,11 @@ Install ADE as described in the [installation section](installation-and-developm
 
 Start ADE with the LGSVL volume:
 
-* `export ADE_DOCKER_RUN_ARGS="--cap-add=SYS_PTRACE"`
-* `export ADE_GITLAB=gitlab.com`
-* `export ADE_REGISTRY=registry.gitlab.com`
-* `export ADE_IMAGES="
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/ade:master
-  registry.gitlab.com/apexai/ade-atom:latest
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto:master
-  registry.gitlab.com/apexai/ade-lgsvl:2019.12
- "`
-* `cd adehome/AutowareAuto`
-* `ade start --update`
-* `ade enter`
+```
+$ cd ~/ade-home/AutowareAuto
+$ source .aderc-lgsvl
+$ ade start --update --enter
+```
 
 Start the ROS 2 web bridge from inside ADE:
 
