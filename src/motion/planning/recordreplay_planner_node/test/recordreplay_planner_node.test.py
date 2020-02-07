@@ -22,8 +22,92 @@ import launch
 import launch.actions
 import launch_ros.actions
 from launch_ros.default_launch_description import ROSSpecificLaunchStartup
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionClient
+from autoware_auto_msgs.msg import VehicleKinematicState, Trajectory
+
+from recordreplay_planner_actions.action import RecordTrajectory, ReplayTrajectory
 
 import subprocess
+import time
+
+
+# Class to publish some dummy states
+class MockStatePublisher(Node):
+    def __init__(self):
+        super().__init__("MockSatePublisher")
+        self.publisher_ = self.create_publisher(
+            VehicleKinematicState, "vehicle_kinematic_state", 10
+        )
+
+    def publish_a_state(self):
+        msg = VehicleKinematicState()
+        self.publisher_.publish(msg)
+        self.get_logger().info("Publishing ego state...")
+
+
+class MockTrajectoryMonitor(Node):
+    def __init__(self):
+        super().__init__("MockTrajectoryMonitor")
+        self.subscription_ = self.create_subscription(
+            Trajectory, "trajectory", self.listener_callback, 10
+        )
+
+    def listener_callback(self, msg):
+        self.get_logger().info('Received: "{}"'.format(msg))
+
+
+class MockActionCaller(Node):
+    def __init__(self, node_name, action_type, action_name):
+        super().__init__(node_name)
+        self._action_client = ActionClient(self, action_type, action_name)
+        self.action_type = action_type
+
+    def cancel_done(self, future):
+        cancel_response = future.result()
+        if len(cancel_response.goals_canceling) > 0:
+            self.get_logger().info("Goal successfully canceled")
+        else:
+            self.get_logger().info("Goal failed to cancel")
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info("Goal rejected :(")
+            return
+
+        self._goal_handle = goal_handle
+        self.get_logger().info("Goal accepted :)")
+
+    def feedback_callback(self, feedback):
+        self.get_logger().info(
+            "Received feedback: {0}".format(feedback.feedback.sequence)
+        )
+
+    def manual_cancel(self):
+        self.get_logger().info("Canceling goal")
+        # Cancel the goal
+        self._cancel_future = self._goal_handle.cancel_goal_async()
+        self._cancel_future.add_done_callback(self.cancel_done)
+
+    def send_goal(self):
+        self.get_logger().info("Waiting for action server...")
+        self._action_client.wait_for_server()
+
+        goal_msg = self.action_type.Goal()
+
+        self.get_logger().info("Sending goal request...")
+
+        self._send_goal_future = self._action_client.send_goal_async(
+            goal_msg, feedback_callback=self.feedback_callback
+        )
+
+        self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+
+class MockReplayActionCaller(Node):
+    pass
 
 
 def generate_test_description(ready_fn):
@@ -66,11 +150,6 @@ def helper_start_action_goal(
     )
 
 
-def helper_publish_one_default_msg(topic: str, msgtype: str):
-    """Publish a single default message on a given topic, blocking."""
-    subprocess.run(["ros2", "topic", "pub", "-1", topic, msgtype])
-
-
 def helper_echo_topic(name: str, msgtype: str):
     return subprocess.Popen(
         ["ros2", "topic", "echo", name, msgtype],
@@ -82,86 +161,69 @@ def helper_echo_topic(name: str, msgtype: str):
 # TODO(s.me): Test: Check if "happy case" of recording, then replaying works
 class TestBasicUsage(unittest.TestCase):
     def test_happy_case_works(self):
+        # ---- Recording
         # - Start recordreplay_planner_node exe (done in test description)
-        # - Send it a "start recording" action request
-        recording_action = helper_start_action_goal(
-            "/recordtrajectory",
-            "recordreplay_planner_actions/action/RecordTrajectory",
-            "{}",
-            False,
+
+        # - Start a recording action by sending a goal
+        mock_record_action_caller = MockActionCaller(
+            "MockRecordCaller", RecordTrajectory, "recordtrajectory"
+        )
+        mock_record_action_caller.send_goal()
+
+        # - Wait for the goal sending to complete - this feels like an antipattern
+        #   though because I'm accessing the internal field of the node.
+        #   TODO(s.me) get a better suggestion.
+        rclpy.spin_until_future_complete(
+            mock_record_action_caller, mock_record_action_caller._send_goal_future
         )
 
         # - Publish a few VehicleKinematicState messages
-        for k in range(2):
-            helper_publish_one_default_msg(
-                "/vehicle_kinematic_state",
-                "autoware_auto_msgs/msg/VehicleKinematicState",
-            )
+        mock_publisher = MockStatePublisher()
+        for k in range(3):
+            time.sleep(0.1)
+            mock_publisher.publish_a_state()
+            rclpy.spin_once(mock_publisher, timeout_sec=0.2)  # Is this necessary?
 
-        # - Cancel action by sending a signal SIGTERM to the ros2 commandline action process
-        recording_action.terminate()
-        recording_action.wait(timeout=3)
+        # - Cancel recording action
+        mock_record_action_caller.manual_cancel()
 
-        # - Listen on the specified trajectory topic, storing to memory
-        listener_process = helper_echo_topic(
-            "/trajectory", "autoware_auto_msgs/msg/Trajectory",
+        # Wait for the cancel action to complete
+        rclpy.spin_until_future_complete(
+            mock_record_action_caller, mock_record_action_caller._cancel_future
         )
+
+        # ---- Replaying
+        # - Listen on the specified trajectory topic, storing to memory
+        mock_listener = MockTrajectoryMonitor()
 
         # - Send it a "start replaying" action request
-        replaying_action = helper_start_action_goal(
-            "/replaytrajectory",
-            "recordreplay_planner_actions/action/ReplayTrajectory",
-            "{}",
-            False,
+        mock_replay_action_caller = MockActionCaller(
+            "MockReplayCaller", ReplayTrajectory, "replaytrajectory"
+        )
+        mock_replay_action_caller.send_goal()
+        rclpy.spin_until_future_complete(
+            mock_replay_action_caller, mock_replay_action_caller._send_goal_future
         )
 
         # - Publish a few VehicleKinematicState messages
-        for k in range(2):
-            helper_publish_one_default_msg(
-                "/vehicle_kinematic_state",
-                "autoware_auto_msgs/msg/VehicleKinematicState",
-            )
+        for k in range(3):
+            time.sleep(0.3)
+            mock_publisher.publish_a_state()
+            rclpy.spin_once(mock_publisher, timeout_sec=0.2)  # Is this necessary?
+            time.sleep(0.1)
+            rclpy.spin_once(mock_listener, timeout_sec=0.2)  # Is this necessary?
 
-        # - Cancel action by sending a signal to the ros2 commandline process
-        replaying_action.terminate()
-        replaying_action.wait(timeout=3)
+        # - Cancel replaying action
+        mock_replay_action_caller.manual_cancel()
 
-        # - Verify that the replayed trajectories behaved as expected. FIXME this does not
-        #   properly seem to capture the output, so I can't quite verify yet.
-        listener_process.terminate()
-        listener_process.wait(timeout=3)
-        stdout = (
-            listener_process.stdout.read()
-        )  # this is empty - does ros2 echo not output if piped?
-        print("stdout is: {}.".format(stdout))
-
-    def test_two_concurrent_recordings_fail(self):
-        # - Start recordreplay_planner_node exe (done in test description)
-        # - Send it a "start recording" action request
-        recording_action = helper_start_action_goal(
-            "/recordtrajectory",
-            "recordreplay_planner_actions/action/RecordTrajectory",
-            "{}",
-            False,
+        # - Wait for the cancellation to complete
+        rclpy.spin_until_future_complete(
+            mock_replay_action_caller, mock_replay_action_caller._cancel_future
         )
 
-        # - Attempt to start another recording action, this should fail
-        second_recording_action = helper_start_action_goal(
-            "/recordtrajectory",
-            "recordreplay_planner_actions/action/RecordTrajectory",
-            "{}",
-            True,
-        )
-
-        # Get the standard output of the second recording action, which should exit on its own
-        second_recording_output = second_recording_action.communicate(timeout=10)[0]
-
-        recording_action.terminate()
-        recording_action.wait(timeout=3)
-
-        self.assertTrue("rejected" in second_recording_output.decode())
-        second_recording_action.terminate()
-        second_recording_action.wait(timeout=1)
+        # - Verify that the replayed trajectories behaved as expected
+        # TODO(s.me): Make the mock_listener record what it sees and verify it matches
+        # expectations.
 
 
 # TODO(s.me): Test: Check if an additional record action is rejected if one is already running
