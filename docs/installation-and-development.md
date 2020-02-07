@@ -15,7 +15,8 @@ Autoware.Auto applications.
 [ADE](https://ade-cli.readthedocs.io/en/latest/) is a modular Docker-based tool to ensure that all developers in a project have a common, consistent development environment.
 Please confirm [the requirements](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) for installing the tool.
 
-ADE is published as [Gitlab releases](https://gitlab.com/ApexAI/ade-cli/-/releases), download the statically-linked executable for your architecture and install it in your `PATH`.
+ADE is published as [Gitlab releases](https://gitlab.com/ApexAI/ade-cli/-/releases), Follow the
+[install](https://ade-cli.readthedocs.io/en/latest/install.html) instructions.
 
 # Setup ADE home and project checkout {#installation-and-development-setup-ade-home-and-project-checkout}
 
