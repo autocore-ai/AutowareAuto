@@ -85,20 +85,6 @@ VoxelCloudNode::VoxelCloudNode(
 ////////////////////////////////////////////////////////////////////////////////
 void VoxelCloudNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
-  // Verify the consistency of PointCloud msg
-  const auto data_length = msg->width * msg->height * msg->point_step;
-  if ((msg->data.size() != msg->row_step) || (data_length != msg->row_step)) {
-    throw std::runtime_error("VoxelCloudNode: Malformed PointCloud2");
-  }
-  // Verify the point cloud format and assign correct point_step
-  constexpr auto field_size = sizeof(decltype(autoware::common::types::PointXYZIF::x));
-  auto point_step = 4U * field_size;
-  if (!has_intensity_and_throw_if_no_xyz(msg)) {
-    point_step = 3U * field_size;
-    RCLCPP_WARN(this->get_logger(),
-      "VoxelCloudNode Warning: PointCloud doesn't have intensity field");
-  }
-
   try {
     m_voxelgrid_ptr->insert(*msg, point_step);
     m_pub_ptr->publish(m_voxelgrid_ptr->get());

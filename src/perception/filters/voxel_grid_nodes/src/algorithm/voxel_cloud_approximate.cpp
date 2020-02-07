@@ -42,9 +42,23 @@ VoxelCloudApproximate::VoxelCloudApproximate(const voxel_grid::Config & cfg)
 
 ////////////////////////////////////////////////////////////////////////////////
 void VoxelCloudApproximate::insert(
-  const sensor_msgs::msg::PointCloud2 & msg, std::size_t point_step)
+  const sensor_msgs::msg::PointCloud2 & msg)
 {
   m_cloud.header = msg.header;
+
+  // Verify the consistency of PointCloud msg
+  const auto data_length = msg.width * msg.height * msg.point_step;
+  if ((msg.data.size() != msg.row_step) || (data_length != msg.row_step)) {
+    throw std::runtime_error("VoxelCloudApproximate: Malformed PointCloud2");
+  }
+  // Verify the point cloud format and assign correct point_step
+  constexpr auto field_size = sizeof(decltype(autoware::common::types::PointXYZIF::x));
+  auto point_step = 4U * field_size;
+  if (!has_intensity_and_throw_if_no_xyz(cloud)) {
+    point_step = 3U * field_size;
+    RCLCPP_WARN(this->get_logger(),
+      "VoxelCloudApproximate Warning: PointCloud doesn't have intensity field");
+  }
 
   // Iterate through the data, but skip intensity in case the point cloud does not have it.
   // For example:

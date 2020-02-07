@@ -45,7 +45,7 @@ public:
   virtual ~VoxelCloudBase();
   /// \brief Inserts points into the voxel grid data structure, overwrites internal header
   /// \param[in] msg A point cloud to insert into the voxel grid. Assumed to have the structure XYZI
-  virtual void insert(const sensor_msgs::msg::PointCloud2 & msg, std::size_t point_step) = 0;
+  virtual void insert(const sensor_msgs::msg::PointCloud2 & msg) = 0;
 
   /// \brief Get accumulated downsampled points. Internally resets the internal grid. Header is
   ///        taken from last insert

@@ -169,21 +169,7 @@ void EuclideanClusterNode::insert_plain(const PointCloud2 & cloud)
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::insert_voxel(const PointCloud2 & cloud)
 {
-  // Verify the consistency of PointCloud msg
-  const auto data_length = cloud.width * cloud.height * cloud.point_step;
-  if ((cloud.data.size() != cloud.row_step) || (data_length != cloud.row_step)) {
-    throw std::runtime_error("EuclideanClusterNode: Malformed PointCloud2");
-  }
-  // Verify the point cloud format and assign correct point_step
-  constexpr auto field_size = sizeof(decltype(autoware::common::types::PointXYZIF::x));
-  auto point_step = 4U * field_size;
-  if (!has_intensity_and_throw_if_no_xyz(cloud)) {
-    point_step = 3U * field_size;
-    RCLCPP_WARN(this->get_logger(),
-      "EuclideanClusterNode Warning: PointCloud doesn't have intensity field");
-  }
-
-  m_voxel_ptr->insert(cloud, point_step);
+  m_voxel_ptr->insert(cloud);
   insert_plain(m_voxel_ptr->get());
 }
 ////////////////////////////////////////////////////////////////////////////////
