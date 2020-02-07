@@ -38,7 +38,7 @@
 		"name": "GPS Odometry",
 		"params": {
 			"Frequency": 12.5,
-			"Topic": "/vehicle_odometry",
+			"Topic": "/lgsvl_odom",
 			"Frame": "gps",
 			"IgnoreMapOrigin": true
 		},
@@ -144,7 +144,7 @@
 		"type": "Vehicle Control",
 		"name": "Autoware Car Control",
 		"params": {
-			"Topic": "/vehicle_control_command"
+			"Topic": "/vehicle_cmd"
 		}
 	},
 	{
