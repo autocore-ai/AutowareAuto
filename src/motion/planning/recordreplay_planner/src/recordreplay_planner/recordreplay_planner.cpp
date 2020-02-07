@@ -14,6 +14,7 @@
 #include "recordreplay_planner/recordreplay_planner.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include "time_utils/time_utils.hpp"
 
@@ -76,13 +77,16 @@ const Trajectory & RecordReplayPlanner::plan(const State & current_state)
   return from_record(current_state);
 }
 
+// TODO(s.me,c.ho) move this to motion_common
+// Compute the angle difference (in radians) between two headings.
+static double angle_difference(const Heading & a, const Heading & b)
+{
+  const auto dot = (a.real * b.real) + (a.imag * b.imag);
+  const auto amag = std::sqrt((a.real * a.real) + (a.imag * a.imag));
+  const auto bmag = std::sqrt((b.real * b.real) + (b.imag * b.imag));
+  return std::acos(dot / (amag * bmag));
+}
 
-// TODO(s.me) this currently just creates a single trajectory from the entire
-// record. This will not work for longer recordings and does not fit the receding
-// horizon idea.
-//
-// Another issue is whether it has to be resampled in time or if the data rates are
-// constant enough so that this is not an issue.
 const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
   auto & trajectory = m_trajectory;
@@ -92,19 +96,19 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   const auto distance_from_current_state =
     [&current_state](State & other_state) {
       auto s1 = current_state.state, s2 = other_state.state;
-      // TODO(s.me) Include heading or not? If yes, by what difference metric?
-      return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y);
+      const auto heading_weight = 0.1F;
+      return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y) +
+             heading_weight * angle_difference(s1.heading, s2.heading);
     };
+  const auto comparison_function =
+    [&distance_from_current_state](State & one, State & two)
+    {return distance_from_current_state(one) < distance_from_current_state(two);};
 
-  ssize_t minimum_idx = 0;
-  double minimum_distance = distance_from_current_state(m_record_buffer[0]);
-  for (auto k = 1; k < record_length; ++k) {
-    const auto d = distance_from_current_state(m_record_buffer[k]);
-    if (d < minimum_distance) {
-      minimum_distance = d;
-      minimum_idx = k;
-    }
-  }
+
+  const auto minimum_index_iterator =
+    std::min_element(std::begin(m_record_buffer), std::end(m_record_buffer),
+      comparison_function);
+  auto minimum_idx = std::distance(std::begin(m_record_buffer), minimum_index_iterator);
 
   // Determine how long the published trajectory will be
   const auto publication_length =

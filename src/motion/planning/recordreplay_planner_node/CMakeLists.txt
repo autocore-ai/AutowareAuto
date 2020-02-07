@@ -27,7 +27,7 @@ if(BUILD_TESTING)
   # Linters
   ament_lint_auto_find_test_dependencies()
   # Unit test
-  # TODO(s.me) do we do those for nodes?
+  # TODO(s.me) None yet, WIP in test/recordreplay_planner_node.test.py
 endif()
 
 ament_export_dependencies(rosidl_default_runtime)

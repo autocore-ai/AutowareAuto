@@ -58,18 +58,14 @@ public:
     const std::string & name,
     const std::string & ns,
     const std::string & ego_topic,
-    const std::string & tf_topic,
     const std::string & trajectory_topic);
 
 protected:
-  void set_planner(PlannerPtr && planner) noexcept;
-
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
   rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
   std::shared_ptr<GoalHandleRecordTrajectory> m_recordgoalhandle{nullptr};
   std::shared_ptr<GoalHandleReplayTrajectory> m_replaygoalhandle{nullptr};
 
-  rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
   PlannerPtr m_planner{nullptr};
@@ -77,13 +73,11 @@ protected:
 private:
   RECORDREPLAY_PLANNER_NODE_LOCAL void init(
     const std::string & ego_topic,
-    const std::string & tf_topic,
     const std::string & trajectory_topic
   );
 
 
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);
-  RECORDREPLAY_PLANNER_NODE_LOCAL void on_tf(const TFMessage::SharedPtr & msg);
 
   // TODO(s.me) there does not seem to be a RecordTrajectory::SharedPtr? Also
   // the return types need to be changed to the rclcpp_action types once the package

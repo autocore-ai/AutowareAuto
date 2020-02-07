@@ -1,6 +1,5 @@
 
 recordreplay_planner:
   ros__parameters:
-    tf_topic: "tf"
     ego_topic: "vehicle_kinematic_state"
     trajectory_topic: "trajectory"

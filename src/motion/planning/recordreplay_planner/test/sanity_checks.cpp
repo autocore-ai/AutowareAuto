@@ -35,7 +35,8 @@ protected:
 //------------------ Test basic properties of a recorded, then replayed trajectory
 struct PropertyTestParameters
 {
-  uint64_t time_spacing_ms;
+  std::chrono::milliseconds time_spacing_ms;
+  system_clock::time_point starting_time;
 };
 
 class sanity_checks_trajectory_properties
@@ -46,11 +47,11 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
 {
   const auto t = system_clock::now();
   const auto p = GetParam();
-  auto t0 = system_clock::from_time_t({});
+  auto t0 = p.starting_time;
 
   // Build a trajectory
   constexpr auto N = 10;
-  const auto time_increment = p.time_spacing_ms * std::chrono::milliseconds{1LL};
+  const auto time_increment = p.time_spacing_ms;
   for (uint32_t k = {}; k < N; ++k) {
     const auto next_state = make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
         t0 + k * time_increment);
@@ -71,8 +72,10 @@ INSTANTIATE_TEST_CASE_P(
   trajectory_properties,
   sanity_checks_trajectory_properties,
   testing::Values(
-    PropertyTestParameters{100},
-    PropertyTestParameters{200}
+    PropertyTestParameters{std::chrono::milliseconds(100), system_clock::from_time_t({})},
+    PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t({})},
+    PropertyTestParameters{std::chrono::milliseconds(100), system_clock::from_time_t(10)},
+    PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t(10)}
 ));
 
 
@@ -147,6 +150,7 @@ TEST(recordreplay_sanity_checks, receding_horizon_happycase)
     // normally don't check float equality but we _just_ pushed this float so it ought not
     // to have changed
     EXPECT_EQ(1.0F * k, trajectory.points[0].x);
+    EXPECT_EQ(N - k, trajectory.points.size());
   }
 }
 
