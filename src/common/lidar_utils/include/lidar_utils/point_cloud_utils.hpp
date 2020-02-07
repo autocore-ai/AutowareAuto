@@ -157,58 +157,58 @@ has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
 LIDAR_UTILS_PUBLIC bool8_t
 has_intensity_and_throw_if_no_xyz(const PointCloud2 & cloud);
 
-template <typename T>
+template<typename T>
 struct _create_custom_pcl_datatype;
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<int8_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT8;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<uint8_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT8;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<int16_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT16;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<uint16_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT16;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<int32_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::INT32;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<uint32_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::UINT32;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<float32_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::FLOAT32;
 };
 
-template <>
+template<>
 struct _create_custom_pcl_datatype<float64_t>
 {
   static constexpr auto DATATYPE = sensor_msgs::msg::PointField::FLOAT64;
 };
 
-template <typename T>
+template<typename T>
 LIDAR_UTILS_PUBLIC
 sensor_msgs::msg::PointCloud2::SharedPtr create_custom_pcl(
   const std::vector<std::string> & field_names,
