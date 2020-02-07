@@ -26,6 +26,9 @@
 
 namespace lgsvl_interface
 {
+
+/// Node wrapping LgsvlInterface.
+/// For a full list of behaviors, see \ref lgsvl
 class LGSVL_INTERFACE_PUBLIC LgsvlInterfaceNode
   : public ::autoware::drivers::vehicle_interface::VehicleInterfaceNode
 {

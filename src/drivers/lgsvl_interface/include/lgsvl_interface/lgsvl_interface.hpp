@@ -38,6 +38,9 @@ namespace lgsvl_interface
 
 using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
 
+/// Platform interface implementation for LGSVL. Bridges data to and from the simulator
+/// where custom logic is required to get simulator data to adhere to ROS conventions.
+/// For a full list of behaviors, see \ref lgsvl
 class LGSVL_INTERFACE_PUBLIC LgsvlInterface
   : public ::autoware::drivers::vehicle_interface::PlatformInterface
 {

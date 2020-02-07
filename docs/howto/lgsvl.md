@@ -103,6 +103,8 @@ ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch lgsvl_interface lgsvl_joystick.launch.py
 ```
 
+\warning The following demo currently does not work due to a bug in the launch scripts
+
 For an example of using `VehicleControlCommand` with LGSVL, run the following demo:
 
 ```
@@ -110,6 +112,17 @@ $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch lgsvl_interface lgsvl_vehicle_control_command.launch.py
 ```
+
+The full list of behaviors the `lgsvl_interface` implements is:
+1. Converts GPS-Odometry sensor to `VehicleKinematicState` and `TFMessage` (on `/tf`) with:
+    1. The orientation corrected (right-handed system), and the vehicle frame with x forward
+    2. Position set to zero with the first ground truth position. This makes the `/odom` frame local
+    3. This behavior can be disabled by setting the simulator odometry topic to "null"
+2. Converts control inputs with CCW positive rotations to the CCW negative inputs the LGSVL
+simulator expects
+3. Provides a mapping from `VehicleControlCommand` to the `RawControlCommand` LGSVL expects via
+parametrizable 1D lookup tables
+
 
 ## Troubleshooting
 
