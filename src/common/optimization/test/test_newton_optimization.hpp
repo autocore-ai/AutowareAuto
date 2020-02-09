@@ -33,6 +33,7 @@ class TestFixedLineSearch : public ::testing::Test
 {
 };
 
+/// This is the expression for `y = (x + 1)^2 +1`
 class DummyObjective : public Expression<DummyObjective,
     Eigen::Matrix<double, 1U, 1U>, 1U, 1U>
 {
@@ -53,7 +54,7 @@ public:
   /// \return Evaluated score
   Value operator()(const DomainValue & x)
   {
-    return sign * (std::pow(x(0,0) + 1.0, 2.0) + 1.0);
+    return sign * (std::pow(x(0, 0) + 1.0, 2.0) + 1.0);
   }
 
   /// Get the jacobian at a given parameter value.
@@ -61,7 +62,7 @@ public:
   /// \param out Evaluated jacobian matrix.
   void jacobian(const DomainValue & x, JacobianRef out)
   {
-    out(0,0) = sign * 2.0 * (x(0,0) + 1.0);
+    out(0, 0) = sign * 2.0 * (x(0, 0) + 1.0);
   }
 
   /// Get the hessian at a given parameter value.
@@ -69,7 +70,7 @@ public:
   /// \param out Evaluated hessian matrix.
   void hessian(const DomainValue & x, HessianRef out)
   {
-    out(0,0) = sign * 2.0;
+    out(0, 0) = sign * 2.0;
   }
 
 };

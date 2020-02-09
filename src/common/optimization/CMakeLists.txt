@@ -17,12 +17,15 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 set(OPTIMIZATION_LIB_SRC
         src/optimization.cpp
+        src/optimizer_options.cpp
         src/utils.cpp)
 
 set(OPTIMIZATION_LIB_HEADERS
         include/optimization/visibility_control.hpp
         include/optimization/utils.hpp
         include/optimization/optimization_problem.hpp
+        include/optimization/optimizer_options.hpp
+        include/optimization/line_search.hpp
         include/optimization/optimizer.hpp)
 
 ament_auto_add_library(
