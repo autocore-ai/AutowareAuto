@@ -47,15 +47,18 @@ class MockStatePublisher(Node):
         self.get_logger().info("Publishing ego state...")
 
 
+# Class to listen for trajectories being published and count them
 class MockTrajectoryMonitor(Node):
     def __init__(self):
         super().__init__("MockTrajectoryMonitor")
         self.subscription_ = self.create_subscription(
             Trajectory, "trajectory", self.listener_callback, 10
         )
+        self.trajectories_seen = 0
 
     def listener_callback(self, msg):
         self.get_logger().info('Received: "{}"'.format(msg))
+        self.trajectories_seen += 1
 
 
 class MockActionCaller(Node):
@@ -77,8 +80,8 @@ class MockActionCaller(Node):
             self.get_logger().info("Goal rejected :(")
             return
 
-        self._goal_handle = goal_handle
         self.get_logger().info("Goal accepted :)")
+        self._goal_handle = goal_handle
 
     def feedback_callback(self, feedback):
         self.get_logger().info(
@@ -87,23 +90,22 @@ class MockActionCaller(Node):
 
     def manual_cancel(self):
         self.get_logger().info("Canceling goal")
-        # Cancel the goal
-        self._cancel_future = self._goal_handle.cancel_goal_async()
-        self._cancel_future.add_done_callback(self.cancel_done)
+        cancel_future = self._goal_handle.cancel_goal_async()
+        cancel_future.add_done_callback(self.cancel_done)
+        return cancel_future
 
     def send_goal(self):
         self.get_logger().info("Waiting for action server...")
         self._action_client.wait_for_server()
 
-        goal_msg = self.action_type.Goal()
-
         self.get_logger().info("Sending goal request...")
-
-        self._send_goal_future = self._action_client.send_goal_async(
+        goal_msg = self.action_type.Goal()
+        send_goal_future = self._action_client.send_goal_async(
             goal_msg, feedback_callback=self.feedback_callback
         )
 
-        self._send_goal_future.add_done_callback(self.goal_response_callback)
+        send_goal_future.add_done_callback(self.goal_response_callback)
+        return send_goal_future
 
 
 def generate_test_description(ready_fn):
@@ -133,60 +135,40 @@ def generate_test_description(ready_fn):
     return ld
 
 
-def helper_start_action_goal(
-    name: str, goal: str, parameters: str, redirect_stdout: bool = False
-):
-    """Start an action call and return the started process object, non-blocking."""
-    if redirect_stdout:
-        mystdout = subprocess.PIPE
-    else:
-        mystdout = None
-    return subprocess.Popen(
-        ["ros2", "action", "send_goal", name, goal, parameters], stdout=mystdout
-    )
+def helper_pub_topic_one(name: str, msgtype: str):
+    return subprocess.run(["ros2", "topic", "pub", name, msgtype, "-1"])
 
 
-def helper_echo_topic(name: str, msgtype: str):
-    return subprocess.Popen(
-        ["ros2", "topic", "echo", name, msgtype],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-
-# TODO(s.me): Test: Check if "happy case" of recording, then replaying works
+# Test: Check if "happy case" of recording, then replaying works
 class TestBasicUsage(unittest.TestCase):
     def test_happy_case_works(self):
         # ---- Recording
-        # - Start recordreplay_planner_node exe (done in test description)
+        # - Start recordreplay_planner_node exe (done in launch description)
 
         # - Start a recording action by sending a goal
         mock_record_action_caller = MockActionCaller(
             "MockRecordCaller", RecordTrajectory, "recordtrajectory"
         )
-        mock_record_action_caller.send_goal()
 
-        # - Wait for the goal sending to complete - this feels like an antipattern
-        #   though because I'm accessing the internal field of the node.
-        #   TODO(s.me) get a better suggestion.
-        rclpy.spin_until_future_complete(
-            mock_record_action_caller, mock_record_action_caller._send_goal_future
-        )
+        # - Send goal, then wait for the goal sending to complete
+        send_goal_future = mock_record_action_caller.send_goal()
+        rclpy.spin_until_future_complete(mock_record_action_caller, send_goal_future)
+        rclpy.spin_once(mock_record_action_caller, timeout_sec=2)  # apparently needed
 
         # - Publish a few VehicleKinematicState messages
         mock_publisher = MockStatePublisher()
         for k in range(3):
             time.sleep(0.1)
-            mock_publisher.publish_a_state()
-            rclpy.spin_once(mock_publisher, timeout_sec=0.2)  # Is this necessary?
+            mock_publisher.publish_a_state()  # FIXME(s.me) This does not appear to get seen
+            helper_pub_topic_one(  # This does get seen
+                "/vehicle_kinematic_state",
+                "autoware_auto_msgs/msg/VehicleKinematicState",
+            )
 
-        # - Cancel recording action
-        mock_record_action_caller.manual_cancel()
-
-        # Wait for the cancel action to complete
-        rclpy.spin_until_future_complete(
-            mock_record_action_caller, mock_record_action_caller._cancel_future
-        )
+        # - Cancel recording action, then wait for the cancel action to complete
+        cancel_future = mock_record_action_caller.manual_cancel()
+        rclpy.spin_until_future_complete(mock_record_action_caller, cancel_future)
+        rclpy.spin_once(mock_record_action_caller, timeout_sec=2)  # apparently needed
 
         # ---- Replaying
         # - Listen on the specified trajectory topic, storing to memory
@@ -196,30 +178,38 @@ class TestBasicUsage(unittest.TestCase):
         mock_replay_action_caller = MockActionCaller(
             "MockReplayCaller", ReplayTrajectory, "replaytrajectory"
         )
-        mock_replay_action_caller.send_goal()
-        rclpy.spin_until_future_complete(
-            mock_replay_action_caller, mock_replay_action_caller._send_goal_future
-        )
+        # - Send goal, wait for the goal sending to complete
+        send_goal_future = mock_replay_action_caller.send_goal()
+        rclpy.spin_until_future_complete(mock_replay_action_caller, send_goal_future)
+        rclpy.spin_once(mock_replay_action_caller, timeout_sec=2)  # apparently needed
 
         # - Publish a few VehicleKinematicState messages
         for k in range(3):
-            time.sleep(0.3)
-            mock_publisher.publish_a_state()
-            rclpy.spin_once(mock_publisher, timeout_sec=0.2)  # Is this necessary?
             time.sleep(0.1)
-            rclpy.spin_once(mock_listener, timeout_sec=0.2)  # Is this necessary?
+            # FIXME(s.me) This does not appear to get seen by recordreplay node
+            mock_publisher.publish_a_state()
 
-        # - Cancel replaying action
-        mock_replay_action_caller.manual_cancel()
+            helper_pub_topic_one(  # This does get seen
+                "/vehicle_kinematic_state",
+                "autoware_auto_msgs/msg/VehicleKinematicState",
+            )
+            time.sleep(0.1)
 
-        # - Wait for the cancellation to complete
-        rclpy.spin_until_future_complete(
-            mock_replay_action_caller, mock_replay_action_caller._cancel_future
-        )
+            # Spin the recording a couple of times, otherwise it'll not reliably process the
+            # trajectory. FIXME(s.me) this has to be done more systematically, by for example
+            # having the listener in the launch description itself so it just spins by itself.
+            for k in range(3):
+                rclpy.spin_once(mock_listener, timeout_sec=0.2)
+
+        # - Cancel replaying action, then wait for the cancellation to complete
+        cancel_future = mock_replay_action_caller.manual_cancel()
+        rclpy.spin_until_future_complete(mock_replay_action_caller, cancel_future)
+        rclpy.spin_once(mock_replay_action_caller, timeout_sec=2)  # apparently needed
 
         # - Verify that the replayed trajectories behaved as expected
         # TODO(s.me): Make the mock_listener record what it sees and verify it matches
         # expectations.
+        self.assertEqual(mock_listener.trajectories_seen, 3)
 
 
 # TODO(s.me): Test: Check if an additional record action is rejected if one is already running
