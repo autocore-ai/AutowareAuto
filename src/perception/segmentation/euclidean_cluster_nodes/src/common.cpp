@@ -19,6 +19,8 @@
 #include <geometry/bounding_box_2d.hpp>
 #include <memory>
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
+#include <autoware_auto_msgs/msg/bounding_box.hpp>
+#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 
 namespace autoware
 {
@@ -53,11 +55,10 @@ BoundingBox compute_lfit_bounding_box(euclidean_cluster::Cluster & cls)
 ////////////////////////////////////////////////////////////////////////////////
 void compute_eigenboxes(const Clusters & clusters, BoundingBoxArray & boxes)
 {
-  boxes.size = 0U;
+  boxes.boxes.clear();
   for (auto & cls : clusters.clusters) {
     try {
-      boxes.boxes[boxes.size] = compute_eigenbox(cls);
-      ++boxes.size;
+      boxes.boxes.push_back(compute_eigenbox(cls));
     } catch (const std::exception & e) {
       std::cerr << e.what() << "\n";
     }
@@ -66,10 +67,11 @@ void compute_eigenboxes(const Clusters & clusters, BoundingBoxArray & boxes)
 ////////////////////////////////////////////////////////////////////////////////
 void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & boxes)
 {
-  boxes.size = 0U;
+  boxes.boxes.clear();
   for (auto & cls : clusters.clusters) {
     try {
-      auto & box = boxes.boxes[boxes.size];
+      boxes.boxes.push_back(autoware_auto_msgs::msg::BoundingBox{});
+      auto & box = boxes.boxes[boxes.boxes.size()];
       box = compute_eigenbox(cls);
       using euclidean_cluster::PointXYZI;
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
@@ -77,7 +79,6 @@ void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & box
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
       const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[cls.row_step]);
       common::geometry::bounding_box::compute_height(begin, end, box);
-      ++boxes.size;
     } catch (const std::exception & e) {
       std::cerr << e.what() << "\n";
     }
@@ -86,11 +87,10 @@ void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & box
 ////////////////////////////////////////////////////////////////////////////////
 void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes)
 {
-  boxes.size = 0U;
+  boxes.boxes.clear();
   for (auto & cls : clusters.clusters) {
     try {
-      boxes.boxes[boxes.size] = compute_lfit_bounding_box(cls);
-      ++boxes.size;
+      boxes.boxes.push_back(compute_lfit_bounding_box(cls));
     } catch (const std::exception & e) {
       std::cerr << e.what() << "\n";
     }
@@ -99,10 +99,11 @@ void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes)
 ////////////////////////////////////////////////////////////////////////////////
 void compute_lfit_bounding_boxes_with_z(Clusters & clusters, BoundingBoxArray & boxes)
 {
-  boxes.size = 0U;
+  boxes.boxes.clear();
   for (auto & cls : clusters.clusters) {
     try {
-      auto & box = boxes.boxes[boxes.size];
+      boxes.boxes.push_back(autoware_auto_msgs::msg::BoundingBox{});
+      auto & box = boxes.boxes[boxes.boxes.size()];
       box = compute_lfit_bounding_box(cls);
       using euclidean_cluster::PointXYZI;
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
@@ -110,7 +111,6 @@ void compute_lfit_bounding_boxes_with_z(Clusters & clusters, BoundingBoxArray & 
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
       const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[cls.row_step]);
       common::geometry::bounding_box::compute_height(begin, end, box);
-      ++boxes.size;
     } catch (const std::exception & e) {
       std::cerr << e.what() << "\n";
     }
