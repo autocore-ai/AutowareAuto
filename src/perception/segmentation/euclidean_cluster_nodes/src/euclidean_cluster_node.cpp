@@ -17,6 +17,7 @@
 ///        hulls
 
 #include <memory>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
@@ -42,7 +43,7 @@ EuclideanClusterNode::EuclideanClusterNode(
   create_publisher<Clusters>(
     get_parameter("cluster_topic").as_string(), rclcpp::QoS(10))},
 m_box_pub_ptr{declare_parameter("box_topic").get<std::string>().empty() ? nullptr :
-  create_publisher<BoundingBoxArray>(declare_parameter("box_topic").get<std::string>())},
+  create_publisher<BoundingBoxArray>(declare_parameter("box_topic").get<std::string>(), rclcpp::QoS{10})},
 m_cluster_alg{
   euclidean_cluster::Config{
     declare_parameter("cluster.frame_id").get<std::string>().c_str(),
@@ -113,7 +114,7 @@ EuclideanClusterNode::EuclideanClusterNode(
   m_cluster_pub_ptr{cluster_topic.empty() ? nullptr :
   create_publisher<Clusters>(cluster_topic.c_str(), rclcpp::QoS(10))},
 m_box_pub_ptr{box_topic.empty() ? nullptr :
-  create_publisher<BoundingBoxArray>(box_topic.c_str())},
+  create_publisher<BoundingBoxArray>(box_topic.c_str(), rclcpp::QoS{10})},
 m_cluster_alg{cls_cfg, hash_cfg},
 m_clusters{},
 m_boxes{},
@@ -207,9 +208,9 @@ void EuclideanClusterNode::handle_clusters(
       }
     } else {
       if (m_use_z) {
-        details::compute_lfit_bounding_box_with_z(clusters, m_boxes);
+        details::compute_lfit_bounding_boxes_with_z(clusters, m_boxes);
       } else {
-        details::compute_lfit_bounding_box(clusters, m_boxes);
+        details::compute_lfit_bounding_boxes(clusters, m_boxes);
       }
     }
     m_boxes.header.stamp = header.stamp;

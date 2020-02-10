@@ -22,8 +22,8 @@
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <euclidean_cluster_nodes/visibility_control.hpp>
 // TODO(c.ho) waiting for bounding boxes
-// #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
-// #include <euclidean_cluster_nodes/details/common.hpp>
+#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
+#include <euclidean_cluster_nodes/details/common.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <memory>
@@ -107,11 +107,11 @@ private:
   // pub/sub
   const rclcpp::Subscription<PointCloud2>::SharedPtr m_cloud_sub_ptr;
   const rclcpp::Publisher<Clusters>::SharedPtr m_cluster_pub_ptr;
-  // const rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_box_pub_ptr;
+  const rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_box_pub_ptr;
   // algorithms
   euclidean_cluster::EuclideanCluster m_cluster_alg;
   Clusters m_clusters;
-  // BoundingBoxArray m_boxes;
+  BoundingBoxArray m_boxes;
   std::unique_ptr<VoxelAlgorithm> m_voxel_ptr;
   const bool8_t m_use_lfit;
   const bool8_t m_use_z;

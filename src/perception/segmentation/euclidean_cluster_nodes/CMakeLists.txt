@@ -30,9 +30,9 @@ find_package(voxel_grid_nodes REQUIRED)
 # Library
 set(CLUSTER_NODE_LIB euclidean_cluster_node)
 add_library(${CLUSTER_NODE_LIB} SHARED
-  # include/euclidean_cluster_nodes/details/common.hpp
+  include/euclidean_cluster_nodes/details/common.hpp
   include/euclidean_cluster_nodes/euclidean_cluster_node.hpp
-  # src/common.cpp
+  src/common.cpp
   src/euclidean_cluster_node.cpp)
 target_include_directories(${CLUSTER_NODE_LIB} PUBLIC "include")
 autoware_set_compile_options(${CLUSTER_NODE_LIB})
