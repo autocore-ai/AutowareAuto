@@ -41,8 +41,8 @@ EuclideanClusterNode::EuclideanClusterNode(
   m_cluster_pub_ptr{declare_parameter("cluster_topic").get<std::string>().empty() ? nullptr :
   create_publisher<Clusters>(
     get_parameter("cluster_topic").as_string(), rclcpp::QoS(10))},
-// m_box_pub_ptr{declare_parameter("box_topic").get<std::string>().empty() ? nullptr :
-//   create_publisher<BoundingBoxArray>(declare_parameter("box_topic").get<std::string>())},
+m_box_pub_ptr{declare_parameter("box_topic").get<std::string>().empty() ? nullptr :
+  create_publisher<BoundingBoxArray>(declare_parameter("box_topic").get<std::string>())},
 m_cluster_alg{
   euclidean_cluster::Config{
     declare_parameter("cluster.frame_id").get<std::string>().c_str(),
@@ -59,7 +59,7 @@ m_cluster_alg{
   }
 },
 m_clusters{},
-// m_boxes{},
+m_boxes{},
 m_voxel_ptr{nullptr},  // Because voxel config's Point types don't accept positional arguments
 m_use_lfit{declare_parameter("use_lfit").get<bool>()},
 m_use_z{declare_parameter("use_z").get<bool>()}
@@ -112,11 +112,11 @@ EuclideanClusterNode::EuclideanClusterNode(
       [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
   m_cluster_pub_ptr{cluster_topic.empty() ? nullptr :
   create_publisher<Clusters>(cluster_topic.c_str(), rclcpp::QoS(10))},
-// m_box_pub_ptr{box_topic.empty() ? nullptr :
-//   create_publisher<BoundingBoxArray>(box_topic.c_str())},
+m_box_pub_ptr{box_topic.empty() ? nullptr :
+  create_publisher<BoundingBoxArray>(box_topic.c_str())},
 m_cluster_alg{cls_cfg, hash_cfg},
 m_clusters{},
-// m_boxes{},
+m_boxes{},
 m_voxel_ptr{voxel_cfg_ptr ? std::make_unique<VoxelAlgorithm>(*voxel_cfg_ptr) : nullptr},
 m_use_lfit{use_lfit},
 m_use_z{use_z}
@@ -145,14 +145,13 @@ void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
   // TODO(c.ho) bring back commented out code when bounding boxes are available
   (void)cfg;
   // Sanity check
-  // if ((!m_box_pub_ptr) && (!m_cluster_pub_ptr)) {
-  if (!m_cluster_pub_ptr) {
+  if ((!m_box_pub_ptr) && (!m_cluster_pub_ptr)) {
     throw std::domain_error{"EuclideanClusterNode: No publisher topics provided"};
   }
   // Reserve
   m_clusters.clusters.reserve(cfg.max_num_clusters());
-  // m_boxes.header.frame_id.reserve(256U);
-  // m_boxes.header.frame_id = cfg.frame_id().c_str();
+  m_boxes.header.frame_id.reserve(256U);
+  m_boxes.header.frame_id = cfg.frame_id().c_str();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::insert_plain(const PointCloud2 & cloud)
@@ -199,26 +198,25 @@ void EuclideanClusterNode::handle_clusters(
   if (m_cluster_pub_ptr) {
     publish_clusters(clusters, header);
   }
-  // TODO(c.ho) Uncomment when bounding boxes are in
-  // if (m_box_pub_ptr) {
-  //   if (m_use_lfit) {
-  //     if (m_use_z) {
-  //       details::compute_eigenboxes_with_z(clusters, m_boxes);
-  //     } else {
-  //       details::compute_eigenboxes(clusters, m_boxes);
-  //     }
-  //   } else {
-  //     if (m_use_z) {
-  //       details::compute_lfit_bounding_box_with_z(clusters, m_boxes);
-  //     } else {
-  //       details::compute_lfit_bounding_box(clusters, m_boxes);
-  //     }
-  //   }
-  //   m_boxes.header.stamp = header.stamp;
-  //   // Frame id was reserved
-  //   m_boxes.header.frame_id = header.frame_id;
-  //   m_box_pub_ptr->publish(m_boxes);
-  // }
+  if (m_box_pub_ptr) {
+    if (m_use_lfit) {
+      if (m_use_z) {
+        details::compute_eigenboxes_with_z(clusters, m_boxes);
+      } else {
+        details::compute_eigenboxes(clusters, m_boxes);
+      }
+    } else {
+      if (m_use_z) {
+        details::compute_lfit_bounding_box_with_z(clusters, m_boxes);
+      } else {
+        details::compute_lfit_bounding_box(clusters, m_boxes);
+      }
+    }
+    m_boxes.header.stamp = header.stamp;
+    // Frame id was reserved
+    m_boxes.header.frame_id = header.frame_id;
+    m_box_pub_ptr->publish(m_boxes);
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::handle(const PointCloud2::SharedPtr msg_ptr)
