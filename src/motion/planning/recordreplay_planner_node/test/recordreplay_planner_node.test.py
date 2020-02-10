@@ -188,7 +188,6 @@ class TestBasicUsage(unittest.TestCase):
             time.sleep(0.1)
             # FIXME(s.me) This does not appear to get seen by recordreplay node
             mock_publisher.publish_a_state()
-
             helper_pub_topic_one(  # This does get seen
                 "/vehicle_kinematic_state",
                 "autoware_auto_msgs/msg/VehicleKinematicState",
@@ -198,7 +197,7 @@ class TestBasicUsage(unittest.TestCase):
             # Spin the recording a couple of times, otherwise it'll not reliably process the
             # trajectory. FIXME(s.me) this has to be done more systematically, by for example
             # having the listener in the launch description itself so it just spins by itself.
-            for k in range(3):
+            for kk in range(3):
                 rclpy.spin_once(mock_listener, timeout_sec=0.2)
 
         # - Cancel replaying action, then wait for the cancellation to complete
