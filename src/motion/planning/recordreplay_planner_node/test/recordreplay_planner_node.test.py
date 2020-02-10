@@ -36,7 +36,7 @@ import time
 # Class to publish some dummy states
 class MockStatePublisher(Node):
     def __init__(self):
-        super().__init__("MockSatePublisher")
+        super().__init__("MockStatePublisher")
         self.publisher_ = self.create_publisher(
             VehicleKinematicState, "vehicle_kinematic_state", 10
         )
