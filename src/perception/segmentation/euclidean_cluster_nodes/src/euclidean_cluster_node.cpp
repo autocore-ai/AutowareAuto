@@ -44,8 +44,8 @@ EuclideanClusterNode::EuclideanClusterNode(
   create_publisher<Clusters>(
     get_parameter("cluster_topic").as_string(), rclcpp::QoS(10))},
 m_box_pub_ptr{declare_parameter("box_topic").get<std::string>().empty() ? nullptr :
-  create_publisher<BoundingBoxArray>(declare_parameter(
-      "box_topic").get<std::string>(), rclcpp::QoS{10})},
+  create_publisher<BoundingBoxArray>(get_parameter(
+      "box_topic").as_string(), rclcpp::QoS{10})},
 m_cluster_alg{
   euclidean_cluster::Config{
     declare_parameter("cluster.frame_id").get<std::string>().c_str(),
