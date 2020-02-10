@@ -16,11 +16,13 @@
 /// \brief This file implements a clustering node that published colored point clouds and convex
 ///        hulls
 
-#include <geometry/bounding_box_2d.hpp>
 #include <memory>
+
+#include "geometry/bounding_box_2d.hpp"
+#include "autoware_auto_msgs/msg/bounding_box.hpp"
+#include "autoware_auto_msgs/msg/bounding_box_array.hpp"
+
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
-#include <autoware_auto_msgs/msg/bounding_box.hpp>
-#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 
 namespace autoware
 {
