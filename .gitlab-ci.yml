@@ -99,6 +99,7 @@ build:
              -DCMAKE_BUILD_TYPE=Debug
       '
     - 'colcon test
+           --packages-skip robot_localization
            --merge-install
            --install-base /opt/AutowareAuto
            --abort-on-error
@@ -154,6 +155,7 @@ coverage:
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.base --initial'
     - 'colcon test
+           --packages-skip robot_localization
            --abort-on-error
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
