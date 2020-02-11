@@ -108,3 +108,5 @@ Additionally, you can visualize the bounding boxes using rviz2:
 ```bash
 ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/autoware_auto_examples/share/autoware_auto_examples/rviz2/bounding_boxes.rviz
 ```
+
+![Autoware.Auto bounding boxes segmentation snapshot](autoware-auto-bounding-boxes.png)
