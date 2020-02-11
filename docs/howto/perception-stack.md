@@ -81,8 +81,30 @@ ade$ source install/setup.bash
 ade$ ros2 run voxel_grid_nodes voxel_grid_cloud_node_exe __params:=/home/"${USER}"/AutowareAuto/src/perception/filters/voxel_grid_nodes/param/vlp16_lexus_centroid.param.yaml
 ```
 
-After this we will have a new topic, named (`/points_downsampled`) that we can visualize with the
+After this we will have a new topic, named (`/points_downsampled`) that we can visualized with the
 provided `rviz2` configuration file in `src/tools/autoware_auto_examples/rviz2/autoware_voxel.rviz`
 
 ![Autoware.Auto voxel grid downsampling snapshot](autoware-auto-voxel-grid-downsampling.png)
 
+The next component is in the `euclidean_cluter_nodes` package, to start it we will need the `ray_ground_classifier_nodes` package running.
+
+Open a new ADE terminal and type the following:
+
+```bash
+$ ade enter
+ade$ cd AutowareAuto
+ade$ source install/setup.bash
+ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_exe __params:=/home/${USER}/AutowareAuto/src/perception/segmentation/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml
+```
+
+You can check that it is running by showing the output of the `/lidar_bounding_boxes` topic:
+
+```bash
+ade$ ros2 topic echo /lidar_bounding_boxes
+```
+
+Additionally, you can visualize the bounding boxes using rviz2:
+
+```bash
+ade$ rviz2 -d /home/"${USER}"/AutowareAuto/install/autoware_auto_examples/share/autoware_auto_examples/rviz2/bounding_boxes.rviz
+```
