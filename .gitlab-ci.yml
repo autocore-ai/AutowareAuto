@@ -164,6 +164,7 @@ coverage:
             "*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*"
             "*/AutowareAuto/build/mpc_planner/*" "*/AutowareAuto/build/mpc_controller/*"
             "*/AutowareAuto/src/external/*" "*/AutowareAuto/build/robot_localization/*"
+            "*/AutowareAuto/build/recordreplay_planner_actions/*"
             -o lcov.total.filtered'
     - 'genhtml --config-file .lcovrc -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage'
   artifacts:
