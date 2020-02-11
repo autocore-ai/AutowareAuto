@@ -75,6 +75,10 @@ private:
 class OPTIMIZATION_PUBLIC FixedLineSearch : public LineSearch<FixedLineSearch>
 {
 public:
+  /// Constructor.
+  /// \param step Fixed step to be used.
+  explicit FixedLineSearch(const StepT step = std::numeric_limits<StepT>::min())
+  : LineSearch(step) {}
   /// Returns directly the pre-set (maximum) step length
   /// \return The fixed step length.
   template<typename OptimizationProblemT>
