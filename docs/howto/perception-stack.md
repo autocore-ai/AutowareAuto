@@ -86,7 +86,7 @@ provided `rviz2` configuration file in `src/tools/autoware_auto_examples/rviz2/a
 
 ![Autoware.Auto voxel grid downsampling snapshot](autoware-auto-voxel-grid-downsampling.png)
 
-The next component is in the `euclidean_cluter_nodes` package, to start it we will need the `ray_ground_classifier_nodes` package running.
+The next component is in the `euclidean_cluster_nodes` package, to start it we will need the `ray_ground_classifier_nodes` package running.
 
 Open a new ADE terminal and type the following:
 
