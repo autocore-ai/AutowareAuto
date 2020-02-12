@@ -29,22 +29,25 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
   // TODO(s.me) get topics from parameters
   const auto ego_topic = declare_parameter("ego_topic").get<std::string>();
   const auto trajectory_topic = declare_parameter("trajectory_topic").get<std::string>();
-  init(ego_topic, trajectory_topic);
+  const auto heading_weight = static_cast<double>(declare_parameter("heading_weight").get<float>());
+  init(ego_topic, trajectory_topic, heading_weight);
 }
 ////////////////////////////////////////////////////////////////////////////////
 RecordReplayPlannerNode::RecordReplayPlannerNode(
   const std::string & name,
   const std::string & ns,
   const std::string & ego_topic,
-  const std::string & trajectory_topic)
+  const std::string & trajectory_topic,
+  const double heading_weight)
 : Node{name, ns}
 {
-  init(ego_topic, trajectory_topic);
+  init(ego_topic, trajectory_topic, heading_weight);
 }
 
 void RecordReplayPlannerNode::init(
   const std::string & ego_topic,
-  const std::string & trajectory_topic)
+  const std::string & trajectory_topic,
+  const double heading_weight)
 {
   using rclcpp::QoS;
 
@@ -81,6 +84,7 @@ void RecordReplayPlannerNode::init(
 
   // Create and set a planner object that we'll talk to
   m_planner = std::make_unique<recordreplay_planner::RecordReplayPlanner>();
+  m_planner->set_heading_weight(heading_weight);
 }
 
 

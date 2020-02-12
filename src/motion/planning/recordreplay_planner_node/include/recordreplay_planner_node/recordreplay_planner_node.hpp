@@ -58,7 +58,8 @@ public:
     const std::string & name,
     const std::string & ns,
     const std::string & ego_topic,
-    const std::string & trajectory_topic);
+    const std::string & trajectory_topic,
+    const double heading_weight);
 
 protected:
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
@@ -73,7 +74,8 @@ protected:
 private:
   RECORDREPLAY_PLANNER_NODE_LOCAL void init(
     const std::string & ego_topic,
-    const std::string & trajectory_topic
+    const std::string & trajectory_topic,
+    const double heading_weight
   );
 
 

@@ -3,3 +3,4 @@ recordreplay_planner:
   ros__parameters:
     ego_topic: "vehicle_kinematic_state"
     trajectory_topic: "trajectory"
+    heading_weight: 0.1
