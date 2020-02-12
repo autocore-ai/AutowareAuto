@@ -18,6 +18,7 @@
 #include <recordreplay_planner/visibility_control.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <motion_common/motion_common.hpp>
 
 #include <ostream>
 #include <deque>
@@ -31,6 +32,7 @@ namespace recordreplay_planner
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 using Heading = decltype(decltype(State::state)::heading);
+using motion::motion_common::to_angle;
 
 enum class RecordReplayState
 {

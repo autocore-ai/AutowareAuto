@@ -109,15 +109,6 @@ const Trajectory & RecordReplayPlanner::plan(const State & current_state)
   return from_record(current_state);
 }
 
-// TODO(s.me,c.ho) move this to motion_common
-// Compute the angle difference (in radians) between two headings.
-static double angle_difference(const Heading & a, const Heading & b)
-{
-  const auto dot = (a.real * b.real) + (a.imag * b.imag);
-  const auto amag = std::sqrt((a.real * a.real) + (a.imag * a.imag));
-  const auto bmag = std::sqrt((b.real * b.real) + (b.imag * b.imag));
-  return std::acos(dot / (amag * bmag));
-}
 
 const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
@@ -127,10 +118,10 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   // Find the closest point to the current state in the stored states buffer
   const auto distance_from_current_state =
     [&current_state](State & other_state) {
-      auto s1 = current_state.state, s2 = other_state.state;
+      const auto s1 = current_state.state, s2 = other_state.state;
       const auto heading_weight = 0.1F;
       return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y) +
-             heading_weight * angle_difference(s1.heading, s2.heading);
+             heading_weight * std::abs(to_angle(s1.heading - s2.heading));
     };
   const auto comparison_function =
     [&distance_from_current_state](State & one, State & two)
