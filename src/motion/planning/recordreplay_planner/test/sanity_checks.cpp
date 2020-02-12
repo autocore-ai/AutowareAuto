@@ -211,3 +211,37 @@ TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
     EXPECT_EQ(0.0F, trajectory.points[0].y);
   }
 }
+
+
+TEST(recordreplay_sanity_checks, state_setting_mechanism)
+{
+  auto planner = RecordReplayPlanner();
+
+  // Make sure setting and reading the recording state works
+  EXPECT_FALSE(planner.is_recording() );
+  EXPECT_FALSE(planner.is_replaying() );
+
+  planner.start_recording();
+
+  EXPECT_TRUE(planner.is_recording() );
+  EXPECT_FALSE(planner.is_replaying() );
+
+  planner.stop_recording();
+
+  EXPECT_FALSE(planner.is_recording() );
+  EXPECT_FALSE(planner.is_replaying() );
+
+  // Make sure setting and reading the replaying state works
+  EXPECT_FALSE(planner.is_recording() );
+  EXPECT_FALSE(planner.is_replaying() );
+
+  planner.start_replaying();
+
+  EXPECT_FALSE(planner.is_recording() );
+  EXPECT_TRUE(planner.is_replaying() );
+
+  planner.stop_replaying();
+
+  EXPECT_FALSE(planner.is_recording() );
+  EXPECT_FALSE(planner.is_replaying() );
+}
