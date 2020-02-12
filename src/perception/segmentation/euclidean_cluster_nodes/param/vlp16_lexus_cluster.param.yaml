@@ -9,7 +9,7 @@ euclidean_cluster_cloud_node:
     max_cloud_size: 55000
     downsample: False
     use_lfit: True
-    use_z: False
+    use_z: True
     cluster:
       frame_id: "base_link"
       min_cluster_size: 10
