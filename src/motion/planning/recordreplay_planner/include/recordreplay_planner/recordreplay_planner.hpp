@@ -69,9 +69,16 @@ public:
   // Return the number of currently-recorded State messages
   uint32_t get_record_length() const noexcept;
 
+  // Heading weight configuration
+  void set_heading_weight(double heading_weight);
+  double get_heading_weight();
+
 private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
+
+  // Weight of heading in computations of differences between states
+  double m_heading_weight = 0.1;
 
   std::deque<State> m_record_buffer;
   Trajectory m_trajectory{};

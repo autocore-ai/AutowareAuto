@@ -99,6 +99,20 @@ uint32_t RecordReplayPlanner::get_record_length() const noexcept
   return m_record_buffer.size();
 }
 
+
+void RecordReplayPlanner::set_heading_weight(double heading_weight)
+{
+  if (heading_weight < 0.0) {
+    throw std::domain_error{"Negative weights do not make sense"};
+  }
+  m_heading_weight = heading_weight;
+}
+
+double RecordReplayPlanner::get_heading_weight()
+{
+  return m_heading_weight;
+}
+
 void RecordReplayPlanner::record_state(const State & state_to_record)
 {
   m_record_buffer.push_back(state_to_record);
@@ -117,11 +131,10 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 
   // Find the closest point to the current state in the stored states buffer
   const auto distance_from_current_state =
-    [&current_state](State & other_state) {
+    [this, &current_state](State & other_state) {
       const auto s1 = current_state.state, s2 = other_state.state;
-      const auto heading_weight = 0.1F;
       return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y) +
-             heading_weight * std::abs(to_angle(s1.heading - s2.heading));
+             m_heading_weight * std::abs(to_angle(s1.heading - s2.heading));
     };
   const auto comparison_function =
     [&distance_from_current_state](State & one, State & two)
