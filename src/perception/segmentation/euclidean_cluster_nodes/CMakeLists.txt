@@ -59,10 +59,11 @@ if(BUILD_TESTING)
   autoware_static_code_analysis()
 endif()
 # Ament Exporting
-autoware_install(LIBRARIES ${CLUSTER_NODE_LIB}
-  EXECUTABLES ${CLUSTER_MAIN}
+autoware_install(
   HAS_PARAM
-  HAS_INCLUDE)
+  HAS_LAUNCH
+  LIBRARIES ${CLUSTER_NODE_LIB}
+  EXECUTABLES ${CLUSTER_MAIN})
 ament_export_dependencies(
   "rclcpp"
   "autoware_auto_msgs"
