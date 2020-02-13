@@ -72,15 +72,14 @@ void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & box
   boxes.boxes.clear();
   for (auto & cls : clusters.clusters) {
     try {
-      boxes.boxes.push_back(autoware_auto_msgs::msg::BoundingBox{});
-      auto & box = boxes.boxes[boxes.boxes.size()];
-      box = compute_eigenbox(cls);
+      auto box = compute_eigenbox(cls);
       using euclidean_cluster::PointXYZI;
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
       const auto begin = reinterpret_cast<const PointXYZI *>(&cls.data[0U]);
       //lint -e{826, 9176} NOLINT I claim this is ok and tested
       const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[cls.row_step]);
       common::geometry::bounding_box::compute_height(begin, end, box);
+      boxes.boxes.push_back(box);
     } catch (const std::exception & e) {
       std::cerr << e.what() << "\n";
     }
