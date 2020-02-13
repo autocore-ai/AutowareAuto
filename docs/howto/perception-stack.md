@@ -86,7 +86,7 @@ provided `rviz2` configuration file in `src/tools/autoware_auto_examples/rviz2/a
 
 ![Autoware.Auto voxel grid downsampling snapshot](autoware-auto-voxel-grid-downsampling.png)
 
-The next component is in the `euclidean_cluster_nodes` package, to start it we will need the `ray_ground_classifier_nodes` package running.
+The next component is in the `euclidean_cluster_nodes` package, to start it we will use ROS 2's launching mechanism to ensure that we have the ray ground classifier node running.
 
 Open a new ADE terminal and type the following:
 
@@ -94,7 +94,7 @@ Open a new ADE terminal and type the following:
 $ ade enter
 ade$ cd AutowareAuto
 ade$ source install/setup.bash
-ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_exe __params:=/home/${USER}/AutowareAuto/src/perception/segmentation/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml
+ade$ ros2 launch euclidean_cluster_nodes euclidean_cluster_cloud_node.launch.py
 ```
 
 You can check that it is running by showing the output of the `/lidar_bounding_boxes` topic:
