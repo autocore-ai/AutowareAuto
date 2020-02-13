@@ -23,6 +23,7 @@
 #include <ndt/ndt_optimization_problem.hpp>
 #include <optimization/optimizer_options.hpp>
 #include <utility>
+#include <string>
 
 namespace autoware
 {
@@ -30,7 +31,6 @@ namespace localization
 {
 namespace ndt
 {
-
 using CloudT = sensor_msgs::msg::PointCloud2;
 
 /// Base class for NDT based localizers. Implementations must implement the validation logic.
@@ -140,6 +140,19 @@ public:
   {
     return m_config;
   }
+
+  /// Get the frame id of the current map.(Required for base interface)
+  const std::string & map_frame_id() const noexcept override
+  {
+    return m_map.frame_id();
+  }
+
+  /// Get the timestamp of the current map. (Required for base interface)
+  std::chrono::system_clock::time_point map_stamp() const noexcept override
+  {
+    return m_map.stamp();
+  }
+
 
   virtual ~NDTLocalizerBase() = default;
 

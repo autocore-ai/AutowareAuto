@@ -21,6 +21,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <localization_common/initialization.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <string>
 
 namespace autoware
 {
@@ -52,6 +53,12 @@ public:
   /// Set map.
   /// \param msg Map message.
   virtual void set_map(const MapMsgT & msg) = 0;
+
+  /// Get the frame id of the current map.
+  virtual const std::string & map_frame_id() const noexcept = 0;
+
+  /// Get the timestamp of the current map.
+  virtual std::chrono::system_clock::time_point map_stamp() const noexcept = 0;
 
   virtual ~RelativeLocalizerBase() = default;
 };
