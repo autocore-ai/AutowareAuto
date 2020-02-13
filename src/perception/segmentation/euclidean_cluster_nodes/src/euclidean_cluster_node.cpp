@@ -124,8 +124,6 @@ m_voxel_ptr{voxel_cfg_ptr ? std::make_unique<VoxelAlgorithm>(*voxel_cfg_ptr) : n
 m_use_lfit{use_lfit},
 m_use_z{use_z}
 {
-  // TODO(c.ho) temporary until bounding boxes are in
-  (void)box_topic;
   init(cls_cfg);
   // Check if you're squashing z
   if (voxel_cfg_ptr && (!use_z)) {
@@ -145,8 +143,6 @@ m_use_z{use_z}
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
 {
-  // TODO(c.ho) bring back commented out code when bounding boxes are available
-  (void)cfg;
   // Sanity check
   if ((!m_box_pub_ptr) && (!m_cluster_pub_ptr)) {
     throw std::domain_error{"EuclideanClusterNode: No publisher topics provided"};

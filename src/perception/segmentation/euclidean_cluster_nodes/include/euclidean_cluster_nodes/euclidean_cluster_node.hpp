@@ -21,7 +21,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <euclidean_cluster_nodes/visibility_control.hpp>
-// TODO(c.ho) waiting for bounding boxes
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 #include <euclidean_cluster_nodes/details/common.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
