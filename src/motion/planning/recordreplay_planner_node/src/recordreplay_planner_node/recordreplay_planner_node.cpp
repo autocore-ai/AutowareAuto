@@ -122,11 +122,6 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::record_handle_cancel(
     m_planner->stop_recording();
   }
 
-  // FIXME(s.me) I wanted to clear out the handle here, but that leads to the
-  // action cancellation hanging. The question then is - at what point can
-  // I set this back to null? The example just lets the variable run out of scope.
-  // m_recordgoalhandle = nullptr;
-
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -161,11 +156,6 @@ rclcpp_action::CancelResponse RecordReplayPlannerNode::replay_handle_cancel(
   if (m_planner->is_replaying()) {
     m_planner->stop_replaying();
   }
-
-  // FIXME(s.me) I wanted to clear out the handle here, but that leads to the
-  // action cancellation hanging. The question then is - at what point can
-  // I set this back to null? The example just lets the variable run out of scope.
-  // m_replaygoalhandle = nullptr;
 
   return rclcpp_action::CancelResponse::ACCEPT;
 }
