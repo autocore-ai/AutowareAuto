@@ -27,7 +27,11 @@ if(BUILD_TESTING)
   # Linters
   ament_lint_auto_find_test_dependencies()
   # Unit test
-  # TODO(s.me) None yet, WIP in test/recordreplay_planner_node.test.py
+  ament_add_gtest(recordreplay_planner_node_unit_tests
+    test/gtest_main.cpp
+    test/sanity_checks.cpp)
+  target_link_libraries(recordreplay_planner_node_unit_tests ${PROJECT_NAME})
+  target_include_directories(recordreplay_planner_node_unit_tests PRIVATE "include")
 endif()
 
 ament_export_dependencies(rosidl_default_runtime)
