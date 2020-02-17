@@ -57,7 +57,8 @@ TEST(mytest_base, basic)
   pub->publish(*dummy_state);
   EXPECT_NO_THROW(exec.spin_some(std::chrono::milliseconds(100LL)));
 
-  // TODO(s.me) actually do what I planned on doing in the launch_testing file here
+  // TODO(s.me) actually do what I planned on doing in the launch_testing file here.
+  // This is tracked by https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/273.
 
   rclcpp::shutdown();
 }
