@@ -4,8 +4,8 @@ recordreplay_planner
 # Purpose / Use cases
 
 This package provides a simple class for recording states, then playing them back as a trajectory. This is to
-be used in both simulator as well as on-site tests of the controller: One can turn on recording, start driving
-a trajectory, then reset vehicle position, then start replay and see what the controller does.
+be used in both the simulator as well as in on-site tests of the controller: One can turn on recording, start
+driving a trajectory, then reset vehicle position, then start replay and see what the controller does.
 
 
 # Design
@@ -46,6 +46,7 @@ TBD by a security specialist.
 
 * Trajectory buffer clearing
 * Proper `tf` support
+* rosbag2 support for recording and later replaying
 
 # Related issues
 
