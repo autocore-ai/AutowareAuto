@@ -57,38 +57,6 @@ void RecordReplayPlanner::stop_replaying() noexcept
   m_recordreplaystate = RecordReplayState::IDLE;
 }
 
-
-// These may do more in the future
-bool RecordReplayPlanner::is_recording() noexcept
-{
-  return m_recordreplaystate == RecordReplayState::RECORDING;
-}
-
-bool RecordReplayPlanner::is_replaying() noexcept
-{
-  return m_recordreplaystate == RecordReplayState::REPLAYING;
-}
-
-void RecordReplayPlanner::start_recording() noexcept
-{
-  m_recordreplaystate = RecordReplayState::RECORDING;
-}
-
-void RecordReplayPlanner::stop_recording() noexcept
-{
-  m_recordreplaystate = RecordReplayState::IDLE;
-}
-
-void RecordReplayPlanner::start_replaying() noexcept
-{
-  m_recordreplaystate = RecordReplayState::REPLAYING;
-}
-
-void RecordReplayPlanner::stop_replaying() noexcept
-{
-  m_recordreplaystate = RecordReplayState::IDLE;
-}
-
 void RecordReplayPlanner::clear_record() noexcept
 {
   m_record_buffer.clear();
