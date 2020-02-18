@@ -61,7 +61,7 @@ public:
 
 /// Optimizer using the Newton method with line search
 template<typename LineSearchT>
-class NewtonsMethod : public Optimizer<NewtonsMethod<LineSearchT>>
+class OPTIMIZATION_PUBLIC NewtonsMethod : public Optimizer<NewtonsMethod<LineSearchT>>
 {
 public:
   using StepT = float_t;
