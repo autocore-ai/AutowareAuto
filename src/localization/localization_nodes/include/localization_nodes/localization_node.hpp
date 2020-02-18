@@ -24,6 +24,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <time_utils/time_utils.hpp>
 #include <helper_functions/message_adapters.hpp>
+#include <localization_nodes/visibility_control.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -53,7 +54,7 @@ struct TopicQoS
 /// \tparam PoseInitializerT Pose initializer type.
 template<typename ObservationMsgT, typename MapMsgT, typename LocalizerT, typename LocalizerConfigT,
   typename PoseInitializerT>
-class RelativeLocalizerNode : public rclcpp::Node
+class LOCALIZATION_NODES_PUBLIC RelativeLocalizerNode : public rclcpp::Node
 {
 public:
   using LocalizerBase = localization_common::RelativeLocalizerBase<ObservationMsgT, MapMsgT>;
@@ -86,6 +87,35 @@ public:
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
       pose_pub_config.qos)) {
   }
+
+  /// Constructor using ros parameters
+  /// \param node_name Node name
+  /// \param name_space Node namespace
+  /// \param pose_initializer Pose initializer
+  RelativeLocalizerNode(
+    const std::string & node_name, const std::string & name_space,
+    const PoseInitializerT & pose_initializer)
+  : Node(node_name, name_space),
+    m_pose_initializer(pose_initializer),
+    m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+    m_observation_sub(create_subscription<ObservationMsgT>(
+        declare_parameter("observation_sub.topic").template get<std::string>(),
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter("observation_sub.history_depth").template
+            get<size_t>())}},
+        [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
+    m_map_sub(create_subscription<MapMsgT>(
+        declare_parameter("map_sub.topic").template get<std::string>(),
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter("map_sub.history_depth").
+            template get<size_t>())}},
+        [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
+    m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
+        declare_parameter("pose_pub.topic").template get<std::string>(),
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter(
+              "pose_pub.history_depth").template get<size_t>())}}))
+  {}
 
   /// Get a const pointer of the output publisher. Can be used for matching against subscriptions.
   const typename rclcpp::Publisher<PoseWithCovarianceStamped>::ConstSharedPtr get_publisher()
