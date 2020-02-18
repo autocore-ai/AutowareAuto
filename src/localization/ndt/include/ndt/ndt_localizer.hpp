@@ -41,7 +41,8 @@ using CloudT = sensor_msgs::msg::PointCloud2;
 /// \tparam ConfigT Type of localization configuration.
 template<typename ScanT, typename MapT, typename NDTOptimizationProblemT,
   typename OptimizerT, typename ConfigT>
-class NDTLocalizerBase : localization_common::RelativeLocalizerBase<CloudT, CloudT>
+class NDT_PUBLIC NDTLocalizerBase : public localization_common::RelativeLocalizerBase<CloudT,
+    CloudT>
 {
 public:
   using Transform = geometry_msgs::msg::TransformStamped;
@@ -57,7 +58,7 @@ public:
   explicit NDTLocalizerBase(
     const ConfigT & config, ScanT && scan, MapT && map,
     const OptimizerT & optimizer)
-  : m_config(config), m_optimizer{optimizer},
+  : m_optimizer{optimizer}, m_config(config),
     m_scan{std::forward<ScanT>(scan)}, m_map{std::forward<MapT>(map)},
     m_optimizer_options{config.optimizer_options()} {}
 
@@ -169,6 +170,10 @@ protected:
     const EigenPose<Real> & pose_result,
     PoseWithCovarianceStamped & solution) const
   {
+    (void) problem;
+    (void) initial_guess;
+    (void) pose_result;
+    (void) solution;
     // For now, do nothing.
   }
 
@@ -211,8 +216,8 @@ protected:
 private:
   OptimizerT m_optimizer;
   ConfigT m_config;
-  MapT m_map;
   ScanT m_scan;
+  MapT m_map;
   OptimizerOptions m_optimizer_options;
 };
 
@@ -221,7 +226,7 @@ private:
 /// \tparam OptimizerT Optimizer type.
 /// \tparam OptimizerOptionsT Optimizer options type.
 template<typename OptimizerT, typename OptimizerOptionsT>
-class P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTScan, StaticNDTMap,
+class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTScan, StaticNDTMap,
     P2DNDTOptimizationProblem, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>
 {
 public:
@@ -239,10 +244,10 @@ public:
 
 protected:
   void set_covariance(
-    const P2DNDTOptimizationProblem & problem,
-    const EigenPose<Real> & initial_guess,
-    const EigenPose<Real> & pose_result,
-    PoseWithCovarianceStamped & solution) const override
+    const P2DNDTOptimizationProblem &,
+    const EigenPose<Real> &,
+    const EigenPose<Real> &,
+    PoseWithCovarianceStamped &) const override
   {
     // For now, do nothing.
   }
