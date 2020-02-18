@@ -80,8 +80,8 @@
 			"CenterAngle": 0,
 			"Compensated": true,
 			"PointColor": "#ff000000",
-			"Topic": "/points_raw",
-			"Frame": "velodyne_front"
+			"Topic": "/test_velodyne_node_cloud_front",
+			"Frame": "base_link"
 		},
 		"transform": {
 			"x": 0,
@@ -105,8 +105,8 @@
 			"CenterAngle": 0,
 			"Compensated": true,
 			"PointColor": "#ff000000",
-			"Topic": "/points_raw_rear",
-			"Frame": "velodyne_rear"
+			"Topic": "/test_velodyne_node_cloud_rear",
+			"Frame": "base_link_rear"
 		},
 		"transform": {
 			"x": 0,
@@ -152,4 +152,3 @@
 		"name": "Keyboard Car Control"
 	}
 ]
-
