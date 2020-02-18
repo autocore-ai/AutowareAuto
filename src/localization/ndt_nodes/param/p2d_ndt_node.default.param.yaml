@@ -1,0 +1,48 @@
+# param/p2d_ndt_node.param.yaml
+---
+
+p2d_ndt_localizer_node:
+  ros__parameters:
+    ##### Define input and outputs:
+    observation_sub:  # Config of the input point cloud subscription
+      topic: "points_nonground"
+      history_depth: 10
+    # Config of the maps point cloud subscription
+    map_sub:
+      topic: "ndt_map"
+      history_depth: 10
+    # Config of the maps point clouds to register
+    pose_pub:
+      topic: "ndt_pose"
+      history_depth: 10
+    # localizer specific configuration
+    localizer:
+      #underlying voxel grid configuration of the map
+      map:
+        capacity: 55000
+        min_point:
+          x: -130.0
+          y: -130.0
+          z: -3.0
+        max_point:
+          x: 130.0
+          y: 130.0
+          z: 3.0
+        voxel_size:
+          x: 2.0
+          y: 2.0
+          z: 2.0
+      # ndt scan representation config
+      scan:
+        capacity: 55000
+      # ndt optimization problem configuration
+      optimization:
+        outlier_ratio: 0.55 # default value from PCL
+      # newton optimizer configuration
+      optimizer:
+        max_iterations: 50
+        score_tolerance: 0.001
+        parameter_tolerance: 0.001
+        gradient_tolerance: 0.001
+      # Maximum accepted duration between a scan and an initial pose guess
+      guess_time_tolerance_ms: 5

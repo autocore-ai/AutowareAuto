@@ -20,7 +20,8 @@ set(NDT_NODES_LIB_SRC
 
 set(NDT_NODES_LIB_HEADERS
     include/ndt_nodes/visibility_control.hpp
-    include/ndt_nodes/map_publisher.hpp)
+    include/ndt_nodes/map_publisher.hpp
+    include/ndt_nodes/ndt_localizer_nodes.hpp)
 
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
@@ -36,9 +37,9 @@ set(MAP_PUBLISHER_EXE ndt_map_publisher_exe)
 ament_auto_add_executable(${MAP_PUBLISHER_EXE} src/map_publisher_main.cpp)
 autoware_set_compile_options(${MAP_PUBLISHER_EXE})
 
-# Copy param file to the build directory
-file(COPY param/example.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")
-
+set(P2D_NDT_NODE p2d_ndt_localizer_exe)
+ament_auto_add_executable(${P2D_NDT_NODE} src/p2d_ndt_localizer_main.cpp)
+autoware_set_compile_options(${P2D_NDT_NODE})
 
 if(BUILD_TESTING)
   # run linters
@@ -62,4 +63,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-convers
 target_compile_options(${MAP_PUBLISHER_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
-ament_auto_package()
+target_compile_options(${P2D_NDT_NODE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
+        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
+ament_auto_package(INSTALL_TO_SHARE param/)
