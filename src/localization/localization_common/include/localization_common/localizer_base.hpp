@@ -34,7 +34,7 @@ using Real = double;
 /// \tparam InputMsgT Message type that will be registered against a map.
 /// \tparam MapMsgT Map type.
 template<typename InputMsgT, typename MapMsgT>
-class RelativeLocalizerBase
+class LOCALIZATION_COMMON_PUBLIC RelativeLocalizerBase
 {
 public:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
