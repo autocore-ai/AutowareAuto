@@ -80,7 +80,9 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
 
   const auto pos_delta = length / static_cast<float32_t>(num_of_points);
   const auto time_delta = rclcpp::Duration(
-    static_cast<int64_t>((pos_delta / starting_point.state.longitudinal_velocity_mps) * nano_in_sec));
+    static_cast<int64_t>(
+      (pos_delta / starting_point.state.longitudinal_velocity_mps) *
+      nano_in_sec));
   const auto yaw_angle = to_yaw_angle(starting_point.state.heading);
 
   for (int i = 1; i < num_of_points; ++i) {
