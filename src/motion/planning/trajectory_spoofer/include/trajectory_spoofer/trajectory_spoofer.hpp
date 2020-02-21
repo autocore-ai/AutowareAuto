@@ -42,22 +42,9 @@ using TrajectoryPoint = autoware_auto_msgs::msg::TrajectoryPoint;
 using VehicleKinematicState = autoware_auto_msgs::msg::VehicleKinematicState;
 
 using float32_t = float;
+using float64_t = double;
 
-constexpr uint32_t nano_in_sec = 1000000000UL;
-
-/*
-inline static DurationMsg nsec_to_duration(const std::chrono::nanoseconds & ns)
-{
-  rclcpp::Duration dur(ns);
-  return DurationMsg(dur);
-}
-
-inline static std::chrono::nanoseconds duration_to_nsec(const DurationMsg & dur)
-{
-  rclcpp::Duration dur2(dur);
-  return dur2.to_chrono<std::chrono::nanoseconds>();
-}
-*/
+constexpr float64_t nano_in_sec = 1000000000.0L;
 
 class TrajectorySpoofer
 {
@@ -67,24 +54,10 @@ class TrajectorySpoofer
     LEFT_TURN = 1
   };
 
-private:
-  Complex32 to_2d_quaternion(float32_t yaw_angle);
-  float32_t to_yaw_angle(const Complex32 & quat_2d);
-
-  /*
-  TrajectoryPoint create_trajectory_point(
-    std::chrono::nanoseconds time_from_start,
-    float32_t x, float32_t y,
-    float32_t yaw_angle_rad,
-    float32_t longitudinal_velocity_mps,
-    float32_t lateral_velocity_mps,
-    float32_t acceleration_mps2,
-    float32_t heading_rate_rps,
-    float32_t front_wheel_angle_rad,
-    float32_t rear_wheel_angle_rad);
-    */
-
 public:
+  static Complex32 to_2d_quaternion(float32_t yaw_angle);
+  static float32_t to_yaw_angle(const Complex32 & quat_2d);
+
   Trajectory spoof_straight_trajectory(
     const VehicleKinematicState & starting_point,
     int32_t num_of_points,

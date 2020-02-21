@@ -57,11 +57,15 @@ autoware_set_compile_options(${TRAJECTORY_SPOOFER_EXE})
 # Testing
 if(BUILD_TESTING)
   # Unit tests
-  #find_package(ament_cmake_gtest)
-  #set(TEST_SOURCES test/gtest_main.cpp test/test_trajectory_spoofer.cpp)
-  #set(TEST_TRAJECTORY_SPOOFER_EXE test_trajectory_spoofer)
-  #ament_add_gtest(${TEST_TRAJECTORY_SPOOFER_EXE} ${TEST_SOURCES})
-  #target_link_libraries(${TEST_TRAJECTORY_SPOOFER_EXE} ${PROJECT_NAME})
+  find_package(ament_cmake_gtest)
+  set(TEST_SOURCES test/gtest_main.cpp test/test_trajectory_spoofer.cpp)
+  set(TEST_TRAJECTORY_SPOOFER_EXE test_trajectory_spoofer)
+  ament_add_gtest(${TEST_TRAJECTORY_SPOOFER_EXE} ${TEST_SOURCES})
+  ament_target_dependencies(${TEST_TRAJECTORY_SPOOFER_EXE}
+    "autoware_auto_msgs"
+    "time_utils"
+  )
+  target_link_libraries(${TEST_TRAJECTORY_SPOOFER_EXE} ${PROJECT_NAME})
 
   # Static code analyzers
   autoware_static_code_analysis()
