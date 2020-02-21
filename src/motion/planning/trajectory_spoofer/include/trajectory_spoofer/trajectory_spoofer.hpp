@@ -30,6 +30,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <chrono>
+#include <cmath>
 
 namespace autoware
 {
@@ -45,6 +46,7 @@ using float32_t = float;
 using float64_t = double;
 
 constexpr float64_t nano_in_sec = 1000000000.0L;
+constexpr float64_t circ_rad = 2.0 * M_PI;
 
 class TrajectorySpoofer
 {
@@ -53,6 +55,9 @@ class TrajectorySpoofer
     RIGHT_TURN = 0,
     LEFT_TURN = 1
   };
+
+private:
+  std::chrono::nanoseconds get_travel_time(float32_t dist, float32_t speed);
 
 public:
   static Complex32 to_2d_quaternion(float32_t yaw_angle);

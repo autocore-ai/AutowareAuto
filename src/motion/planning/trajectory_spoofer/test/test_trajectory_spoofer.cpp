@@ -36,8 +36,8 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   TrajectorySpoofer ts;
   VehicleKinematicState starting_point;
 
-  float32_t length = 10.0;
   int32_t num_of_points = 20;
+  float32_t length = 10.0;
   starting_point.state.longitudinal_velocity_mps = 2.0;
 
   auto traj = ts.spoof_straight_trajectory(
@@ -67,8 +67,8 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   ASSERT_FLOAT_EQ(last_point.front_wheel_angle_rad, first_point.front_wheel_angle_rad);
   ASSERT_FLOAT_EQ(last_point.rear_wheel_angle_rad, first_point.rear_wheel_angle_rad);
 
-  length = 750.0;  // Only accurate to about this distance
   num_of_points = 100;  // max points
+  length = 2500.0;
   constexpr float32_t head_rad = 45.0 * M_PI / 180.0; // Start at heading of 45 degrees
   starting_point.state.heading = TrajectorySpoofer::to_2d_quaternion(head_rad);
   starting_point.state.longitudinal_velocity_mps = 12.5;
@@ -100,4 +100,39 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   ASSERT_FLOAT_EQ(last_point.heading_rate_rps, first_point.heading_rate_rps);
   ASSERT_FLOAT_EQ(last_point.front_wheel_angle_rad, first_point.front_wheel_angle_rad);
   ASSERT_FLOAT_EQ(last_point.rear_wheel_angle_rad, first_point.rear_wheel_angle_rad);
+}
+
+TEST(test_trajectory_spoofer, circular_trajectory) {
+  TrajectorySpoofer ts;
+  VehicleKinematicState starting_point;
+
+  int32_t num_of_points = 7;
+  float32_t rad = 20.0;
+  starting_point.state.longitudinal_velocity_mps = 2.0;
+
+  auto traj = ts.spoof_circular_trajectory(starting_point, num_of_points, rad);
+
+  auto first_point = traj.points.front();
+  auto last_point = traj.points.back();
+  auto last_time = static_cast<float64_t>(
+    time_utils::from_message(last_point.time_from_start).count()) / nano_in_sec;
+
+  /*
+  for (const auto & pt : traj.points) {
+    std::cout << "Heading: " << TrajectorySpoofer::to_yaw_angle(pt.heading);
+    std::cout << ", X: " << pt.x << ", Y: " << pt.y << "\n";
+  }
+
+  std::cout << std::endl;
+  */
+
+  ASSERT_EQ(traj.points.size(), num_of_points);
+  // last point should have the same x/y as 2nd point
+  // ASSERT_FLOAT_EQ(traj.points[1].x, last_point.x);
+  // ASSERT_FLOAT_EQ(traj.points[1].y, last_point.y);
+  // Should end up with the same heading as initial heading
+  ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
+  ASSERT_FLOAT_EQ(last_point.heading.imag, first_point.heading.imag);
+  ASSERT_FLOAT_EQ(last_point.longitudinal_velocity_mps, first_point.longitudinal_velocity_mps);
+  ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
 }
