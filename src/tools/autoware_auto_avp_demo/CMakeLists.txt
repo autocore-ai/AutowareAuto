@@ -16,18 +16,15 @@ cmake_minimum_required(VERSION 3.5)
 project(autoware_auto_avp_demo)
 
 # dependencies
-find_package(autoware_auto_cmake REQUIRED)  # Required on all packages!
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
+ament_auto_find_build_dependencies()
 
 # Testing
 if(BUILD_TESTING)
-    find_package(launch_testing_ament_cmake REQUIRED)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 # Install stuff
-autoware_install(
-    HAS_LAUNCH
-)
-
-# Ament Exporting
-ament_package()
+ament_auto_package(INSTALL_TO_SHARE launch/)

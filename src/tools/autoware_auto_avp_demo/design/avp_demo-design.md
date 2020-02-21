@@ -11,7 +11,7 @@ The Automated Valet Parking (AVP) 2020 demo will be held in late April, 2020. Th
 Each milestone will have a single launch file in the `launch/` folder which will launch all required nodes to support the functions required to meet the milestone's goals.
 
 ## Assumptions / Known limits
-- The launch files should be installed/registered such that they can be called in the form `ros2 launch avp_demo msX.py`.
+- The launch files should be installed/registered such that they can be called in the form `ros2 launch avp_demo msX.launch.py`.
 - Since the XML and YAML specifications for launch files are not yet available in Dashing, the launch files will be written in Python.
 
 ## Inputs / Outputs / API
