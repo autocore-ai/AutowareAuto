@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <common/types.hpp>
 #include <gtest/gtest.h>
 
 #include <signal_filters/filter_factory.hpp>
@@ -24,6 +25,9 @@
 #include <string>
 #include <vector>
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 using autoware::common::signal_filters::FilterFactory;
 using autoware::common::signal_filters::DummyClock;
 using autoware::common::signal_filters::FilterType;
@@ -41,12 +45,12 @@ class typed_checks : public ::testing::Test
 };
 
 using TestTypes = ::testing::Types<
-  TypeParams<float, DummyClock>,
-  TypeParams<float, std::chrono::system_clock>,
-  TypeParams<float, std::chrono::steady_clock>,
-  TypeParams<double, DummyClock>,
-  TypeParams<double, std::chrono::system_clock>,
-  TypeParams<double, std::chrono::steady_clock>
+  TypeParams<float32_t, DummyClock>,
+  TypeParams<float32_t, std::chrono::system_clock>,
+  TypeParams<float32_t, std::chrono::steady_clock>,
+  TypeParams<float64_t, DummyClock>,
+  TypeParams<float64_t, std::chrono::system_clock>,
+  TypeParams<float64_t, std::chrono::steady_clock>
 >;
 TYPED_TEST_CASE(typed_checks, TestTypes);
 
@@ -85,12 +89,12 @@ protected:
 };
 
 using BasicTypes = ::testing::Types<
-  BasicParams<float, DummyClock, FilterType::LowPassFilter>,
-  BasicParams<float, std::chrono::system_clock, FilterType::LowPassFilter>,
-  BasicParams<float, std::chrono::steady_clock, FilterType::LowPassFilter>,
-  BasicParams<double, DummyClock, FilterType::LowPassFilter>,
-  BasicParams<double, std::chrono::system_clock, FilterType::LowPassFilter>,
-  BasicParams<double, std::chrono::steady_clock, FilterType::LowPassFilter>
+  BasicParams<float32_t, DummyClock, FilterType::LowPassFilter>,
+  BasicParams<float32_t, std::chrono::system_clock, FilterType::LowPassFilter>,
+  BasicParams<float32_t, std::chrono::steady_clock, FilterType::LowPassFilter>,
+  BasicParams<float64_t, DummyClock, FilterType::LowPassFilter>,
+  BasicParams<float64_t, std::chrono::system_clock, FilterType::LowPassFilter>,
+  BasicParams<float64_t, std::chrono::steady_clock, FilterType::LowPassFilter>
 >;
 TYPED_TEST_CASE(filter_checks, BasicTypes);
 
@@ -183,7 +187,7 @@ public:
   }
 
   // Check if a signal has a frequency response beyond some threshold
-  static bool has_response_past_cutoff(
+  static bool8_t has_response_past_cutoff(
     Real cutoff_frequency,
     Real raw_signal_magnitude,
     const FrequencyResponse & response)

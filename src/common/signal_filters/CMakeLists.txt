@@ -4,6 +4,7 @@ project(signal_filters)
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(signal_filter src/signal_filter.cpp)
@@ -15,6 +16,7 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest)
   ament_add_gtest(signal_filter_test test/sanity_check.cpp test/gtest_main.cpp)
   target_include_directories(signal_filter_test PRIVATE include)
+  ament_target_dependencies(signal_filter_test "autoware_auto_common")
 endif()
 
 ament_auto_package()

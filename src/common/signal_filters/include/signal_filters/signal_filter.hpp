@@ -17,6 +17,7 @@
 #ifndef SIGNAL_FILTERS__SIGNAL_FILTER_HPP_
 #define SIGNAL_FILTERS__SIGNAL_FILTER_HPP_
 
+#include <common/types.hpp>
 #include <signal_filters/visibility_control.hpp>
 
 #include <algorithm>
@@ -24,6 +25,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <type_traits>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -48,7 +51,7 @@ template<typename T, typename ClockT = DummyClock>
 class SIGNAL_FILTERS_PUBLIC FilterBase
 {
   static_assert(std::is_floating_point<T>::value, "Filters require a floating point type");
-  constexpr static bool use_time_point_api = !std::is_same<ClockT, DummyClock>::value;
+  constexpr static bool8_t use_time_point_api = !std::is_same<ClockT, DummyClock>::value;
 
 public:
   using clock_type = ClockT;
