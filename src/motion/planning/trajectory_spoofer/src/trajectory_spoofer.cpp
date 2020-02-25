@@ -63,16 +63,16 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
   TrajectoryPoint pt = starting_point.state;
   straight_trajectory.points.push_back(pt);
 
-  const float32_t pos_delta = length / static_cast<float32_t>(num_of_points - 1);
-  const auto time_delta = get_travel_time(
-    pos_delta, starting_point.state.longitudinal_velocity_mps);
   const auto yaw_angle = to_yaw_angle(starting_point.state.heading);
+  const float64_t seg_len = length / static_cast<float64_t>(num_of_points - 1);
   const auto start_time = time_utils::from_message(pt.time_from_start);
+  const auto time_delta = get_travel_time(
+    seg_len, starting_point.state.longitudinal_velocity_mps);
 
   for (int i = 1; i < num_of_points; ++i) {
     pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
-    pt.x = std::cos(yaw_angle) * i * pos_delta;
-    pt.y = std::sin(yaw_angle) * i * pos_delta;
+    pt.x = std::cos(yaw_angle) * i * seg_len;
+    pt.y = std::sin(yaw_angle) * i * seg_len;
     straight_trajectory.points.push_back(pt);
   }
 
@@ -90,37 +90,39 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
   TrajectoryPoint pt = starting_point.state;
   circular_trajectory.points.push_back(pt);
 
-  const float64_t end_heading_rad = to_yaw_angle(pt.heading);
   // Number of segments = number of points - 1
-  const float64_t seg_angle_rad = CIRC_RAD / static_cast<float32_t>(num_of_points - 1);
+  const float64_t seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
   const float64_t seg_len = 2.0 * radius * std::sin(seg_angle_rad / 2.0);
-  float64_t angle_dist_remain;
-  float64_t new_head_diff;
-  float64_t new_head;
+  const auto start_time = time_utils::from_message(pt.time_from_start);
+  const auto time_delta = get_travel_time(
+    seg_len, starting_point.state.longitudinal_velocity_mps);
 
   for (int i = 1; i < num_of_points; ++i) {
-    // TODO(josh.whitley): Y values are incorrect
-    pt.x = pt.x + std::cos(to_yaw_angle(pt.heading)) * seg_len;
-    pt.y = pt.y + std::sin(to_yaw_angle(pt.heading)) * seg_len;
+    const float64_t old_head = to_yaw_angle(pt.heading);
+    const float64_t angle_dist_remain = CIRC_RAD - i * seg_angle_rad;
 
-    angle_dist_remain = CIRC_RAD - i * seg_angle_rad;
+    if (i < num_of_points - 1) {
+      // TODO(josh.whitley): Y values still not quite right
+      pt.x = pt.x + std::cos(old_head) * seg_len;
+      pt.y = pt.y + std::sin(old_head) * seg_len;
 
-    if (angle_dist_remain < seg_angle_rad) {
-      new_head_diff = std::abs(to_yaw_angle(pt.heading) - end_heading_rad - CIRC_RAD);
+      float64_t new_head = old_head + angle_dist_remain / (num_of_points - i - 1);
+
+      // Clip to 0 to 2pi
+      if (new_head < 0) {
+        new_head += CIRC_RAD;
+      } else if (new_head >= CIRC_RAD) {
+        new_head -= CIRC_RAD;
+      }
+
+      pt.heading = to_2d_quaternion(new_head);
     } else {
-      new_head_diff = angle_dist_remain / (num_of_points - i - 1);
+      pt.x = starting_point.state.x;
+      pt.y = starting_point.state.y;
+      pt.heading = starting_point.state.heading;
     }
 
-    new_head = to_yaw_angle(pt.heading) + new_head_diff;
-
-    // Clip to 0 to 2pi
-    if (new_head < 0) {
-      new_head += CIRC_RAD;
-    } else if (new_head >= CIRC_RAD) {
-      new_head -= CIRC_RAD;
-    }
-
-    pt.heading = to_2d_quaternion(new_head);
+    pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
 
     circular_trajectory.points.push_back(pt);
 

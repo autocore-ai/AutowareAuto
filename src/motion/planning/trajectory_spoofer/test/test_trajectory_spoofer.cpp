@@ -26,6 +26,7 @@
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::msg::VehicleKinematicState;
+using autoware::trajectory_spoofer::CIRC_RAD;
 using autoware::trajectory_spoofer::NANO_IN_SEC;
 using autoware::trajectory_spoofer::TrajectorySpoofer;
 
@@ -43,15 +44,15 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   auto traj = ts.spoof_straight_trajectory(
     starting_point, num_of_points, length, false);
 
+  auto first_point = traj.points.front();
+  auto last_point = traj.points.back();
+  auto last_time = static_cast<float64_t>(
+    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
   // Have to use floating point values due to rounding errors
   // in the calculation of nanosecond times in TrajectorySpoofer
   float64_t end_time = 
     (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
      NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
-  auto first_point = traj.points.front();
-  auto last_point = traj.points.back();
-  auto last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
 
   // Initial heading of 0 should mean travelling straight along the X axis
   ASSERT_EQ(traj.points.size(), num_of_points);
@@ -76,13 +77,13 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   traj = ts.spoof_straight_trajectory(
     starting_point, num_of_points, length, false);
 
-  end_time = 
-    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
   first_point = traj.points.front();
   last_point = traj.points.back();
   last_time = static_cast<float64_t>(
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
+  end_time = 
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
+    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   // Calc x and y of last point
   const float32_t end_x = std::cos(head_rad) * length;
@@ -106,21 +107,60 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   TrajectorySpoofer ts;
   VehicleKinematicState starting_point;
 
-  int32_t num_of_points = 7;
-  float32_t rad = 20.0;
+  // Points = size of circle + 1 to get back to
+  // original location and heading
+  int32_t num_of_points = 9;
+  float32_t radius = 20.0;
   starting_point.state.longitudinal_velocity_mps = 2.0;
 
-  auto traj = ts.spoof_circular_trajectory(starting_point, num_of_points, rad);
+  auto traj = ts.spoof_circular_trajectory(starting_point, num_of_points, radius);
 
   auto first_point = traj.points.front();
   auto last_point = traj.points.back();
   auto last_time = static_cast<float64_t>(
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
+  float64_t seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
+  // Chord distance * number of segments
+  float64_t length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
+  float64_t end_time = 
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
+     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_FLOAT_EQ(last_time, end_time);
   // last point should have the same x/y as first point
-  // ASSERT_FLOAT_EQ(last_point.x, first_point.x);
-  // ASSERT_FLOAT_EQ(last_point.y, first_point.y);
+  ASSERT_FLOAT_EQ(last_point.x, first_point.x);
+  ASSERT_FLOAT_EQ(last_point.y, first_point.y);
+  // Should end up with the same heading as initial heading
+  ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
+  ASSERT_FLOAT_EQ(last_point.heading.imag, first_point.heading.imag);
+  ASSERT_FLOAT_EQ(last_point.longitudinal_velocity_mps, first_point.longitudinal_velocity_mps);
+  ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
+
+  num_of_points = 100;  // max points
+  radius = 2500.0;
+  constexpr float32_t head_rad = 45.0 * M_PI / 180.0; // Start at heading of 45 degrees
+  starting_point.state.heading = TrajectorySpoofer::to_2d_quaternion(head_rad);
+  starting_point.state.longitudinal_velocity_mps = 12.5;
+
+  traj = ts.spoof_circular_trajectory(starting_point, num_of_points, radius);
+
+  first_point = traj.points.front();
+  last_point = traj.points.back();
+  last_time = static_cast<float64_t>(
+    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
+  seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
+  // Chord distance * number of segments
+  length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
+  end_time = 
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
+     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
+
+  ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_FLOAT_EQ(last_time, end_time);
+  // last point should have the same x/y as first point
+  ASSERT_FLOAT_EQ(last_point.x, first_point.x);
+  ASSERT_FLOAT_EQ(last_point.y, first_point.y);
   // Should end up with the same heading as initial heading
   ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
   ASSERT_FLOAT_EQ(last_point.heading.imag, first_point.heading.imag);
