@@ -18,6 +18,9 @@
 
 #include <gtest/gtest.h>
 #include <optimization/utils.hpp>
+#include <functional>
+#include <vector>
+#include <map>
 
 namespace autoware
 {
@@ -31,7 +34,6 @@ void do_test(
   CompareFuncT comparator = CompareFuncT())
 {
   auto get_an_unset_term = [](const ComputeMode & mode) {
-
       if (!mode.score()) {
         return ExpressionTerm::SCORE;
       } else if (!mode.jacobian()) {
@@ -41,7 +43,7 @@ void do_test(
       } else {
         // Make sure there is an unset term before calling this function.
         EXPECT_TRUE(false);
-        return ExpressionTerm::SCORE; // Dummy value for completeness
+        return ExpressionTerm::SCORE;  // Dummy value for completeness
       }
     };
   // Make sure val1 and val2 are different
@@ -104,9 +106,9 @@ protected:
   std::map<ExpressionTerm, std::vector<ComputeMode>> m_mode_map;
 };
 
-}  // namespace autoware
-}  // namespace common
 }  // namespace optimization
+}  // namespace common
+}  // namespace autoware
 
 
 #endif  // TEST_CACHE_STATES_HPP_

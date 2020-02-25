@@ -16,9 +16,12 @@
 #ifndef OPTIMIZATION__OPTIMIZER_OPTIONS_HPP_
 #define OPTIMIZATION__OPTIMIZER_OPTIONS_HPP_
 
+#include <common/types.hpp>
 #include <optimization/visibility_control.hpp>
 #include <limits>
 #include <cstdint>
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -56,23 +59,23 @@ public:
   /// \throws std::domain_error on negative or NaN tolerance values.
   NewtonOptimizationOptions(
     uint64_t max_num_iterations = std::numeric_limits<int64_t>::max(),
-    double function_tolerance = 0.0, double parameter_tolerance = 0.0,
-    double gradient_tolerance = 0.0);
+    float64_t function_tolerance = 0.0, float64_t parameter_tolerance = 0.0,
+    float64_t gradient_tolerance = 0.0);
 
   /// Get maximum number of iterations
   uint64_t max_num_iterations() const noexcept;
   /// Get minimum relative change in the cost function
-  double function_tolerance() const noexcept;
+  float64_t function_tolerance() const noexcept;
   /// Get minimum relative change in the parameter
-  double parameter_tolerance() const noexcept;
+  float64_t parameter_tolerance() const noexcept;
   /// Get minimum relative change in the gradient
-  double gradient_tolerance() const noexcept;
+  float64_t gradient_tolerance() const noexcept;
 
 private:
   uint64_t m_max_num_iterations;
-  double m_function_tolerance;
-  double m_parameter_tolerance;
-  double m_gradient_tolerance;
+  float64_t m_function_tolerance;
+  float64_t m_parameter_tolerance;
+  float64_t m_gradient_tolerance;
 };
 
 // Optimization summary class.
@@ -83,17 +86,17 @@ public:
   /// \param dist estimated distance to the optimum
   /// \param termination_type Type of termination. Check the enum definition for possible outcomes.
   /// \param iter number of iterations that were made
-  OptimizationSummary(double dist, TerminationType termination_type, uint64_t iter);
+  OptimizationSummary(float64_t dist, TerminationType termination_type, uint64_t iter);
 
   /// Get the estimated distance to the optimum
-  double estimated_distance_to_optimum() const noexcept;
+  float64_t estimated_distance_to_optimum() const noexcept;
   /// Get termination type.
   TerminationType termination_type() const noexcept;
   /// Get the number of iterations that were made
   uint64_t number_of_iterations_made() const noexcept;
 
 private:
-  double m_estimated_distance_to_optimum;
+  float64_t m_estimated_distance_to_optimum;
   uint64_t m_number_of_iterations_made;
   TerminationType m_termination_type;
 };

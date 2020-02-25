@@ -13,8 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <gtest/gtest.h>
+#include <limits>
 #include "test_newton_optimization.hpp"
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -26,7 +30,7 @@ namespace optimization
 // Init
 int DummyObjective::sign = -1;
 using DummyOptimizationProblem =
-  UnconstrainedOptimizationProblem<DummyObjective, Eigen::Matrix<double, 1U, 1U>, 1U>;
+  UnconstrainedOptimizationProblem<DummyObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U>;
 
 TEST_F(TestNewtonOptimization, newton_optimization_validation) {
   // set up varaibles

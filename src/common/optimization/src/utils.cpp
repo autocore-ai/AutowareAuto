@@ -13,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <optimization/utils.hpp>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -21,7 +24,7 @@ namespace common
 {
 namespace optimization
 {
-ComputeMode::ComputeMode(bool score, bool jacobian, bool hessian)
+ComputeMode::ComputeMode(bool8_t score, bool8_t jacobian, bool8_t hessian)
 : m_score(score), m_jacobian(jacobian), m_hessian(hessian) {}
 
 ComputeMode & ComputeMode::set_score() noexcept
@@ -40,16 +43,16 @@ ComputeMode & ComputeMode::set_hessian() noexcept
   return *this;
 }
 
-bool ComputeMode::score() const noexcept {return m_score;}
-bool ComputeMode::jacobian() const noexcept {return m_jacobian;}
-bool ComputeMode::hessian() const noexcept {return m_hessian;}
-bool ComputeMode::operator==(const ComputeMode & other) const noexcept
+bool8_t ComputeMode::score() const noexcept {return m_score;}
+bool8_t ComputeMode::jacobian() const noexcept {return m_jacobian;}
+bool8_t ComputeMode::hessian() const noexcept {return m_hessian;}
+bool8_t ComputeMode::operator==(const ComputeMode & other) const noexcept
 {
   return (m_score == other.score()) &&
          (m_jacobian == other.jacobian()) &&
          (m_hessian == other.hessian());
 }
-bool ComputeMode::operator!=(const ComputeMode & other) const noexcept
+bool8_t ComputeMode::operator!=(const ComputeMode & other) const noexcept
 {
   return !(*this == other);
 }

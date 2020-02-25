@@ -16,10 +16,13 @@
 #ifndef OPTIMIZATION__UTILS_HPP_
 #define OPTIMIZATION__UTILS_HPP_
 
+#include <common/types.hpp>
 #include <optimization/visibility_control.hpp>
 #include <Eigen/Core>
 #include <functional>
 #include <limits>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -40,7 +43,7 @@ public:
   /// \param score True if score is to be computed.
   /// \param jacobian True if jacobian is to be computed.
   /// \param hessian True if hessian is to be computed.
-  ComputeMode(bool score, bool jacobian, bool hessian);
+  ComputeMode(bool8_t score, bool8_t jacobian, bool8_t hessian);
   /// Set score to true, return the new state for method chaining.
   /// \return Current modified instance.
   ComputeMode & set_score() noexcept;
@@ -53,21 +56,21 @@ public:
 
   /// Get if score term is enabled.
   /// \return True if score term is enabled.
-  bool score() const noexcept;
+  bool8_t score() const noexcept;
   /// Get if jacobian term is enabled.
   /// \return True if jacobian term is enabled.
-  bool jacobian() const noexcept;
+  bool8_t jacobian() const noexcept;
   /// Get if hessian term is enabled.
   /// \return True if hessian term is enabled.
-  bool hessian() const noexcept;
+  bool8_t hessian() const noexcept;
 
-  bool operator==(const ComputeMode & other) const noexcept;
-  bool operator!=(const ComputeMode & other) const noexcept;
+  bool8_t operator==(const ComputeMode & other) const noexcept;
+  bool8_t operator!=(const ComputeMode & other) const noexcept;
 
 private:
-  bool m_score{false};
-  bool m_jacobian{false};
-  bool m_hessian{false};
+  bool8_t m_score{false};
+  bool8_t m_jacobian{false};
+  bool8_t m_hessian{false};
 };
 
 /// Enum class representing expression terms
@@ -83,14 +86,14 @@ class OPTIMIZATION_PUBLIC EigenComparator
 {
 public:
   template<typename T, int H, int W>
-  typename std::enable_if_t<std::is_floating_point<T>::value, bool>
+  typename std::enable_if_t<std::is_floating_point<T>::value, bool8_t>
   operator()(const Eigen::Matrix<T, H, W> & lhs, const Eigen::Matrix<T, H, W> & rhs) const
   {
     return lhs.isApprox(rhs, std::numeric_limits<T>::epsilon());
   }
 
   template<typename T, int H, int W>
-  typename std::enable_if_t<std::is_integral<T>::value, bool>
+  typename std::enable_if_t<std::is_integral<T>::value, bool8_t>
   operator()(const Eigen::Matrix<T, H, W> & lhs, const Eigen::Matrix<T, H, W> & rhs) const
   {
     return lhs == rhs;
@@ -135,9 +138,9 @@ public:
   /// SCORE, JACOBIAN, HESSIAN
   /// \return True if the result for this term with the given parameter matches the previous
   /// state and is already cached.
-  bool is_cached(const DomainValue & x, const ExpressionTerm & term) const noexcept
+  bool8_t is_cached(const DomainValue & x, const ExpressionTerm & term) const noexcept
   {
-    bool ret = false;
+    bool8_t ret = false;
     if (m_comparator(x, m_last_value)) {
       switch (term) {
         case ExpressionTerm::SCORE:

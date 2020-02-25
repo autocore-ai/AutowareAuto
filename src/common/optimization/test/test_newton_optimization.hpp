@@ -16,7 +16,10 @@
 #ifndef TEST_NEWTON_OPTIMIZATION_HPP_
 #define TEST_NEWTON_OPTIMIZATION_HPP_
 
+#include <common/types.hpp>
 #include <optimization/optimizer.hpp>
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -35,10 +38,10 @@ class TestFixedLineSearch : public ::testing::Test
 
 /// This is the expression for `y = (x + 1)^2 +1`
 class DummyObjective : public Expression<DummyObjective,
-    Eigen::Matrix<double, 1U, 1U>, 1U, 1U>
+    Eigen::Matrix<float64_t, 1U, 1U>, 1U, 1U>
 {
   // getting aliases from the base class.
-  using ExpressionT = Expression<DummyObjective, Eigen::Matrix<double, 1U, 1U>, 1U, 1U>;
+  using ExpressionT = Expression<DummyObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U, 1U>;
   using DomainValue = typename ExpressionT::DomainValue;
   using Value = typename ExpressionT::Value;
   using Jacobian = typename ExpressionT::Jacobian;
@@ -72,7 +75,6 @@ public:
   {
     out(0, 0) = sign * 2.0;
   }
-
 };
 
 }  // namespace optimization

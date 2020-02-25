@@ -16,6 +16,7 @@
 #ifndef OPTIMIZATION__OPTIMIZATION_PROBLEM_HPP_
 #define OPTIMIZATION__OPTIMIZATION_PROBLEM_HPP_
 
+#include <common/types.hpp>
 #include <optimization/visibility_control.hpp>
 #include <optimization/utils.hpp>
 #include <helper_functions/crtp.hpp>
@@ -25,6 +26,8 @@
 #include <memory>
 #include <tuple>
 #include <utility>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -45,7 +48,7 @@ public:
   static constexpr auto NumJacobianCols = NumJacobianColsT;
   static constexpr auto NumVars = NumVarsT;
   using DomainValue = DomainValueT;
-  using Value = double;
+  using Value = autoware::common::types::float64_t;
   using Jacobian = Eigen::Matrix<Value, NumVars, NumJacobianCols>;
   using Hessian = Eigen::Matrix<Value, NumVars, NumVars>;
   using JacobianRef = Eigen::Ref<Jacobian>;
@@ -111,7 +114,7 @@ public:
   static constexpr auto NumJacobianCols = NumJacobianColsT;
   static constexpr auto NumVars = NumVarsT;
   using DomainValue = DomainValueT;
-  using Value = double;
+  using Value = autoware::common::types::float64_t;
   using Jacobian = Eigen::Matrix<Value, NumVars, NumJacobianCols>;
   using Hessian = Eigen::Matrix<Value, NumVars, NumVars>;
   using JacobianRef = Eigen::Ref<Eigen::Matrix<Value, NumVars, NumJacobianCols>>;
@@ -212,12 +215,12 @@ class OPTIMIZATION_PUBLIC OptimizationProblem<Derived, DomainValueT, NumJacobian
 public:
   using EqualityConstraintsT = std::tuple<EqualityConstraints...>;
   using InequalityConstraintsT = std::tuple<InequalityConstraints...>;
-  using Value = double;
+  using Value = autoware::common::types::float64_t;
   using Jacobian = Eigen::Matrix<Value, NumVarsT, NumJacobianColsT>;
   using Hessian = Eigen::Matrix<Value, NumVarsT, NumVarsT>;
   using JacobianRef = Eigen::Ref<Jacobian>;
   using HessianRef = Eigen::Ref<Hessian>;
-  static constexpr bool is_unconstrained{(std::tuple_size<EqualityConstraintsT>::value == 0U) &&
+  static constexpr bool8_t is_unconstrained{(std::tuple_size<EqualityConstraintsT>::value == 0U) &&
     (std::tuple_size<InequalityConstraintsT>::value == 0U)};
 
   OptimizationProblem(
@@ -240,43 +243,43 @@ public:
   {
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<enabled, Value> score_(const DomainValueT & x)
   {
     return m_objective(x);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<!enabled, Value> score_(const DomainValueT & x)
   {
     return opt_impl()->score_opt_(x);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<enabled, void> jacobian_(const DomainValueT & x, JacobianRef out)
   {
     m_objective.jacobian(x, out);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<!enabled, void> jacobian_(const DomainValueT & x, JacobianRef out)
   {
     opt_impl()->jacobian_opt_(x, out);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<enabled, void> hessian_(const DomainValueT & x, HessianRef out)
   {
     m_objective.hessian(x, out);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<!enabled, void> hessian_(const DomainValueT & x, HessianRef out)
   {
     opt_impl()->hessian_opt_(x, out);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<enabled, void> evaluate(
     const DomainValueT & x,
     const ComputeMode & mode)
@@ -284,7 +287,7 @@ public:
     m_objective.evaluate(x, mode);
   }
 
-  template<bool enabled = is_unconstrained>
+  template<bool8_t enabled = is_unconstrained>
   typename std::enable_if_t<!enabled, void> evaluate(
     const DomainValueT & x,
     const ComputeMode & mode)

@@ -13,9 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <optimization/optimizer_options.hpp>
 #include <stdexcept>
 #include <cmath>
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -25,9 +28,9 @@ namespace optimization
 {
 NewtonOptimizationOptions::NewtonOptimizationOptions(
   uint64_t max_num_iterations,
-  double function_tolerance,
-  double parameter_tolerance,
-  double gradient_tolerance)
+  float64_t function_tolerance,
+  float64_t parameter_tolerance,
+  float64_t gradient_tolerance)
 : m_max_num_iterations(max_num_iterations),
   m_function_tolerance(function_tolerance), m_parameter_tolerance(parameter_tolerance),
   m_gradient_tolerance(gradient_tolerance)
@@ -53,22 +56,28 @@ uint64_t NewtonOptimizationOptions::max_num_iterations() const noexcept
 {
   return m_max_num_iterations;
 }
-double NewtonOptimizationOptions::function_tolerance() const noexcept {return m_function_tolerance;}
-double NewtonOptimizationOptions::parameter_tolerance() const noexcept
+float64_t NewtonOptimizationOptions::function_tolerance() const noexcept
+{
+  return m_function_tolerance;
+}
+float64_t NewtonOptimizationOptions::parameter_tolerance() const noexcept
 {
   return m_parameter_tolerance;
 }
-double NewtonOptimizationOptions::gradient_tolerance() const noexcept {return m_gradient_tolerance;}
+float64_t NewtonOptimizationOptions::gradient_tolerance() const noexcept
+{
+  return m_gradient_tolerance;
+}
 
 OptimizationSummary::OptimizationSummary(
-  double dist, TerminationType termination_type,
+  float64_t dist, TerminationType termination_type,
   uint64_t iter)
 : m_estimated_distance_to_optimum(dist),
   m_number_of_iterations_made(iter),
   m_termination_type(termination_type)
 {}
 
-double OptimizationSummary::estimated_distance_to_optimum() const noexcept
+float64_t OptimizationSummary::estimated_distance_to_optimum() const noexcept
 {
   return m_estimated_distance_to_optimum;
 }
