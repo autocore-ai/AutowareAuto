@@ -39,7 +39,6 @@ namespace lidar_utils
 using sensor_msgs::msg::PointCloud2;
 
 using autoware::common::types::bool8_t;
-using autoware::common::types::char8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
@@ -63,32 +62,32 @@ public:
   void reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx = 0);
 
   /// \brief Returns iterator for the "x" field
-  inline sensor_msgs::PointCloud2Iterator<float> & x_it()
+  inline sensor_msgs::PointCloud2Iterator<float32_t> & x_it()
   {
     return m_its[0];
   }
 
   /// \brief Returns iterator for the "y" field
-  inline sensor_msgs::PointCloud2Iterator<float> & y_it()
+  inline sensor_msgs::PointCloud2Iterator<float32_t> & y_it()
   {
     return m_its[1];
   }
 
   /// \brief Returns iterator for the "z" field
-  inline sensor_msgs::PointCloud2Iterator<float> & z_it()
+  inline sensor_msgs::PointCloud2Iterator<float32_t> & z_it()
   {
     return m_its[2];
   }
 
   /// \brief Returns iterator for the "intensity" field
-  sensor_msgs::PointCloud2Iterator<float> & intensity_it()
+  sensor_msgs::PointCloud2Iterator<float32_t> & intensity_it()
   {
     return m_its[3];
   }
 
 private:
   /// Internal storage of the iterators
-  ::std::vector<sensor_msgs::PointCloud2Iterator<float>> m_its;
+  ::std::vector<sensor_msgs::PointCloud2Iterator<float32_t>> m_its;
 };
 
 /// \brief initializes header information for point cloud for x, y, z and intensity
@@ -130,12 +129,12 @@ LIDAR_UTILS_PUBLIC void init_pcl_msg(
   modifier.resize(size);
 }
 
-LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
+LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud(
   PointCloudIts & cloud_its,
   const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);
 
-LIDAR_UTILS_PUBLIC bool add_point_to_cloud(
+LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
   const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx);

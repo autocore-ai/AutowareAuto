@@ -30,6 +30,7 @@ namespace lidar_utils
 {
 
 using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
 using autoware::common::types::float32_t;
 
 // Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
@@ -116,12 +117,12 @@ void init_pcl_msg(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool add_point_to_cloud(
+bool8_t add_point_to_cloud(
   PointCloudIts & cloud_its,
   const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
-  bool ret = false;
+  bool8_t ret = false;
 
   auto & x_it = cloud_its.x_it();
   auto & y_it = cloud_its.y_it();
@@ -132,7 +133,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&
@@ -158,17 +159,17 @@ bool add_point_to_cloud(
   return ret;
 }
 
-bool add_point_to_cloud(
+bool8_t add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
   const autoware::common::types::PointXYZIF & pt,
   uint32_t & point_cloud_idx)
 {
-  bool ret = false;
+  bool8_t ret = false;
 
-  sensor_msgs::PointCloud2Iterator<float> x_it(cloud, "x");
-  sensor_msgs::PointCloud2Iterator<float> y_it(cloud, "y");
-  sensor_msgs::PointCloud2Iterator<float> z_it(cloud, "z");
-  sensor_msgs::PointCloud2Iterator<float> intensity_it(cloud, "intensity");
+  sensor_msgs::PointCloud2Iterator<float32_t> x_it(cloud, "x");
+  sensor_msgs::PointCloud2Iterator<float32_t> y_it(cloud, "y");
+  sensor_msgs::PointCloud2Iterator<float32_t> z_it(cloud, "z");
+  sensor_msgs::PointCloud2Iterator<float32_t> intensity_it(cloud, "intensity");
 
   x_it += point_cloud_idx;
   y_it += point_cloud_idx;
@@ -179,7 +180,7 @@ bool add_point_to_cloud(
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
   // past the bounds of the structure.
   static_assert(
-    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float)) + sizeof(uint16_t)),
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
     "PointXYZIF is not expected size: ");
 
   if (x_it != x_it.end() &&

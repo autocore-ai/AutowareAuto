@@ -22,6 +22,8 @@
 
 #include "common/types.hpp"
 
+using autoware::common::types::float32_t;
+
 namespace autoware
 {
 namespace common
@@ -47,9 +49,9 @@ namespace lidar_utils
 ///         3pi/2
 ///
 ///
-float fast_atan2(float y, float x)
+float32_t fast_atan2(float32_t y, float32_t x)
 {
-  constexpr float scaling_constant = 0.28086f;
+  constexpr float32_t scaling_constant = 0.28086f;
 
   if (x == 0.0f) {
     // Special case atan2(0.0, 0.0) = 0.0
@@ -62,14 +64,14 @@ float fast_atan2(float y, float x)
   }
 
   // Calculate quotient of y and x
-  float div = y / x;
+  float32_t div = y / x;
 
   // Determine in which octants we can be, if |y| is smaller than |x| (|div|<1)
   // then we are either in 1,4,5 or 8 else we are in 2,3,6 or 7.
   if (fabsf(div) < 1.0f) {
     // We are in 1,4,5 or 8
 
-    float atan = div / (1.0f + scaling_constant * div * div);
+    float32_t atan = div / (1.0f + scaling_constant * div * div);
 
     // If we are in 4 or 5 we need to add pi or -pi respectively
     if (x < 0.0f) {

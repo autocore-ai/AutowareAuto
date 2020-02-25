@@ -13,11 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <gtest/gtest.h>
 #include "common/types.hpp"
 #include "lidar_utils/lidar_utils.hpp"
-#include <gtest/gtest.h>
 
-constexpr float FAST_ATAN2_MAX_ERROR = 0.00469f;
+using autoware::common::types::float32_t;
+
+constexpr float32_t FAST_ATAN2_MAX_ERROR = 0.00469f;
 
 TEST(fast_atan2, corner_cases) {
   ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
@@ -33,10 +35,10 @@ TEST(fast_atan2, corner_cases) {
 }
 
 TEST(fast_atan2, max_error) {
-  float max_error = 0;
-  for (float f = 0; f < autoware::common::types::TAU; f += 0.00001f) {
-    float x = cos(f);
-    float y = sin(f);
+  float32_t max_error = 0;
+  for (float32_t f = 0; f < autoware::common::types::TAU; f += 0.00001f) {
+    float32_t x = cos(f);
+    float32_t y = sin(f);
     max_error = ::std::max(
         max_error,
         fabsf(atan2f(y, x) - autoware::common::lidar_utils::fast_atan2(y, x)));

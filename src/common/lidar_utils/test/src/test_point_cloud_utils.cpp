@@ -13,9 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <gtest/gtest.h>
+#include <string>
+#include <vector>
 #include "common/types.hpp"
 #include "lidar_utils/lidar_utils.hpp"
-#include <gtest/gtest.h>
+
+using autoware::common::types::float32_t;
 
 TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
 {
@@ -52,11 +56,11 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
 
 TEST(fast_atan2, max_error)
 {
-  float max_error = 0;
-  for (float f = 0; f < autoware::common::types::TAU; f += 0.00001f)
+  float32_t max_error = 0;
+  for (float32_t f = 0; f < autoware::common::types::TAU; f += 0.00001f)
   {
-    float x = cos(f);
-    float y = sin(f);
+    float32_t x = cos(f);
+    float32_t y = sin(f);
     max_error = ::std::max(
         max_error,
         fabsf(atan2f(y, x) - autoware::common::lidar_utils::fast_atan2(y, x)));
