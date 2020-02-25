@@ -45,8 +45,8 @@ using VehicleKinematicState = autoware_auto_msgs::msg::VehicleKinematicState;
 using float32_t = float;
 using float64_t = double;
 
-constexpr float64_t nano_in_sec = 1000000000.0L;
-constexpr float64_t circ_rad = 2.0 * M_PI;
+constexpr float64_t NANO_IN_SEC = 1000000000.0L;
+constexpr float64_t CIRC_RAD = 2.0 * M_PI;
 
 class TrajectorySpoofer
 {
@@ -60,8 +60,8 @@ private:
   std::chrono::nanoseconds get_travel_time(float32_t dist, float32_t speed);
 
 public:
-  static Complex32 to_2d_quaternion(float32_t yaw_angle);
-  static float32_t to_yaw_angle(const Complex32 & quat_2d);
+  static Complex32 to_2d_quaternion(float64_t yaw_angle);
+  static float64_t to_yaw_angle(const Complex32 & quat_2d);
 
   Trajectory spoof_straight_trajectory(
     const VehicleKinematicState & starting_point,

@@ -26,7 +26,7 @@
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::msg::VehicleKinematicState;
-using autoware::trajectory_spoofer::nano_in_sec;
+using autoware::trajectory_spoofer::NANO_IN_SEC;
 using autoware::trajectory_spoofer::TrajectorySpoofer;
 
 using float32_t = float;
@@ -47,11 +47,11 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   // in the calculation of nanosecond times in TrajectorySpoofer
   float64_t end_time = 
     (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-     nano_in_sec) + (length / starting_point.state.longitudinal_velocity_mps);
+     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
   auto first_point = traj.points.front();
   auto last_point = traj.points.back();
   auto last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / nano_in_sec;
+    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
 
   // Initial heading of 0 should mean travelling straight along the X axis
   ASSERT_EQ(traj.points.size(), num_of_points);
@@ -78,11 +78,11 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
 
   end_time = 
     (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-    nano_in_sec) + (length / starting_point.state.longitudinal_velocity_mps);
+    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
   first_point = traj.points.front();
   last_point = traj.points.back();
   last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / nano_in_sec;
+    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
 
   // Calc x and y of last point
   const float32_t end_x = std::cos(head_rad) * length;
@@ -115,21 +115,12 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   auto first_point = traj.points.front();
   auto last_point = traj.points.back();
   auto last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / nano_in_sec;
-
-  /*
-  for (const auto & pt : traj.points) {
-    std::cout << "Heading: " << TrajectorySpoofer::to_yaw_angle(pt.heading);
-    std::cout << ", X: " << pt.x << ", Y: " << pt.y << "\n";
-  }
-
-  std::cout << std::endl;
-  */
+    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
 
   ASSERT_EQ(traj.points.size(), num_of_points);
-  // last point should have the same x/y as 2nd point
-  // ASSERT_FLOAT_EQ(traj.points[1].x, last_point.x);
-  // ASSERT_FLOAT_EQ(traj.points[1].y, last_point.y);
+  // last point should have the same x/y as first point
+  // ASSERT_FLOAT_EQ(last_point.x, first_point.x);
+  // ASSERT_FLOAT_EQ(last_point.y, first_point.y);
   // Should end up with the same heading as initial heading
   ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
   ASSERT_FLOAT_EQ(last_point.heading.imag, first_point.heading.imag);

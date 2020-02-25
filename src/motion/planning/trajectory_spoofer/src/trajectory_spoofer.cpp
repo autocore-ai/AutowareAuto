@@ -25,11 +25,11 @@ namespace trajectory_spoofer
 {
 std::chrono::nanoseconds TrajectorySpoofer::get_travel_time(float32_t dist, float32_t speed)
 {
-  auto travel_time_ns = (dist / speed) * nano_in_sec;
+  auto travel_time_ns = (dist / speed) * NANO_IN_SEC;
   return std::chrono::nanoseconds(static_cast<int64_t>(travel_time_ns));
 }
 
-Complex32 TrajectorySpoofer::to_2d_quaternion(float32_t yaw_angle)
+Complex32 TrajectorySpoofer::to_2d_quaternion(float64_t yaw_angle)
 {
   Complex32 heading;
   heading.real = std::cos(yaw_angle / 2.0);
@@ -37,17 +37,17 @@ Complex32 TrajectorySpoofer::to_2d_quaternion(float32_t yaw_angle)
   return heading;
 }
 
-float32_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
+float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
 {
   // theta = atan2(2qxqw, 1-2(qw)^2)
-  const float32_t sin_y = 2.0 * quat_2d.real * quat_2d.imag;
-  const float32_t cos_y = 1.0 - 2.0 * quat_2d.imag * quat_2d.imag;
-  const float32_t rad_quad = std::atan2(sin_y, cos_y);
+  const float64_t sin_y = 2.0 * quat_2d.real * quat_2d.imag;
+  const float64_t cos_y = 1.0 - 2.0 * quat_2d.imag * quat_2d.imag;
+  const float64_t rad_quad = std::atan2(sin_y, cos_y);
 
-  if (rad_quad >= 0) {
-    return rad_quad;
+  if (rad_quad < 0) {
+    return rad_quad + CIRC_RAD;
   } else {
-    return circ_rad - std::fabs(rad_quad);
+    return rad_quad;
   }
 }
 
@@ -90,18 +90,38 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
   TrajectoryPoint pt = starting_point.state;
   circular_trajectory.points.push_back(pt);
 
-  const float32_t start_heading_rad = to_yaw_angle(pt.heading);
-  const float32_t rad_delta = circ_rad / static_cast<float32_t>(num_of_points);
-  const float32_t arc_len_delta = radius * rad_delta;
-  // Calculate chord length
-  const float32_t len_delta = 2.0 * radius * std::sin(rad_delta / 2.0);
+  const float64_t end_heading_rad = to_yaw_angle(pt.heading);
+  // Number of segments = number of points - 1
+  const float64_t seg_angle_rad = CIRC_RAD / static_cast<float32_t>(num_of_points - 1);
+  const float64_t seg_len = 2.0 * radius * std::sin(seg_angle_rad / 2.0);
+  float64_t angle_dist_remain;
+  float64_t new_head_diff;
+  float64_t new_head;
 
   for (int i = 1; i < num_of_points; ++i) {
-    pt.x = pt.x + std::cos(to_yaw_angle(pt.heading)) * len_delta;
-    pt.y = pt.y + std::sin(to_yaw_angle(pt.heading)) * len_delta;
+    // TODO(josh.whitley): Y values are incorrect
+    pt.x = pt.x + std::cos(to_yaw_angle(pt.heading)) * seg_len;
+    pt.y = pt.y + std::sin(to_yaw_angle(pt.heading)) * seg_len;
 
-    const float32_t head_rad = start_heading_rad - (num_of_points - i - 1) * rad_delta;
-    pt.heading = to_2d_quaternion(head_rad);
+    angle_dist_remain = CIRC_RAD - i * seg_angle_rad;
+
+    if (angle_dist_remain < seg_angle_rad) {
+      new_head_diff = std::abs(to_yaw_angle(pt.heading) - end_heading_rad - CIRC_RAD);
+    } else {
+      new_head_diff = angle_dist_remain / (num_of_points - i - 1);
+    }
+
+    new_head = to_yaw_angle(pt.heading) + new_head_diff;
+
+    // Clip to 0 to 2pi
+    if (new_head < 0) {
+      new_head += CIRC_RAD;
+    } else if (new_head >= CIRC_RAD) {
+      new_head -= CIRC_RAD;
+    }
+
+    pt.heading = to_2d_quaternion(new_head);
+
     circular_trajectory.points.push_back(pt);
 
     // TODO(josh.whitley): Calculate adjusted:
