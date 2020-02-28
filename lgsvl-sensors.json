@@ -37,9 +37,10 @@
 		"type": "GPS Odometry",
 		"name": "GPS Odometry",
 		"params": {
-			"Frequency": 12.5,
+			"Frequency": 30.0,
 			"Topic": "/lgsvl/gnss_odom",
-			"Frame": "gnss",
+			"Frame": "odom",
+			"ChildFrame": "base_link",
 			"IgnoreMapOrigin": true
 		},
 		"transform": {
