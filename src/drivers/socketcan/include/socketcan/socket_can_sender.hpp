@@ -17,11 +17,14 @@
 #ifndef SOCKETCAN__SOCKET_CAN_SENDER_HPP_
 #define SOCKETCAN__SOCKET_CAN_SENDER_HPP_
 
+#include <common/types.hpp>
 #include <socketcan/visibility_control.hpp>
 #include <socketcan/socket_can_id.hpp>
 
 #include <chrono>
 #include <string>
+
+using autoware::common::types::char8_t;
 
 namespace autoware
 {
@@ -98,7 +101,7 @@ public:
   {
     static_assert(sizeof(data) <= MAX_DATA_LENGTH, "Data type too large for CAN");
     //lint -e586 I have to use reinterpret cast because I'm operating on bytes, see below NOLINT
-    send_impl(reinterpret_cast<const char *>(&data), sizeof(data), id, timeout);
+    send_impl(reinterpret_cast<const char8_t *>(&data), sizeof(data), id, timeout);
     // reinterpret_cast to byte, or (unsigned) char is well defined;
     // all pointers can implicitly convert to void *
   }

@@ -13,11 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "socketcan/socket_can_id.hpp"
+#include <common/types.hpp>
 
 #include <linux/can.h>  // for CAN typedef so I can static_assert it
 
 #include <utility>
+
+#include "socketcan/socket_can_id.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -50,7 +54,7 @@ CanId::CanId(const IdT id, FrameType type, ExtendedFrame_)
 : CanId{id, type, true} {}
 
 ////////////////////////////////////////////////////////////////////////////////
-CanId::CanId(const IdT id, FrameType type, bool is_extended)
+CanId::CanId(const IdT id, FrameType type, bool8_t is_extended)
 {
   // Set extended bit
   if (is_extended) {
@@ -147,7 +151,7 @@ CanId::IdT CanId::get() const noexcept
   return m_id;
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool CanId::is_extended() const noexcept
+bool8_t CanId::is_extended() const noexcept
 {
   return (m_id & EXTENDED_MASK) == EXTENDED_MASK;
 }

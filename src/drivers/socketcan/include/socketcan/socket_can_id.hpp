@@ -17,9 +17,13 @@
 #ifndef SOCKETCAN__SOCKET_CAN_ID_HPP_
 #define SOCKETCAN__SOCKET_CAN_ID_HPP_
 
+#include <common/types.hpp>
 #include <socketcan/visibility_control.hpp>
 
 #include <stdexcept>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
 
 namespace autoware
 {
@@ -33,7 +37,7 @@ constexpr std::size_t MAX_DATA_LENGTH = 8U;
 class SOCKETCAN_PUBLIC SocketCanTimeout : public std::runtime_error
 {
 public:
-  explicit SocketCanTimeout(const char * const what)
+  explicit SocketCanTimeout(const char8_t * const what)
   : runtime_error{what} {}
 };  // class SocketCanTimeout
 
@@ -93,7 +97,7 @@ public:
   /// Get the whole id value
   IdT get() const noexcept;
   /// Check if frame is extended
-  bool is_extended() const noexcept;
+  bool8_t is_extended() const noexcept;
   /// Check frame type
   /// \throw std::domain_error If bits are in an inconsistent state
   FrameType frame_type() const;
@@ -101,7 +105,7 @@ public:
   LengthT length() const noexcept;
 
 private:
-  SOCKETCAN_LOCAL CanId(const IdT id, FrameType type, bool is_extended);
+  SOCKETCAN_LOCAL CanId(const IdT id, FrameType type, bool8_t is_extended);
 
   IdT m_id{};
   LengthT m_data_length{};

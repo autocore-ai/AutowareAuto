@@ -16,6 +16,8 @@
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_cmake_pclint</test_depend>
 
+  <depend>autoware_auto_common</depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
