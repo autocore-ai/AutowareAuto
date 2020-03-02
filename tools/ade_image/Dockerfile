@@ -50,11 +50,6 @@ RUN pip3 install -U \
         $(cut -d# -f1 </tmp/pip3-packages) \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
-RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.linux.bin.tar.gz | tar -xzf - --directory=/usr/local/bin --strip-components=2 doxygen-1.8.14/bin/doxygen
-RUN curl -Ls https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.src.tar.gz | tar -xzf - && \
-    cd doxygen-1.8.14 && cmake . && make && mv bin/doxygen /usr/local/bin && cd .. && \
-    rm -r doxygen-1.8.14
-
 
 RUN mkdir -p /opt/aw-atom-config/bin
 COPY atom-install-our-plugins /etc/atom/atom-install-our-plugins
