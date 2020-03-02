@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lgsvl_interface/lgsvl_interface_node.hpp"
-#include "lgsvl_interface/lgsvl_interface.hpp"
+#include <common/types.hpp>
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "lgsvl_interface/lgsvl_interface_node.hpp"
+#include "lgsvl_interface/lgsvl_interface.hpp"
+
+using autoware::common::types::float64_t;
 
 namespace lgsvl_interface
 {
@@ -46,8 +50,8 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
   const auto table = [this](const std::string & prefix_raw) -> Table1D {
       const std::string prefix = "lgsvl." + prefix_raw + ".";
       return Table1D{
-      declare_parameter(prefix + "domain").get<std::vector<double>>(),
-      declare_parameter(prefix + "range").get<std::vector<double>>()
+      declare_parameter(prefix + "domain").get<std::vector<float64_t>>(),
+      declare_parameter(prefix + "range").get<std::vector<float64_t>>()
       };
     };
   // Set up interface

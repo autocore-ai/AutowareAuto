@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Generate library
