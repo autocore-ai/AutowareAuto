@@ -62,6 +62,7 @@ if(BUILD_TESTING)
   set(TEST_TRAJECTORY_SPOOFER_EXE test_trajectory_spoofer)
   ament_add_gtest(${TEST_TRAJECTORY_SPOOFER_EXE} ${TEST_SOURCES})
   ament_target_dependencies(${TEST_TRAJECTORY_SPOOFER_EXE}
+    "autoware_auto_common"
     "autoware_auto_msgs"
     "time_utils"
   )

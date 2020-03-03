@@ -23,6 +23,16 @@ namespace autoware
 {
 namespace trajectory_spoofer
 {
+TrajectorySpoofer::TrajectorySpoofer()
+: target_speed_(10.0)
+{
+}
+
+TrajectorySpoofer::TrajectorySpoofer(float32_t target_speed)
+: target_speed_(target_speed)
+{
+}
+
 std::chrono::nanoseconds TrajectorySpoofer::get_travel_time(float32_t dist, float32_t speed)
 {
   auto travel_time_ns = (dist / speed) * NANO_IN_SEC;
@@ -37,6 +47,16 @@ Complex32 TrajectorySpoofer::to_2d_quaternion(float64_t yaw_angle)
   return heading;
 }
 
+float32_t TrajectorySpoofer::get_target_speed()
+{
+  return target_speed_;
+}
+
+void TrajectorySpoofer::set_target_speed(float32_t target_speed)
+{
+  target_speed_ = target_speed;
+}
+
 float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
 {
   // theta = atan2(2qxqw, 1-2(qw)^2)
@@ -45,7 +65,7 @@ float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
   const float64_t rad_quad = std::atan2(sin_y, cos_y);
 
   if (rad_quad < 0) {
-    return rad_quad + CIRC_RAD;
+    return rad_quad + TAU;
   } else {
     return rad_quad;
   }
@@ -55,7 +75,7 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
   const VehicleKinematicState & starting_point,
   int32_t num_of_points,
   float32_t length,
-  bool velocity_ramp_on)
+  bool8_t speed_ramp_on)
 {
   Trajectory straight_trajectory;
 
@@ -82,7 +102,8 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
 Trajectory TrajectorySpoofer::spoof_circular_trajectory(
   const VehicleKinematicState & starting_point,
   int32_t num_of_points,
-  float32_t radius)
+  float32_t radius,
+  bool8_t speed_ramp_on)
 {
   Trajectory circular_trajectory;
 
@@ -91,7 +112,7 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
   circular_trajectory.points.push_back(pt);
 
   // Number of segments = number of points - 1
-  const float64_t seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
+  const float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   const float64_t seg_len = 2.0 * radius * std::sin(seg_angle_rad / 2.0);
   const auto start_time = time_utils::from_message(pt.time_from_start);
   const auto time_delta = get_travel_time(
@@ -99,7 +120,7 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 
   for (int i = 1; i < num_of_points; ++i) {
     const float64_t old_head = to_yaw_angle(pt.heading);
-    const float64_t angle_dist_remain = CIRC_RAD - i * seg_angle_rad;
+    const float64_t angle_dist_remain = TAU - i * seg_angle_rad;
 
     if (i < num_of_points - 1) {
       // TODO(josh.whitley): Y values still not quite right
@@ -110,9 +131,9 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 
       // Clip to 0 to 2pi
       if (new_head < 0) {
-        new_head += CIRC_RAD;
-      } else if (new_head >= CIRC_RAD) {
-        new_head -= CIRC_RAD;
+        new_head += TAU;
+      } else if (new_head >= TAU) {
+        new_head -= TAU;
       }
 
       pt.heading = to_2d_quaternion(new_head);
@@ -142,7 +163,7 @@ Trajectory TrajectorySpoofer::spoof_curved_trajectory(
   float32_t radius,
   float32_t length,
   CurveType mode,
-  bool velocity_ramp_on)
+  bool8_t speed_ramp_on)
 {
   Trajectory curved_trajectory;
 

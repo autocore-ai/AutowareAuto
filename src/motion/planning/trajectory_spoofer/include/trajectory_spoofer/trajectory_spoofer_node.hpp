@@ -21,12 +21,20 @@
 
 #include <trajectory_spoofer/trajectory_spoofer.hpp>
 
+#include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
+#include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <common/types.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include <memory>
 
 namespace autoware
 {
 namespace trajectory_spoofer
 {
+using Trajectory = autoware_auto_msgs::msg::Trajectory;
+using VehicleKinematicState = autoware_auto_msgs::msg::VehicleKinematicState;
+
 /// \class TrajectorySpooferNode
 /// \brief ROS 2 Node for creating fake trajectories
 class TRAJECTORY_SPOOFER_PUBLIC TrajectorySpooferNode
@@ -37,9 +45,15 @@ public:
   /// \param[in] options an rclcpp::NodeOptions object to configure the node
   /// \throw runtime error if failed to start threads or configure node
   explicit TrajectorySpooferNode(const rclcpp::NodeOptions & options);
+  void on_recv_state(VehicleKinematicState::SharedPtr msg);
 
 private:
-  bool verbose;  ///< whether to use verbose output or not.
+  bool8_t verbose_;
+  bool8_t speed_ramp_on_;
+  float32_t target_speed_;
+  std::shared_ptr<TrajectorySpoofer> spoofer_;
+  std::shared_ptr<rclcpp::Publisher<Trajectory>> trajectory_pub_;
+  std::shared_ptr<rclcpp::Subscription<VehicleKinematicState>> state_sub_;
 };
 }  // namespace trajectory_spoofer
 }  // namespace autoware

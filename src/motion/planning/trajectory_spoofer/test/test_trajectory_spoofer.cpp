@@ -18,6 +18,7 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
+#include <common/types.hpp>
 #include <time_utils/time_utils.hpp>
 
 #include <cmath>
@@ -26,15 +27,15 @@
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::msg::VehicleKinematicState;
-using autoware::trajectory_spoofer::CIRC_RAD;
 using autoware::trajectory_spoofer::NANO_IN_SEC;
 using autoware::trajectory_spoofer::TrajectorySpoofer;
 
-using float32_t = float;
-using float64_t = double;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
+using autoware::common::types::TAU;
 
 TEST(test_trajectory_spoofer, straight_trajectory) {
-  TrajectorySpoofer ts;
+  TrajectorySpoofer ts(10.0);
   VehicleKinematicState starting_point;
 
   int32_t num_of_points = 20;
@@ -119,7 +120,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   auto last_point = traj.points.back();
   auto last_time = static_cast<float64_t>(
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
-  float64_t seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
+  float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   // Chord distance * number of segments
   float64_t length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
   float64_t end_time = 
@@ -149,7 +150,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   last_point = traj.points.back();
   last_time = static_cast<float64_t>(
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
-  seg_angle_rad = CIRC_RAD / static_cast<float64_t>(num_of_points - 1);
+  seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   // Chord distance * number of segments
   length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
   end_time = 
