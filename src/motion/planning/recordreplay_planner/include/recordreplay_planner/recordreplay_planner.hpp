@@ -16,9 +16,10 @@
 #define RECORDREPLAY_PLANNER__RECORDREPLAY_PLANNER_HPP_
 
 #include <recordreplay_planner/visibility_control.hpp>
+#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
-#include <motion_common/motion_common.hpp>
+#include <motion_common/config.hpp>
 
 #include <ostream>
 #include <deque>
@@ -29,10 +30,11 @@ namespace planning
 {
 namespace recordreplay_planner
 {
+using autoware_auto_msgs::msg::BoundingBoxArray;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
-using Trajectory = autoware_auto_msgs::msg::Trajectory;
+using autoware_auto_msgs::msg::Trajectory;
 using Heading = decltype(decltype(State::state)::heading);
-using motion::motion_common::to_angle;
+using motion::motion_common::VehicleConfig;
 
 enum class RecordReplayState
 {
@@ -45,7 +47,7 @@ enum class RecordReplayState
 class RECORDREPLAY_PLANNER_PUBLIC RecordReplayPlanner
 {
 public:
-  RecordReplayPlanner() = default;
+  explicit RecordReplayPlanner(const VehicleConfig & vehicle_param);
 
   // Record and replay control
   bool is_recording() const noexcept;
@@ -67,23 +69,32 @@ public:
   const Trajectory & plan(const State & current_state);
 
   // Return the number of currently-recorded State messages
-  uint32_t get_record_length() const noexcept;
+  std::size_t get_record_length() const noexcept;
 
   // Heading weight configuration
   void set_heading_weight(double heading_weight);
   double get_heading_weight();
 
+
+  // Update bounding boxes to new perception
+  void update_bounding_boxes(const BoundingBoxArray & bounding_boxes);
+
+  std::size_t get_number_of_bounding_boxes() const noexcept;
+
 private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
+  RECORDREPLAY_PLANNER_LOCAL std::size_t get_closest_state(const State & current_state);
 
   // Weight of heading in computations of differences between states
   double m_heading_weight = 0.1;
+  VehicleConfig m_vehicle_param;
 
   std::deque<State> m_record_buffer;
+  BoundingBoxArray m_latest_bounding_boxes{};
   Trajectory m_trajectory{};
   RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
-};  // class PlannerBase
+};  // class RecordReplayPlanner
 }  // namespace recordreplay_planner
 }  // namespace planning
 }  // namespace motion

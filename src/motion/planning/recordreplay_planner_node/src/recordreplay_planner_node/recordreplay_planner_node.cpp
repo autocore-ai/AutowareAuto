@@ -29,8 +29,21 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
   // TODO(s.me) get topics from parameters
   const auto ego_topic = declare_parameter("ego_topic").get<std::string>();
   const auto trajectory_topic = declare_parameter("trajectory_topic").get<std::string>();
+  const auto bounding_boxes_topic = declare_parameter("bounding_boxes_topic").get<std::string>();
   const auto heading_weight = static_cast<double>(declare_parameter("heading_weight").get<float>());
-  init(ego_topic, trajectory_topic, heading_weight);
+
+  const VehicleConfig vehicle_param{
+    static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.cg_to_rear_m").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.front_corner_stiffness").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_corner_stiffness").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.mass_kg").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.yaw_inertia_kgm2").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.width_m").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float>())
+  };
+  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight);
 }
 ////////////////////////////////////////////////////////////////////////////////
 RecordReplayPlannerNode::RecordReplayPlannerNode(
@@ -38,16 +51,21 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(
   const std::string & ns,
   const std::string & ego_topic,
   const std::string & trajectory_topic,
+  const std::string & bounding_boxes_topic,
+  const VehicleConfig & vehicle_param,
   const double heading_weight)
 : Node{name, ns}
 {
-  init(ego_topic, trajectory_topic, heading_weight);
+  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight);
 }
 
 void RecordReplayPlannerNode::init(
   const std::string & ego_topic,
   const std::string & trajectory_topic,
-  const double heading_weight)
+  const std::string & bounding_boxes_topic,
+  const VehicleConfig & vehicle_param,
+  const double heading_weight
+)
 {
   using rclcpp::QoS;
 
@@ -77,13 +95,18 @@ void RecordReplayPlannerNode::init(
   m_ego_sub = create_subscription<State>(ego_topic, QoS{10}.transient_local(),
       [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
 
+  using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
+  m_boundingbox_sub = create_subscription<BoundingBoxArray>(bounding_boxes_topic,
+      QoS{10}.transient_local(),
+      [this](const BoundingBoxArray::SharedPtr msg) {on_bounding_box(msg);}, SubAllocT{});
+
   // Set up publishers
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
   m_trajectory_pub =
     create_publisher<Trajectory>(trajectory_topic, QoS{10}.transient_local(), PubAllocT{});
 
   // Create and set a planner object that we'll talk to
-  m_planner = std::make_unique<recordreplay_planner::RecordReplayPlanner>();
+  m_planner = std::make_unique<recordreplay_planner::RecordReplayPlanner>(vehicle_param);
   m_planner->set_heading_weight(heading_weight);
 }
 
@@ -98,6 +121,12 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
     const auto & traj = m_planner->plan(*msg);
     m_trajectory_pub->publish(traj);
   }
+}
+
+void RecordReplayPlannerNode::on_bounding_box(const BoundingBoxArray::SharedPtr & msg)
+{
+  // Update most recent bounding box internally
+  m_planner->update_bounding_boxes(*msg);
 }
 
 rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(

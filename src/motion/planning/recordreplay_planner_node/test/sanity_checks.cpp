@@ -17,6 +17,7 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_testing/motion_testing.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <motion_common/config.hpp>
 
 #include <chrono>
 #include <algorithm>
@@ -25,14 +26,20 @@
 using motion::planning::recordreplay_planner_node::RecordReplayPlannerNode;
 using motion::motion_testing::make_state;
 using std::chrono::system_clock;
-using Trajectory = autoware_auto_msgs::msg::Trajectory;
+using autoware_auto_msgs::msg::Trajectory;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 
+using motion::motion_common::VehicleConfig;
+
+const auto test_vehicle_params = VehicleConfig(
+  1.0, 1.0, 0.5, 0.5, 1500.0, 12.0, 2.0, 0.5, 0.2);
 
 TEST(mytest_base, basic)
 {
   const auto ego_topic = "ego_topic";
   const auto trajectory_topic = "trajectory_topic";
+  const auto bounding_boxes_topic = "bounding_boxes_topic";
+  const auto heading_weight = 0.1;
   rclcpp::init(0, nullptr);
 
   auto plannernode = std::make_shared<RecordReplayPlannerNode>(
@@ -40,8 +47,9 @@ TEST(mytest_base, basic)
     "",
     ego_topic,
     trajectory_topic,
-    0.1
-  );
+    bounding_boxes_topic,
+    test_vehicle_params,
+    heading_weight);
 
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
   const auto publisher =
