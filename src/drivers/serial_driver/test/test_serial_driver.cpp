@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
+#include <string>
+#include <vector>
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "test_driver.hpp"
@@ -23,6 +26,7 @@
 #include <util.h>
 #endif
 
+using autoware::common::types::char8_t;
 using test_serial_driver::TestDriver;
 using test_serial_driver::Packet;
 using test_serial_driver::flow_control_t;
@@ -40,25 +44,25 @@ protected:
       exit(127);
     }
 
-    ASSERT_TRUE(master_fd > 0);
-    ASSERT_TRUE(slave_fd > 0);
-    ASSERT_TRUE(std::string(name).length() > 0);
+    ASSERT_GT(master_fd, 0);
+    ASSERT_GT(slave_fd, 0);
+    ASSERT_GT(std::string(name).length(), 0);
   }
 
-  int master_fd;
-  int slave_fd;
-  char name[100];
+  int32_t master_fd;
+  int32_t slave_fd;
+  char8_t name[100];
 };
 }  // namespace
 
 
-//tests serial_driver_node's get_packet function which receives serial packages
+// tests serial_driver_node's get_packet function which receives serial packages
 TEST_F(serial_driver, basic)
 {
-  //rclcpp::init required to start the node
+  // rclcpp::init required to start the node
   rclcpp::init(0, nullptr);
 
-  //setting values to send
+  // setting values to send
   std::vector<int32_t> values(10);
   std::generate(values.begin(), values.end(), [n = 0] () mutable { return n++; });
 
@@ -70,7 +74,7 @@ TEST_F(serial_driver, basic)
     );
 
   for (auto val : values) {
-    write(master_fd, reinterpret_cast<char *>(&val), sizeof(val));
+    write(master_fd, reinterpret_cast<char8_t *>(&val), sizeof(val));
     driver.run(1U);
     EXPECT_EQ(driver.get_last_value(), val);
   }

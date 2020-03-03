@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_SERIAL_DRIVER_HPP_
-#define TEST_SERIAL_DRIVER_HPP_
+#ifndef TEST_DRIVER_HPP_
+#define TEST_DRIVER_HPP_
+#include <common/types.hpp>
 #include <std_msgs/msg/int32.hpp>
-#include "serial_driver/serial_driver_node.hpp"
 #include <serial_driver/visibility_control.hpp>
+#include <string>
+#include "serial_driver/serial_driver_node.hpp"
 // double quotes here for static analysis
+
+using autoware::common::types::bool8_t;
 
 namespace test_serial_driver
 {
@@ -26,7 +30,7 @@ namespace test_serial_driver
 class SERIAL_DRIVER_PUBLIC Packet
 {
 public:
-    Packet(int32_t val);
+    explicit Packet(int32_t val);
     Packet();
       int32_t value;
 };
@@ -36,7 +40,8 @@ using autoware::drivers::serial_driver::flow_control_t;
 using autoware::drivers::serial_driver::parity_t;
 using autoware::drivers::serial_driver::stop_bits_t;
 
-class SERIAL_DRIVER_PUBLIC TestDriver : public autoware::drivers::serial_driver::SerialDriverNode<TestDriver, Packet, std_msgs::msg::Int32>
+class SERIAL_DRIVER_PUBLIC TestDriver :
+public autoware::drivers::serial_driver::SerialDriverNode<TestDriver, Packet, std_msgs::msg::Int32>
 {
 public:
   TestDriver(
@@ -51,16 +56,17 @@ public:
 
   void init_output(std_msgs::msg::Int32 & output);
 
-  bool convert(const Packet & pkt, std_msgs::msg::Int32 & output);
+  bool8_t convert(const Packet & pkt, std_msgs::msg::Int32 & output);
 
-  bool get_output_remainder(std_msgs::msg::Int32 & output);
+  bool8_t get_output_remainder(std_msgs::msg::Int32 & output);
 
 private:
   int32_t m_last_value;
   int32_t m_times_init_output_has_been_called;
 };  // class TestDriver
 
-using TestDriverT = autoware::drivers::serial_driver::SerialDriverNode<TestDriver, Packet, std_msgs::msg::Int32>;
+using TestDriverT =
+  autoware::drivers::serial_driver::SerialDriverNode<TestDriver, Packet, std_msgs::msg::Int32>;
 
 }  // namespace test_serial_driver
-#endif  // TEST_SERIAL_DRIVER_HPP_
+#endif  // TEST_DRIVER_HPP_

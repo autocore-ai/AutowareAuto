@@ -13,7 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
+#include <string>
 #include "test_driver.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace test_serial_driver
 {
@@ -45,14 +49,14 @@ void TestDriver::init_output(std_msgs::msg::Int32 & output)
   ++m_times_init_output_has_been_called;
 }
 
-bool TestDriver::convert(const Packet & pkt, std_msgs::msg::Int32 & output)
+bool8_t TestDriver::convert(const Packet & pkt, std_msgs::msg::Int32 & output)
 {
   output.data = pkt.value;
   m_last_value = output.data;
   return true;
 }
 
-bool TestDriver::get_output_remainder(std_msgs::msg::Int32 & output)
+bool8_t TestDriver::get_output_remainder(std_msgs::msg::Int32 & output)
 {
   (void)output;
   return false;
