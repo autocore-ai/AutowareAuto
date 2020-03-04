@@ -32,12 +32,21 @@ Start the LGSVL simulator:
 Now start your favorite browser and go to [http://localhost:8080](http://localhost:8080) where
 simulations can be configured.
 
+### Vehicle Configuration
+
 Follow the instructions in the
 [LGSVL documentation](https://www.lgsvlsimulator.com/docs/autoware-auto-instructions/#run-simulator-alongside-autowareauto)
 to configure the Lexus model to use the ROS 2 bridge.
 
 For a sensor json configuration that works out of the box, copy/paste the file in the root of the
 AutowareAuto repository, `lgsvl-sensors.json`, into the vehicle configuration dialogue box.
+
+#### Vehicle Appearance
+
+By default, the vehicle "Lexus2016RXHybrid" uses a stock model of a VW wagon. To display the correct Lexus body model,
+click the pencil icon on that vehicle and set the Vehicle URL to https://lgsvl-shared.s3-us-west-1.amazonaws.com/AWFLexus2016RXHybrid/vehicle_Lexus2016RXHybridApexAI.
+
+![Lexus2016RXHybridEdit](lexus-2016-rx-hybrid-edit.png)
 
 ### ros2 web bridge
 
