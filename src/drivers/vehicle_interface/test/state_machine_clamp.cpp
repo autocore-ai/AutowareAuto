@@ -13,15 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "state_machine.hpp"
+#include <common/types.hpp>
 
 #include <limits>
+
+#include "state_machine.hpp"
+
+using autoware::common::types::bool8_t;
 
 struct CommandClamp
 {
   decltype(VCC::long_accel_mps2) accel;
   decltype(VCC::front_wheel_angle_rad) front_steer;
-  bool expect_warn;
+  bool8_t expect_warn;
 };
 constexpr decltype(CommandClamp::accel) max_accel{3.0F};  // TODO(c.ho) use config struct instead
 constexpr decltype(CommandClamp::accel) min_accel{-3.0F};

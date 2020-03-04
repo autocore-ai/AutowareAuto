@@ -17,6 +17,7 @@
 #ifndef VEHICLE_INTERFACE__PLATFORM_INTERFACE_HPP_
 #define VEHICLE_INTERFACE__PLATFORM_INTERFACE_HPP_
 
+#include <common/types.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
@@ -25,6 +26,14 @@
 #include <vehicle_interface/visibility_control.hpp>
 
 #include <chrono>
+
+using autoware::common::types::bool8_t;
+
+using autoware_auto_msgs::msg::RawControlCommand;
+using autoware_auto_msgs::msg::VehicleControlCommand;
+using autoware_auto_msgs::msg::VehicleStateCommand;
+using autoware_auto_msgs::msg::VehicleStateReport;
+using autoware_auto_msgs::msg::VehicleOdometry;
 
 namespace autoware
 {
@@ -51,45 +60,45 @@ public:
   /// Exceptions may be thrown on errors
   /// \param[in] timeout The maximum amount of time to check/receive data
   /// \return True if data was received before the timeout, false otherwise
-  virtual bool update(std::chrono::nanoseconds timeout) = 0;
+  virtual bool8_t update(std::chrono::nanoseconds timeout) = 0;
   /// Send the state command to the vehicle platform. May require translation into a
   /// vehicle-specific representation and sending multiple messages
   /// Exceptions may be thrown on errors
   /// \param[in] msg The state command to send to the vehicle
   /// \return false if sending failed in some way, true otherwise
-  virtual bool send_state_command(const autoware_auto_msgs::msg::VehicleStateCommand & msg) = 0;
+  virtual bool8_t send_state_command(const VehicleStateCommand & msg) = 0;
   /// Send the state command to the vehicle platform. May require translation into a
   /// vehicle-specific representation and sending multiple messages.
   /// Exceptions may be thrown on errors
   /// \param[in] msg The control command to send to the vehicle
   /// \return false if sending failed in some way, true otherwise
-  virtual bool send_control_command(const autoware_auto_msgs::msg::VehicleControlCommand & msg) = 0;
+  virtual bool8_t send_control_command(const VehicleControlCommand & msg) = 0;
   /// Send the state command to the vehicle platform. May require translation into a
   /// vehicle-specific representation and sending multiple messages.
   /// Exceptions may be thrown on errors
   /// \param[in] msg The control command to send to the vehicle
   /// \return false if sending failed in some way, true otherwise
-  virtual bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) = 0;
+  virtual bool8_t send_control_command(const RawControlCommand & msg) = 0;
 
   /// Get the most recent state of the vehicle. The State should be assumed to be constant unless
   /// data from the vehicle platform implies a state should be changed. For example, if the gear
   /// state is drive, the StateReport should be in drive until the vehicle platform reports that
   /// it is in neutral or some other gear state.
   /// \return A StateReport message intended to be published.
-  const autoware_auto_msgs::msg::VehicleStateReport & get_state_report() const noexcept;
+  const VehicleStateReport & get_state_report() const noexcept;
   /// Get the most recent odomoetry of the vehicle
   /// \return A Odometry message intended to be published.
-  const autoware_auto_msgs::msg::VehicleOdometry & get_odometry() const noexcept;
+  const VehicleOdometry & get_odometry() const noexcept;
 
 protected:
   /// Get the underlying state report for modification
-  autoware_auto_msgs::msg::VehicleStateReport & state_report() noexcept;
+  VehicleStateReport & state_report() noexcept;
   /// Get the underlying odometry for modification
-  autoware_auto_msgs::msg::VehicleOdometry & odometry() noexcept;
+  VehicleOdometry & odometry() noexcept;
 
 private:
-  autoware_auto_msgs::msg::VehicleStateReport m_state_report{};
-  autoware_auto_msgs::msg::VehicleOdometry m_odometry{};
+  VehicleStateReport m_state_report{};
+  VehicleOdometry m_odometry{};
 };  // class PlatformInterface
 }  // namespace vehicle_interface
 }  // namespace drivers

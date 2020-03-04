@@ -15,16 +15,21 @@
 #ifndef TEST_VI_NODE_HPP_
 #define TEST_VI_NODE_HPP_
 
+#include <common/types.hpp>
 #include <gtest/gtest.h>
 
 #include <atomic>
 #include <chrono>
 #include <memory>
+#include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
 #include "vehicle_interface/vehicle_interface_node.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 using autoware::drivers::vehicle_interface::Limits;
 using autoware::drivers::vehicle_interface::VehicleInterfaceNode;
@@ -42,24 +47,24 @@ using autoware_auto_msgs::msg::VehicleStateCommand;
 class FakeInterface : public PlatformInterface
 {
 public:
-  explicit FakeInterface(bool fail)
+  explicit FakeInterface(bool8_t fail)
   : PlatformInterface{},
     m_fail{fail} {}
 
-  bool update(std::chrono::nanoseconds timeout) override
+  bool8_t update(std::chrono::nanoseconds timeout) override
   {
     (void)timeout;
     m_update_called = true;
     return (m_count % 5) != 4;
   }
-  bool send_state_command(const autoware_auto_msgs::msg::VehicleStateCommand & msg) override
+  bool8_t send_state_command(const autoware_auto_msgs::msg::VehicleStateCommand & msg) override
   {
     (void)msg;
     m_state_called = true;
     m_state = msg;
     return (m_count % 5) != 3;
   }
-  bool send_control_command(const autoware_auto_msgs::msg::VehicleControlCommand & msg) override
+  bool8_t send_control_command(const autoware_auto_msgs::msg::VehicleControlCommand & msg) override
   {
     if (m_fail) {
       ++m_count;
@@ -69,7 +74,7 @@ public:
     m_controls.push_back(msg);
     return (m_count % 5) != 2;
   }
-  bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override
+  bool8_t send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override
   {
     if (m_fail) {
       ++m_count;
@@ -86,23 +91,23 @@ public:
   const VehicleStateCommand & state() const noexcept {return m_state;}
   const std::vector<VehicleControlCommand> & controls() const noexcept {return m_controls;}
 
-  bool update_called() const noexcept {return m_update_called;}
-  bool state_called() const noexcept {return m_state_called;}
-  bool basic_called() const noexcept {return m_basic_called;}
-  bool raw_called() const noexcept {return m_raw_called;}
+  bool8_t update_called() const noexcept {return m_update_called;}
+  bool8_t state_called() const noexcept {return m_state_called;}
+  bool8_t basic_called() const noexcept {return m_basic_called;}
+  bool8_t raw_called() const noexcept {return m_raw_called;}
   int32_t count() const noexcept {return m_count;}
 
 private:
-  std::atomic<bool> m_update_called{false};
-  std::atomic<bool> m_state_called{false};
-  std::atomic<bool> m_basic_called{false};
-  std::atomic<bool> m_raw_called{false};
+  std::atomic<bool8_t> m_update_called{false};
+  std::atomic<bool8_t> m_state_called{false};
+  std::atomic<bool8_t> m_basic_called{false};
+  std::atomic<bool8_t> m_raw_called{false};
   RawControlCommand m_msg{};
   VehicleControlCommand m_control{};
   VehicleStateCommand m_state{};
   std::vector<VehicleControlCommand> m_controls{};
   int32_t m_count{};
-  bool m_fail;
+  bool8_t m_fail;
 };
 
 /// Simple instantiation of vehicle interface using FakeInterface
@@ -122,7 +127,7 @@ public:
     const FilterConfig & curvature_filter,
     const FilterConfig & front_steer_filter,
     const FilterConfig & rear_steer_filter,
-    bool fail = false)
+    bool8_t fail = false)
   : VehicleInterfaceNode{
       node_name,
       node_namespace,
@@ -135,8 +140,8 @@ public:
       state_report,
       autoware::drivers::vehicle_interface::StateMachineConfig{
       0.5F,  // gear shift velocity threshold
-      Limits<float>{-3.0F, 3.0F, 1.0F},  // accel limits
-      Limits<float>{-0.331F, 0.331F, 0.3F},  // front steer limits
+      Limits<float32_t>{-3.0F, 3.0F, 1.0F},  // accel limits
+      Limits<float32_t>{-0.331F, 0.331F, 0.3F},  // front steer limits
       std::chrono::milliseconds{100LL},  // time_step
       3.0F,  // timeout acceleration
       std::chrono::seconds{3LL},  // state transition timeout
@@ -154,10 +159,10 @@ public:
   }
 
   const FakeInterface & interface() const noexcept {return *m_interface;}
-  bool error_handler_called() const noexcept {return m_error_handler_called;}
-  bool control_handler_called() const noexcept {return m_control_send_error_handler_called;}
-  bool state_handler_called() const noexcept {return m_state_send_error_handler_called;}
-  bool timeout_handler_called() const noexcept {return m_read_timeout_handler_called;}
+  bool8_t error_handler_called() const noexcept {return m_error_handler_called;}
+  bool8_t control_handler_called() const noexcept {return m_control_send_error_handler_called;}
+  bool8_t state_handler_called() const noexcept {return m_state_send_error_handler_called;}
+  bool8_t timeout_handler_called() const noexcept {return m_read_timeout_handler_called;}
 
 protected:
   class ControlError : public std::logic_error
@@ -180,7 +185,7 @@ public:
   };
   void on_control_send_failure() override
   {
-    static bool flag{false};
+    static bool8_t flag{false};
     flag = !flag;
     if (flag) {
       throw ControlError{};
@@ -190,7 +195,7 @@ public:
   }
   void on_state_send_failure() override
   {
-    static bool flag{false};
+    static bool8_t flag{false};
     flag = !flag;
     if (flag) {
       throw StateError{};
@@ -200,7 +205,7 @@ public:
   }
   void on_read_timeout() override
   {
-    static bool flag{false};
+    static bool8_t flag{false};
     flag = !flag;
     if (flag) {
       throw ReadError{};
@@ -226,10 +231,10 @@ public:
 
 private:
   const FakeInterface * m_interface;
-  bool m_error_handler_called{false};
-  bool m_control_send_error_handler_called{false};
-  bool m_state_send_error_handler_called{false};
-  bool m_read_timeout_handler_called{false};
+  bool8_t m_error_handler_called{false};
+  bool8_t m_control_send_error_handler_called{false};
+  bool8_t m_state_send_error_handler_called{false};
+  bool8_t m_read_timeout_handler_called{false};
 };  // class TestVINode
 
 class sanity_checks : public ::testing::Test

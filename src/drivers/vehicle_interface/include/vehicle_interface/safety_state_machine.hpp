@@ -17,6 +17,7 @@
 #ifndef VEHICLE_INTERFACE__SAFETY_STATE_MACHINE_HPP_
 #define VEHICLE_INTERFACE__SAFETY_STATE_MACHINE_HPP_
 
+#include <common/types.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
@@ -27,6 +28,8 @@
 #include <algorithm>
 #include <chrono>
 #include <vector>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -94,7 +97,7 @@ public:
   T max() const noexcept {return m_max;}
   T threshold() const noexcept {return m_threshold;}
   ///  Clamps value to max/min range; return true if value is threshold past limits
-  bool clamp_warn(T & value) const noexcept
+  bool8_t clamp_warn(T & value) const noexcept
   {
     const auto value_raw = value;
     value = std::min(std::max(m_min, value_raw), m_max);
@@ -217,7 +220,7 @@ private:
     const BasicControlCommand control,
     const VSC & state) const;
   // Remove "big" gear shifts if velocity is too large in magnitude
-  VEHICLE_INTERFACE_LOCAL bool bad_gear_shift(const VSC & in) const;
+  VEHICLE_INTERFACE_LOCAL bool8_t bad_gear_shift(const VSC & in) const;
   // Clamp control values; warn if wildly out of range
   VEHICLE_INTERFACE_LOCAL BasicControlCommand clamp(BasicControlCommand in) const;
   // Add/overwrite any new state change requests

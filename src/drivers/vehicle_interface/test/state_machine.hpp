@@ -15,9 +15,13 @@
 #ifndef STATE_MACHINE_HPP_
 #define STATE_MACHINE_HPP_
 
+#include <common/types.hpp>
 #include <gtest/gtest.h>
 
 #include <vehicle_interface/safety_state_machine.hpp>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 using autoware::drivers::vehicle_interface::Command;
 using autoware::drivers::vehicle_interface::Limits;
@@ -33,7 +37,7 @@ using VCC = autoware_auto_msgs::msg::VehicleControlCommand;
 class state_machine : public ::testing::Test
 {
 protected:
-  bool has_report(const StateMachineReport rpt)
+  bool8_t has_report(const StateMachineReport rpt)
   {
     const auto & reports = sm_.reports();
     const auto res = std::find(reports.cbegin(), reports.cend(), rpt);
@@ -42,8 +46,8 @@ protected:
 
   StateMachineConfig config_{
     0.5F,  // gear_shift_velocity_threshold
-    Limits<float>{-3.0F, 3.0F, 1.0F},  // accel limits
-    Limits<float>{-0.331F, 0.331F, 0.3F},  // front steer limits
+    Limits<float32_t>{-3.0F, 3.0F, 1.0F},  // accel limits
+    Limits<float32_t>{-0.331F, 0.331F, 0.3F},  // front steer limits
     std::chrono::milliseconds{100LL},  // time_step
     3.0F,  // timeout acceleration
     std::chrono::seconds{3LL},  // state transition timeout

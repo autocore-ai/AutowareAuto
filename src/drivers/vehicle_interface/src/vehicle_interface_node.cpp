@@ -12,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "vehicle_interface/vehicle_interface_node.hpp"
+#include <common/types.hpp>
 
 #include <signal_filters/filter_factory.hpp>
 #include <time_utils/time_utils.hpp>
@@ -21,6 +21,12 @@
 #include <string>
 #include <tuple>
 #include <utility>
+
+#include "vehicle_interface/vehicle_interface_node.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 
 namespace autoware
@@ -37,7 +43,7 @@ VehicleInterfaceNode::VehicleInterfaceNode(
 : Node{node_name, node_namespace, rclcpp::NodeOptions{}}
 {
   // Helper functions
-  const auto topic_num_matches_from_param = [this](const auto prefix, bool optional = false) {
+  const auto topic_num_matches_from_param = [this](const auto prefix, bool8_t optional = false) {
       const auto prefix_dot = prefix + std::string{"."};
       const auto name_param = declare_parameter(prefix_dot + std::string{"name"});
       if (optional) {
@@ -52,12 +58,12 @@ VehicleInterfaceNode::VehicleInterfaceNode(
       const auto count_ms = declare_parameter(param_name).template get<int64_t>();
       return std::chrono::milliseconds{count_ms};
     };
-  const auto limits_from_param = [this](const auto prefix) -> Limits<float> {
+  const auto limits_from_param = [this](const auto prefix) -> Limits<float32_t> {
       const auto prefix_dot = prefix + std::string{"."};
       return {
-      static_cast<float>(declare_parameter(prefix_dot + "min").template get<double>()),
-      static_cast<float>(declare_parameter(prefix_dot + "max").template get<double>()),
-      static_cast<float>(declare_parameter(prefix_dot + "threshold").template get<double>())
+      static_cast<float32_t>(declare_parameter(prefix_dot + "min").template get<float64_t>()),
+      static_cast<float32_t>(declare_parameter(prefix_dot + "max").template get<float64_t>()),
+      static_cast<float32_t>(declare_parameter(prefix_dot + "threshold").template get<float64_t>())
       };
     };
   // optionally instantiate a config
@@ -67,15 +73,15 @@ VehicleInterfaceNode::VehicleInterfaceNode(
       declare_parameter("state_machine.gear_shift_velocity_threshold_mps");
     if (rclcpp::PARAMETER_NOT_SET != velocity_threshold.get_type()) {
       state_machine_config = StateMachineConfig{
-        static_cast<float>(velocity_threshold.get<double>()),
+        static_cast<float32_t>(velocity_threshold.get<float64_t>()),
         limits_from_param("state_machine.acceleration_limits"),
         limits_from_param("state_machine.front_steer_limits"),
         std::chrono::milliseconds{declare_parameter("state_machine.time_step_ms").get<int64_t>()},
-        static_cast<float>(
-          declare_parameter("state_machine.timeout_acceleration_mps2").get<double>()),
+        static_cast<float32_t>(
+          declare_parameter("state_machine.timeout_acceleration_mps2").get<float64_t>()),
         time("state_machine.state_transition_timeout_ms"),
-        static_cast<float>(
-          declare_parameter("state_machine.gear_shift_accel_deadzone_mps2").get<double>())
+        static_cast<float32_t>(
+          declare_parameter("state_machine.gear_shift_accel_deadzone_mps2").get<float64_t>())
       };
     }
   }
@@ -88,7 +94,8 @@ VehicleInterfaceNode::VehicleInterfaceNode(
         return FilterConfig{"", 0.0F};
       }
       const auto cutoff =
-        static_cast<Real>(declare_parameter(prefix + "cutoff_frequency_hz").template get<float>());
+        static_cast<Real>(declare_parameter(prefix + "cutoff_frequency_hz").template
+        get<float32_t>());
       return FilterConfig{type.template get<std::string>(), cutoff};
     };
   // Actually init
@@ -271,7 +278,7 @@ void VehicleInterfaceNode::init(
       return std::make_unique<SafetyStateMachine>(state_machine_config.value());
     };
   // Make command subscriber
-  const auto check_topic = [](const auto & topic_name) -> bool {
+  const auto check_topic = [](const auto & topic_name) -> bool8_t {
       return (!topic_name.empty()) && (topic_name != std::string{"null"});
     };
   const auto cmd_callback = [this](auto t) -> auto {
@@ -326,7 +333,7 @@ void VehicleInterfaceNode::check_invariants()
   }
   // Check command sub
   const auto ctrl_not_null =
-    std::visit([](auto && sub) -> bool {return static_cast<bool>(sub);}, m_command_sub);
+    std::visit([](auto && sub) -> bool8_t {return static_cast<bool8_t>(sub);}, m_command_sub);
   if (!ctrl_not_null) {
     throw std::domain_error{"Vehicle interface must have exactly one command subscription"};
   }
