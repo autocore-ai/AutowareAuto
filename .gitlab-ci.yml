@@ -8,7 +8,7 @@ ade:
   stage: ade
   image: docker
   services:
-    - docker:19.03.5-dind
+    - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - apk add --update-cache git
@@ -208,7 +208,7 @@ volume:
   stage: deploy
   image: docker
   services:
-    - docker:19.03.5-dind
+    - docker:dind
   dependencies:
     - build
   script:
