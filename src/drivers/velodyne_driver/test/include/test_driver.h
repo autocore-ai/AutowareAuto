@@ -13,17 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_VELODYNE_DRIVER_H
-#define TEST_VELODYNE_DRIVER_H
-
-#include "common/types.hpp"
-#include "velodyne_driver/vlp16_translator.hpp"
+#ifndef TEST_DRIVER_H_
+#define TEST_DRIVER_H_
 
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include "gtest/gtest.h"
 #include <cmath>
+#include <vector>
+#include <limits>
+#include <algorithm>
+
+#include "common/types.hpp"
+#include "velodyne_driver/vlp16_translator.hpp"
+#include "gtest/gtest.h"
 /// test uint16_t conversion using example from documentation
 TEST(helpers, uint32)
 {
@@ -35,7 +38,6 @@ TEST(helpers, uint32)
 using autoware::common::types::float32_t;
 using autoware::drivers::velodyne_driver::Vlp16Translator;
 using autoware::drivers::velodyne_driver::make_point;
-using namespace std::literals::chrono_literals;
 
 // This is a real packet captured. This was used originally in the deprecated velodyne_spoof package
 // The points are about 6-25 m away, at an angle of about 1.4-1.5 rad
@@ -362,9 +364,9 @@ TEST_F(velodyne_driver, benchmark)
   for (uint32_t idx = 0U; idx < num_runs; ++idx) {
     driver.convert(pkt, out);
   }
-  auto time_end= std::chrono::steady_clock::now();
+  auto time_end = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin);
   std::cerr << "convert() average runtime: " << duration.count() / num_runs << " µs\n";
 }
 
-#endif // TEST_VELODYNE_DRIVER_H
+#endif  // TEST_DRIVER_H_

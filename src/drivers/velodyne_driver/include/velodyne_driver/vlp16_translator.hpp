@@ -50,7 +50,8 @@ inline uint32_t to_uint32(const uint8_t first, const uint8_t second)
   return ret + static_cast<uint32_t>(second);
 }
 
-inline geometry_msgs::msg::Point32 make_point(const float32_t x, const float32_t y, const float32_t z)
+inline geometry_msgs::msg::Point32
+make_point(const float32_t x, const float32_t y, const float32_t z)
 {
   geometry_msgs::msg::Point32 point;
   point.x = x;
