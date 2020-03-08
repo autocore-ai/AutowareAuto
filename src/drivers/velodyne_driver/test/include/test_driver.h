@@ -32,6 +32,7 @@ TEST(helpers, uint32)
   EXPECT_EQ(autoware::drivers::velodyne_driver::to_uint32(x, y), 28979U);
 }
 
+using autoware::common::types::float32_t;
 using autoware::drivers::velodyne_driver::Vlp16Translator;
 using autoware::drivers::velodyne_driver::make_point;
 using namespace std::literals::chrono_literals;
@@ -160,22 +161,22 @@ TEST_F(velodyne_driver, basic)
   EXPECT_LE(out.size(),
     Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
   // Mostly just a sanity check: All points should fall in a pie slice
-  float min_r = std::numeric_limits<float>::max();
-  float max_r = 0.0F;
-  float min_th = std::numeric_limits<float>::max();
-  float max_th = -std::numeric_limits<float>::max();
-  float min_phi = std::numeric_limits<float>::max();
-  float max_phi = -std::numeric_limits<float>::max();
+  float32_t min_r = std::numeric_limits<float32_t>::max();
+  float32_t max_r = 0.0F;
+  float32_t min_th = std::numeric_limits<float32_t>::max();
+  float32_t max_th = -std::numeric_limits<float32_t>::max();
+  float32_t min_phi = std::numeric_limits<float32_t>::max();
+  float32_t max_phi = -std::numeric_limits<float32_t>::max();
   uint32_t last_id = 0U;
   for (uint32_t idx = 0U; idx < out.size(); ++idx) {
     autoware::common::types::PointXYZIF & pt = out[idx];
     if (0U == idx) {
       last_id = pt.id;
     }
-    const float th = atan2f(pt.y, pt.x);
-    const float r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float phi = atan2f(pt.z, r_xy);
-    const float r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
+    const float32_t th = atan2f(pt.y, pt.x);
+    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+    const float32_t phi = atan2f(pt.z, r_xy);
+    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
    // Update min/max
     min_r = std::min(min_r, r);
     max_r = std::max(max_r, r);
@@ -196,15 +197,15 @@ TEST_F(velodyne_driver, basic)
   EXPECT_GE(min_r, 0.0F);
   EXPECT_LE(max_r, 130.0F) << max_r;  // max range from spec sheet
   // compute angle differences
-  const float dth = max_th - min_th;
-  const float th_diff = fabsf(atan2f(sinf(dth), cosf(dth)));
+  const float32_t dth = max_th - min_th;
+  const float32_t th_diff = fabsf(atan2f(sinf(dth), cosf(dth)));
   // @ 755 packets/sec, and 5-20 Hz revs, one packet can cover no more than
   // and no less than
   EXPECT_LE(th_diff, 3.14159F / (755.0F / 20.0F)) << max_th << ", " << min_th;
   EXPECT_GE(th_diff, 3.14159F / 151.0F);
   // max difference in elevation angles should be no more than 20 degrees
-  const float dphi = max_phi - min_phi;
-  const float phi_diff = fabsf(atan2f(sinf(dphi), cosf(dphi)));
+  const float32_t dphi = max_phi - min_phi;
+  const float32_t phi_diff = fabsf(atan2f(sinf(dphi), cosf(dphi)));
   EXPECT_LE(phi_diff, (20.0F * 3.14159F / 180.0F) + 0.001F);
 }
 
@@ -237,8 +238,8 @@ TEST_F(velodyne_driver, bad_cases)
 // Make sure configurations do what they say they do
 TEST_F(velodyne_driver, config_radius)
 {
-  const float min_r = 7.0F;
-  const float max_r = 25.0F;
+  const float32_t min_r = 7.0F;
+  const float32_t max_r = 25.0F;
   ASSERT_LT(min_r, max_r);
   const Vlp16Translator::Config cfg{
     300.0F,
@@ -258,10 +259,10 @@ TEST_F(velodyne_driver, config_radius)
     if (0U == idx) {
       last_id = pt.id;
     }
-    const float th = atan2f(pt.y, pt.x);
-    const float r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float phi = atan2f(pt.z, r_xy);
-    const float r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
+    const float32_t th = atan2f(pt.y, pt.x);
+    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+    const float32_t phi = atan2f(pt.z, r_xy);
+    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
     EXPECT_LE(r, max_r);
     EXPECT_GE(r, min_r);
     // Sanity check on intensity
@@ -294,10 +295,10 @@ TEST_F(velodyne_driver, config_rotation1)
     if (0U == idx) {
       last_id = pt.id;
     }
-    const float th = atan2f(pt.y, pt.x);
-    const float r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float phi = atan2f(pt.z, r_xy);
-    const float r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
+    const float32_t th = atan2f(pt.y, pt.x);
+    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+    const float32_t phi = atan2f(pt.z, r_xy);
+    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
     // We know that th is normally around 1.4-1.5, so now it should be around 0.4
     EXPECT_LT(fabsf(th - 0.45F), 0.1F) << th;
     // Sanity check on intensity
@@ -329,10 +330,10 @@ TEST_F(velodyne_driver, config_rotation2)
     if (0U == idx) {
       last_id = pt.id;
     }
-    const float th = atan2f(pt.y, pt.x);
-    const float r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float phi = atan2f(pt.z, r_xy);
-    const float r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
+    const float32_t th = atan2f(pt.y, pt.x);
+    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+    const float32_t phi = atan2f(pt.z, r_xy);
+    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
     // points should vaguely be pointing up
     EXPECT_LT(fabsf(phi - 3.14159F / 2.0F), 0.3F);
     // Sanity check on intensity

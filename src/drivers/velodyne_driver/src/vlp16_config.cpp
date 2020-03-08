@@ -13,11 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <limits>
 #include <utility>
 
 #include "velodyne_driver/vlp16_translator.hpp"
 
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -27,13 +29,13 @@ namespace velodyne_driver
 {
 ////////////////////////////////////////////////////////////////////////////////
 Vlp16Translator::Config::Config(
-  const float rpm,
+  const float32_t rpm,
   const geometry_msgs::msg::Point32 offset_m,
   const geometry_msgs::msg::Point32 rotation_rad,
-  const float min_distance_m,
-  const float max_distance_m,
-  const float min_angle_deg,
-  const float max_angle_deg)
+  const float32_t min_distance_m,
+  const float32_t max_distance_m,
+  const float32_t min_angle_deg,
+  const float32_t max_angle_deg)
 : m_rpm(rpm),
   m_offset_m(offset_m),
   m_rotation_rad(rotation_rad),
@@ -47,7 +49,7 @@ Vlp16Translator::Config::Config(
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Vlp16Translator::Config::get_rpm() const
+float32_t Vlp16Translator::Config::get_rpm() const
 {
   return m_rpm;
 }
@@ -62,22 +64,22 @@ const geometry_msgs::msg::Point32 & Vlp16Translator::Config::get_rotation() cons
   return m_rotation_rad;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Vlp16Translator::Config::get_min_distance() const
+float32_t Vlp16Translator::Config::get_min_distance() const
 {
   return m_min_distance_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Vlp16Translator::Config::get_max_distance() const
+float32_t Vlp16Translator::Config::get_max_distance() const
 {
   return m_max_distance_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Vlp16Translator::Config::get_min_angle() const
+float32_t Vlp16Translator::Config::get_min_angle() const
 {
   return m_min_angle_deg;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Vlp16Translator::Config::get_max_angle() const
+float32_t Vlp16Translator::Config::get_max_angle() const
 {
   return m_max_angle_deg;
 }

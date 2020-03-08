@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <cstring>
 #include <cmath>
 #include <limits>
@@ -27,6 +28,7 @@ namespace drivers
 namespace velodyne_driver
 {
 
+using autoware::common::types::float32_t;
 using autoware::common::types::PointXYZIF;
 
 //lint -e9103 not reusing, just using decl NOLINT
@@ -38,7 +40,7 @@ Vlp16Translator::Vlp16Translator(const Config & config)
   m_num_firing_per_scan(0U),
   m_offset_m(),
   m_min_radius_m(0.0F),
-  m_max_radius_m(std::numeric_limits<float>::max()),
+  m_max_radius_m(std::numeric_limits<float32_t>::max()),
   m_min_azimuth_ind(0U),
   m_max_azimuth_ind(0U)  // should be large max value, but probably ok?
 {
@@ -83,7 +85,7 @@ void Vlp16Translator::convert(const Packet & pkt, std::vector<PointXYZIF> & outp
         const uint32_t th = (((jdx < POINTS_PER_FIRE_SEQ) ? azimuth_base :
           azimuth_second) + m_azimuth_ind[jdx]) % AZIMUTH_ROTATION_RESOLUTION;
         // distance
-        const float r = compute_distance_m(channel.data[1U], channel.data[0U]);
+        const float32_t r = compute_distance_m(channel.data[1U], channel.data[0U]);
 
         // ignore points according to azimuth angle and radial distance
         if (accept_point(r, th)) {
@@ -124,7 +126,7 @@ void Vlp16Translator::init_tables(const Config & config)
   m_max_radius_m = config.get_max_distance();
   m_min_radius_m = config.get_min_distance();
   init_azimuth_table_num_points(
-    clamp<float>(config.get_rpm(), MIN_RPM, MAX_RPM));
+    clamp<float32_t>(config.get_rpm(), MIN_RPM, MAX_RPM));
   init_trig_tables();
   init_altitude_table();
   init_extreme_azimuth_indices(config.get_min_angle(), config.get_max_angle());
@@ -140,7 +142,7 @@ void Vlp16Translator::init_altitude_table()
 {
   // TODO(christopher.ho) from calibration file if available
   // altitude angles in degrees: from spec sheet
-  float altitude_deg[NUM_POINTS_PER_BLOCK];
+  float32_t altitude_deg[NUM_POINTS_PER_BLOCK];
   altitude_deg[0U] = -15.0F;
   altitude_deg[1U] = 1.0F;
   altitude_deg[2U] = -13.0F;
@@ -177,7 +179,7 @@ void Vlp16Translator::init_altitude_table()
   // convert to idx in lookup table
   for (uint16_t idx = 0U; idx < NUM_POINTS_PER_BLOCK; ++idx) {
     // multiply by 2/3 to get VLP16-HiRes 20 deg FoV (instead of 30 deg)
-    const float deg_raw = roundf(((altitude_deg[idx] * 2.0F) / 3.0F) * DEG2IDX);
+    const float32_t deg_raw = roundf(((altitude_deg[idx] * 2.0F) / 3.0F) * DEG2IDX);
     int32_t deg_idx = static_cast<int32_t>(deg_raw);
     if (deg_idx < 0) {
       deg_idx += static_cast<int32_t>(AZIMUTH_ROTATION_RESOLUTION);
@@ -187,16 +189,16 @@ void Vlp16Translator::init_altitude_table()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Vlp16Translator::init_azimuth_table_num_points(const float rpm)
+void Vlp16Translator::init_azimuth_table_num_points(const float32_t rpm)
 {
   // convert to a degree offset
-  const float US_TO_DEG = (rpm * 360.0F) / (60.0F * 1.0E6F);
+  const float32_t US_TO_DEG = (rpm * 360.0F) / (60.0F * 1.0E6F);
   // us = 55.296*fire_seq + 2.304*(point idx % 16)
   for (uint32_t idx = 0U; idx < NUM_POINTS_PER_BLOCK; ++idx) {
     // This line may be removed if you do not want to do azimuth interpolation in convert_xyz
     const uint32_t jdx = (idx >= POINTS_PER_FIRE_SEQ) ? (idx - POINTS_PER_FIRE_SEQ) : idx;
     m_azimuth_ind[idx] = static_cast<uint32_t>(
-      roundf(DEG2IDX * US_TO_DEG * (FIRE_DURATION_US * static_cast<float>(jdx))));
+      roundf(DEG2IDX * US_TO_DEG * (FIRE_DURATION_US * static_cast<float32_t>(jdx))));
   }
   //  32 [points/block] * (60E6 us/min * x min/rev = us/rev) * (BLOCK/us)
   m_num_firing_per_scan = static_cast<uint16_t>(std::ceil(60.0E6F / (rpm * FIRE_SEQ_OFFSET_US)));
@@ -205,11 +207,11 @@ void Vlp16Translator::init_azimuth_table_num_points(const float rpm)
 ////////////////////////////////////////////////////////////////////////////////
 void Vlp16Translator::init_trig_tables()
 {
-  const float IDX2RAD =
-    TAU / static_cast<float>(AZIMUTH_ROTATION_RESOLUTION);
+  const float32_t IDX2RAD =
+    TAU / static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION);
   for (uint64_t idx = 0U; idx < AZIMUTH_ROTATION_RESOLUTION; ++idx) {
-    m_cos_table[idx] = cosf((static_cast<float>(idx)) * IDX2RAD);
-    m_sin_table[idx] = sinf((static_cast<float>(idx)) * IDX2RAD);
+    m_cos_table[idx] = cosf((static_cast<float32_t>(idx)) * IDX2RAD);
+    m_sin_table[idx] = sinf((static_cast<float32_t>(idx)) * IDX2RAD);
   }
 }
 
@@ -217,24 +219,24 @@ void Vlp16Translator::init_trig_tables()
 void Vlp16Translator::init_intensity_table()
 {
   for (uint64_t idx = 0U; idx < NUM_INTENSITY_VALUES; ++idx) {
-    m_intensity_table[idx] = static_cast<float>(idx);
+    m_intensity_table[idx] = static_cast<float32_t>(idx);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Vlp16Translator::init_extreme_azimuth_indices(
-  const float min_azimuth_deg,
-  const float max_azimuth_deg)
+  const float32_t min_azimuth_deg,
+  const float32_t max_azimuth_deg)
 {
   // convert to index
   uint32_t max_idx =
     std::min(
     static_cast<uint32_t>(std::floor(max_azimuth_deg *
-    (static_cast<float>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F))),
+    (static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F))),
     AZIMUTH_ROTATION_RESOLUTION - 1U);
   uint32_t min_idx =
     static_cast<uint32_t>(std::floor(min_azimuth_deg *
-    (static_cast<float>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F)));
+    (static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F)));
   // check if you would roll over
   max_idx = (max_idx) % AZIMUTH_ROTATION_RESOLUTION;
   min_idx = (min_idx) % AZIMUTH_ROTATION_RESOLUTION;
@@ -253,16 +255,16 @@ void Vlp16Translator::init_extreme_azimuth_indices(
 
 ////////////////////////////////////////////////////////////////////////////////
 void Vlp16Translator::init_rotation_matrix(
-  const float roll_rad,
-  const float pitch_rad,
-  const float yaw_rad)
+  const float32_t roll_rad,
+  const float32_t pitch_rad,
+  const float32_t yaw_rad)
 {
-  const float cx = cosf(roll_rad);
-  const float sx = sinf(roll_rad);
-  const float cy = cosf(pitch_rad);
-  const float sy = sinf(pitch_rad);
-  const float cz = cosf(yaw_rad);
-  const float sz = sinf(yaw_rad);
+  const float32_t cx = cosf(roll_rad);
+  const float32_t sx = sinf(roll_rad);
+  const float32_t cy = cosf(pitch_rad);
+  const float32_t sy = sinf(pitch_rad);
+  const float32_t cz = cosf(yaw_rad);
+  const float32_t sz = sinf(yaw_rad);
   // compute rotation matrix per: http://planning.cs.uiuc.edu/node102.html
   m_rot_mat[0U][0U] = cz * cy;
   m_rot_mat[0U][1U] = (cz * sy * sx) - (sz * cx);
