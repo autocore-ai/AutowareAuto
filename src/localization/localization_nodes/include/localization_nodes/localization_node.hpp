@@ -156,22 +156,33 @@ protected:
     }
   }
 
+  /// Default behavior when an observation is received with no valid existing map.
+  virtual void on_observation_with_invalid_map(typename ObservationMsgT::ConstSharedPtr)
+  {
+    RCLCPP_WARN(get_logger(), "Received observation without a valid map, "
+      "ignoring the observation.");
+  }
+
 private:
   /// Callback that registers each received observation and outputs the result.
   /// \param msg_ptr Pointer to the observation message.
   void observation_callback(typename ObservationMsgT::ConstSharedPtr msg_ptr)
   {
     check_localizer();
-    try {
-      const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
-      const auto & observation_frame = get_frame_id(*msg_ptr);
-      const auto & map_frame = m_localizer_ptr->map_frame_id();
-      const auto initial_guess =
-        m_pose_initializer.guess(m_tf_buffer, observation_time, observation_frame, map_frame);
-      const auto pose_out = m_localizer_ptr->register_measurement(*msg_ptr, initial_guess);
-      m_pose_publisher->publish(pose_out);
-    } catch (...) {
-      on_bad_registration(std::current_exception());
+    if (m_localizer_ptr->map_valid()) {
+      try {
+        const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
+        const auto & observation_frame = get_frame_id(*msg_ptr);
+        const auto & map_frame = m_localizer_ptr->map_frame_id();
+        const auto initial_guess =
+          m_pose_initializer.guess(m_tf_buffer, observation_time, observation_frame, map_frame);
+        const auto pose_out = m_localizer_ptr->register_measurement(*msg_ptr, initial_guess);
+        m_pose_publisher->publish(pose_out);
+      } catch (...) {
+        on_bad_registration(std::current_exception());
+      }
+    } else {
+      on_observation_with_invalid_map(msg_ptr);
     }
   }
 

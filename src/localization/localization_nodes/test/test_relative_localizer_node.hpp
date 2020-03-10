@@ -44,9 +44,9 @@ public:
   // constructor when the tracking is not needed.
   MockRelativeLocalizer() = default;
 
-  PoseWithCovarianceStamped register_measurement(
+  PoseWithCovarianceStamped register_measurement_impl(
     const TestObservation & msg, const Transform & transform_initial) override;
-  void set_map(const TestMap & msg) override;
+  void set_map_impl(const TestMap & msg) override;
 
   const std::string & map_frame_id() const noexcept override;
 
@@ -81,6 +81,7 @@ public:
 
   bool register_exception();
   bool map_exception();
+  bool register_on_invalid_map();
 
 protected:
   void on_bad_registration(std::exception_ptr eptr) override;
@@ -88,9 +89,12 @@ protected:
   /// Handle the exceptions during map setting.
   void on_bad_map(std::exception_ptr eptr) override;
 
+  void on_observation_with_invalid_map(TestObservation::ConstSharedPtr msg) override;
+
 private:
   bool m_map_exception{false};
   bool m_register_exception{false};
+  bool m_register_on_invalid_map{false};
 };
 
 /// Wait until publisher reaches desired num. of subscriptions.

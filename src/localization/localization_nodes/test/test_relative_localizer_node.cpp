@@ -168,14 +168,20 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
     };
 
   /////////////////////// initialize
-  constexpr auto initial_ID = -1;
+  constexpr auto initial_id = -1;
+  constexpr auto valid_map_id = 0U;
   const auto max_poll_iters = 50U;
 
-  // Tag the pointers with the initial id
-  ASSERT_NE(initial_ID, TEST_ERROR_ID);
+  // Create pointers to inject into the node to track its state.
+  auto map_tracker_ptr = std::make_shared<TestMap>();
+  set_msg_id(*map_tracker_ptr, initial_id);
+
+  ASSERT_NE(initial_id, valid_map_id);
+  ASSERT_NE(initial_id, TEST_ERROR_ID);
+  ASSERT_NE(valid_map_id, TEST_ERROR_ID);
 
   // Initialize localizer node
-  auto localizer_ptr = std::make_unique<MockRelativeLocalizer>();
+  auto localizer_ptr = std::make_unique<MockRelativeLocalizer>(nullptr, map_tracker_ptr);
   auto localizer_node = std::make_shared<TestRelativeLocalizerNode>("TestNode", "",
       TopicQoS{m_observation_topic, rclcpp::SystemDefaultsQoS{}},
       TopicQoS{m_map_topic, rclcpp::SystemDefaultsQoS{}},
@@ -202,6 +208,23 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
 
   set_msg_id(m_observation_msg, TEST_ERROR_ID);
   observation_pub->publish(m_observation_msg);
+  // run until observation is attempted to be registered when no valid map exists.
+  spin_until_condition(localizer_node, [](auto loc_nd_ptr) {
+      return loc_nd_ptr->register_on_invalid_map();
+    }, max_poll_iters);
+  // no exception will be thrown despite the registration is bad because no map is set yet.
+  EXPECT_FALSE(localizer_node->register_exception());
+  // Confirm that a registration was received with no valid map.
+  EXPECT_TRUE(localizer_node->register_on_invalid_map());
+
+  // Now we will set the node to a state where it has a valid map and try again.
+  set_msg_id(m_map_msg, valid_map_id);
+  map_pub->publish(m_map_msg);
+  spin_until_condition(localizer_node, [map_tracker_ptr, valid_map_id](auto &) {
+      return get_msg_id(*map_tracker_ptr) == valid_map_id;
+    }, max_poll_iters);
+
+  observation_pub->publish(m_observation_msg);
   spin_until_condition(localizer_node, [](auto loc_nd_ptr) {
       return loc_nd_ptr->register_exception();
     }, max_poll_iters);
@@ -220,7 +243,7 @@ MockRelativeLocalizer::MockRelativeLocalizer(
   std::shared_ptr<TestObservation> map_ptr)
 : m_observation_tracking_ptr{obs_ptr}, m_map_tracking_ptr{map_ptr} {}
 
-PoseWithCovarianceStamped MockRelativeLocalizer::register_measurement(
+PoseWithCovarianceStamped MockRelativeLocalizer::register_measurement_impl(
   const TestObservation & msg, const Transform & transform_initial)
 {
   if (get_msg_id(msg) == TEST_ERROR_ID) {
@@ -239,7 +262,7 @@ PoseWithCovarianceStamped MockRelativeLocalizer::register_measurement(
   return pose;
 }
 
-void MockRelativeLocalizer::set_map(const TestMap & msg)
+void MockRelativeLocalizer::set_map_impl(const TestMap & msg)
 {
   if (get_msg_id(msg) == TEST_ERROR_ID) {
     throw TestMapException{};
@@ -286,6 +309,17 @@ bool TestRelativeLocalizerNode::register_exception()
 bool TestRelativeLocalizerNode::map_exception()
 {
   return m_map_exception;
+}
+
+bool TestRelativeLocalizerNode::register_on_invalid_map()
+{
+  return m_register_on_invalid_map;
+}
+
+void TestRelativeLocalizerNode::on_observation_with_invalid_map(
+  TestObservation::ConstSharedPtr)
+{
+  m_register_on_invalid_map = true;
 }
 
 // Return a transform that contains information regarding two frame ids.
