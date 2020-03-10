@@ -234,6 +234,8 @@ void NDTMapPublisherNode::wait_for_matched(
     if (std::chrono::steady_clock::now() - match_start > match_timeout) {
       throw std::runtime_error("Map publisher couldn't match any subscriptions within the"
               " initialization time budget.");
+    } else if (!rclcpp::ok()) {
+      throw std::runtime_error("Node was shut down before subscription timeout.");
     }
   }
 }
