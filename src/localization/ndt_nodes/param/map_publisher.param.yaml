@@ -7,7 +7,7 @@ ndt_map_publisher_node:
     map_file_name: "map/path/here.pcd"
     map_frame: "map"
     num_expected_subs: 1
-    init_timeout_ms: 10000  # 10 seconds until publisher finds a subscriber
+    init_timeout_ms: 60000  # 60 seconds until publisher finds a subscriber
     map_config:
       capacity: 55000
       min_point:
@@ -22,3 +22,6 @@ ndt_map_publisher_node:
         x: 2.0
         y: 2.0
         z: 2.0
+    viz_map: True
+    viz_map_topic: "viz_ndt_map"
+    num_expected_viz_subs: 1

@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_NDT_NODES_MAP_HPP_
-#define TEST_NDT_NODES_MAP_HPP_
+#ifndef TEST_MAP_PUBLISHER_HPP_
+#define TEST_MAP_PUBLISHER_HPP_
 
 #include <ndt/ndt_map.hpp>
 #include <pcl/io/pcd_io.h>
+#include <gtest/gtest.h>
 #include <geometry/spatial_hash_config.hpp>
 #include <voxel_grid/config.hpp>
 #include <geometry_msgs/msg/point32.hpp>
@@ -159,4 +160,4 @@ pcl::PointCloud<pcl::PointXYZI> from_pointcloud2(const sensor_msgs::msg::PointCl
 }  // namespace localization
 }  // namespace autoware
 
-#endif  // TEST_NDT_NODES_MAP_HPP_
+#endif  // TEST_MAP_PUBLISHER_HPP_

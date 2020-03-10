@@ -53,6 +53,9 @@ public:
   /// \param init_timeout The time budget the map publisher can use to wait for matching
   /// its recipients. If the publisher cannot match enough recipients,
   /// then it will throw an exception.
+  /// \param viz_map Boolean flag to choose whether to publish a visualizable point cloud.
+  /// \param viz_map_topic The topic hte vizualizable map will be published to.
+  /// \param num_expected_viz_subs Expected number of subscribers to the blublished viz. map
   NDTMapPublisherNode(
     const std::string & node_name,
     const std::string & node_namespace,
@@ -61,7 +64,10 @@ public:
     const MapConfig & map_config,
     const std::string & file_name,
     const uint32_t num_expected_subs,
-    std::chrono::milliseconds init_timeout
+    std::chrono::milliseconds init_timeout,
+    const bool viz_map = false,
+    const std::string & viz_map_topic = "",
+    const uint32_t num_expected_viz_subs = 1
   );
 
   /// Construct with a config file.
@@ -82,10 +88,14 @@ public:
 
 private:
   /// Initialzie and allocate memory for the point clouds that are used as intermediate
-  /// representations during  conversions.
+  /// representations during  conversions. & setup visualization publisher if required
   /// \param map_frame Frame of the
   /// \param map_capacity
-  void init(const MapConfig & map_config, const std::string & map_frame);
+  /// \param viz_map_topic Topic nmae for map visualization
+  void init(
+    const MapConfig & map_config,
+    const std::string & map_frame,
+    const std::string & viz_map_topic);
 
   /// Read the pcd file with filename into a PointCloud2 message, transform it into an NDT
   /// representation and then serialize the ndt representation back into a PointCloud2 message
@@ -103,7 +113,10 @@ private:
   /// Wait until the publisher has discovered enough subscriptions. Throws on timeout.
   /// \param num_expected_subs Number of subscriptions listening to the publisher's topic.
   /// \param match_timeout Time within the discovery is expected to occur.
-  void wait_for_matched(const uint32_t num_expected_subs, std::chrono::milliseconds match_timeout);
+  /// \param num_expected_viz_subs Number of subscriptions to the viz.map topic.
+  void wait_for_matched(
+    const uint32_t num_expected_subs, std::chrono::milliseconds match_timeout,
+    const uint32_t num_expected_viz_subs = 1);
 
   /// Iterate over the map representation and convert it into a PointCloud2 message where each voxel
   /// in the map corresponds to a single point in the PointCloud2 field. See the documentation for
@@ -121,6 +134,9 @@ private:
   const std::string m_file_name;
   const uint32_t m_num_subs;
   const std::chrono::milliseconds m_timeout_ms;
+  const bool m_viz_map;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
+  uint32_t m_num_viz_subs;
 };
 
 }  // namespace ndt_nodes

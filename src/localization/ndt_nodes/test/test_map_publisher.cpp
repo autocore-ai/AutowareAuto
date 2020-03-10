@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
-#include <ndt_nodes/map_publisher.hpp>
 #include "test_map_publisher.hpp"
 #include <pcl/io/pcd_io.h>
+#include <gtest/gtest.h>
+#include <ndt_nodes/map_publisher.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
-#include <lidar_utils/point_cloud_utils.hpp>
+#include <string>
+#include <limits>
 
 
 namespace autoware
@@ -83,7 +84,7 @@ TEST_F(MapPublisherTest, core_functionality)
 
   {
     NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
-      "filename", 1U, std::chrono::milliseconds(1U));
+				  "filename", 1U, std::chrono::milliseconds(1U));
     // The map will not find any subscription listening to its topic and throw an error.
     EXPECT_THROW(publisher.run(), std::runtime_error);
   }
@@ -150,6 +151,73 @@ TEST_F(MapPublisherTest, core_functionality)
   }
   remove(file_name);
 }
+
+TEST_F(MapPublisherTest, viz_functionality)
+{
+  using Cloud = sensor_msgs::msg::PointCloud2;
+  const auto grid_config =
+    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+  {
+    NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
+      "filename", 1U, std::chrono::milliseconds(1U), true, "viz_faketopic", 1U);
+    // The map will not find any subscription listening to its topic and throw an error.
+    EXPECT_THROW(publisher.run(), std::runtime_error);
+  }
+
+  const auto file_name = "MapPublisherTest_test.pcd";
+  // have a validation source cloud. The viz cloud publisher's output
+  // should match the cells in this map.
+  const auto map_topic = "publisher_test_map_topic";
+  const auto viz_map_topic = "viz_publisher_test_map_topic";
+  const auto map_frame = "map";
+  auto callback_counter = 0U;
+  auto viz_callback_counter = 0U;
+  Cloud received_cloud_map;
+  Cloud received_viz_cloud_map;
+  const auto listener_node = rclcpp::Node::make_shared("MapPublisherTest_listener_node");
+  const auto sub =
+    listener_node->create_subscription<Cloud>(map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)),
+      [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
+        ++callback_counter;
+        received_cloud_map = *msg;
+      });
+  const auto viz_listener_node = rclcpp::Node::make_shared("MapPublisherTest_viz_listener_node");
+  const auto viz_sub =
+    viz_listener_node->create_subscription<Cloud>(viz_map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)),
+      [&received_viz_cloud_map, &viz_callback_counter](Cloud::ConstSharedPtr msg) {
+        ++viz_callback_counter;
+        received_viz_cloud_map = *msg;
+      });
+
+  // Create map publisher. It is given 5 seconds to discover the test subscription.
+  NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
+    grid_config, file_name, 1U, std::chrono::seconds(5U), true, viz_map_topic, 1U);
+
+  // Build a dense PC that can be transformed into 125 cells. See function for details.
+  build_pc(grid_config);
+
+
+  // Save the dense map to be read.
+  const auto pcl_source = from_pointcloud2(m_pc);
+  pcl::io::savePCDFile(file_name, pcl_source);
+  ASSERT_TRUE(std::ifstream{file_name}.good());
+
+  // Read pcd, pass the cloud to the internal dynamic map.
+  EXPECT_NO_THROW(map_publisher.run());
+
+
+  while (viz_callback_counter < 1U) {
+    rclcpp::spin_some(listener_node);
+    rclcpp::spin_some(viz_listener_node);
+  }
+
+  EXPECT_EQ(viz_callback_counter, 1U);
+  // Check that received viz pointcloud is a valid ndt map in terms of meta information.
+  EXPECT_EQ(received_viz_cloud_map.width, m_pc.width);
+
+  remove(file_name);
+}
+
 }  // namespace ndt_nodes
 }  // namespace localization
 }  // namespace autoware

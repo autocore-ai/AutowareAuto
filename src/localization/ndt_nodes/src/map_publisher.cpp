@@ -51,16 +51,21 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const MapConfig & map_config,
   const std::string & file_name,
   const uint32_t num_expected_subs,
-  std::chrono::milliseconds init_timeout
+  std::chrono::milliseconds init_timeout,
+  const bool viz_map,
+  const std::string & viz_map_topic,
+  const uint32_t num_expected_viz_subs
 )
 : Node(node_name, node_namespace),
   m_pub(create_publisher<sensor_msgs::msg::PointCloud2>(map_topic, rclcpp::QoS(rclcpp::KeepLast(
       5U)))),
   m_file_name(file_name),
   m_num_subs(num_expected_subs),
-  m_timeout_ms(init_timeout)
+  m_timeout_ms(init_timeout),
+  m_viz_map(viz_map),
+  m_num_viz_subs(num_expected_viz_subs)
 {
-  init(map_config, map_frame);
+  init(map_config, map_frame, viz_map_topic);
 }
 
 NDTMapPublisherNode::NDTMapPublisherNode(
@@ -74,7 +79,9 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   m_file_name(declare_parameter("map_file_name").get<std::string>()),
   m_num_subs(static_cast<uint32_t>(declare_parameter("num_expected_subs").get<uint32_t>())),
   m_timeout_ms(std::chrono::milliseconds(
-      static_cast<uint32_t>(declare_parameter("init_timeout_ms").get<uint32_t>())))
+      static_cast<uint32_t>(declare_parameter("init_timeout_ms").get<uint32_t>()))),
+  m_viz_map(static_cast<bool>(declare_parameter("viz_map").get<bool>())),
+  m_num_viz_subs(static_cast<uint32_t>(declare_parameter("num_expected_viz_subs").get<uint32_t>()))
 {
   using PointXYZ = perception::filters::voxel_grid::PointXYZ;
   PointXYZ min_point;
@@ -94,11 +101,15 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const perception::filters::voxel_grid::Config cfg{min_point, max_point, voxel_size, capacity};
 
   const std::string map_frame = declare_parameter("map_frame").get<std::string>();
-  init(cfg, map_frame);
+  const std::string viz_map_topic = declare_parameter("viz_map_topic").get<std::string>();
+
+  init(cfg, map_frame, viz_map_topic);
 }
 
 
-void NDTMapPublisherNode::init(const MapConfig & map_config, const std::string & map_frame)
+void NDTMapPublisherNode::init(
+  const MapConfig & map_config, const std::string & map_frame,
+  const std::string & viz_map_topic)
 {
   m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(map_config);
 
@@ -114,11 +125,16 @@ void NDTMapPublisherNode::init(const MapConfig & map_config, const std::string &
     "cov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
+
+  if (m_viz_map == true) {   // create a publisher for map_visualization
+    m_viz_pub = create_publisher<sensor_msgs::msg::PointCloud2>(
+      viz_map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)));
+  }
 }
 
 void NDTMapPublisherNode::run()
 {
-  wait_for_matched(m_num_subs, m_timeout_ms);
+  wait_for_matched(m_num_subs, m_timeout_ms, m_num_viz_subs);
   load_pcd_file();
   publish();
 }
@@ -199,15 +215,21 @@ void NDTMapPublisherNode::publish()
   if (m_map_pc.width > 0U) {
     m_pub->publish(m_map_pc);
   }
+  if (m_viz_map == true && m_source_pc.width > 0U) {
+    m_viz_pub->publish(m_source_pc);
+  }
 }
 
 void NDTMapPublisherNode::wait_for_matched(
   const uint32_t num_expected_subs,
-  std::chrono::milliseconds match_timeout)
+  std::chrono::milliseconds match_timeout,
+  const uint32_t num_expected_viz_subs)
 {
   const auto match_start = std::chrono::steady_clock::now();
   // Ensure map publisher has a map that is listening.
-  while (m_pub->get_subscription_count() < num_expected_subs) {
+  while (m_pub->get_subscription_count() < num_expected_subs ||
+    (m_viz_map == true && m_viz_pub->get_subscription_count() < num_expected_viz_subs))
+  {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
     if (std::chrono::steady_clock::now() - match_start > match_timeout) {
       throw std::runtime_error("Map publisher couldn't match any subscriptions within the"

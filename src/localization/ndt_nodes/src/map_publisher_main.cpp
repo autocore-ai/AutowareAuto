@@ -22,8 +22,8 @@ int32_t main(const int32_t argc, char * argv[])
 
   int32_t ret = 0;
   try {
-    autoware::localization::ndt_nodes::NDTMapPublisherNode map_publisher("ndt_map_publisher_node",
-      "");
+    autoware::localization::ndt_nodes::NDTMapPublisherNode map_publisher(
+      "ndt_map_publisher_node", "");
     // Map publishes ones and stops execution.
     map_publisher.run();
 
