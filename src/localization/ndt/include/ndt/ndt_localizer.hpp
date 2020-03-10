@@ -71,7 +71,7 @@ public:
   /// \throws std::domain_error on pose estimates that are not within the configured duration
   /// range from the measurement.
   /// \throws std::runtime_error on numerical errors in the optimizer.
-  PoseWithCovarianceStamped register_measurement(
+  PoseWithCovarianceStamped register_measurement_impl(
     const CloudT & msg, const Transform & transform_initial) override
   {
     validate_msg(msg);
@@ -115,7 +115,7 @@ public:
 
   /// Replace the map with a given message
   /// \param msg Message containing the map
-  void set_map(const CloudT & msg) override
+  void set_map_impl(const CloudT & msg) override
   {
     m_map.clear();
     m_map.insert(msg);

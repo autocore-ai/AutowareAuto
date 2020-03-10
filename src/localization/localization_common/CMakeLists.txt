@@ -40,7 +40,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(${LOCALIZATION_COMMON_TEST}
           test/test_initialization.hpp
-          test/test_initialization.cpp)
+          test/test_initialization.cpp
+          test/test_relative_localizer.hpp
+          test/test_relative_localizer.cpp)
 
   target_link_libraries(${LOCALIZATION_COMMON_TEST} ${PROJECT_NAME})
 
