@@ -15,6 +15,8 @@ p2d_ndt_localizer_node:
     pose_pub:
       topic: "ndt_pose"
       history_depth: 10
+    # Publish the result to `/tf` topic
+    publish_tf: true
     # localizer specific configuration
     localizer:
       #underlying voxel grid configuration of the map
