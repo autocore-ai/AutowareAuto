@@ -98,7 +98,7 @@ public:
     x_out = x0;
 
     // Get value, Jacobian and Hessian (pre-computed using evaluate)
-    optimization_problem.evaluate(x0, ComputeMode{}.set_score().set_jacobian().set_hessian());
+    optimization_problem.evaluate(x_out, ComputeMode{}.set_score().set_jacobian().set_hessian());
     auto score_previous = optimization_problem(x_out);
     Jacobian jacobian;
     optimization_problem.jacobian(x_out, jacobian);
@@ -153,7 +153,7 @@ public:
       }
 
       // Update value, Jacobian and Hessian (pre-computed using evaluate)
-      optimization_problem.evaluate(x0, ComputeMode{}.set_score().set_jacobian().set_hessian());
+      optimization_problem.evaluate(x_out, ComputeMode{}.set_score().set_jacobian().set_hessian());
       const auto score = optimization_problem(x_out);
       optimization_problem.jacobian(x_out, jacobian);
       optimization_problem.hessian(x_out, hessian);

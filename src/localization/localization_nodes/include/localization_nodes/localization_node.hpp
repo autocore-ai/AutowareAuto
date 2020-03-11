@@ -45,6 +45,13 @@ struct TopicQoS
   rclcpp::QoS qos;
 };
 
+/// Enum to specify if the localizer node must publish to `/tf` topic or not
+enum class LocalizerPublishMode
+{
+  PUBLISH_TF,
+  NO_PUBLISH_TF
+};
+
 /// Base relative localizer node that publishes map->base_link relative
 /// transform messages for a given observation source and map.
 /// \tparam ObservationMsgT Message type to register against a map.
@@ -62,6 +69,7 @@ public:
   using Cloud = sensor_msgs::msg::PointCloud2;
   using PoseWithCovarianceStamped = typename LocalizerBase::PoseWithCovarianceStamped;
 
+
   /// Constructor
   /// \param node_name Name of node
   /// \param name_space Namespace of node
@@ -77,7 +85,7 @@ public:
     const TopicQoS & map_sub_config,
     const TopicQoS & pose_pub_config,
     const PoseInitializerT & pose_initializer,
-    bool publish_tf = false
+    LocalizerPublishMode publish_tf = LocalizerPublishMode::NO_PUBLISH_TF
   )
   : Node(node_name, name_space),
     m_pose_initializer(pose_initializer),
@@ -89,8 +97,8 @@ public:
       [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
       pose_pub_config.qos)),
-    m_tf_publisher(create_publisher<tf2_msgs::msg::TFMessage>("tf", pose_pub_config.qos)),
-    m_publish_tf{publish_tf} {
+    m_tf_publisher(publish_tf == LocalizerPublishMode::PUBLISH_TF ?
+      create_publisher<tf2_msgs::msg::TFMessage>("tf", pose_pub_config.qos) : nullptr) {
   }
 
   /// Constructor using ros parameters
@@ -120,10 +128,9 @@ public:
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
               "pose_pub.history_depth").template get<size_t>())}})),
-    m_tf_publisher(create_publisher<tf2_msgs::msg::TFMessage>("tf",
-      rclcpp::QoS{rclcpp::KeepLast{static_cast<size_t>(declare_parameter(
-            "pose_pub.history_depth").template get<size_t>())}})),
-    m_publish_tf{declare_parameter("publish_tf").template get<bool>()}
+    m_tf_publisher(declare_parameter("publish_tf").template get<bool>() ?
+      create_publisher<tf2_msgs::msg::TFMessage>("tf",
+      rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}}) : nullptr)
   {}
 
   /// Get a const pointer of the output publisher. Can be used for matching against subscriptions.
@@ -189,8 +196,8 @@ private:
         m_pose_publisher->publish(pose_out);
         // This is to be used when no state estimator or alternative source of
         // localization is available.
-        if (m_publish_tf) {
-          publis_tf(pose_out);
+        if (m_tf_publisher) {
+          publish_tf(pose_out);
         }
       } catch (...) {
         on_bad_registration(std::current_exception());
@@ -213,7 +220,7 @@ private:
   }
 
   /// Publish the pose message as a transform.
-  void publis_tf(const PoseWithCovarianceStamped & pose)
+  void publish_tf(const PoseWithCovarianceStamped & pose)
   {
     tf2_msgs::msg::TFMessage tf_message;
     geometry_msgs::msg::TransformStamped tf_stamped;
@@ -246,7 +253,6 @@ private:
   typename rclcpp::Subscription<MapMsgT>::SharedPtr m_map_sub;
   typename rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr m_pose_publisher;
   typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher;
-  bool m_publish_tf;
 };
 }  // namespace localization_nodes
 }  // namespace localization
