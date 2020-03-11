@@ -175,7 +175,7 @@ private:
         const auto & observation_frame = get_frame_id(*msg_ptr);
         const auto & map_frame = m_localizer_ptr->map_frame_id();
         const auto initial_guess =
-          m_pose_initializer.guess(m_tf_buffer, observation_time, observation_frame, map_frame);
+          m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
         const auto pose_out = m_localizer_ptr->register_measurement(*msg_ptr, initial_guess);
         m_pose_publisher->publish(pose_out);
       } catch (...) {

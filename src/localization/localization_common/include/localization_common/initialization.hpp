@@ -48,8 +48,8 @@ public:
   /// fails in other ways. For details, see tf2::BufferCore class.
   /// \param tf_graph Transform graph that contains all the transforms to look up.
   /// \param time_point Time to guess the pose.
-  /// \param target_frame Target frame of the transform. (i.e. "base_link")
-  /// \param source_frame Source frame of the transform. (i.e. "map")
+  /// \param target_frame Target frame of the transform. (i.e. "map")
+  /// \param source_frame Source frame of the transform. (i.e. "base_link")
   /// \return The transform at the given time point
   PoseT guess(
     const tf2::BufferCore & tf_graph, tf2::TimePoint time_point,
