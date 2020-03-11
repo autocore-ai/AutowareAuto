@@ -87,13 +87,11 @@ public:
   void run();
 
 private:
-  /// Initialzie and allocate memory for the point clouds that are used as intermediate
+  /// Initialize and allocate memory for the point clouds that are used as intermediate
   /// representations during  conversions. & setup visualization publisher if required
   /// \param map_frame Frame of the
-  /// \param map_capacity
-  /// \param viz_map_topic Topic nmae for map visualization
+  /// \param viz_map_topic Topic name for map visualization
   void init(
-    const MapConfig & map_config,
     const std::string & map_frame,
     const std::string & viz_map_topic);
 
@@ -137,6 +135,7 @@ private:
   const bool m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
   uint32_t m_num_viz_subs;
+  std::unique_ptr<MapConfig> m_map_config_ptr;
 };
 
 }  // namespace ndt_nodes

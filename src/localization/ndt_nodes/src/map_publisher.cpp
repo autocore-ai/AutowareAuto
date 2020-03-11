@@ -63,9 +63,10 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   m_num_subs(num_expected_subs),
   m_timeout_ms(init_timeout),
   m_viz_map(viz_map),
-  m_num_viz_subs(num_expected_viz_subs)
+  m_num_viz_subs(num_expected_viz_subs),
+  m_map_config_ptr{std::make_unique<MapConfig>(map_config)}
 {
-  init(map_config, map_frame, viz_map_topic);
+  init(map_frame, viz_map_topic);
 }
 
 NDTMapPublisherNode::NDTMapPublisherNode(
@@ -98,23 +99,20 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   voxel_size.z = static_cast<float>(declare_parameter("map_config.voxel_size.z").get<float>());
   const std::size_t capacity =
     static_cast<std::size_t>(declare_parameter("map_config.capacity").get<std::size_t>());
-  const perception::filters::voxel_grid::Config cfg{min_point, max_point, voxel_size, capacity};
-
   const std::string map_frame = declare_parameter("map_frame").get<std::string>();
   const std::string viz_map_topic = declare_parameter("viz_map_topic").get<std::string>();
 
-  init(cfg, map_frame, viz_map_topic);
+  m_map_config_ptr = std::make_unique<MapConfig>(min_point, max_point, voxel_size, capacity);
+  init(map_frame, viz_map_topic);
 }
 
 
-void NDTMapPublisherNode::init(
-  const MapConfig & map_config, const std::string & map_frame,
-  const std::string & viz_map_topic)
+void NDTMapPublisherNode::init(const std::string & map_frame, const std::string & viz_map_topic)
 {
-  m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(map_config);
+  m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(*m_map_config_ptr);
 
   common::lidar_utils::init_pcl_msg(m_source_pc, map_frame);
-  common::lidar_utils::init_pcl_msg(m_map_pc, map_frame, map_config.get_capacity(), 10U,
+  common::lidar_utils::init_pcl_msg(m_map_pc, map_frame, m_map_config_ptr->get_capacity(), 10U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
@@ -165,6 +163,7 @@ void NDTMapPublisherNode::map_to_pc()
   sensor_msgs::PointCloud2Iterator<ndt::Real> cov_zz_it(m_map_pc, "cov_zz");
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(m_map_pc, "cell_id");
 
+  auto num_used_cells = 0U;
   for (const auto & vx_it : *m_ndt_map_ptr) {
     if (!  // No `==` operator defined for PointCloud2Iterators
       (y_it != y_it.end() &&
@@ -196,7 +195,12 @@ void NDTMapPublisherNode::map_to_pc()
     *(cov_yy_it) = covariance(1U, 1U);
     *(cov_yz_it) = covariance(1U, 2U);
     *(cov_zz_it) = covariance(2U, 2U);
-    std::memcpy(&cell_id_it[0U], &(vx_it.first), sizeof(vx_it.first));
+
+    // There are cases where the centroid of a voxel does get indexed to another voxel. To prevent
+    // ID mismatches while transferring the map. The index from the voxel grid config is used.
+    const auto correct_idx = m_map_config_ptr->index(centroid);
+
+    std::memcpy(&cell_id_it[0U], &(correct_idx), sizeof(correct_idx));
     ++x_it;
     ++y_it;
     ++z_it;
@@ -207,7 +211,10 @@ void NDTMapPublisherNode::map_to_pc()
     ++cov_yz_it;
     ++cov_zz_it;
     ++cell_id_it;
+    ++num_used_cells;
   }
+  // Resize to throw out unused cells.
+  common::lidar_utils::resize_pcl_msg(m_map_pc, num_used_cells);
 }
 
 void NDTMapPublisherNode::publish()

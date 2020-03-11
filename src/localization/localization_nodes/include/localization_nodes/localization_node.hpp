@@ -96,9 +96,10 @@ public:
     m_map_sub(create_subscription<MapMsgT>(map_sub_config.topic, map_sub_config.qos,
       [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
-      pose_pub_config.qos)),
-    m_tf_publisher(publish_tf == LocalizerPublishMode::PUBLISH_TF ?
-      create_publisher<tf2_msgs::msg::TFMessage>("tf", pose_pub_config.qos) : nullptr) {
+      pose_pub_config.qos)) {
+    if (publish_tf == LocalizerPublishMode::PUBLISH_TF) {
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("tf", pose_pub_config.qos);
+    }
   }
 
   /// Constructor using ros parameters
@@ -127,11 +128,13 @@ public:
         declare_parameter("pose_pub.topic").template get<std::string>(),
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
-              "pose_pub.history_depth").template get<size_t>())}})),
-    m_tf_publisher(declare_parameter("publish_tf").template get<bool>() ?
-      create_publisher<tf2_msgs::msg::TFMessage>("tf",
-      rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}}) : nullptr)
-  {}
+              "pose_pub.history_depth").template get<size_t>())}}))
+  {
+    if (declare_parameter("publish_tf").template get<bool>()) {
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("tf",
+          rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
+    }
+  }
 
   /// Get a const pointer of the output publisher. Can be used for matching against subscriptions.
   const typename rclcpp::Publisher<PoseWithCovarianceStamped>::ConstSharedPtr get_publisher()
@@ -252,7 +255,7 @@ private:
   typename rclcpp::Subscription<ObservationMsgT>::SharedPtr m_observation_sub;
   typename rclcpp::Subscription<MapMsgT>::SharedPtr m_map_sub;
   typename rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr m_pose_publisher;
-  typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher;
+  typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher{nullptr};
 };
 }  // namespace localization_nodes
 }  // namespace localization
