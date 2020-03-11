@@ -46,5 +46,7 @@ p2d_ndt_localizer_node:
         score_tolerance: 0.001
         parameter_tolerance: 0.001
         gradient_tolerance: 0.001
+        line_search:
+          step_size: 0.1
       # Maximum accepted duration between a scan and an initial pose guess
       guess_time_tolerance_ms: 5

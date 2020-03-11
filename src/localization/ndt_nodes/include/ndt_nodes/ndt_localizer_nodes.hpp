@@ -112,7 +112,9 @@ public:
 
     // Construct and set the localizer.
     LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
-      localizer_config, OptimizerT{common::optimization::FixedLineSearch{}});
+      localizer_config, OptimizerT{common::optimization::FixedLineSearch{
+          static_cast<float>(this->declare_parameter("localizer.optimizer.line_search.step_size").
+          template get<float>())}});
     this->set_localizer(std::move(localizer_ptr));
   }
 };
