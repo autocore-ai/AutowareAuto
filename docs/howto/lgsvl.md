@@ -23,7 +23,7 @@ Install ADE as described in the
 Start ADE with the LGSVL volume:
 
 ```
-$ cd ~/ade-home/AutowareAuto
+$ cd ~/adehome/AutowareAuto
 $ source .aderc-lgsvl
 $ ade start --update --enter
 ```
@@ -151,7 +151,7 @@ parametrizable 1D lookup tables
 
 ## Troubleshooting
 
-### No data are being sent through to ROS and/or the bridge status in the simulator shows "Disconnected" 
+### No data are being sent through to ROS and/or the bridge status in the simulator shows "Disconnected"
 
 To check that data are arriving on each of the required topics, run the following in a new terminal window:
 
