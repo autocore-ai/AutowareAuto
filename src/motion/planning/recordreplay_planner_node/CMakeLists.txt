@@ -35,4 +35,4 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(rosidl_default_runtime)
-ament_auto_package(INSTALL_TO_SHARE param/)
+ament_auto_package(INSTALL_TO_SHARE param/ launch/)
