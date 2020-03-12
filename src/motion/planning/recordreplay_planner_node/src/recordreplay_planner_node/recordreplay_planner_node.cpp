@@ -92,7 +92,7 @@ void RecordReplayPlannerNode::init(
 
   // Set up subscribers for the actual recording
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
-  m_ego_sub = create_subscription<State>(ego_topic, QoS{10}.transient_local(),
+  m_ego_sub = create_subscription<State>(ego_topic, QoS{10},
       [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
 
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
@@ -114,10 +114,12 @@ void RecordReplayPlannerNode::init(
 void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
 {
   if (m_planner->is_recording()) {
+    RCLCPP_INFO_ONCE(this->get_logger(), "Recording ego position");
     m_planner->record_state(*msg);
   }
 
   if (m_planner->is_replaying()) {
+    RCLCPP_INFO_ONCE(this->get_logger(), "Replaying recorded ego postion as trajectory");
     const auto & traj = m_planner->plan(*msg);
     m_trajectory_pub->publish(traj);
   }
