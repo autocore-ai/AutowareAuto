@@ -50,7 +50,7 @@ Visualization Manager:
         All Enabled: true
         base_link:
           Value: true
-        lidar_back:
+        lidar_rear:
           Value: true
         lidar_front:
           Value: true
@@ -64,7 +64,7 @@ Visualization Manager:
       Tree:
         odom:
           base_link:
-            lidar_back:
+            lidar_rear:
               {}
             lidar_front:
               {}
@@ -93,7 +93,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        lidar_back:
+        lidar_rear:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -115,7 +115,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: odom
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:

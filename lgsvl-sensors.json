@@ -20,8 +20,8 @@
 		"name": "GPS",
 		"params": {
 			"Frequency": 12.5,
-			"Topic": "/nmea_sentence",
-			"Frame": "gps",
+			"Topic": "/gnss/nmea_raw",
+			"Frame": "gnss",
 			"IgnoreMapOrigin": true
 		},
 		"transform": {
@@ -38,8 +38,8 @@
 		"name": "GPS Odometry",
 		"params": {
 			"Frequency": 12.5,
-			"Topic": "/lgsvl_odom",
-			"Frame": "gps",
+			"Topic": "/gnss/gnss_odom",
+			"Frame": "gnss",
 			"IgnoreMapOrigin": true
 		},
 		"transform": {
@@ -55,7 +55,7 @@
 		"type": "IMU",
 		"name": "IMU",
 		"params": {
-			"Topic": "/imu_raw",
+			"Topic": "/imu/imu_raw",
 			"Frame": "imu"
 		},
 		"transform": {
@@ -80,13 +80,13 @@
 			"CenterAngle": 0,
 			"Compensated": true,
 			"PointColor": "#ff000000",
-			"Topic": "/test_velodyne_node_cloud_front",
-			"Frame": "base_link"
+			"Topic": "/lidar_front/points_raw",
+			"Frame": "lidar_front"
 		},
 		"transform": {
 			"x": 0,
-			"y": 0.02,
-			"z": 1.8,
+			"y": 1.8,
+			"z": 0.02,
 			"pitch": 0,
 			"yaw": 0,
 			"roll": 0
@@ -105,8 +105,8 @@
 			"CenterAngle": 0,
 			"Compensated": true,
 			"PointColor": "#ff000000",
-			"Topic": "/test_velodyne_node_cloud_rear",
-			"Frame": "base_link_rear"
+			"Topic": "/lidar_rear/points_raw",
+			"Frame": "lidar_rear"
 		},
 		"transform": {
 			"x": 0,

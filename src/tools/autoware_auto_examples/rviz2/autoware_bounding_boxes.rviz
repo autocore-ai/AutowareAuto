@@ -70,7 +70,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /test_velodyne_node_cloud_front
+      Topic: /lidar_front/points_raw
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

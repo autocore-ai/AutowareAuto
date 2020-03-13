@@ -37,8 +37,8 @@ def generate_launch_description():
     velodyne_node_runner = launch_ros.actions.Node(
         package='velodyne_node',
         node_executable='velodyne_cloud_node_exe',
-        parameters=[param_file],
-        arguments=["/test_velodyne_node_cloud_front:=/points_raw"])
+        node_namespace='lidar_front',
+        parameters=[param_file])
 
     # ros1 bridge runner definition.
     ros1_bridge_runner = launch_ros.actions.Node(

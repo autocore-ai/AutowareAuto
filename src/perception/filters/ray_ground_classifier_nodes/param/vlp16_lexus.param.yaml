@@ -5,7 +5,7 @@ ray_ground_classifier:
   ros__parameters:
     timeout_ms:       10
     cloud_timeout_ms: 110
-    raw_topic:       "test_velodyne_node_cloud_front"
+    raw_topic:       "lidar_front/points_transformed"
     ground_topic:    "points_ground"
     nonground_topic: "nonground_points"
     pcl_size:         55000

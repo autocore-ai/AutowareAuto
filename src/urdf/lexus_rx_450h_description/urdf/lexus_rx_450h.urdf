@@ -64,7 +64,7 @@
     <origin xyz="1.498 -0.022 1.49" rpy="0 0 0"/>
   </joint>
 
-  <link name="lidar_back">
+  <link name="lidar_rear">
     <visual>
       <geometry>
         <cylinder length="0.0869" radius="0.05165"/>
@@ -85,9 +85,9 @@
     </inertial>
   </link>
 
-  <joint name="lidar_back_joint" type="fixed">
+  <joint name="lidar_rear_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="lidar_back"/>
+    <child link="lidar_rear"/>
     <origin xyz="0.308 -0.022 1.49" rpy="0 0 0"/>
   </joint>
 </robot>
