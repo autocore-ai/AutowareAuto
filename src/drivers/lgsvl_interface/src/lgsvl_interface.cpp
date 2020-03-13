@@ -115,7 +115,11 @@ bool8_t LgsvlInterface::update(std::chrono::nanoseconds timeout)
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::VehicleStateCommand & msg)
 {
-  m_state_pub->publish(msg);
+  // in autoware_auto_msgs::msg::VehicleStateCommand 1 is drive, 2 is reverse, https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/9744f6dc/src/messages/autoware_auto_msgs/msg/VehicleStateCommand.msg#L32
+  // in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
+  auto msg_corrected = msg;
+  msg_corrected.gear = msg.gear == 2 ? 1 : 0;
+  m_state_pub->publish(msg_corrected);
   return true;
 }
 

@@ -148,6 +148,13 @@
 		}
 	},
 	{
+		"type": "Vehicle State",
+		"name": "Autoware Auto Vehicle State",
+		"params": {
+			"Topic": "/lgsvl_state_command"
+		}
+	},
+	{
 		"type": "Keyboard Control",
 		"name": "Keyboard Car Control"
 	}
