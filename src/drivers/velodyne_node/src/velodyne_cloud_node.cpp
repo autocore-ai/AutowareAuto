@@ -22,6 +22,9 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "velodyne_node/velodyne_cloud_node.hpp"
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+
 namespace autoware
 {
 namespace drivers
@@ -62,21 +65,21 @@ VelodyneCloudNode::VelodyneCloudNode(
 : UdpDriverNode(node_name, node_namespace),
   m_translator(
       {
-        static_cast<float>(declare_parameter("rpm").get<int>()),
+        static_cast<float32_t>(declare_parameter("rpm").get<int>()),
         velodyne_driver::make_point(
-          static_cast<float>(declare_parameter("translation.dx_m").get<float>()),
-          static_cast<float>(declare_parameter("translation.dy_m").get<float>()),
-          static_cast<float>(declare_parameter("translation.dz_m").get<float>())
+          static_cast<float32_t>(declare_parameter("translation.dx_m").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter("translation.dy_m").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter("translation.dz_m").get<float32_t>())
         ),
         velodyne_driver::make_point(
-          static_cast<float>(declare_parameter("rotation.roll_rad").get<float>()),
-          static_cast<float>(declare_parameter("rotation.pitch_rad").get<float>()),
-          static_cast<float>(declare_parameter("rotation.yaw_rad").get<float>())
+          static_cast<float32_t>(declare_parameter("rotation.roll_rad").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter("rotation.pitch_rad").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter("rotation.yaw_rad").get<float32_t>())
         ),
-        static_cast<float>(declare_parameter("filter.min_radius_m").get<float>()),
-        static_cast<float>(declare_parameter("filter.max_radius_m").get<float>()),
-        static_cast<float>(declare_parameter("filter.min_angle_deg").get<float>()),
-        static_cast<float>(declare_parameter("filter.max_angle_deg").get<float>())
+        static_cast<float32_t>(declare_parameter("filter.min_radius_m").get<float32_t>()),
+        static_cast<float32_t>(declare_parameter("filter.max_radius_m").get<float32_t>()),
+        static_cast<float32_t>(declare_parameter("filter.min_angle_deg").get<float32_t>()),
+        static_cast<float32_t>(declare_parameter("filter.max_angle_deg").get<float32_t>())
       }),
   m_published_cloud(false),
   m_remainder_start_idx(0U),
@@ -94,7 +97,7 @@ void VelodyneCloudNode::init_output(sensor_msgs::msg::PointCloud2 & output)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool VelodyneCloudNode::convert(
+bool8_t VelodyneCloudNode::convert(
   const velodyne_driver::Vlp16Translator::Packet & pkt,
   sensor_msgs::msg::PointCloud2 & output)
 {
@@ -141,7 +144,7 @@ bool VelodyneCloudNode::convert(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool VelodyneCloudNode::get_output_remainder(sensor_msgs::msg::PointCloud2 & output)
+bool8_t VelodyneCloudNode::get_output_remainder(sensor_msgs::msg::PointCloud2 & output)
 {
   // The assumption checked in the constructor is that the PointCloud size is bigger than
   // the PointBlocks, which can fully contain a packet. The use case of this method is in case

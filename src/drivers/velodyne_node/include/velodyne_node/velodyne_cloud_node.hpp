@@ -31,6 +31,7 @@
 #include "velodyne_node/visibility_control.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -74,10 +75,10 @@ public:
 
 protected:
   void init_output(sensor_msgs::msg::PointCloud2 & output) override;
-  bool convert(
+  bool8_t convert(
     const velodyne_driver::Vlp16Translator::Packet & pkt,
     sensor_msgs::msg::PointCloud2 & output) override;
-  bool get_output_remainder(sensor_msgs::msg::PointCloud2 & output) override;
+  bool8_t get_output_remainder(sensor_msgs::msg::PointCloud2 & output) override;
 
 private:
   velodyne_driver::Vlp16Translator m_translator;
@@ -86,7 +87,7 @@ private:
   // These next two variables are a minor hack to maintain stateful information across convert()
   // calls. Specifically, it signals to reset any stateful information on the data vector at the top
   // of the convert function
-  bool m_published_cloud;
+  bool8_t m_published_cloud;
   // Keeps track of where you left off on the converted point block in case you needed to publish
   // a point cloud in the middle of processing it
   uint32_t m_remainder_start_idx;

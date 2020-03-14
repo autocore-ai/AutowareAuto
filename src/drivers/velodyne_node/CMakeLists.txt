@@ -25,6 +25,7 @@ find_package(velodyne_driver REQUIRED)
 find_package(udp_driver REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lidar_utils REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 
 include_directories(include)
 
@@ -40,7 +41,8 @@ ament_target_dependencies(${CLOUD_LIB}
   "rclcpp_lifecycle"
   "velodyne_driver"
   "udp_driver"
-  "sensor_msgs")
+  "sensor_msgs"
+  "autoware_auto_common")
 
 # generate executable for ros1-style standalone nodes
 file(COPY param/vlp16_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
