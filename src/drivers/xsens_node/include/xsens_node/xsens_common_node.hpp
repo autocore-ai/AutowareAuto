@@ -24,9 +24,11 @@
 
 #include <string>
 #include <vector>
+#include "common/types.hpp"
 #include "serial_driver/serial_driver_node.hpp"
 #include "xsens_node/visibility_control.hpp"
 
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -102,14 +104,14 @@ public:
     (void)output;
   }
 
-  bool convert(
+  bool8_t convert(
     const typename TranslatorT::Packet & pkt,
     MessageT & output)
   {
     return m_translator.convert(pkt, output);
   }
 
-  bool get_output_remainder(MessageT & output)
+  bool8_t get_output_remainder(MessageT & output)
   {
     (void)output;
     return false;

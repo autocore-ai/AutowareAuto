@@ -25,6 +25,7 @@ find_package(xsens_driver REQUIRED)
 find_package(serial_driver REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lidar_utils REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 
 include_directories(include)
 
@@ -39,7 +40,8 @@ ament_target_dependencies(${XSENS_IMU_NODE_LIB}
   "rclcpp_lifecycle"
   "xsens_driver"
   "serial_driver"
-  "sensor_msgs")
+  "sensor_msgs"
+  "autoware_auto_common")
 
 set(XSENS_GPS_NODE_LIB xsens_gps_node)
 add_library(${XSENS_GPS_NODE_LIB} SHARED
@@ -52,7 +54,8 @@ ament_target_dependencies(${XSENS_GPS_NODE_LIB}
   "rclcpp_lifecycle"
   "xsens_driver"
   "serial_driver"
-  "sensor_msgs")
+  "sensor_msgs"
+  "autoware_auto_common")
 
 # generate executable for ros1-style standalone nodes
 file(COPY param/xsens_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
