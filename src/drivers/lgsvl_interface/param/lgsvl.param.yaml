@@ -16,10 +16,10 @@ lgsvl_interface:
     state_report:
       name: "state_report"
     lgsvl:
-      control_command_topic: "vehicle_cmd"
-      state_command_topic: "lgsvl_state_command"
-      state_report_topic: "lgsvl_state_report"
-      odometry_topic: "gnss/gnss_odom"
+      control_command_topic: "lgsvl/vehicle_control_cmd"
+      state_command_topic: "lgsvl/vehicle_state_cmd"
+      state_report_topic: "lgsvl/state_report"
+      odometry_topic: "lgsvl/gnss_odom"
       kinematic_state_topic: "vehicle_kinematic_state"
       throttle:
         domain: [0.0, 3.0]

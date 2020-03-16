@@ -167,7 +167,7 @@ ade$ ros2 launch lgsvl_interface lgsvl_vehicle_control_command.launch.py
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 topic hz /raw_command
-ade$ ros2 topic hz /vehicle_cmd
+ade$ ros2 topic hz /lgsvl/vehicle_control_cmd
 ```
 If data are not arriving on one of these topics, then the stack did not start up correctly, or there
 is a configuration problem. Stop the vehicle interface and joystick controller and inspect the logs
