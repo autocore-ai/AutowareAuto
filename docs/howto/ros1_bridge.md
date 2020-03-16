@@ -143,5 +143,5 @@ to the ROS 1 domain:
 ```bash
 $ ade enter
 ade$ source /opt/ros/melodic/setup.bash
-ade$ rostopic echo /test_velodyne_node_cloud_front
+ade$ rostopic echo /lidar_front/points_raw
 ```
