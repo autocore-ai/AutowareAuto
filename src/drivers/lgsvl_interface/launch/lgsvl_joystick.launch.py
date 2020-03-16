@@ -21,20 +21,29 @@ def generate_launch_description():
     translator outputs and the LGSVL interface expects RawControlCommand. Controlling the vehicle
     can happen via the gamepad triggers and left joystick.
     """
-    # CLI
+
+    # --------------------------------- Params -------------------------------
+
+    # Default joystick translator params
     joy_translator_param = launch.actions.DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
             get_param('joystick_vehicle_interface', 'logitech_f310.default.param.yaml')
         ],
         description='Path to config file for joystick translator')
+    
+    # Default lgsvl_interface params
     lgsvl_interface_param = launch.actions.DeclareLaunchArgument(
         'lgsvl_interface_param',
         default_value=[
             get_param('lgsvl_interface', 'lgsvl.param.yaml')
         ],
         description='Path to config file for lgsvl interface')
-    # Joystick stuff
+
+
+    # -------------------------------- Nodes-----------------------------------
+
+    # Include Joystick launch
     joystick_launch_file_path = get_param('joystick_vehicle_interface',
                                  'joystick_vehicle_interface.launch.py')
     joystick = launch.actions.IncludeLaunchDescription(
@@ -46,7 +55,8 @@ def generate_launch_description():
             )
         ]
     )
-    # LGSVL stuff
+
+    # Include LGSVL interface launch
     lgsvl_launch_file_path = get_param('lgsvl_interface',
                                  'lgsvl.launch.py')
     lgsvl = launch.actions.IncludeLaunchDescription(

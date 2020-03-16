@@ -15,12 +15,17 @@
 import launch
 import launch_ros.actions
 import launch.substitutions
-import ament_index_python
-import os
+import launch.launch_description_sources
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument 
+import ros2launch.api
 
 
 def get_param(package_name, param_file):
-    return os.path.join(ament_index_python.get_package_share_directory(package_name), param_file)
+    return ros2launch.api.get_share_file_path_from_package(
+        package_name=package_name,
+        file_name=param_file
+    )
 
 
 def generate_launch_description():
@@ -29,41 +34,76 @@ def generate_launch_description():
     are modified via parameter remapping to use VehicleControlCommand as an output. The vehicle can
     be controlled by manipulating the left joystick of the gamepad.
     """
-    # TODO(c.ho) The dictionary parameter remapping doesn't work for some inscrutable reason
-    raise NotImplementedError
-    # Nodes
-    command_topic = "vehicle_control_command"
-    joy = launch_ros.actions.Node(
-        package='joy',
-        node_executable='joy_node',
-        output='screen')
-    joy_translator = launch_ros.actions.Node(
-        package='joystick_vehicle_interface',
-        node_executable='joystick_vehicle_interface_exe',
-        output='screen',
-        parameters=[
-            get_param('joystick_vehicle_interface', 'logitech_f310.default.param.yaml'),
-            {
-                "raw_command_topic": "null",
-                "basic_command_topic": command_topic,
-            },
-        ])
-    lgsvl_interface = launch_ros.actions.Node(
-        package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        output='screen',
-        paramters=[
-            get_param('lgsvl_interface', 'lgsvl.param.yaml'),
-            {
-                "raw_command": {"name": "null"},
-                "basic_command": {"name": command_topic},
-            },
-        ])
-    lgsvl_bridge = launch.actions.ExecuteProcess(cmd="rosbridge")
 
-    ld = launch.LaunchDescription([
-        joy,
-        joy_translator,
-        lgsvl_interface])
-        # lgsvl_bridge]) # TODO(c.ho) bring back when ADE version is built correctly
-    return ld
+    # --------------------------------- Params -------------------------------
+
+    # In combination 'raw_command', 'basic_command' and 'high_level_command' control 
+    # in what mode of control comands to operate in, 
+    # only one of them can be active at a time with a topics name 
+    # other should be blank/null which is achieved by used ="''"
+    high_level_command_param = DeclareLaunchArgument(
+        'high_level_command', 
+        default_value="''", # use "high_level_command" or "''" 
+        description='high_level_command control mode topic name')
+
+    basic_command_param = DeclareLaunchArgument(
+        'basic_command', 
+        default_value="vehicle_command", # use "vehicle_command" or "''" 
+        description='basic_command control mode topic name')
+
+    raw_command_param = DeclareLaunchArgument(
+        'raw_command', 
+        default_value="''",  # use "raw_command" or "''" 
+        description='raw_command control mode topic name')
+    
+    # Default joystick translator params
+    joy_translator_param = launch.actions.DeclareLaunchArgument(
+        'joy_translator_param',
+        default_value=[
+            get_param('joystick_vehicle_interface', 'logitech_f310.default.param.yaml')
+        ],
+        description='Path to config file for joystick translator')
+    
+    # Default lgsvl_interface params
+    lgsvl_interface_param = DeclareLaunchArgument(
+        'lgsvl_interface_param',
+        default_value=[ 
+            get_param('lgsvl_interface', 'lgsvl.param.yaml')
+        ],
+        description='Path to config file for lgsvl interface')
+
+    # -------------------------------- Nodes-----------------------------------
+    # Include Joystick launch
+    joystick_launch_file_path = get_param('joystick_vehicle_interface',
+                                 'joystick_vehicle_interface.launch.py')
+    joystick = launch.actions.IncludeLaunchDescription(
+        launch.launch_description_sources.PythonLaunchDescriptionSource(joystick_launch_file_path),
+        launch_arguments={
+            "joy_translator_param": LaunchConfiguration("joy_translator_param"),
+            "high_level_command": LaunchConfiguration('high_level_command'),
+            "basic_command": LaunchConfiguration('basic_command'),
+            "raw_command": LaunchConfiguration('raw_command')
+        }.items()
+    )
+
+    # Include LGSVL interface launch
+    lgsvl_launch_file_path = get_param('lgsvl_interface',
+                                 'lgsvl.launch.py')
+    lgsvl = launch.actions.IncludeLaunchDescription(
+        launch.launch_description_sources.PythonLaunchDescriptionSource(lgsvl_launch_file_path),
+        launch_arguments={
+            "lgsvl_interface_param": LaunchConfiguration("lgsvl_interface_param"),
+            "high_level_command": LaunchConfiguration('high_level_command'),
+            "basic_command": LaunchConfiguration('basic_command'),
+            "raw_command": LaunchConfiguration('raw_command')
+        }.items()
+    )
+
+    return launch.LaunchDescription([
+      high_level_command_param,
+      basic_command_param,
+      raw_command_param,
+      joy_translator_param,
+      lgsvl_interface_param,
+      joystick,
+      lgsvl])

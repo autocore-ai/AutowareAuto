@@ -150,8 +150,6 @@ ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch lgsvl_interface lgsvl_joystick.launch.py
 ```
 
-\warning The following demo currently does not work due to a bug in the launch scripts
-
 For an example of using `VehicleControlCommand` with LGSVL, run the following demo in a new terminal window:
 
 ```
