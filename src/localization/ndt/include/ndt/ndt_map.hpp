@@ -345,19 +345,19 @@ inline NDT_PUBLIC auto z_(const Eigen::Vector3d & pt)
 }
 
 template<>
-inline NDT_PUBLIC auto & xr_(const Eigen::Vector3d & pt)
+inline NDT_PUBLIC auto & xr_(Eigen::Vector3d & pt)
 {
   return pt(0);
 }
 
 template<>
-inline NDT_PUBLIC auto & yr_(const Eigen::Vector3d & pt)
+inline NDT_PUBLIC auto & yr_(Eigen::Vector3d & pt)
 {
   return pt(1);
 }
 
 template<>
-inline NDT_PUBLIC auto & zr_(const Eigen::Vector3d & pt)
+inline NDT_PUBLIC auto & zr_(Eigen::Vector3d & pt)
 {
   return pt(2);
 }
