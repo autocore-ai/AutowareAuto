@@ -221,6 +221,14 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     tf_msg.transforms.emplace_back(std::move(tf));
     m_tf_pub->publish(tf_msg);
   }
+  {
+    autoware_auto_msgs::msg::VehicleOdometry odom_msg{};
+    odom_msg.stamp = msg.header.stamp;
+    odom_msg.velocity_mps = static_cast<decltype(odom_msg.velocity_mps)>(msg.twist.twist.linear.x);
+    odom_msg.front_wheel_angle_rad = 0.0F;
+    odom_msg.rear_wheel_angle_rad = 0.0F;
+    odometry() = odom_msg;
+  }
 }
 
 }  // namespace lgsvl_interface
