@@ -71,37 +71,39 @@ float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
   }
 }
 
-Trajectory TrajectorySpoofer::init_trajectory(const VehicleKinematicState & starting_point)
+Trajectory TrajectorySpoofer::init_trajectory(const VehicleKinematicState & starting_state, TrajectoryPoint & first_point)
 {
   Trajectory trajectory;
-  trajectory.header = starting_point.header;
+  trajectory.header = starting_state.header;
 
   // Start from the current location and time
-  TrajectoryPoint pt = starting_point.state;
-  trajectory.points.push_back(pt);
+  first_point = starting_state.state;
+  trajectory.points.push_back(first_point);
 
   return trajectory;
 }
 
 Trajectory TrajectorySpoofer::spoof_straight_trajectory(
-  const VehicleKinematicState & starting_point,
+  const VehicleKinematicState & starting_state,
   int32_t num_of_points,
   float32_t length,
   bool8_t speed_ramp_on)
 {
-  Trajectory straight_trajectory = init_trajectory(starting_point);
   TrajectoryPoint pt;
+  Trajectory straight_trajectory = init_trajectory(starting_state, pt);
+  straight_trajectory.points[0].longitudinal_velocity_mps = target_speed_;
+  
 
-  const auto yaw_angle = to_yaw_angle(starting_point.state.heading);
+  const auto yaw_angle = to_yaw_angle(starting_state.state.heading);
   const float64_t seg_len = length / static_cast<float64_t>(num_of_points - 1);
   const auto start_time = time_utils::from_message(straight_trajectory.points[0].time_from_start);
-  const auto time_delta = get_travel_time(
-    seg_len, starting_point.state.longitudinal_velocity_mps);
+  const auto time_delta = get_travel_time(seg_len, target_speed_);
 
   for (int i = 1; i < num_of_points; ++i) {
     pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
     pt.x = std::cos(yaw_angle) * i * seg_len;
     pt.y = std::sin(yaw_angle) * i * seg_len;
+    pt.longitudinal_velocity_mps = target_speed_;
     straight_trajectory.points.push_back(pt);
   }
 
@@ -109,20 +111,21 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
 }
 
 Trajectory TrajectorySpoofer::spoof_circular_trajectory(
-  const VehicleKinematicState & starting_point,
+  const VehicleKinematicState & starting_state,
   int32_t num_of_points,
   float32_t radius,
   bool8_t speed_ramp_on)
 {
-  Trajectory circular_trajectory = init_trajectory(starting_point);
   TrajectoryPoint pt;
+  Trajectory circular_trajectory = init_trajectory(starting_state, pt);
+  circular_trajectory.points[0].longitudinal_velocity_mps = target_speed_;
+  
 
   // Number of segments = number of points - 1
   const float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   const float64_t seg_len = 2.0 * radius * std::sin(seg_angle_rad / 2.0);
   const auto start_time = time_utils::from_message(circular_trajectory.points[0].time_from_start);
-  const auto time_delta = get_travel_time(
-    seg_len, starting_point.state.longitudinal_velocity_mps);
+  const auto time_delta = get_travel_time(seg_len, target_speed_);
 
   for (int i = 1; i < num_of_points; ++i) {
     const float64_t old_head = to_yaw_angle(pt.heading);
@@ -132,6 +135,7 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
       // TODO(josh.whitley): Y values still not quite right
       pt.x = pt.x + std::cos(old_head) * seg_len;
       pt.y = pt.y + std::sin(old_head) * seg_len;
+      pt.longitudinal_velocity_mps = target_speed_;
 
       float64_t new_head = old_head + angle_dist_remain / (num_of_points - i - 1);
 
@@ -144,9 +148,10 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 
       pt.heading = to_2d_quaternion(new_head);
     } else {
-      pt.x = starting_point.state.x;
-      pt.y = starting_point.state.y;
-      pt.heading = starting_point.state.heading;
+      pt.x = starting_state.state.x;
+      pt.y = starting_state.state.y;
+      pt.heading = starting_state.state.heading;
+      pt.longitudinal_velocity_mps = target_speed_;
     }
 
     pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
@@ -164,15 +169,16 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 }
 
 Trajectory TrajectorySpoofer::spoof_curved_trajectory(
-  const VehicleKinematicState & starting_point,
+  const VehicleKinematicState & starting_state,
   int32_t num_of_points,
   float32_t radius,
   float32_t length,
   CurveType mode,
   bool8_t speed_ramp_on)
 {
-  Trajectory curved_trajectory = init_trajectory(starting_point);
   TrajectoryPoint pt;
+  Trajectory curved_trajectory = init_trajectory(starting_state, pt);
+  
 
   // TODO(josh.whitley): Populate
 

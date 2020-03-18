@@ -112,8 +112,8 @@ def generate_launch_description():
         parameters=[
             {
                 "speed_ramp_on": False,
-                "target_speed": 10.0,
-                "num_of_points": 10,
+                "target_speed": 3.0,
+                "num_of_points": 50,
                 "trajectory_type": 'straight', #straight or circle
                 "length": 10.0, # only used for straight
                 "radius": 21.0, # only used for circle
