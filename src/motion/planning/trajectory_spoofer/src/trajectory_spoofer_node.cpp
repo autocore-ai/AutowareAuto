@@ -60,6 +60,7 @@ void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
 {
 
   Trajectory traj;
+
   switch (trajectory_type_) {
     // Straight line
     case TrajectoryType::STRAIGHT:
@@ -72,7 +73,6 @@ void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
       break;
   }
 
-  traj.header.frame_id = msg->header.frame_id;
 
   if (traj.points.size() > 0) {
     trajectory_pub_->publish(traj);
