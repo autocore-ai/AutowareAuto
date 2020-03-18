@@ -48,9 +48,20 @@ public:
   void on_recv_state(VehicleKinematicState::SharedPtr msg);
 
 private:
+  enum class TrajectoryType : uint8_t
+  {
+    STRAIGHT=1u,
+    CIRCLE=2u,
+  };
+
   bool8_t verbose_;
   bool8_t speed_ramp_on_;
+  TrajectoryType trajectory_type_;
   float32_t target_speed_;
+  int32_t num_of_points_;
+  float32_t length_;
+  float32_t radius_;
+
   std::shared_ptr<TrajectorySpoofer> spoofer_;
   std::shared_ptr<rclcpp::Publisher<Trajectory>> trajectory_pub_;
   std::shared_ptr<rclcpp::Subscription<VehicleKinematicState>> state_sub_;
