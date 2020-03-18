@@ -88,4 +88,4 @@ autoware_install(
 
 # Ament Exporting
 ament_export_dependencies("rclcpp")
-ament_package()
+ament_auto_package(INSTALL_TO_SHARE launch/)
