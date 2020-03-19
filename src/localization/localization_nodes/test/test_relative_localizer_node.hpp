@@ -13,11 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LOCALIZATION_NODES__TEST_LOCALIZATION_NODE_HPP_
-#define LOCALIZATION_NODES__TEST_LOCALIZATION_NODE_HPP_
+#ifndef TEST_RELATIVE_LOCALIZER_NODE_HPP_
+#define TEST_RELATIVE_LOCALIZER_NODE_HPP_
 
 #include <localization_common/localizer_base.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+
+#include <memory>
+#include <string>
+
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -63,7 +70,6 @@ class MockRelativeLocalizerConfig {};
 
 class MockInitializer
 {
-
 public:
   Transform guess(
     const tf2::BufferCore &, tf2::TimePoint stamp,
@@ -79,9 +85,9 @@ public:
   // Expose protected method for convenience
   void set_localizer_(std::unique_ptr<MockRelativeLocalizer> && localizer);
 
-  bool register_exception();
-  bool map_exception();
-  bool register_on_invalid_map();
+  bool8_t register_exception();
+  bool8_t map_exception();
+  bool8_t register_on_invalid_map();
 
 protected:
   void on_bad_registration(std::exception_ptr eptr) override;
@@ -92,9 +98,9 @@ protected:
   void on_observation_with_invalid_map(TestObservation::ConstSharedPtr msg) override;
 
 private:
-  bool m_map_exception{false};
-  bool m_register_exception{false};
-  bool m_register_on_invalid_map{false};
+  bool8_t m_map_exception{false};
+  bool8_t m_register_exception{false};
+  bool8_t m_register_on_invalid_map{false};
 };
 
 /// Wait until publisher reaches desired num. of subscriptions.
@@ -119,29 +125,29 @@ class TestRegistrationException : public std::exception {};
 class TestMapException : public std::exception {};
 
 /// Abstraction functions to tag and track dummy messages.
-inline long get_msg_id(const MsgWithHeader & msg)
+inline int64_t get_msg_id(const MsgWithHeader & msg)
 {
   return msg.transform.translation.x;
 }
 
-inline void set_msg_id(MsgWithHeader & msg, long id)
+inline void set_msg_id(MsgWithHeader & msg, int64_t id)
 {
   msg.transform.translation.x = id;
 }
 
-inline long get_msg_id(const PoseWithCovarianceStamped & msg)
+inline int64_t get_msg_id(const PoseWithCovarianceStamped & msg)
 {
   return msg.pose.pose.position.x;
 }
 
-inline void set_msg_id(PoseWithCovarianceStamped & msg, long id)
+inline void set_msg_id(PoseWithCovarianceStamped & msg, int64_t id)
 {
   msg.pose.pose.position.x = id;
 }
 ////
 
 
-}          // namespace autoware
-}      // namespace localization
 }  // namespace localization_nodes
-#endif
+}  // namespace localization
+}  // namespace autoware
+#endif  // TEST_RELATIVE_LOCALIZER_NODE_HPP_

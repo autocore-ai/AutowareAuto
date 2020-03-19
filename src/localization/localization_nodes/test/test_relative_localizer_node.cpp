@@ -1,9 +1,32 @@
+// Copyright 2020 Apex.AI, Inc.
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 #include <gtest/gtest.h>
 
 
 #include <localization_nodes/localization_node.hpp>
-#include "test_relative_localizer_node.hpp"
 #include <geometry_msgs/msg/transform_stamped.hpp>
+
+#include <string>
+#include <memory>
+#include <utility>
+
+#include "test_relative_localizer_node.hpp"
+
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -26,7 +49,7 @@ public:
   void SetUp()
   {
     rclcpp::init(0, nullptr);
-    // TODO: add assertions!
+    // TODO(yunus.caliskan): add assertions!
   }
   void TearDown()
   {
@@ -47,7 +70,6 @@ protected:
 
 
 TEST_F(RelativeLocalizationNodeTest, basic) {
-
   ////////////////////////////// Define lambdas
 
   /// Spin until tracker pointer reaches
@@ -156,7 +178,6 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
 }
 
 TEST_F(RelativeLocalizationNodeTest, exception_handling) {
-
   ////////////////////////////// Define lambdas
   /// Spin until condition for node is met
   auto spin_until_condition =
@@ -231,7 +252,7 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
   EXPECT_TRUE(localizer_node->register_exception());
 }
 
-////////////////////////////////////////////////////////////////////////Implementations
+//////////////////////////////////////////////////////////////////////// Implementations
 
 void TestRelativeLocalizerNode::set_localizer_(std::unique_ptr<MockRelativeLocalizer> && localizer)
 {
@@ -302,11 +323,11 @@ void TestRelativeLocalizerNode::on_bad_map(std::exception_ptr eptr)
   }
 }
 
-bool TestRelativeLocalizerNode::register_exception()
+bool8_t TestRelativeLocalizerNode::register_exception()
 {
   return m_register_exception;
 }
-bool TestRelativeLocalizerNode::map_exception()
+bool8_t TestRelativeLocalizerNode::map_exception()
 {
   return m_map_exception;
 }
@@ -335,6 +356,6 @@ Transform MockInitializer::guess(
 }
 
 
-}  // namespace autoware
-}  // namespace localization
 }  // namespace localization_nodes
+}  // namespace localization
+}  // namespace autoware
