@@ -18,6 +18,7 @@
 #ifndef XSENS_DRIVER__XSENS_BASE_TRANSLATOR_HPP_
 #define XSENS_DRIVER__XSENS_BASE_TRANSLATOR_HPP_
 
+#include <common/types.hpp>
 #include <xsens_driver/xsens_common.hpp>
 #include <xsens_driver/visibility_control.hpp>
 #include <cstdint>
@@ -26,6 +27,8 @@
 #include <vector>
 
 #include "helper_functions/crtp.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -68,7 +71,7 @@ public:
   XsensBaseTranslator()
   : current_state_(State::START) {}
 
-  bool use_double_precision(int32_t data_id)
+  bool8_t use_double_precision(int32_t data_id)
   {
     if ((data_id & 0x0003) == 0x3) {
       return true;
@@ -87,7 +90,7 @@ public:
   ///        - Message length (1 byte)
   ///        - Data (0 to 254 bytes)
   ///        - Checksum (1 byte)
-  bool convert(const Packet & pkt, MessageT & output)
+  bool8_t convert(const Packet & pkt, MessageT & output)
   {
     switch (current_state_) {
       case State::START:

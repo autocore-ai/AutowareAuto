@@ -28,6 +28,10 @@
 #include "xsens_driver/xsens_imu_translator.hpp"
 
 #include "helper_functions/byte_reader.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -103,9 +107,9 @@ void XsensImuTranslator::parse_acceleration(
   parse_xdi_coordinates(data_id, message);
 
   if (use_double_precision(data_id)) {
-    parse_acceleration_internal<double>(message, content);
+    parse_acceleration_internal<float64_t>(message, content);
   } else {
-    parse_acceleration_internal<float>(message, content);
+    parse_acceleration_internal<float32_t>(message, content);
   }
 }
 
@@ -132,9 +136,9 @@ void XsensImuTranslator::parse_orientation_data(
     case 0x10:
       // Quaternion
       if (use_double_precision(data_id)) {
-        parse_orientation_quaternion<double>(message, content);
+        parse_orientation_quaternion<float64_t>(message, content);
       } else {
-        parse_orientation_quaternion<float>(message, content);
+        parse_orientation_quaternion<float32_t>(message, content);
       }
       break;
     case 0x20:
@@ -161,9 +165,9 @@ void XsensImuTranslator::parse_angular_velocity(
     case 0x20:
       // Rate of Turn
       if (use_double_precision(data_id)) {
-        parse_angular_velocity_rate_of_turn<double>(message, content);
+        parse_angular_velocity_rate_of_turn<float64_t>(message, content);
       } else {
-        parse_angular_velocity_rate_of_turn<float>(message, content);
+        parse_angular_velocity_rate_of_turn<float32_t>(message, content);
       }
       break;
     case 0x30:
@@ -172,9 +176,9 @@ void XsensImuTranslator::parse_angular_velocity(
     case 0x40:
       // RateOfTurnHR
       if (use_double_precision(data_id)) {
-        parse_angular_velocity_rate_of_turn<double>(message, content);
+        parse_angular_velocity_rate_of_turn<float64_t>(message, content);
       } else {
-        parse_angular_velocity_rate_of_turn<float>(message, content);
+        parse_angular_velocity_rate_of_turn<float32_t>(message, content);
       }
       break;
     default:

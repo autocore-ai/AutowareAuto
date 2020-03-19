@@ -29,6 +29,9 @@
 #include "xsens_driver/xsens_gps_translator.hpp"
 
 #include "helper_functions/byte_reader.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -202,17 +205,17 @@ void XsensGpsTranslator::parse_gnss(
         byte_reader.read(edop);
 
         //  scaling correction
-        double dlon = lon * 1e-7;
-        double dlat = lat * 1e-7;
-        double dheadMot = headMot * 1e-5;
-        double dheadVeh = headVeh * 1e-5;
-        double dgdop = gdop * 0.01;
-        double dpdop = pdop * 0.01;
-        double dtdop = tdop * 0.01;
-        double dvdop = vdop * 0.01;
-        double dhdop = hdop * 0.01;
-        double dndop = ndop * 0.01;
-        double dedop = edop * 0.01;
+        float64_t dlon = lon * 1e-7;
+        float64_t dlat = lat * 1e-7;
+        float64_t dheadMot = headMot * 1e-5;
+        float64_t dheadVeh = headVeh * 1e-5;
+        float64_t dgdop = gdop * 0.01;
+        float64_t dpdop = pdop * 0.01;
+        float64_t dtdop = tdop * 0.01;
+        float64_t dvdop = vdop * 0.01;
+        float64_t dhdop = hdop * 0.01;
+        float64_t dndop = ndop * 0.01;
+        float64_t dedop = edop * 0.01;
 
         // NOTE(esteve): None of this is actually necessary for the ROS NavSatFix message
         (void)dheadMot;

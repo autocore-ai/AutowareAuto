@@ -13,16 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "xsens_driver/xsens_gps_translator.hpp"
-#include "xsens_driver/test_xsens_common.hpp"
-
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include "gtest/gtest.h"
 #include <cmath>
+#include <vector>
 
-#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
+
+#include "gtest/gtest.h"
+#include "xsens_driver/xsens_gps_translator.hpp"
+#include "xsens_driver/test_xsens_common.hpp"
 
 using autoware::drivers::xsens_driver::XsensGpsTranslator;
 using autoware::drivers::xsens_driver::MID;

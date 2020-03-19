@@ -18,6 +18,7 @@
 #ifndef XSENS_DRIVER__TEST_XSENS_COMMON_HPP_
 #define XSENS_DRIVER__TEST_XSENS_COMMON_HPP_
 
+#include <vector>
 #include "gtest/gtest.h"
 
 using autoware::drivers::xsens_driver::MID;
@@ -35,7 +36,6 @@ protected:
 
   void xsens_driver_common_test(const std::vector<uint8_t> & data)
   {
-
     const typename TranslatorT::Config cfg{};
     TranslatorT driver(cfg);
     pkt.data = 0xFA;
