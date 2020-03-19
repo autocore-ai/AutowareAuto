@@ -59,8 +59,8 @@ PointCloud2 message.
 
 Any combination of the following two outputs are allowed (except using neither):
 
-1. [PointClusters](@ref PointClusters.msg)
-2. [BoundingBoxArray](@ref BoundingBoxArray.msg)
+1. [PointClusters](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/raw/master/autoware_auto_msgs/msg/PointClusters.msg)
+2. [BoundingBoxArray](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/raw/master/autoware_auto_msgs/msg/BoundingBoxArray.msg)
 
 The former represents the raw clustering output of the object detection algorithm.
 
