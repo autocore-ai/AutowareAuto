@@ -37,6 +37,15 @@
     </inertial>
   </link>
 
+  <!-- Center of Gravity link -->
+  <link name="nav_base"/>
+
+  <joint name="nav_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="nav_base"/>
+    <origin xyz="1.5618 0 0" rpy="0 0 0"/>
+  </joint>
+
   <link name="lidar_front">
     <visual>
       <geometry>
