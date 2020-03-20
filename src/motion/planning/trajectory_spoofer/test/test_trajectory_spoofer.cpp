@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "trajectory_spoofer/trajectory_spoofer.hpp"
+#include <gtest/gtest.h>
+#include <trajectory_spoofer/trajectory_spoofer.hpp>
 
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
@@ -72,7 +72,7 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
 
   num_of_points = 100;  // max points
   length = 2500.0;
-  constexpr float32_t head_rad = 45.0 * M_PI / 180.0; // Start at heading of 45 degrees
+  constexpr float32_t head_rad = 45.0 * M_PI / 180.0;  // Start at heading of 45 degrees
   starting_point.state.heading = TrajectorySpoofer::to_2d_quaternion(head_rad);
   starting_point.state.longitudinal_velocity_mps = 12.5;
 
@@ -143,7 +143,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
 
   num_of_points = 100;  // max points
   radius = 2500.0;
-  constexpr float32_t head_rad = 45.0 * M_PI / 180.0; // Start at heading of 45 degrees
+  constexpr float32_t head_rad = 45.0 * M_PI / 180.0;  // Start at heading of 45 degrees
   starting_point.state.heading = TrajectorySpoofer::to_2d_quaternion(head_rad);
   starting_point.state.longitudinal_velocity_mps = 12.5;
 

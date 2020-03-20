@@ -50,8 +50,8 @@ public:
 private:
   enum class TrajectoryType : uint8_t
   {
-    STRAIGHT=1u,
-    CIRCLE=2u,
+    STRAIGHT = 1u,
+    CIRCLE = 2u,
   };
 
   bool8_t verbose_;

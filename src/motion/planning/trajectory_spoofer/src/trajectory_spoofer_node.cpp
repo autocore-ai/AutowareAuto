@@ -16,6 +16,7 @@
 #include "trajectory_spoofer/trajectory_spoofer.hpp"
 
 #include <memory>
+#include <string>
 
 //lint -e537 NOLINT  // cpplint vs pclint
 
@@ -26,7 +27,6 @@ namespace trajectory_spoofer
 TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & options)
 : Node("trajectory_spoofer", options), verbose_(true)
 {
-
   speed_ramp_on_ = this->declare_parameter("speed_ramp_on", false);
   target_speed_ = static_cast<float32_t>(this->declare_parameter("target_speed", 10.0));
   num_of_points_ = static_cast<int32_t>(this->declare_parameter("num_of_points", 20));
@@ -58,7 +58,6 @@ TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & options
 
 void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
 {
-
   Trajectory traj;
 
   switch (trajectory_type_) {
