@@ -62,6 +62,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${NDT_TEST}
+          test/test_ndt_utils.hpp
+          test/test_ndt_utils.cpp
           test/test_ndt_map.hpp
           test/test_ndt_scan.hpp
           test/test_ndt_map.cpp

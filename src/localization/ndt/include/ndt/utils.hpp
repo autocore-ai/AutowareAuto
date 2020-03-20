@@ -75,7 +75,8 @@ void pose_to_transform(
   RosTransform & transform)
 {
   static_assert(std::is_floating_point<T>::value, "Eigen pose should use floating points");
-  Eigen::Quaternion<T> eig_rot{1.0, 0.0, 0.0, 0.0};
+  Eigen::Quaternion<T> eig_rot;
+  eig_rot.setIdentity();
   eig_rot =
     Eigen::AngleAxis<T>(pose(3), Eigen::Matrix<T, 3, 1>::UnitX()) *
     Eigen::AngleAxis<T>(pose(4), Eigen::Matrix<T, 3, 1>::UnitY()) *
@@ -104,7 +105,8 @@ void pose_to_transform(
   RosPose & ros_pose)
 {
   static_assert(std::is_floating_point<T>::value, "Eigen pose should use floating points");
-  Eigen::Quaternion<T> eig_rot{1.0, 0.0, 0.0, 0.0};
+  Eigen::Quaternion<T> eig_rot;
+  eig_rot.setIdentity();
   eig_rot =
     Eigen::AngleAxis<T>(pose(3), Eigen::Matrix<T, 3, 1>::UnitX()) *
     Eigen::AngleAxis<T>(pose(4), Eigen::Matrix<T, 3, 1>::UnitY()) *
@@ -135,8 +137,7 @@ void transform_to_pose(const RosTransform & transform, EigenPose<T> & pose)
   pose(0) = ros_trans.x;
   pose(1) = ros_trans.y;
   pose(2) = ros_trans.z;
-  // TODO(yunus.caliskan): Validate the reliability of the output of `eulerAngles()`
-  //  by checking the ranges.
+
   const auto rot = eig_rot.matrix().eulerAngles(0, 1, 2);
   pose(3) = rot(0);
   pose(4) = rot(1);
@@ -157,8 +158,7 @@ void transform_to_pose(const RosPose & ros_pose, EigenPose<T> & pose)
   pose(0) = ros_trans.x;
   pose(1) = ros_trans.y;
   pose(2) = ros_trans.z;
-  // TODO(yunus.caliskan): Validate the reliability of the output of `eulerAngles()`
-  //  by checking the ranges.
+
   const auto rot = eig_rot.matrix().eulerAngles(0, 1, 2);
   pose(3) = rot(0);
   pose(4) = rot(1);
