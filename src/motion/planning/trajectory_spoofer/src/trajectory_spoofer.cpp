@@ -71,7 +71,9 @@ float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
   }
 }
 
-Trajectory TrajectorySpoofer::init_trajectory(const VehicleKinematicState & starting_state, TrajectoryPoint & first_point)
+Trajectory TrajectorySpoofer::init_trajectory(
+  const VehicleKinematicState & starting_state,
+  TrajectoryPoint & first_point)
 {
   Trajectory trajectory;
   trajectory.header = starting_state.header;
@@ -92,7 +94,7 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
   TrajectoryPoint pt;
   Trajectory straight_trajectory = init_trajectory(starting_state, pt);
   straight_trajectory.points[0].longitudinal_velocity_mps = target_speed_;
-  
+
 
   const auto yaw_angle = to_yaw_angle(starting_state.state.heading);
   const float64_t seg_len = length / static_cast<float64_t>(num_of_points - 1);
@@ -119,7 +121,7 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
   TrajectoryPoint pt;
   Trajectory circular_trajectory = init_trajectory(starting_state, pt);
   circular_trajectory.points[0].longitudinal_velocity_mps = target_speed_;
-  
+
 
   // Number of segments = number of points - 1
   const float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
@@ -178,7 +180,7 @@ Trajectory TrajectorySpoofer::spoof_curved_trajectory(
 {
   TrajectoryPoint pt;
   Trajectory curved_trajectory = init_trajectory(starting_state, pt);
-  
+
 
   // TODO(josh.whitley): Populate
 

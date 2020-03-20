@@ -51,9 +51,10 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
   // Have to use floating point values due to rounding errors
   // in the calculation of nanosecond times in TrajectorySpoofer
-  float64_t end_time = 
-    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
+  float64_t end_time =
+    (static_cast<float64_t>(
+      time_utils::from_message(starting_point.state.time_from_start).count()) /
+    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   // Initial heading of 0 should mean travelling straight along the X axis
   ASSERT_EQ(traj.points.size(), num_of_points);
@@ -82,8 +83,9 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   last_point = traj.points.back();
   last_time = static_cast<float64_t>(
     time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
-  end_time = 
-    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
+  end_time =
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count())
+    /
     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   // Calc x and y of last point
@@ -123,9 +125,10 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   // Chord distance * number of segments
   float64_t length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
-  float64_t end_time = 
-    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
+  float64_t end_time =
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count())
+    /
+    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   ASSERT_EQ(traj.points.size(), num_of_points);
   ASSERT_FLOAT_EQ(last_time, end_time);
@@ -153,9 +156,10 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   // Chord distance * number of segments
   length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
-  end_time = 
-    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count()) /
-     NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
+  end_time =
+    (static_cast<float64_t>(time_utils::from_message(starting_point.state.time_from_start).count())
+    /
+    NANO_IN_SEC) + (length / starting_point.state.longitudinal_velocity_mps);
 
   ASSERT_EQ(traj.points.size(), num_of_points);
   ASSERT_FLOAT_EQ(last_time, end_time);

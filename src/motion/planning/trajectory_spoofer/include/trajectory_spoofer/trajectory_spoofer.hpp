@@ -60,7 +60,9 @@ class TrajectorySpoofer
 
 private:
   std::chrono::nanoseconds get_travel_time(float32_t dist, float32_t speed);
-  Trajectory init_trajectory(const VehicleKinematicState & starting_state, TrajectoryPoint & first_point);
+  Trajectory init_trajectory(
+    const VehicleKinematicState & starting_state,
+    TrajectoryPoint & first_point);
 
   float32_t target_speed_;
 
