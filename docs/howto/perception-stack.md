@@ -32,7 +32,7 @@ ADE Terminal 3 - start the `velodyne_node`:
 $ ade enter
 ade$ cd AutowareAuto
 ade$ source install/setup.bash
-ade$ ros2 run velodyne_node velodyne_cloud_node_exe __params:=/home/"${USER}"/AutowareAuto/src/drivers/velodyne_node/param/vlp16_test.param.yaml
+ade$ ros2 run velodyne_node velodyne_cloud_node_exe __ns:=/lidar_front __params:=/home/"${USER}"/AutowareAuto/src/drivers/velodyne_node/param/vlp16_test.param.yaml
 ```
 
 \note
