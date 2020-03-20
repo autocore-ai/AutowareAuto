@@ -18,7 +18,11 @@ from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch_ros import actions
+
 import os
 
 
@@ -29,18 +33,55 @@ def generate_launch_description():
     More details about what is included can
     be found at https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/24.
     """
+    avp_demo_pkg_prefix = get_package_share_directory('autoware_auto_avp_demo')
+    rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms2.rviz')
     lgsvl_pkg_prefix = get_package_share_directory('lgsvl_interface')
     lgsvl_param_file = os.path.join(lgsvl_pkg_prefix, 'lgsvl.param.yaml')
+    urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
+    urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
+    ndt_nodes_pkg_prefix = get_package_share_directory('ndt_nodes')
 
     return LaunchDescription([
-        # LGSVL Interface
+        # Arguments
         DeclareLaunchArgument(
             'lgsvl_interface_param',
             default_value=lgsvl_param_file,
             description='Path to config file for lgsvl interface'
         ),
+        DeclareLaunchArgument(
+            'with_rviz',
+            default_value='True',
+            description='Launch RVIZ2 in addition to other nodes'
+        ),
+        # LGSVL Interface
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([lgsvl_pkg_prefix, '/lgsvl.launch.py']),
-            launch_arguments={'lgsvl_interface_param': lgsvl_param_file}.items(),
+            launch_arguments={
+                'lgsvl_interface_param': LaunchConfiguration('lgsvl_interface_param')
+            }.items(),
+        ),
+        # URDF Publishing
+        actions.Node(
+            package='robot_state_publisher',
+            node_executable='robot_state_publisher',
+            node_name='robot_state_publisher',
+            arguments=[str(urdf_path)]
+        ),
+        # RVIZ2
+        actions.Node(
+            package='rviz2',
+            node_executable='rviz2',
+            node_name='rviz2',
+            arguments=['-d', str(rviz_cfg_path)],
+            condition=IfCondition(LaunchConfiguration('with_rviz'))
+        ),
+        # pcd map provider from ndt_nodes
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                [
+                    os.path.join(ndt_nodes_pkg_prefix, 'launch'),
+                    '/map_provider.launch.py'
+                ]
+            ),
         ),
     ])
