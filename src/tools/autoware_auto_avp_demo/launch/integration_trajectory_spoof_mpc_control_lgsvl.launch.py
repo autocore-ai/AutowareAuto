@@ -1,5 +1,4 @@
-# Copyright 2020 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+# Copyright 2020 The Autoware Foundation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,68 +11,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Testing of mpc_controller in LGSVL simulation usign trajectory_spoofer."""
+
 import launch
-import launch_ros.actions
-import launch.substitutions
 import launch.launch_description_sources
+import launch.substitutions
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument 
+
+import launch_ros.actions
+
 from ros2launch.api import get_share_file_path_from_package
 
 
-# def get_path(package_name, param_file):
-#     return ros2launch.api.get_share_file_path_from_package(
-#         package_name=package_name,
-#         file_name=param_file
-#     )
-
-
 def generate_launch_description():
+    """
+    Launch nodes with params to test mpc_controller in simulation.
 
+    mpc_controller + LGSVL + trajectory_spoofer + lexus_rx_450h_description
+    """
     # --------------------------------- Params -------------------------------
 
-    # In combination 'raw_command', 'basic_command' and 'high_level_command' control 
-    # in what mode of control comands to operate in, 
-    # only one of them can be active at a time with a topics name 
-    # other should be blank/null which is achieved by used ="''"
+    # Based on value of 'raw_command', 'basic_command'
+    # and 'high_level_command' control mode is selected.
+    # Only one of them can be active at a time with a  valid topics name
+    # rest should be blank/null which is achieved by using ="''"
+
     high_level_command_param = DeclareLaunchArgument(
-        'high_level_command', 
-        default_value="''", # use "high_level_command" or "''" 
+        'high_level_command',
+        default_value="''",  # use "high_level_command" or "''"
         description='high_level_command control mode topic name')
 
     basic_command_param = DeclareLaunchArgument(
-        'basic_command', 
-        default_value="vehicle_command", # use "vehicle_command" or "''" 
+        'basic_command',
+        default_value='vehicle_command',  # use "vehicle_command" or "''"
         description='basic_command control mode topic name')
 
     raw_command_param = DeclareLaunchArgument(
-        'raw_command', 
-        default_value="''",  # use "raw_command" or "''" 
+        'raw_command',
+        default_value="''",  # use "raw_command" or "''"
         description='raw_command control mode topic name')
-    
+
     # Default lgsvl_interface params
     lgsvl_interface_param = DeclareLaunchArgument(
         'lgsvl_interface_param',
-        default_value=[ 
-            get_share_file_path_from_package(package_name='lgsvl_interface',file_name='lgsvl.param.yaml')
+        default_value=[
+            get_share_file_path_from_package(
+                package_name='lgsvl_interface',
+                file_name='lgsvl.param.yaml')
         ],
         description='Path to config file for lgsvl interface')
 
     # -------------------------------- Nodes-----------------------------------
 
-    ######################
-    ### mpc_controller ###
-    ######################
+    # mpc_controller
     mpc_controller_node = launch_ros.actions.Node(
         package="mpc_controller_node",
         node_executable="mpc_controller_node_exe",
         node_name="mpc_controller",
-        parameters=[get_share_file_path_from_package(package_name='mpc_controller_node',file_name='defaults.yaml'),
+        parameters=[get_share_file_path_from_package(
+            package_name='mpc_controller_node',
+            file_name='defaults.yaml'),
             # overwrite parameters from yaml here
             {
-                "command_topic" :  "vehicle_command",
-                "debug_trajectory_publish_period_ms": 100, 
-                #"state_topic" : "debug_state",
+                "command_topic": "vehicle_command",
+                "debug_trajectory_publish_period_ms": 100,
+                # "state_topic" : "debug_state",
                 "controller.interpolation": True,
                 "controller.sample_tolerance_ms": 20,
                 "controller.control_lookahead_ms": 100,
@@ -102,9 +106,7 @@ def generate_launch_description():
         output='screen',
     )
 
-    ###########################
-    ### trajectory_spoofer ###
-    ###########################
+    # trajectory_spoofer
     trajectory_spoofer_node = launch_ros.actions.Node(
         package="trajectory_spoofer",
         node_executable="trajectory_spoofer_exe",
@@ -114,20 +116,21 @@ def generate_launch_description():
                 "speed_ramp_on": False,
                 "target_speed": 3.0,
                 "num_of_points": 50,
-                "trajectory_type": 'straight', #straight or circle
-                "length": 10.0, # only used for straight
-                "radius": 21.0, # only used for circle
+                "trajectory_type": 'straight',  # straight or circle
+                "length": 10.0,  # only used for straight
+                "radius": 21.0,  # only used for circle
             }
         ],
         output='screen',
     )
 
-    ###########################
-    ### LGSVL interface     ###
-    ###########################
-    lgsvl_launch_file_path = get_share_file_path_from_package(package_name='lgsvl_interface',file_name='lgsvl.launch.py')
+    # LGSVL interface
+    lgsvl_launch_file_path = get_share_file_path_from_package(
+        package_name='lgsvl_interface',
+        file_name='lgsvl.launch.py')
     lgsvl = launch.actions.IncludeLaunchDescription(
-        launch.launch_description_sources.PythonLaunchDescriptionSource(lgsvl_launch_file_path),
+        launch.launch_description_sources.PythonLaunchDescriptionSource(
+            lgsvl_launch_file_path),
         launch_arguments={
             "lgsvl_interface_param": LaunchConfiguration("lgsvl_interface_param"),
             "high_level_command": LaunchConfiguration('high_level_command'),
@@ -136,17 +139,15 @@ def generate_launch_description():
         }.items()
     )
 
- 
-    #######################################
-    ### lexus_rx_450h_description       ###
-    #######################################
-    lexus_rx_450h_urdf_path = get_share_file_path_from_package(package_name='lexus_rx_450h_description',file_name='lexus_rx_450h.urdf')
+    # lexus_rx_450h_description
+    lexus_rx_450h_urdf_path = get_share_file_path_from_package(
+        package_name='lexus_rx_450h_description',
+        file_name='lexus_rx_450h.urdf')
     lexus_rx_450h_description_node = launch_ros.actions.Node(
             package='robot_state_publisher',
             node_executable='robot_state_publisher',
             node_name='robot_state_publisher',
             arguments=[str(lexus_rx_450h_urdf_path)])
-    
 
     return launch.LaunchDescription([
       high_level_command_param,
