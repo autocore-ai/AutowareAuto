@@ -18,6 +18,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <ndt/ndt_localizer.hpp>
 #include <optimization/optimizer.hpp>
+#include "test_ndt_utils.hpp"
 
 namespace autoware
 {
@@ -35,8 +36,8 @@ class P2DLocalizerTest : public OptimizationTestContext, public ::testing::Test
 public:
   P2DLocalizerTest()
   : m_localizer_config{
-      P2DNDTOptimizationConfig{0.55},
-      NewtonOptimizerOptions{50UL, 1e-4, 1e-4, 1e-4},
+      P2DNDTOptimizationConfig{0.45},
+      NewtonOptimizerOptions{5U, 0.0002, 0.0002, 1e-4},
       m_grid_config,
       m_downsampled_cloud.width,
       m_guess_time_tol} {}
@@ -60,11 +61,11 @@ protected:
 
   const std::chrono::milliseconds m_guess_time_tol{10};
   P2DNDTLocalizerConfig<NewtonOptimizerOptions> m_localizer_config;
-  float32_t m_step_size{0.01};
+  float32_t m_step_size{0.12};
 };
 
 class P2DLocalizerParameterTest : public P2DLocalizerTest,
-  public ::testing::WithParamInterface<OptTestParams> {};
+  public ::testing::WithParamInterface<PoseParams> {};
 
 
 TEST_P(P2DLocalizerParameterTest, sanity_test) {
@@ -72,8 +73,10 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   const auto map_time = std::chrono::system_clock::now();
   const auto scan_time = std::chrono::system_clock::now() + std::chrono::seconds(10);
 
+  constexpr auto translation_tol = 1e-2;
+  constexpr auto rotation_tol = 1e-2;
   const auto & param = GetParam();
-  EigenPose<Real> diff = param.diff;
+  EigenPose<Real> diff = param.pose;
   geometry_msgs::msg::TransformStamped diff_tf2;
 
   EigenPose<Real> pose_out;
@@ -110,39 +113,19 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
 
   transform_adapters::transform_to_pose(ros_pose_out.pose.pose, pose_out);
 
-  auto pose_same_direction = [](const auto & p1, const auto & p2, double eps = 1e-2) {
-      const Eigen::Vector3d t1 = p1.head(3);
-      const Eigen::Vector3d r1 = p1.tail(3);
-      const Eigen::Vector3d t2 = p2.head(3);
-      const Eigen::Vector3d r2 = p2.tail(3);
-      const Eigen::Vector3d cross_vec = t1.cross(t2);
-      const double dot = t1.dot(t2);
-      EXPECT_TRUE(cross_vec.isZero(eps));
-      EXPECT_GT(dot, 0.0);
-      if (!r1.isZero(eps) && !r2.isZero(eps)) {
-        EXPECT_TRUE(r1.isApprox(r2, eps));
-      }
-    };
-
-  if (!param.is_large) {
-    EXPECT_TRUE(pose_out.isApprox(-diff, 0.1));
-  } else {
-    pose_same_direction(pose_out, -diff);
-  }
+  EigenPose<Real> neg_diff = -diff;
+  is_pose_approx(pose_out, neg_diff, translation_tol, rotation_tol);
 
   std::cout << "The scan is transformed away from the map by: \n" << diff << std::endl;
   std::cout << "The estimated pose difference after \n" << pose_out << std::endl;
 }
 
-// TODO(yunus.caliskan): Use a different param struct than the OptTestParams
 INSTANTIATE_TEST_CASE_P(sanity_test, P2DLocalizerParameterTest,
   ::testing::Values(
-    OptTestParams{0.0, 0.65, 0.0, 0.0, 0.0, 0.0, true, false},
-    OptTestParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0, true, true},
-    OptTestParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0, false, false}
-    // TODO(yunus.caliskan): Following test fails because eigen based double conversion
-    // using the functions in `transform_adapters` namespace results in the change of angle ranges.
-//    OptTestParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0, false, false}
+    PoseParams{0.0, 0.65, 0.0, 0.0, 0.0, 0.0},
+    PoseParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0},
+    PoseParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0},
+    PoseParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0}
 ),);
 
 

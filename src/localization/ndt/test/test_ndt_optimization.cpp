@@ -92,6 +92,9 @@ TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
 
 TEST_P(P2DOptimizationValidationTest, sanity_test) {
   using PclCloud = pcl::PointCloud<pcl::PointXYZ>;
+  constexpr auto translation_tol = 1e-2;
+  constexpr auto rotation_tol = 1e-2;
+
   const auto & param = GetParam();
   EigenPose<Real> diff = param.diff;
 
@@ -113,8 +116,8 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
   decltype(guess) pcl_guess;
   guess.setZero();
   pcl_guess.setZero();
-  const auto step_length = 0.05;
-  const auto num_iters = 50U;
+  const auto step_length = 0.12;
+  const auto num_iters = 5U;
   {
     P2DNDTScan scan(translated_cloud, translated_cloud.width);
     P2DNDTOptimizationProblem problem{scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
@@ -135,29 +138,8 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     }
   }
 
-  // Check that the estimated translation has the same direction with the actual
-  // required translation
-  // (a and b are in same direction if `a x b = 0` and `a * b > 0`)
-  auto pose_same_direction = [](const auto & p1, const auto & p2, double eps = 1e-2) {
-      const Eigen::Vector3d t1 = p1.head(3);
-      const Eigen::Vector3d r1 = p1.tail(3);
-      const Eigen::Vector3d t2 = p2.head(3);
-      const Eigen::Vector3d r2 = p2.tail(3);
-      const Eigen::Vector3d cross_vec = t1.cross(t2);
-      const double dot = t1.dot(t2);
-      EXPECT_TRUE(cross_vec.isZero(eps));
-      EXPECT_GT(dot, 0.0);
-      if (!r1.isZero(eps) && !r2.isZero(eps)) {
-        EXPECT_TRUE(r1.isApprox(r2, eps));
-      }
-    };
-
-  // Compare translation results from algorithms
-  if (!param.is_large) {
-    EXPECT_TRUE(guess.isApprox(-diff, 0.1));
-  } else {
-    pose_same_direction(guess, -diff);
-  }
+  decltype(diff) neg_diff = -diff;
+  is_pose_approx(guess, neg_diff, translation_tol, rotation_tol);
 
   std::cout << "The scan is transformed away from the map by: \n" << diff << std::endl;
   std::cout << "The estimated pose difference after " << num_iters << " iterations with " <<
@@ -182,7 +164,8 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     pcl_guess.head(3) = init_guess.translation().cast<double>();
     pcl_guess.tail(3) = init_guess.rotation().eulerAngles(0, 1, 2).cast<double>();
 
-    pose_same_direction(pcl_guess, -diff, 0.15);
+    // Using high error tolerance since two different implementations may vary in result greatly.
+    is_pose_approx(pcl_guess, neg_diff, 0.2, 0.1);
 
     std::cout << "PCL implementation's estimated pose difference: \n" << pcl_guess << std::endl;
   }
