@@ -63,8 +63,9 @@ autoware_install(
 )
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
-target_compile_options(${CLOUD_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
-target_compile_options(${CLOUD_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion)
+# -Wno-ignored-qualifiers is temp fix for udp_driver bug
+target_compile_options(${CLOUD_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)
+target_compile_options(${CLOUD_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)
 
 # Ament Exporting
 ament_export_dependencies("sensor_msgs" "velodyne_driver" "udp_driver")
