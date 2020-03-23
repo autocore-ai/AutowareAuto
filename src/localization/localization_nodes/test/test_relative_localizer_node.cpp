@@ -264,23 +264,23 @@ MockRelativeLocalizer::MockRelativeLocalizer(
   std::shared_ptr<TestObservation> map_ptr)
 : m_observation_tracking_ptr{obs_ptr}, m_map_tracking_ptr{map_ptr} {}
 
-PoseWithCovarianceStamped MockRelativeLocalizer::register_measurement_impl(
-  const TestObservation & msg, const Transform & transform_initial)
+MockRelativeLocalizer::RegistrationSummary MockRelativeLocalizer::register_measurement_impl(
+  const TestObservation & msg, const Transform & transform_initial,
+  PoseWithCovarianceStamped & pose_out)
 {
   if (get_msg_id(msg) == TEST_ERROR_ID) {
     throw TestRegistrationException{};
   }
-  PoseWithCovarianceStamped pose;
   // The resulting frame id should contain observation's frame + initial guess' frame ID
   // So the result should be: obs_frame + obs_frame + map_frame
-  pose.header.frame_id = msg.header.frame_id + transform_initial.header.frame_id;
-  set_msg_id(pose, get_msg_id(msg));
+  pose_out.header.frame_id = msg.header.frame_id + transform_initial.header.frame_id;
+  set_msg_id(pose_out, get_msg_id(msg));
 
   // Update the tracking pointer for notifying the test.
   if (m_observation_tracking_ptr) {
     *m_observation_tracking_ptr = msg;
   }
-  return pose;
+  return RegistrationSummary{};
 }
 
 void MockRelativeLocalizer::set_map_impl(const TestMap & msg)

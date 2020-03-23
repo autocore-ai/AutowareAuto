@@ -42,7 +42,7 @@ using Transform = geometry_msgs::msg::TransformStamped;
 constexpr int TEST_ERROR_ID = -9999;
 
 class MockRelativeLocalizer : public localization_common::RelativeLocalizerBase<TestObservation,
-    TestMap>
+    TestMap, int>
 {
 public:
   MockRelativeLocalizer(
@@ -51,8 +51,10 @@ public:
   // constructor when the tracking is not needed.
   MockRelativeLocalizer() = default;
 
-  PoseWithCovarianceStamped register_measurement_impl(
-    const TestObservation & msg, const Transform & transform_initial) override;
+  RegistrationSummary register_measurement_impl(
+    const TestObservation & msg,
+    const Transform & transform_initial, PoseWithCovarianceStamped & pose_out) override;
+
   void set_map_impl(const TestMap & msg) override;
 
   const std::string & map_frame_id() const noexcept override;

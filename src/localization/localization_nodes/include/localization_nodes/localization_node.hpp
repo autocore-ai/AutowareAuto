@@ -64,11 +64,13 @@ template<typename ObservationMsgT, typename MapMsgT, typename LocalizerT, typena
 class LOCALIZATION_NODES_PUBLIC RelativeLocalizerNode : public rclcpp::Node
 {
 public:
-  using LocalizerBase = localization_common::RelativeLocalizerBase<ObservationMsgT, MapMsgT>;
+  using LocalizerBase = localization_common::RelativeLocalizerBase<ObservationMsgT, MapMsgT,
+      typename LocalizerT::RegistrationSummary>;
   using LocalizerBasePtr = std::unique_ptr<LocalizerBase>;
   using Cloud = sensor_msgs::msg::PointCloud2;
   using PoseWithCovarianceStamped = typename LocalizerBase::PoseWithCovarianceStamped;
-
+  using TransformStamped = typename LocalizerBase::Transform;
+  using RegistrationSummary = typename LocalizerT::RegistrationSummary;
 
   /// Constructor
   /// \param node_name Name of node
@@ -182,6 +184,32 @@ protected:
       "ignoring the observation.");
   }
 
+  /// Default behavior when hte pose output is evaluated to be invalid.
+  /// \param pose Pose output.
+  virtual void on_invalid_output(PoseWithCovarianceStamped & pose)
+  {
+    (void) pose;
+    RCLCPP_WARN(get_logger(), "Relative localizer has an invalid pose estimate. "
+      "The result is ignored.");
+  }
+
+
+  /// Validate the pose estimate given the registration summary and the initial guess.
+  /// This function by default returns true.
+  /// \param summary Registration summary.
+  /// \param pose Pose estimate.
+  /// \param guess Initial guess.
+  /// \return True if the estimate is valid and can be published.
+  virtual bool validate_output(
+    const RegistrationSummary & summary,
+    const PoseWithCovarianceStamped & pose, const TransformStamped & guess)
+  {
+    (void) summary;
+    (void) pose;
+    (void) guess;
+    return true;
+  }
+
 private:
   /// Callback that registers each received observation and outputs the result.
   /// \param msg_ptr Pointer to the observation message.
@@ -195,12 +223,20 @@ private:
         const auto & map_frame = m_localizer_ptr->map_frame_id();
         const auto initial_guess =
           m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
-        const auto pose_out = m_localizer_ptr->register_measurement(*msg_ptr, initial_guess);
-        m_pose_publisher->publish(pose_out);
-        // This is to be used when no state estimator or alternative source of
-        // localization is available.
-        if (m_tf_publisher) {
-          publish_tf(pose_out);
+
+        PoseWithCovarianceStamped pose_out;
+        const auto summary =
+          m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, pose_out);
+
+        if (validate_output(summary, pose_out, initial_guess)) {
+          m_pose_publisher->publish(pose_out);
+          // This is to be used when no state estimator or alternative source of
+          // localization is available.
+          if (m_tf_publisher) {
+            publish_tf(pose_out);
+          }
+        } else {
+          on_invalid_output(pose_out);
         }
       } catch (...) {
         on_bad_registration(std::current_exception());
