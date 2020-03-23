@@ -20,6 +20,8 @@
 #include <Eigen/Geometry>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <Eigen/Eigenvalues>
+#include <limits>
 
 namespace autoware
 {
@@ -27,6 +29,55 @@ namespace localization
 {
 namespace ndt
 {
+
+/// This function will check if the covariance is valid based on its eigenvalues. If the covariance
+/// is valid, eigen values smaller than a fraction of the biggest eigen value will be capped to the
+/// threshold. Covariance then will be reconstructed from the modified set of eigen values and
+/// vectors. This should result in increased numerical stability as stated in [Magnusson 2009].
+/// If the covariance is invalid, it will not be updated and false will be returned.
+/// \tparam Derived Deduced Eigen Matrix type.
+/// \param covariance [in, out] Covariance matrix to get stabilized.
+/// \param scaling_factor [in] The ratio between the max. eigen value and the minimum
+/// allowed eigenvalue. Default value is 0.01 as suggested in [Magnusson 2009], page 60.
+/// \return True if the covariance matrix is valid.
+template<typename Derived>
+bool try_stabilize_covariance(
+  Eigen::MatrixBase<Derived> & covariance,
+  typename Derived::PlainMatrix::Scalar scaling_factor = 0.01)
+{
+  using CovMatrixT = typename Derived::PlainMatrix;
+  using ScalarT = typename CovMatrixT::Scalar;
+  using IndexT = typename CovMatrixT::Index;
+  constexpr auto TOL = std::numeric_limits<ScalarT>::epsilon();
+  Eigen::SelfAdjointEigenSolver<CovMatrixT> solver;
+  solver.compute(covariance);
+
+  CovMatrixT evecs = solver.eigenvectors();
+  typename decltype(solver)::RealVectorType evals = solver.eigenvalues();
+  // Cap the minimum eigen values to scale times the largest eigen value.
+  const ScalarT max_e_val = *std::max_element(evals.data(), evals.data() + evals.size());
+  const ScalarT min_e_val = max_e_val * scaling_factor;
+  if (min_e_val < TOL) {
+    return false;
+  }
+  auto stabilized = false;
+  for (auto i = IndexT{0}; i < evals.size(); ++i) {
+    ScalarT & e_val = evals(i);
+    if (e_val < TOL) {
+      // Covariance is not full rank.
+      return false;
+    }
+    if (e_val < min_e_val) {
+      e_val = min_e_val;
+      stabilized = true;
+    }
+  }
+  if (stabilized) {
+    covariance = evecs * evals.asDiagonal() * evecs.inverse();
+  }
+  return true;
+}
+
 template<typename T>
 using EigenPose = Eigen::Matrix<T, 6U, 1U>;
 template<typename T>
@@ -75,7 +126,7 @@ void pose_to_transform(
   RosTransform & transform)
 {
   static_assert(std::is_floating_point<T>::value, "Eigen pose should use floating points");
-  Eigen::Quaternion<T> eig_rot;
+  Eigen::Quaternion<T> eig_rot{Eigen::Quaternion<T>{}.setIdentity()};
   eig_rot.setIdentity();
   eig_rot =
     Eigen::AngleAxis<T>(pose(3), Eigen::Matrix<T, 3, 1>::UnitX()) *
@@ -105,8 +156,7 @@ void pose_to_transform(
   RosPose & ros_pose)
 {
   static_assert(std::is_floating_point<T>::value, "Eigen pose should use floating points");
-  Eigen::Quaternion<T> eig_rot;
-  eig_rot.setIdentity();
+  Eigen::Quaternion<T> eig_rot{Eigen::Quaternion<T>{}.setIdentity()};
   eig_rot =
     Eigen::AngleAxis<T>(pose(3), Eigen::Matrix<T, 3, 1>::UnitX()) *
     Eigen::AngleAxis<T>(pose(4), Eigen::Matrix<T, 3, 1>::UnitY()) *

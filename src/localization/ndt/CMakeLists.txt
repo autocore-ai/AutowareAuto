@@ -71,6 +71,7 @@ if(BUILD_TESTING)
           test/test_ndt_optimization.hpp
           test/test_ndt_optimization.cpp
           test/test_ndt_localizer.cpp)
+
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
 
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})

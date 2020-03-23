@@ -14,8 +14,7 @@
 // limitations under the License.
 
 #include <ndt/ndt_voxel.hpp>
-#include <Eigen/LU>
-#include <limits>
+#include <ndt/utils.hpp>
 
 namespace autoware
 {
@@ -91,11 +90,15 @@ StaticNDTVoxel::StaticNDTVoxel()
 StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & covariance)
 : m_centroid{centroid}, m_covariance{covariance}, m_occupied{true}
 {
-  bool invertible{false};
-  m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
-  if (!invertible) {
+  if (try_stabilize_covariance(m_covariance)) {
+    bool invertible{false};
+    m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
+    if (!invertible) {
+      m_occupied = false;
+      // TODO(yunus.caliskan): Move this to the dynamic voxel in #216
+    }
+  } else {
     m_occupied = false;
-    // TODO(yunus.caliskan): Move this to the dynamic voxel in #216
   }
 }
 

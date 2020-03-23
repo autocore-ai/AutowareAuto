@@ -48,6 +48,15 @@ struct PoseParams
   EigenPose<Real> pose;
 };
 
+struct Cov3x3Param
+{
+  using CovMatrix = Eigen::Matrix<Real, 3, 3>;
+  Cov3x3Param(Real e1, Real e2, Real e3, bool valid);
+  Real e1, e2, e3;
+  CovMatrix cov;
+  bool valid{false};
+};
+
 template<typename VectorT>
 inline auto _x(VectorT & v)->decltype(v.x) &
 {

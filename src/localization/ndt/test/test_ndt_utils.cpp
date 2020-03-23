@@ -18,6 +18,7 @@
 #include "test_ndt_utils.hpp"
 #include <random>
 
+#include <Eigen/Core>
 namespace autoware
 {
 namespace localization
@@ -46,8 +47,19 @@ PoseParams::PoseParams(double translation_range, double rotation_range)
   }
 }
 
+Cov3x3Param::Cov3x3Param(Real e1_, Real e2_, Real e3_, bool valid_)
+: e1{e1_}, e2{e2_}, e3{e3_}, valid{valid_}
+{
+  Eigen::Vector3d e_vals{e1, e2, e3};
+  // Fixed diagonal matrix as the eigen vectors for simplicity.
+  Eigen::Vector3d e_vec_scales{2, 7, 13};
+  CovMatrix e_vecs = e_vec_scales.asDiagonal();
+  cov = e_vecs * e_vals.asDiagonal() * e_vecs.inverse();
+}
 
 class TestTransformAdapters : public ::testing::TestWithParam<PoseParams> {};
+
+class CovarianceStabilityTest : public ::testing::TestWithParam<Cov3x3Param> {};
 
 TEST_P(TestTransformAdapters, pose_to_transform) {
   const EigenPose<Real> pose = GetParam().pose;
@@ -120,6 +132,44 @@ INSTANTIATE_TEST_CASE_P(fuzzed_tests, TestTransformAdapters,
     PoseParams{0.1, 50.0},
     PoseParams{100.0, 0.005},
     PoseParams{25.5, 4.5}
+));
+
+TEST_P(CovarianceStabilityTest, basic) {
+  Cov3x3Param::CovMatrix covariance = GetParam().cov;
+  std::vector<Real> e_vals{GetParam().e1, GetParam().e2, GetParam().e3};
+  const auto scale = 0.01;
+  std::vector<Real> filtered_evals;
+  auto min_e_val = *std::max_element(e_vals.begin(), e_vals.end()) * scale;
+  std::transform(e_vals.begin(), e_vals.end(), std::back_inserter(filtered_evals),
+    [min_e_val](Real & e) {return e < min_e_val ? min_e_val : e;});
+
+  const auto valid = GetParam().valid;
+
+  EXPECT_EQ(try_stabilize_covariance(covariance, scale), valid);
+
+  if (valid) {
+    Eigen::SelfAdjointEigenSolver<Cov3x3Param::CovMatrix> solver;
+    solver.compute(covariance);
+    Eigen::Vector3d stable_e_vals = solver.eigenvalues();
+
+    std::sort(filtered_evals.begin(), filtered_evals.end());
+    std::sort(stable_e_vals.data(), stable_e_vals.data() + stable_e_vals.size());
+
+    for (auto i = 0; i < filtered_evals.size(); ++i) {
+      EXPECT_FLOAT_EQ(filtered_evals[i], stable_e_vals(i));
+    }
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(basic, CovarianceStabilityTest,
+  ::testing::Values(
+    Cov3x3Param(1e-2, 65.0, 24, true),
+    Cov3x3Param(-12., 24., 65., false),
+    Cov3x3Param(-12., -24., -65., false),
+    Cov3x3Param(0.0, 0.0, 0.0, false),
+    Cov3x3Param(1.0, 1.0, 0.0, false),
+    Cov3x3Param(1e-2, 1e-3, 65, true),
+    Cov3x3Param(1e-2, 1e-3, 1e-15, true)
 ));
 
 }  // namespace ndt
