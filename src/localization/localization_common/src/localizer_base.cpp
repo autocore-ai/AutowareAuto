@@ -14,3 +14,23 @@
 // limitations under the License.
 
 #include <localization_common/localizer_base.hpp>
+
+namespace autoware
+{
+namespace localization
+{
+namespace localization_common
+{
+
+OptimizedRegistrationSummary::OptimizedRegistrationSummary(const OptimizationSummary & opt_summary)
+: m_optimization_summary{opt_summary} {}
+
+OptimizedRegistrationSummary::OptimizationSummary
+OptimizedRegistrationSummary::optimization_summary() const
+{
+  return m_optimization_summary;
+}
+
+}  // namespace localization_common
+}  // namespace localization
+}  // namespace autoware

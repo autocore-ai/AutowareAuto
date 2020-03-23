@@ -21,6 +21,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <localization_common/initialization.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <optimization/optimizer_options.hpp>
 #include <string>
 
 namespace autoware
@@ -30,30 +31,49 @@ namespace localization
 namespace localization_common
 {
 using Real = double;
+
+/// Basic Registration Summary for localizers using an optimizer.
+/// It only wraps the optimization summary of the optimizer.
+class LOCALIZATION_COMMON_PUBLIC OptimizedRegistrationSummary
+{
+public:
+  using OptimizationSummary = common::optimization::OptimizationSummary;
+  explicit OptimizedRegistrationSummary(const OptimizationSummary & opt_summary);
+
+  /// Get optimization summary.
+  OptimizationSummary optimization_summary() const;
+
+private:
+  OptimizationSummary m_optimization_summary;
+};
+
 /// The base class for relative localizers.
 /// \tparam InputMsgT Message type that will be registered against a map.
 /// \tparam MapMsgT Map type.
-template<typename InputMsgT, typename MapMsgT>
+/// \tparam RegistrationSummaryT Struct that contains the registration summary.
+template<typename InputMsgT, typename MapMsgT, typename RegistrationSummaryT>
 class LOCALIZATION_COMMON_PUBLIC RelativeLocalizerBase
 {
 public:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using Transform = geometry_msgs::msg::TransformStamped;
-
+  using RegistrationSummary = RegistrationSummaryT;
   /// Registers a measurement to the current map and returns the
   /// estimated pose of the vehicle and its validity.
   /// \param[in] msg Measurement message to register.
   /// \param[in] transform_initial Initial guess of the pose to initialize the localizer with
   /// in iterative processes like solving optimization problems.
-  /// \return Resulting pose estimate after registration.
+  /// \param[out] pose_out Reference to the resulting pose estimate after registration.
+  /// \return Registration summary. This is implementation defined.
   /// \throws If the result is invalid and cannot be used. Defined in the implementation.
-  PoseWithCovarianceStamped register_measurement(
-    const InputMsgT & msg, const Transform & transform_initial)
+  RegistrationSummaryT register_measurement(
+    const InputMsgT & msg, const Transform & transform_initial,
+    PoseWithCovarianceStamped & pose_out)
   {
     if (!m_map_valid) {
       on_register_without_map();
     }
-    return register_measurement_impl(msg, transform_initial);
+    return register_measurement_impl(msg, transform_initial, pose_out);
   }
 
   /// Set map.
@@ -95,8 +115,9 @@ protected:
   }
 
   /// `register_measurement(...)` implementation.
-  virtual PoseWithCovarianceStamped register_measurement_impl(
-    const InputMsgT & msg, const Transform & transform_initial) = 0;
+  virtual RegistrationSummaryT register_measurement_impl(
+    const InputMsgT & msg,
+    const Transform & transform_initial, PoseWithCovarianceStamped & pose_out) = 0;
 
   /// Set current map as valid.
   void set_map_valid() noexcept

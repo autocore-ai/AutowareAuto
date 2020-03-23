@@ -48,20 +48,20 @@ protected:
 
 TEST_F(TestRelativeLocalizerBase, basic_io) {
   TestLocalizer localizer;
-
+  TestLocalizer::PoseWithCovarianceStamped dummy_pose;
   ASSERT_EQ(localizer.map_frame_id(), "");
 
   // no map is set yet.
   EXPECT_FALSE(localizer.map_valid());
   // Can't register without a map set.
-  EXPECT_THROW(localizer.register_measurement(0, m_init), std::logic_error);
+  EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose), std::logic_error);
 
   EXPECT_NO_THROW(localizer.set_map(m_map_id));
   EXPECT_TRUE(localizer.map_valid());
   EXPECT_EQ(localizer.map_frame_id(), std::to_string(m_map_id));
 
   PoseWithCovarianceStamped pose_out;
-  EXPECT_NO_THROW(pose_out = localizer.register_measurement(m_pose_id, m_init));
+  EXPECT_NO_THROW(localizer.register_measurement(m_pose_id, m_init, pose_out));
 
   EXPECT_EQ(get_id(pose_out), merge_ids(m_pose_id, m_init_id, m_map_id));
 }
@@ -69,25 +69,27 @@ TEST_F(TestRelativeLocalizerBase, basic_io) {
 TEST_F(TestRelativeLocalizerBase, bad_map) {
   TestLocalizer localizer;
   ASSERT_EQ(localizer.map_frame_id(), "");
+  TestLocalizer::PoseWithCovarianceStamped dummy_pose;
 
   // no map is set yet.
   EXPECT_FALSE(localizer.map_valid());
-  EXPECT_THROW(localizer.register_measurement(0, m_init), std::logic_error);
+  EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose),
+    std::logic_error);
 
   // Emulate setting a bad map.
   ASSERT_THROW(localizer.set_map(ERR_CODE), std::runtime_error);
   EXPECT_FALSE(localizer.map_valid());
-  EXPECT_THROW(localizer.register_measurement(0, m_init), std::logic_error);
+  EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose), std::logic_error);
 
   // now set a valid map.
   EXPECT_NO_THROW(localizer.set_map(m_map_id));
   EXPECT_TRUE(localizer.map_valid());
-  EXPECT_NO_THROW(localizer.register_measurement(0, m_init));
+  EXPECT_NO_THROW(localizer.register_measurement(0, m_init, dummy_pose));
 
   // Set an invalid map again.
   ASSERT_THROW(localizer.set_map(ERR_CODE), std::runtime_error);
   EXPECT_FALSE(localizer.map_valid());
-  EXPECT_THROW(localizer.register_measurement(0, m_init), std::logic_error);
+  EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose), std::logic_error);
 }
 
 }          // namespace autoware

@@ -44,15 +44,17 @@ void set_id(MsgT & msg, const std::string & id)
   msg.header.frame_id = id;
 }
 
-class TestLocalizer : public RelativeLocalizerBase<int, int>
+class MockSummary {};
+
+class TestLocalizer : public RelativeLocalizerBase<int, int, MockSummary>
 {
 public:
-  PoseWithCovarianceStamped register_measurement_impl(
-    const int & msg, const Transform & transform_initial) override
+  MockSummary register_measurement_impl(
+    const int & msg, const Transform & transform_initial,
+    PoseWithCovarianceStamped & pose_out) override
   {
-    PoseWithCovarianceStamped pose{};
-    set_id(pose, merge_ids(msg, std::stoi(get_id(transform_initial)), m_map_id));
-    return pose;
+    set_id(pose_out, merge_ids(msg, std::stoi(get_id(transform_initial)), m_map_id));
+    return MockSummary{};
   }
   const std::string & map_frame_id() const noexcept override
   {
