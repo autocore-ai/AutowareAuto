@@ -84,7 +84,7 @@ TEST_F(MapPublisherTest, core_functionality)
 
   {
     NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
-				  "filename", 1U, std::chrono::milliseconds(1U));
+      "filename", 1U, std::chrono::milliseconds(1U));
     // The map will not find any subscription listening to its topic and throw an error.
     EXPECT_THROW(publisher.run(), std::runtime_error);
   }

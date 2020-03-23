@@ -60,11 +60,13 @@ class NDT_NODES_PUBLIC P2DNDTLocalizerNode
 {
 public:
   using Localizer = P2DNDTLocalizer<OptimizerT, OptimizerOptionsT>;
-  using LocalizerBasePtr = std::unique_ptr<
-    localization_common::RelativeLocalizerBase<CloudMsg, CloudMsg>>;
+  using RegistrationSummary = typename Localizer::RegistrationSummary;
+  using LocalizerBasePtr = std::unique_ptr<localization_common::RelativeLocalizerBase<CloudMsg,
+      CloudMsg, RegistrationSummary>>;
   using ParentT = localization_nodes::RelativeLocalizerNode<CloudMsg, CloudMsg,
       Localizer, P2DNDTConfig<OptimizerOptionsT>, PoseInitializerT>;
-
+  using PoseWithCovarianceStamped = typename Localizer::PoseWithCovarianceStamped;
+  using Transform = typename Localizer::Transform;
   /// Constructor
   /// \param node_name node name
   /// \param name_space node namespace
@@ -116,6 +118,28 @@ public:
           static_cast<float>(this->declare_parameter("localizer.optimizer.line_search.step_size").
           template get<float>())}});
     this->set_localizer(std::move(localizer_ptr));
+  }
+
+protected:
+  bool validate_output(
+    const RegistrationSummary & summary,
+    const PoseWithCovarianceStamped &, const Transform &) override
+  {
+    bool ret = true;
+    switch (summary.optimization_summary().termination_type()) {
+      case common::optimization::TerminationType::FAILURE:
+        ret = false;
+        break;
+      case common::optimization::TerminationType::NO_CONVERGENCE:
+        // In practice, it's hard to come up with a perfect termination criterion for ndt
+        // optimization and even non-convergence may be a decent effort in localizing the
+        // vehicle. Hence the result is not discarded on non-convergence.
+        RCLCPP_DEBUG(this->get_logger(), "Localizer optimizer failed to converge.");
+        break;
+      default:
+        break;
+    }
+    return ret;
   }
 };
 
