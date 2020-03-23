@@ -42,7 +42,7 @@ using CloudT = sensor_msgs::msg::PointCloud2;
 template<typename ScanT, typename MapT, typename NDTOptimizationProblemT,
   typename OptimizerT, typename ConfigT>
 class NDT_PUBLIC NDTLocalizerBase : public localization_common::RelativeLocalizerBase<CloudT,
-    CloudT>
+    CloudT, localization_common::OptimizedRegistrationSummary>
 {
 public:
   using Transform = geometry_msgs::msg::TransformStamped;
@@ -66,19 +66,19 @@ public:
   /// measurement.
   /// \param[in] msg Point cloud to be registered.
   /// \param[in] transform_initial Initial transformation guess.
-  /// \return Transformation from the map frame to the measurement's frame.
+  /// \param[out] pose_out Transformation from the map frame to the measurement's frame.
+  /// \return Registration summary. T
   /// \throws std::logic_error on measurements older than the map.
   /// \throws std::domain_error on pose estimates that are not within the configured duration
   /// range from the measurement.
   /// \throws std::runtime_error on numerical errors in the optimizer.
-  PoseWithCovarianceStamped register_measurement_impl(
-    const CloudT & msg, const Transform & transform_initial) override
+  RegistrationSummary register_measurement_impl(
+    const CloudT & msg,
+    const Transform & transform_initial, PoseWithCovarianceStamped & pose_out) override
   {
     validate_msg(msg);
     validate_guess(msg, transform_initial);
-
     // Initial checks passed, proceed with initialization
-    PoseWithCovarianceStamped pose_out;
     // Eigen representations to be used for internal computations.
     EigenPose<Real> eig_pose_initial, eig_pose_result;
     eig_pose_initial.setZero();
@@ -92,10 +92,10 @@ public:
 
     // Define and solve the problem.
     NDTOptimizationProblemT problem(m_scan, m_map, m_config.optimization_config());
-    const auto summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result,
+    const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result,
         m_optimizer_options);
 
-    if (summary.termination_type() == common::optimization::TerminationType::FAILURE) {
+    if (opt_summary.termination_type() == common::optimization::TerminationType::FAILURE) {
       throw std::runtime_error("NDT localizer has likely encountered a numerical "
               "error during optimization.");
     }
@@ -109,8 +109,7 @@ public:
 
     // Populate covariance information. It is implementation defined.
     set_covariance(problem, eig_pose_initial, eig_pose_result, pose_out);
-
-    return pose_out;
+    return localization_common::OptimizedRegistrationSummary{opt_summary};
   }
 
   /// Replace the map with a given message

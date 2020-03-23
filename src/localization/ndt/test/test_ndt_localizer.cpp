@@ -109,7 +109,9 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   P2DTestLocalizer localizer{m_localizer_config, NewtonOptimizer{FixedLineSearch{m_step_size}}};
 
   localizer.set_map(dynamic_map_to_cloud(m_dynamic_map));
-  const auto ros_pose_out = localizer.register_measurement(translated_cloud, transform_initial);
+  decltype(localizer)::PoseWithCovarianceStamped ros_pose_out{};
+  const auto summary = localizer.register_measurement(translated_cloud, transform_initial,
+      ros_pose_out);
 
   transform_adapters::transform_to_pose(ros_pose_out.pose.pose, pose_out);
 
@@ -145,16 +147,16 @@ TEST_F(P2DLocalizerParameterTest, delayed_scan) {
   map_cloud.header.stamp = ::time_utils::to_message(now + dt);
 
   localizer.set_map(map_cloud);
-
+  P2DTestLocalizer::PoseWithCovarianceStamped dummy_pose;
   EXPECT_THROW(
-    localizer.register_measurement(m_downsampled_cloud, transform_initial),
+    localizer.register_measurement(m_downsampled_cloud, transform_initial, dummy_pose),
     std::logic_error
   );
 }
 
 TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
-  P2DTestLocalizer::Transform transform_initial;
-  P2DTestLocalizer::PoseWithCovarianceStamped ros_pose_out;
+  P2DTestLocalizer::Transform transform_initial{};
+  P2DTestLocalizer::PoseWithCovarianceStamped ros_pose_out{};
 
   P2DTestLocalizer localizer{m_localizer_config,
     NewtonOptimizer{FixedLineSearch{m_step_size}}};
@@ -186,23 +188,24 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
       transform_initial.header.stamp = ::time_utils::to_message(time_point);
       return transform_initial;
     };
+  P2DTestLocalizer::PoseWithCovarianceStamped dummy_pose;
   EXPECT_NO_THROW(
-    localizer.register_measurement(m_downsampled_cloud, set_and_get(scan_time))
+    localizer.register_measurement(m_downsampled_cloud, set_and_get(scan_time), dummy_pose)
   );
   EXPECT_NO_THROW(localizer.register_measurement(
-      m_downsampled_cloud, set_and_get(guess_time_tolerated1)));
+      m_downsampled_cloud, set_and_get(guess_time_tolerated1), dummy_pose));
   EXPECT_NO_THROW(localizer.register_measurement(
-      m_downsampled_cloud, set_and_get(guess_time_tolerated2)));
+      m_downsampled_cloud, set_and_get(guess_time_tolerated2), dummy_pose));
   EXPECT_NO_THROW(localizer.register_measurement(
-      m_downsampled_cloud, set_and_get(guess_time_tolerated3)));
+      m_downsampled_cloud, set_and_get(guess_time_tolerated3), dummy_pose));
   EXPECT_NO_THROW(localizer.register_measurement(
-      m_downsampled_cloud, set_and_get(guess_time_tolerated4)));
+      m_downsampled_cloud, set_and_get(guess_time_tolerated4), dummy_pose));
 
   EXPECT_THROW(
-    localizer.register_measurement(m_downsampled_cloud, set_and_get(guess_time_late)),
+    localizer.register_measurement(m_downsampled_cloud, set_and_get(guess_time_late), dummy_pose),
     std::domain_error);
   EXPECT_THROW(
-    localizer.register_measurement(m_downsampled_cloud, set_and_get(guess_time_early)),
+    localizer.register_measurement(m_downsampled_cloud, set_and_get(guess_time_early), dummy_pose),
     std::domain_error);
 }
 

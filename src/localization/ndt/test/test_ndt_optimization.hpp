@@ -116,28 +116,28 @@ struct OptTestParams
 
 template<typename T>
 void is_pose_approx(
-        const EigenPose<T> & pose1, const EigenPose<T> & pose2, Real trans_tol,
-        Real rot_tol)
+  const EigenPose<T> & pose1, const EigenPose<T> & pose2, Real trans_tol,
+  Real rot_tol)
 {
-    // (a and b are in same direction if `a x b = 0` and `a * b > 0`)
-    Eigen::Matrix<T, 3U, 1U> t1 = pose1.head(3);
-    Eigen::Matrix<T, 3U, 1U> t2 = pose2.head(3);
-    const T t_dot_prod = t1.dot(t2);
-    const Eigen::Vector3d t_cross_prod = t1.cross(t2);
-    EXPECT_TRUE(t_cross_prod.isZero(trans_tol));
-    EXPECT_GT(t_dot_prod, 0.0);
+  // (a and b are in same direction if `a x b = 0` and `a * b > 0`)
+  Eigen::Matrix<T, 3U, 1U> t1 = pose1.head(3);
+  Eigen::Matrix<T, 3U, 1U> t2 = pose2.head(3);
+  const T t_dot_prod = t1.dot(t2);
+  const Eigen::Vector3d t_cross_prod = t1.cross(t2);
+  EXPECT_TRUE(t_cross_prod.isZero(trans_tol));
+  EXPECT_GT(t_dot_prod, 0.0);
 
-    // Since comparing two set of euler angles is more ambiguous, I am turning one of them into a
-    // quaternion and then using `check_quat_RPY_eq`
-    Eigen::Matrix<T, 3U, 1U> rotation1 = pose1.tail(3);
-    Eigen::Matrix<T, 3U, 1U> rotation2 = pose2.tail(3);
-    Eigen::Quaternion<T> quat1;
-    Eigen::Quaternion<T> quat2;
-    set_RPY_XYZ(quat1, _x(rotation1), _y(rotation1), _z(rotation1));
-    set_RPY_XYZ(quat2, _x(rotation2), _y(rotation2), _z(rotation2));
-    const T r_dot_prod = quat1.dot(quat2);
-    // two unit quaternions are similar if their dot products are close to '1.0' or '-1.0'
-    EXPECT_NEAR(std::fabs(r_dot_prod), 1.0, rot_tol);
+  // Since comparing two set of euler angles is more ambiguous, I am turning one of them into a
+  // quaternion and then using `check_quat_RPY_eq`
+  Eigen::Matrix<T, 3U, 1U> rotation1 = pose1.tail(3);
+  Eigen::Matrix<T, 3U, 1U> rotation2 = pose2.tail(3);
+  Eigen::Quaternion<T> quat1;
+  Eigen::Quaternion<T> quat2;
+  set_RPY_XYZ(quat1, _x(rotation1), _y(rotation1), _z(rotation1));
+  set_RPY_XYZ(quat2, _x(rotation2), _y(rotation2), _z(rotation2));
+  const T r_dot_prod = quat1.dot(quat2);
+  // two unit quaternions are similar if their dot products are close to '1.0' or '-1.0'
+  EXPECT_NEAR(std::fabs(r_dot_prod), 1.0, rot_tol);
 }
 
 }  // namespace ndt
