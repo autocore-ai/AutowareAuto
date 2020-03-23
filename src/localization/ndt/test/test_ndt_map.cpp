@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include "test_ndt_map.hpp"
+#include <ndt/utils.hpp>
 #include <Eigen/LU>
 #include <vector>
 
@@ -253,16 +254,16 @@ TEST_F(DenseNDTMapTest, map_lookup) {
   }
 }
 
-
 ///////////////////////////////////////
 
 TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
   StaticNDTVoxel vx;
   Eigen::Vector3d pt{5.0, 5.0, 5.0};
   Eigen::Matrix3d cov;
+  cov.setIdentity();
   cov(0, 0) = 7.0;
-  cov(1, 2) = 17.0;
-  cov(2, 1) = 3.0;
+  cov(1, 1) = 17.0;
+  cov(2, 2) = 3.0;
   // default constructor zero-initializes and doesn't set the voxel as occupied
   EXPECT_FALSE(vx.usable());
   EXPECT_THROW(vx.centroid(), std::out_of_range);
@@ -281,11 +282,8 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
 }
 
 TEST(StaticNDTVoxelTest, ndt_map_voxel_bad_covariance) {
-  StaticNDTVoxel::Covariance bad_covariance;
-  StaticNDTVoxel::Covariance bad_covariance_inv;
-  bad_covariance << 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0;
+  StaticNDTVoxel::Covariance bad_covariance = StaticNDTVoxel::Covariance{}.setOnes();
+  StaticNDTVoxel::Covariance bad_covariance_inv{};
   bool invertible{false};
   bad_covariance.computeInverseWithCheck(bad_covariance_inv, invertible);
   ASSERT_FALSE(invertible);
@@ -300,12 +298,14 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
   generator_voxel.add_observation(Eigen::Vector3d{0.0, 3.0, 5.0});
   generator_voxel.add_observation(Eigen::Vector3d{4.0, 5.0, 8.0});
   const auto & centroid = generator_voxel.centroid();
-  const auto & covariance = generator_voxel.covariance();
-  StaticNDTVoxel::Covariance inv_covariance;
+  DynamicNDTVoxel::Cov covariance = generator_voxel.covariance();
+  StaticNDTVoxel voxel(centroid, covariance);
+
+  ASSERT_TRUE(try_stabilize_covariance(covariance));
+  StaticNDTVoxel::Covariance inv_covariance{};
   bool invertible{false};
   covariance.computeInverseWithCheck(inv_covariance, invertible);
   ASSERT_TRUE(invertible);
-  StaticNDTVoxel voxel(centroid, covariance);
   EXPECT_EQ(voxel.inverse_covariance(), inv_covariance);
   EXPECT_TRUE(voxel.usable());
 }
@@ -345,7 +345,6 @@ TEST_F(NDTMapTest, map_representation_basics) {
         *it = value;
         ++it;
       }
-      // TODO(yunus.caliskan): Assert that the covariance is invertible with the values below.
       for (auto & it : pc_cov_its) {
         *it = value++;
         ++it;
@@ -370,12 +369,10 @@ TEST_F(NDTMapTest, map_representation_basics) {
     sensor_msgs::PointCloud2Iterator<Real>(msg, "y"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "z")
   };
+  // Only using diagonal elements to not get accidental singularity.
   std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_cov_its{
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xx"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xy"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xz"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_yy"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_yz"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_zz")
   };
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
