@@ -131,11 +131,11 @@ the box. Pressing `F9` builds the current project.
 
 ## Run packages from Atom {#installation-and-development-run-packages-from-atom}
 
-To test code directly from Atom press `CTRL-` to open the built-in terminal.
+To test code directly from Atom press '`CTRL`' + '`~`' to open the built-in terminal.
 Run a built binary from the terminal, for example:
 
 ```bash
-ade$ ~/AutowareAuto/build/demo_nodes_cpp/talker
+ade$ ~/AutowareAuto/build/PACKAGE_NAME/BINARY_NAME
 ```
 
 
@@ -144,25 +144,20 @@ ade$ ~/AutowareAuto/build/demo_nodes_cpp/talker
 To debug a binary during runtime, use the integrated `gdb` interface to introspect and step through
 the code.
 
+A simple debug process might look like:
 
-### GDB example {#installation-and-development-gdb-example}
-
-To debug the `listener` application from the `demo_nodes_cpp` package, add
-`AutowareAuto/tools/demo_nodes_cpp` as a project folder.
-
-Open `src/topics/listener.cpp` and add a breakpoint on line 53 by clicking the blank space next to
-the line number.
-
-Click `Launch debugger...` in the sidebar on the right side of Atom. Verify the
-`Native - GDB` tab is selected and enter `~/AutowareAuto/build/demo_nodes_cpp/listener`
-as the program and `~` as the current working directory. The remaining two
-entries can be left blank. Clicking `Launch` starts the listener binary and pauses at the
-breakpoint.
+-# Open a source file for the binary
+-# Add a breakpoint by clicking the blank space next to the line number
+-# Click `Launch debugger...` in the sidebar on the right side of Atom
+-# Go to the `Native - GDB` tab
+-# Enter the binary path as the program path
+-# Enter `~` as the current working directory
+-# The remaining two entries can be left blank
+-# Click `Launch` to start the binary and pause at the breakpoint
 
 \note
 Applications that execute and exit quickly are not seen by the debugger **unless a breakpoint is
 set**.
-
 
 # Cleanup {#installation-and-development-cleanup}
 
