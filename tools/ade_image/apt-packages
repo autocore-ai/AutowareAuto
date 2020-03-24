@@ -44,6 +44,7 @@ ros-dashing-rclcpp-lifecycle # 0.7.6
 ros-dashing-rcutils
 ros-dashing-rmw
 ros-dashing-rmw-implementation-cmake
+ros-dashing-robot-localization
 ros-dashing-ros-testing
 ros-dashing-ros1-bridge
 ros-dashing-ros2bag
