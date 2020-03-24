@@ -59,15 +59,6 @@ RUN git clone https://github.com/rigtorp/udpreplay && mkdir -p udpreplay/build \
       && cd udpreplay/build && cmake .. && make && make install \
       && cd - && rm -rf udpreplay/
 
-# ====== Manual Install of casadi_vendor ===== #
-# This is to be removed after casadi_vendor is
-# available on the ROS Build Farm.
-
-COPY casadi-vendor-install.sh /tmp/
-RUN /bin/bash /tmp/casadi-vendor-install.sh
-
-# ===== END MANUAL INSTALL OF CASADI_VENDOR ===== #
-
 
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
