@@ -26,3 +26,4 @@ cd my_dir
 
 <!-- Please do not edit anything below this comment -->
 /label ~bug
+/milestone %28
