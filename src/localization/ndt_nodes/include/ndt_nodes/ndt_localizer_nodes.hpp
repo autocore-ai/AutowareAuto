@@ -25,6 +25,7 @@
 #include <utility>
 #include <string>
 #include <memory>
+#include <limits>
 
 namespace autoware
 {
@@ -67,6 +68,11 @@ public:
       Localizer, P2DNDTConfig<OptimizerOptionsT>, PoseInitializerT>;
   using PoseWithCovarianceStamped = typename Localizer::PoseWithCovarianceStamped;
   using Transform = typename Localizer::Transform;
+
+  using EigTranslation = Eigen::Vector3d;
+  using EigRotation = Eigen::Quaterniond;
+  static constexpr auto EPS = std::numeric_limits<ndt::Real>::epsilon();
+
   /// Constructor
   /// \param node_name node name
   /// \param name_space node namespace
@@ -75,7 +81,11 @@ public:
     const std::string & node_name,
     const std::string & name_space,
     const PoseInitializerT & pose_initializer)
-  : ParentT(node_name, name_space, pose_initializer)
+  : ParentT(node_name, name_space, pose_initializer),
+    m_predict_translation_threshold{
+      this->declare_parameter("predict_pose_threshold.translation").template get<double>()},
+    m_predict_rotation_threshold{
+      this->declare_parameter("predict_pose_threshold.rotation").template get<double>()}
   {
     auto get_point_param = [this](const std::string & config_name_prefix) {
         perception::filters::voxel_grid::PointXYZ point;
@@ -123,26 +133,82 @@ public:
 protected:
   bool validate_output(
     const RegistrationSummary & summary,
-    const PoseWithCovarianceStamped &, const Transform &) override
+    const PoseWithCovarianceStamped & pose, const Transform & guess) override
   {
     bool ret = true;
     switch (summary.optimization_summary().termination_type()) {
       case common::optimization::TerminationType::FAILURE:
+        // Numerical failure, result is unusable.
         ret = false;
         break;
       case common::optimization::TerminationType::NO_CONVERGENCE:
-        // In practice, it's hard to come up with a perfect termination criterion for ndt
-        // optimization and even non-convergence may be a decent effort in localizing the
-        // vehicle. Hence the result is not discarded on non-convergence.
-        RCLCPP_DEBUG(this->get_logger(), "Localizer optimizer failed to converge.");
+        ret = on_non_convergence(summary, pose, guess);
         break;
       default:
         break;
     }
+    if (ret) {
+      // Check if translation is valid
+      ret = translation_valid(pose, guess);
+    }
+    if (ret) {
+      // Check if rotation is valid
+      ret = rotation_valid(pose, guess);
+    }
     return ret;
   }
-};
 
+private:
+  virtual bool on_non_convergence(
+    const RegistrationSummary &,
+    const PoseWithCovarianceStamped &, const Transform &)
+  {
+    // In practice, it's hard to come up with a perfect termination criterion for ndt
+    // optimization and even non-convergence may be a decent effort in localizing the
+    // vehicle. Hence the result is not discarded on non-convergence.
+    RCLCPP_DEBUG(this->get_logger(), "Localizer optimizer failed to converge.");
+    return true;
+  }
+
+  /// Check if translation of pose estimate is within the allowed range from the initial guess.
+  /// \param pose NDT pose estimate.
+  /// \param guess Initial guess for the localizer.
+  /// \return True if translation estimate is valid.
+  virtual bool translation_valid(const PoseWithCovarianceStamped & pose, const Transform guess)
+  {
+    EigTranslation pose_translation{pose.pose.pose.position.x,
+      pose.pose.pose.position.y,
+      pose.pose.pose.position.z};
+    EigTranslation guess_translation{guess.transform.translation.x,
+      guess.transform.translation.y,
+      guess.transform.translation.z};
+    EigTranslation diff = pose_translation - guess_translation;
+    return diff.norm() <= (m_predict_translation_threshold + EPS);
+  }
+
+  /// Check if rotation of pose estimate is within the allowed range from the initial guess.
+  /// \param pose NDT pose estimate.
+  /// \param guess Initial guess for the localizer.
+  /// \return True if rotation estimate is valid.
+  virtual bool rotation_valid(const PoseWithCovarianceStamped & pose, const Transform guess)
+  {
+    EigRotation pose_rotation{pose.pose.pose.orientation.w,
+      pose.pose.pose.orientation.x,
+      pose.pose.pose.orientation.y,
+      pose.pose.pose.orientation.z
+    };
+    EigRotation guess_rotation{guess.transform.rotation.x,
+      guess.transform.rotation.x,
+      guess.transform.rotation.y,
+      guess.transform.rotation.z
+    };
+    return std::fabs(pose_rotation.angularDistance(guess_rotation)) <=
+           (m_predict_rotation_threshold + EPS);
+  }
+
+  ndt::Real m_predict_translation_threshold;
+  ndt::Real m_predict_rotation_threshold;
+};
 }  // namespace ndt_nodes
 }  // namespace localization
 }  // namespace autoware

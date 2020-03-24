@@ -17,6 +17,12 @@ p2d_ndt_localizer_node:
       history_depth: 10
     # Publish the result to `/tf` topic
     publish_tf: true
+    # Maximum allowed difference between the initial guess and the ndt pose estimate
+    predict_pose_threshold:
+      # Translation threshold in meters
+      translation: 0.5
+      # Rotation threshold in radians
+      rotation: 0.1
     # localizer specific configuration
     localizer:
       #underlying voxel grid configuration of the map
