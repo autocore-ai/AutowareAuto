@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Testing of mpc_controller in LGSVL simulation usign trajectory_spoofer."""
+"""Testing of mpc_controller in LGSVL simulation using trajectory_spoofer."""
 
 import launch
 import launch.launch_description_sources
