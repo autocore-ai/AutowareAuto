@@ -338,9 +338,9 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
 TEST_F(NDTMapTest, map_representation_basics) {
 
   auto add_pt = [](
-      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
-      std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
-      Real value) {
+    std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
+    std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
+    Real value) {
       for (auto & it : pc_pt_its) {
         *it = value;
         ++it;

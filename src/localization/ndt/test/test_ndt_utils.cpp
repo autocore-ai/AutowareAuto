@@ -39,7 +39,7 @@ PoseParams::PoseParams(double translation_range, double rotation_range)
   std::uniform_real_distribution<double> uni_trans(-translation_range, translation_range);
   std::uniform_real_distribution<double> uni_rot(-rotation_range, rotation_range);
   std::default_random_engine re;
-  for (auto i = 0; i < 3U; ++i) {
+  for (auto i = 0U; i < 3U; ++i) {
     pose(i) = uni_trans(re);
   }
   for (auto i = 3U; i < 6U; ++i) {
@@ -104,7 +104,6 @@ TEST_P(TestTransformAdapters, pose_to_transform_to_pose) {
 
   pose_to_transform(pose, ros_transform);
   pose_to_transform(pose, ros_pose);
-  constexpr auto TOL = 1e-5;
   {
     EigenPose<Real> pose_result;
     transform_to_pose(ros_transform, pose_result);
@@ -125,14 +124,14 @@ INSTANTIATE_TEST_CASE_P(transform_param_tests, TestTransformAdapters,
     PoseParams{2.5, -1.9, 0.1, -2.1, 0.1, 3.05},
     PoseParams{2.5, -1.9, 64, -2.1, 31, -1.2},
     PoseParams{0.001, 1.00009, -1.0, 0.0, 0.75, 0.13}
-));
+  ), );
 
 INSTANTIATE_TEST_CASE_P(fuzzed_tests, TestTransformAdapters,
   ::testing::Values(
     PoseParams{0.1, 50.0},
     PoseParams{100.0, 0.005},
     PoseParams{25.5, 4.5}
-));
+  ), );
 
 TEST_P(CovarianceStabilityTest, basic) {
   Cov3x3Param::CovMatrix covariance = GetParam().cov;
@@ -155,7 +154,7 @@ TEST_P(CovarianceStabilityTest, basic) {
     std::sort(filtered_evals.begin(), filtered_evals.end());
     std::sort(stable_e_vals.data(), stable_e_vals.data() + stable_e_vals.size());
 
-    for (auto i = 0; i < filtered_evals.size(); ++i) {
+    for (auto i = 0U; i < filtered_evals.size(); ++i) {
       EXPECT_FLOAT_EQ(filtered_evals[i], stable_e_vals(i));
     }
   }
@@ -170,7 +169,7 @@ INSTANTIATE_TEST_CASE_P(basic, CovarianceStabilityTest,
     Cov3x3Param(1.0, 1.0, 0.0, false),
     Cov3x3Param(1e-2, 1e-3, 65, true),
     Cov3x3Param(1e-2, 1e-3, 1e-15, true)
-));
+  ), );
 
 }  // namespace ndt
 }  // namespace localization

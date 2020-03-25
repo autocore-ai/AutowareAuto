@@ -110,8 +110,8 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
 
   localizer.set_map(dynamic_map_to_cloud(m_dynamic_map));
   decltype(localizer)::PoseWithCovarianceStamped ros_pose_out{};
-  const auto summary = localizer.register_measurement(translated_cloud, transform_initial,
-      ros_pose_out);
+  localizer.register_measurement(translated_cloud, transform_initial,
+    ros_pose_out);
 
   transform_adapters::transform_to_pose(ros_pose_out.pose.pose, pose_out);
 
@@ -128,7 +128,7 @@ INSTANTIATE_TEST_CASE_P(sanity_test, P2DLocalizerParameterTest,
     PoseParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0},
     PoseParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0},
     PoseParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0}
-),);
+  ), );
 
 
 TEST_F(P2DLocalizerParameterTest, delayed_scan) {
