@@ -39,6 +39,16 @@ ${PROJECT_NAME} SHARED
 )
 
 autoware_set_compile_options(${PROJECT_NAME})
+# turn off warnings to be able to successfully compile upstream ros packages
+set(ROS_NO_WARN_LIST
+        -Wno-sign-conversion
+        -Wno-conversion
+        -Wno-old-style-cast
+        -Wno-useless-cast
+        -Wno-double-promotion
+        -Wno-nonnull-compare
+        -Wuseless-cast)
+target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
 
 if(BUILD_TESTING)
   # run linters
@@ -62,11 +72,10 @@ if(BUILD_TESTING)
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
 
   ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
+
+  autoware_set_compile_options(${NDT_TEST})
+  # turn off warnings to be able to successfully compile upstream ros packages
+  target_compile_options(${NDT_TEST} PRIVATE ${ROS_NO_WARN_LIST})
 endif()
-
-# required for tf2
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
-
 
 ament_auto_package()

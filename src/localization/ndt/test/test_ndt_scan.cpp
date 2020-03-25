@@ -71,7 +71,7 @@ TEST_F(NDTScanTest, basics) {
   ndt_scan.clear();
   EXPECT_TRUE(ndt_scan.empty());
   EXPECT_EQ(ndt_scan.size(), 0U);
-};
+}
 
 }  // namespace ndt
 }  // namespace localization

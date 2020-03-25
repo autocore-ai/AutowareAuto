@@ -337,7 +337,7 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
 
 TEST_F(NDTMapTest, map_representation_basics) {
 
-  auto add_pt = [](sensor_msgs::msg::PointCloud2 & pc,
+  auto add_pt = [](
       std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
       std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
       Real value) {
@@ -399,7 +399,7 @@ TEST_F(NDTMapTest, map_representation_basics) {
       std::numeric_limits<Real>::epsilon()));
     ASSERT_EQ(generating_voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
-    add_pt(msg, pc_point_its, pc_cov_its, value);
+    add_pt(pc_point_its, pc_cov_its, value);
 
     // cell_id_it is of type unsigned int[2], so we need to convert from long.
     const auto vidx = grid_config.index(added_pt);
@@ -465,8 +465,10 @@ sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
   common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
   auto idx = 0U;
   for (const auto & pt : pts) {
-    autoware::common::types::PointXYZIF ptF{.x = static_cast<float>(pt(0U)),
-      .y = static_cast<float>(pt(1U)), .z = static_cast<float>(pt(2U))};
+    autoware::common::types::PointXYZIF ptF{};
+    ptF.x = static_cast<float>(pt(0U));
+    ptF.y = static_cast<float>(pt(1U));
+    ptF.z = static_cast<float>(pt(2U));
     common::lidar_utils::add_point_to_cloud(cloud, ptF, idx);
   }
   return cloud;
@@ -496,10 +498,11 @@ void populate_pc(
 
 common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  return common::types::PointXYZIF{
-    static_cast<float>(v(0)),
-    static_cast<float>(v(1)),
-    static_cast<float>(v(2))};
+  common::types::PointXYZIF ptF{};
+  ptF.x = static_cast<float>(v(0));
+  ptF.y = static_cast<float>(v(1));
+  ptF.z = static_cast<float>(v(2));
+  return ptF;
 }
 
 // add the point `center` and 4 additional points in a fixed distance from the center
@@ -558,7 +561,6 @@ DenseNDTMapContext::DenseNDTMapContext()
 }
 void DenseNDTMapContext::build_pc(const perception::filters::voxel_grid::Config & cfg)
 {
-  uint32_t pc_idx = 0U;
   for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
     for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
       for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {

@@ -92,7 +92,6 @@ TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
 
 TEST_P(P2DOptimizationValidationTest, sanity_test) {
   using PclCloud = pcl::PointCloud<pcl::PointXYZ>;
-  constexpr double PI = 3.14159265359;
   const auto & param = GetParam();
   EigenPose<Real> diff = param.diff;
 
@@ -154,8 +153,6 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     };
 
   // Compare translation results from algorithms
-  const Eigen::Vector3d correct_trans = -diff.head(3);
-  const Eigen::Vector3d estimated_trans = guess.head(3);
   if (!param.is_large) {
     EXPECT_TRUE(guess.isApprox(-diff, 0.1));
   } else {
@@ -201,14 +198,14 @@ INSTANTIATE_TEST_CASE_P(sanity_test, P2DOptimizationValidationTest,
     OptTestParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0, true, true},
     OptTestParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0, false, false},
     OptTestParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0, false, false}
-));
+),);
 
 INSTANTIATE_TEST_CASE_P(numerical_analysis, P2DOptimizationNumericalTest,
   ::testing::Values(
     OptTestParams{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, false},
     OptTestParams{0.5, 0.9, 0.1, 1.0, -3.1, 0.05, true, false},
     OptTestParams{2.5, -1.9, 0.1, -2.1, 0.1, 3.05, true, false}
-));
+),);
 
 
 ////////////////////////////////////// Test function implementations

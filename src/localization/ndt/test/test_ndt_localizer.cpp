@@ -143,7 +143,7 @@ INSTANTIATE_TEST_CASE_P(sanity_test, P2DLocalizerParameterTest,
     // TODO(yunus.caliskan): Following test fails because eigen based double conversion
     // using the functions in `transform_adapters` namespace results in the change of angle ranges.
 //    OptTestParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0, false, false}
-));
+),);
 
 
 TEST_F(P2DLocalizerParameterTest, delayed_scan) {
