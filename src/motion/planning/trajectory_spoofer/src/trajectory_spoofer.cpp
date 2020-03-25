@@ -159,7 +159,6 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
     pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
 
     circular_trajectory.points.push_back(pt);
-
   }
 
   return circular_trajectory;
