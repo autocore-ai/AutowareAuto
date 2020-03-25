@@ -58,23 +58,24 @@ TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & options
 
 void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
 {
-  Trajectory traj;
+    
+  if (trajectory_.points.size() == 0)
+  {
+    switch (trajectory_type_) {
+      // Straight line
+      case TrajectoryType::STRAIGHT:
+        trajectory_ = spoofer_->spoof_straight_trajectory(*msg, num_of_points_, length_, speed_ramp_on_);
+        break;
 
-  switch (trajectory_type_) {
-    // Straight line
-    case TrajectoryType::STRAIGHT:
-      traj = spoofer_->spoof_straight_trajectory(*msg, num_of_points_, length_, speed_ramp_on_);
-      break;
-
-    // Circle
-    case TrajectoryType::CIRCLE:
-      traj = spoofer_->spoof_circular_trajectory(*msg, num_of_points_, radius_);
-      break;
+      // Circle
+      case TrajectoryType::CIRCLE:
+        trajectory_ = spoofer_->spoof_circular_trajectory(*msg, num_of_points_, radius_);
+        break;
+    }
   }
 
-
-  if (traj.points.size() > 0) {
-    trajectory_pub_->publish(traj);
+  if (trajectory_.points.size() > 0) {
+    trajectory_pub_->publish(trajectory_);
   }
 }
 }  // namespace trajectory_spoofer

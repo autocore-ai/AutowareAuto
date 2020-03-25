@@ -62,6 +62,8 @@ private:
   float32_t length_;
   float32_t radius_;
 
+  Trajectory trajectory_;
+
   std::shared_ptr<TrajectorySpoofer> spoofer_;
   std::shared_ptr<rclcpp::Publisher<Trajectory>> trajectory_pub_;
   std::shared_ptr<rclcpp::Subscription<VehicleKinematicState>> state_sub_;
