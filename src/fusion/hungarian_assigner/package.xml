@@ -10,6 +10,8 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
+    <depend>autoware_auto_common</depend>
+
     <build_depend>eigen</build_depend>
 
     <build_export_depend>eigen</build_export_depend>

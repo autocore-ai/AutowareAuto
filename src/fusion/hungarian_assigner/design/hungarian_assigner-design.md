@@ -80,7 +80,7 @@ assigner.set_size(16U, 16U);
 // set weights
 assigner.set_weight(0.0F, 0U, 0U);
 // ... for impossible assignments, don't set weight
-const bool ret = assigner.assign();  // do assignment
+const bool8_t ret = assigner.assign();  // do assignment
 // get results
 const uint64_t idx = assigner.get_assignment(0U);
 const uint64_t jdx = assigner.get_unassigned(0U);

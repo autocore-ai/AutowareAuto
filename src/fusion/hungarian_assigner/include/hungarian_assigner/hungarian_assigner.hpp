@@ -30,6 +30,10 @@
 #include <utility>
 #include <limits>
 #include <array>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -46,7 +50,7 @@ using index_t = Eigen::Index;
 /// \brief implementation of the hungarian/kuhn-munkres/jacobi algorithm for
 /// minimum weight assignment problem in O(N^3 ) time
 /// \tparam Capacity maximum number of things that can be matched, sets matrix size
-template<int Capacity>
+template<uint16_t Capacity>
 class HUNGARIAN_ASSIGNER_PUBLIC hungarian_assigner_c
 {
   static_assert(Capacity > 0, "Capacity must be positive");
@@ -100,7 +104,7 @@ public:
   /// \param[in] idx the index of the job
   /// \param[in] jdx the index of the worker
   /// \throw std::out_of_range if idx or jdx are outside of range specified by set_size()
-  void set_weight(const float weight, const index_t idx, const index_t jdx);
+  void set_weight(const float32_t weight, const index_t idx, const index_t jdx);
 
   /// \brief reset book-keeping and weight matrix, must be called after
   ///        assign(), and before set_weight()
@@ -116,7 +120,7 @@ public:
   ///         case when a row has no valid assignments), then get_assignment() may return
   ///         UNASSIGNED
   /// \throw std::exception if some unspecified error happens internally, should never happen
-  bool assign();
+  bool8_t assign();
 
   // every row/job is guaranteed to have a worker
   /// \brief dictate what the assignment for a given row/task is, should be called after assign().
@@ -137,40 +141,40 @@ public:
 
 private:
   /// \brief do steps 1-3, return true if perfect assignment found
-  HUNGARIAN_ASSIGNER_LOCAL bool reduce_rows_and_init_zeros_and_check_result();
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t reduce_rows_and_init_zeros_and_check_result();
 
   /// \brief do step 5 and 3, return true if perfect assignment found
-  HUNGARIAN_ASSIGNER_LOCAL bool increment_starred_zeroes_and_check_result(index2_t loc);
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t increment_starred_zeroes_and_check_result(index2_t loc);
 
   /// \brief step 4 and 6: find an uncovered zero, add it if necessary, throws exception if it can't
   HUNGARIAN_ASSIGNER_LOCAL index2_t prime_uncovered_zero();
 
   /// \brief step 6: reduce matrix by smallest uncovered value, return false if no uncovered value
-  HUNGARIAN_ASSIGNER_LOCAL bool add_new_zero(index2_t & loc);
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t add_new_zero(index2_t & loc);
 
   /// \brief check if assignment is complete
-  HUNGARIAN_ASSIGNER_LOCAL bool are_all_columns_covered() const;
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t are_all_columns_covered() const;
 
   /// \brief find a zero that is uncovered by rows or columns
-  HUNGARIAN_ASSIGNER_LOCAL bool find_uncovered_zero(index2_t & loc) const;
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t find_uncovered_zero(index2_t & loc) const;
 
   /// \brief find minimal value that is not covered, false if none found
-  HUNGARIAN_ASSIGNER_LOCAL bool find_minimum_uncovered_value(
+  HUNGARIAN_ASSIGNER_LOCAL bool8_t find_minimum_uncovered_value(
     index2_t & loc,
-    float & min_val) const;
+    float32_t & min_val) const;
 
   /// \brief update internal bookkeeping for which rows and columns are uncovered
   HUNGARIAN_ASSIGNER_LOCAL void update_uncovered_rows_and_cols();
 
-  Eigen::Matrix<float, Capacity, Capacity> m_weight_matrix;
+  Eigen::Matrix<float32_t, Capacity, Capacity> m_weight_matrix;
   Eigen::Matrix<int8_t, Capacity, Capacity> m_mark_matrix;
   Eigen::Matrix<index_t, Capacity, 1> m_row_min_idx;
   index_t m_num_rows;
   index_t m_num_cols;
-  Eigen::Matrix<float, Capacity, 1> m_row_min_weights;
+  Eigen::Matrix<float32_t, Capacity, 1> m_row_min_weights;
   Eigen::Matrix<index_t, Capacity, 1> m_assignments;
-  Eigen::Matrix<bool, Capacity, 1> m_is_col_covered;
-  Eigen::Matrix<bool, Capacity, 1> m_is_row_covered;
+  Eigen::Matrix<bool8_t, Capacity, 1> m_is_col_covered;
+  Eigen::Matrix<bool8_t, Capacity, 1> m_is_row_covered;
   index_t m_num_uncovered_rows;
   index_t m_num_uncovered_cols;
   Eigen::Matrix<index_t, Capacity, 1> m_uncovered_rows;

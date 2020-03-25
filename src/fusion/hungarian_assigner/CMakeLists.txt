@@ -19,6 +19,7 @@ project(hungarian_assigner)
 ## dependencies
 find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 include_directories(include)
@@ -31,6 +32,7 @@ add_library(${PROJECT_NAME} SHARED
   src/hungarian_assigner.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
+ament_target_dependencies(hungarian_assigner "autoware_auto_common")
 
 if(BUILD_TESTING)
   # Linting

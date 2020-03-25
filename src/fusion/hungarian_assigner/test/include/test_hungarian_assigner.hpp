@@ -13,17 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_HUNGARIAN_ASSIGNER_HPP_
+#define TEST_HUNGARIAN_ASSIGNER_HPP_
+
 #include <hungarian_assigner/hungarian_assigner.hpp>
 #include <iostream>
 #include <vector>
 #include <thread>
+#include "common/types.hpp"
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 using autoware::fusion::hungarian_assigner::hungarian_assigner_c;
 
 // test various assumptions such as NAN and memset
 TEST(hungarian_assigner, assumptions)
 {
-  bool bval = true;
+  bool8_t bval = true;
   memset(&bval, 0, sizeof(bval));
   ASSERT_FALSE(bval);
   uint64_t uval = 99U;
@@ -197,7 +203,7 @@ TEST(hungarian_assigner, parallel)
   ASSERT_NO_THROW(assign.set_size(SZ, SZ));
   auto fn = [=, &assign](const uint64_t row) {
     for (uint64_t idx = 0U; idx < SZ; ++idx) {
-      const float val = (idx == row) ? 0.0F : 10.0F;
+      const float32_t val = (idx == row) ? 0.0F : 10.0F;
       assign.set_weight(val, row, idx);
     }
   };
@@ -337,3 +343,4 @@ TEST(hungarian_assigner, partial)
   ASSERT_EQ(assign.get_assignment(3), 1);
 }
 
+#endif  // TEST_HUNGARIAN_ASSIGNER_HPP_

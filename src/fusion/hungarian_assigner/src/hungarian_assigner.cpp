@@ -21,6 +21,10 @@
 #include <limits>
 #include <algorithm>
 #include "hungarian_assigner/hungarian_assigner.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -30,18 +34,18 @@ namespace hungarian_assigner
 {
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 hungarian_assigner_c<Capacity>::no_uncovered_values_c::no_uncovered_values_c()
 : std::runtime_error("Hungarian Assigner cannot add new zero: no uncovered values!")
 {
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 constexpr index_t hungarian_assigner_c<Capacity>::UNASSIGNED;
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 hungarian_assigner_c<Capacity>::hungarian_assigner_c(
   const index_t num_rows,
   const index_t num_cols)
@@ -49,7 +53,7 @@ hungarian_assigner_c<Capacity>::hungarian_assigner_c(
     Eigen::MatrixXf::Constant(
       Capacity,
       Capacity,
-      std::numeric_limits<float>::max())),
+      std::numeric_limits<float32_t>::max())),
   m_mark_matrix(
     Eigen::Matrix<int8_t, Eigen::Dynamic, Eigen::Dynamic>::Constant(
       Capacity,
@@ -58,10 +62,10 @@ hungarian_assigner_c<Capacity>::hungarian_assigner_c(
   m_row_min_idx(Eigen::Matrix<index_t, Capacity, 1>::Constant(UNASSIGNED)),
   m_num_rows(num_rows),
   m_num_cols(num_cols),
-  m_row_min_weights(Eigen::ArrayXf::Constant(Capacity, std::numeric_limits<float>::max())),
+  m_row_min_weights(Eigen::ArrayXf::Constant(Capacity, std::numeric_limits<float32_t>::max())),
   m_assignments(Eigen::Matrix<index_t, Capacity, 1>::Zero()),
-  m_is_col_covered(Eigen::Matrix<bool, Capacity, 1>::Zero()),  // zero/false initialized
-  m_is_row_covered(Eigen::Matrix<bool, Capacity, 1>::Zero()),  // zero/false initialized
+  m_is_col_covered(Eigen::Matrix<bool8_t, Capacity, 1>::Zero()),  // zero/false initialized
+  m_is_row_covered(Eigen::Matrix<bool8_t, Capacity, 1>::Zero()),  // zero/false initialized
   m_num_uncovered_rows(),  // zero initialization
   m_num_uncovered_cols(),  // zero initialization
   m_num_primed_zeros()  // zero initialization
@@ -71,14 +75,14 @@ hungarian_assigner_c<Capacity>::hungarian_assigner_c(
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 hungarian_assigner_c<Capacity>::hungarian_assigner_c()
 : hungarian_assigner_c(index_t(), index_t())  // zero initialization
 {
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::set_size(const index_t num_rows, const index_t num_cols)
 {
   if ((num_rows > Capacity) || (num_cols > Capacity)) {
@@ -97,9 +101,9 @@ void hungarian_assigner_c<Capacity>::set_size(const index_t num_rows, const inde
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::set_weight(
-  const float weight,
+  const float32_t weight,
   const index_t idx,
   const index_t jdx)
 {
@@ -117,14 +121,14 @@ void hungarian_assigner_c<Capacity>::set_weight(
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::reset()
 {
   // set all weights to infinity
   m_weight_matrix.block(index_t(), index_t(), m_num_cols, m_num_cols) =
-    Eigen::MatrixXf::Constant(m_num_cols, m_num_cols, std::numeric_limits<float>::max());
+    Eigen::MatrixXf::Constant(m_num_cols, m_num_cols, std::numeric_limits<float32_t>::max());
   m_row_min_weights.segment(0, m_num_cols) =
-    Eigen::ArrayXf::Constant(m_num_cols, std::numeric_limits<float>::max());
+    Eigen::ArrayXf::Constant(m_num_cols, std::numeric_limits<float32_t>::max());
   // reset assignment
   m_mark_matrix.block(index_t(), index_t(), m_num_cols, m_num_cols) =
     Eigen::Matrix<int8_t, Eigen::Dynamic, Eigen::Dynamic>::Constant(
@@ -141,7 +145,7 @@ void hungarian_assigner_c<Capacity>::reset()
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::reset(const index_t num_rows, const index_t num_cols)
 {
   reset();
@@ -149,10 +153,10 @@ void hungarian_assigner_c<Capacity>::reset(const index_t num_rows, const index_t
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::assign()
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::assign()
 {
-  bool ret = false;
+  bool8_t ret = false;
   if (m_num_rows <= m_num_cols) {
     // pad 0's in unbalanced case
     if (m_num_rows < m_num_cols) {
@@ -190,7 +194,7 @@ bool hungarian_assigner_c<Capacity>::assign()
 
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 index_t hungarian_assigner_c<Capacity>::get_assignment(const index_t idx) const
 {
   if ((idx >= m_num_rows) || (idx >= Capacity)) {
@@ -200,7 +204,7 @@ index_t hungarian_assigner_c<Capacity>::get_assignment(const index_t idx) const
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 index_t hungarian_assigner_c<Capacity>::get_unassigned(const index_t idx) const
 {
   const index_t jdx = idx + m_num_rows;
@@ -213,8 +217,8 @@ index_t hungarian_assigner_c<Capacity>::get_unassigned(const index_t idx) const
 ////////////////////////////////////////////////////////////////////////////////
 // private methods
 ////////////////////////////////////////////////////////////////////////////////
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::reduce_rows_and_init_zeros_and_check_result()
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::reduce_rows_and_init_zeros_and_check_result()
 {
   // we should already know what the minimum weight is for each row
   // decrement each row by given weight
@@ -254,8 +258,8 @@ bool hungarian_assigner_c<Capacity>::reduce_rows_and_init_zeros_and_check_result
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::increment_starred_zeroes_and_check_result(index2_t loc)
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::increment_starred_zeroes_and_check_result(index2_t loc)
 {
   // TODO(c.ho) maybe keep augment_path local
   // update path:
@@ -265,7 +269,7 @@ bool hungarian_assigner_c<Capacity>::increment_starred_zeroes_and_check_result(i
   // there are at most N-1 before entering this
   for (index_t idx = index_t(); idx < m_num_cols; ++idx) {
     // find star in col
-    bool found = false;
+    bool8_t found = false;
     for (index_t jdx = index_t(); jdx < m_num_cols; ++jdx) {
       if (m_mark_matrix(jdx, loc.second) == static_cast<int8_t>(STARRED)) {
         found = true;
@@ -331,7 +335,7 @@ bool hungarian_assigner_c<Capacity>::increment_starred_zeroes_and_check_result(i
 }
 
 ///
-template<int Capacity>
+template<uint16_t Capacity>
 //lint -e9094 can't hide this further, will get compile error otherwise NOLINT
 typename hungarian_assigner_c<Capacity>::index2_t
 hungarian_assigner_c<Capacity>::prime_uncovered_zero()
@@ -356,7 +360,7 @@ hungarian_assigner_c<Capacity>::prime_uncovered_zero()
       // should never hit
       throw std::runtime_error("Assertion failed: more primes than number of columns!");
     }
-    bool found = false;
+    bool8_t found = false;
     index_t star_col;
     for (index_t jdx = index_t(); jdx < m_num_cols; ++jdx) {
       if (m_mark_matrix(loc.first, jdx) == static_cast<int8_t>(STARRED)) {
@@ -377,12 +381,12 @@ hungarian_assigner_c<Capacity>::prime_uncovered_zero()
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::add_new_zero(index2_t & loc)
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::add_new_zero(index2_t & loc)
 {
   // find minimum nonzero'd value
-  float min_val;
-  const bool ret = find_minimum_uncovered_value(loc, min_val);
+  float32_t min_val;
+  const bool8_t ret = find_minimum_uncovered_value(loc, min_val);
   if (ret) {
     // add to covered rows
     for (index_t idx = index_t(); idx < m_num_cols; ++idx) {
@@ -405,10 +409,10 @@ bool hungarian_assigner_c<Capacity>::add_new_zero(index2_t & loc)
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::are_all_columns_covered() const
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::are_all_columns_covered() const
 {
-  bool ret = true;
+  bool8_t ret = true;
   for (index_t idx = index_t(); idx < m_num_cols; ++idx) {
     ret = (m_is_col_covered[idx]) && ret;
   }
@@ -416,10 +420,10 @@ bool hungarian_assigner_c<Capacity>::are_all_columns_covered() const
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::find_uncovered_zero(index2_t & loc) const
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::find_uncovered_zero(index2_t & loc) const
 {
-  bool found = false;
+  bool8_t found = false;
   for (index_t idx = index_t(); idx < m_num_uncovered_rows; ++idx) {
     for (index_t jdx = index_t(); jdx < m_num_uncovered_cols; ++jdx) {
       const index_t row_idx = m_uncovered_rows[idx];
@@ -444,22 +448,22 @@ bool hungarian_assigner_c<Capacity>::find_uncovered_zero(index2_t & loc) const
 }
 
 ///
-template<int Capacity>
-bool hungarian_assigner_c<Capacity>::find_minimum_uncovered_value(
+template<uint16_t Capacity>
+bool8_t hungarian_assigner_c<Capacity>::find_minimum_uncovered_value(
   index2_t & loc,
-  float & min_val) const
+  float32_t & min_val) const
 {
   // I don't need to update uncovered because this will always be called
   // after find_uncovered_zero()
   // update_uncovered_rows_and_cols();
-  bool ret = false;
-  min_val = std::numeric_limits<float>::max();
+  bool8_t ret = false;
+  min_val = std::numeric_limits<float32_t>::max();
   for (index_t idx = index_t(); idx < m_num_uncovered_rows; ++idx) {
     for (index_t jdx = index_t(); jdx < m_num_uncovered_cols; ++jdx) {
       const index_t row_idx = m_uncovered_rows[idx];
       const index_t col_idx = m_uncovered_cols[jdx];
       if (m_mark_matrix(row_idx, col_idx) != static_cast<int8_t>(NO_LINK)) {
-        const float val = m_weight_matrix(row_idx, col_idx);
+        const float32_t val = m_weight_matrix(row_idx, col_idx);
         if (val < min_val) {
           ret = true;
           min_val = val;
@@ -474,7 +478,7 @@ bool hungarian_assigner_c<Capacity>::find_minimum_uncovered_value(
 
 ///
 /// TODO(c.ho) might be able to update this incrementally
-template<int Capacity>
+template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::update_uncovered_rows_and_cols()
 {
   m_num_uncovered_rows = index_t();
