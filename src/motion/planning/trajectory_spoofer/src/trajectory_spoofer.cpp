@@ -160,11 +160,6 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 
     circular_trajectory.points.push_back(pt);
 
-    // TODO(josh.whitley): Calculate adjusted:
-    // 1. lateral_velocity_mps
-    // 2. heading_rate_rps
-    // 3. front_wheel_angle_rad
-    // 4. rear_wheel_angle_rad
   }
 
   return circular_trajectory;
