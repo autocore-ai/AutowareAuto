@@ -16,6 +16,7 @@
 #ifndef NDT_NODES__NDT_LOCALIZER_NODES_HPP_
 #define NDT_NODES__NDT_LOCALIZER_NODES_HPP_
 
+#include <common/types.hpp>
 #include <ndt_nodes/visibility_control.hpp>
 #include <ndt/ndt_localizer.hpp>
 #include <localization_nodes/localization_node.hpp>
@@ -26,6 +27,9 @@
 #include <string>
 #include <memory>
 #include <limits>
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -89,12 +93,12 @@ public:
   {
     auto get_point_param = [this](const std::string & config_name_prefix) {
         perception::filters::voxel_grid::PointXYZ point;
-        point.x = static_cast<float>(this->declare_parameter(config_name_prefix + ".x").
-          template get<float>());
-        point.y = static_cast<float>(this->declare_parameter(config_name_prefix + ".y").
-          template get<float>());
-        point.z = static_cast<float>(this->declare_parameter(config_name_prefix + ".z").
-          template get<float>());
+        point.x = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".x").
+          template get<float32_t>());
+        point.y = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".y").
+          template get<float32_t>());
+        point.z = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".z").
+          template get<float32_t>());
         return point;
       };
     // Fetch map configuration
@@ -107,13 +111,14 @@ public:
     // Fetch localizer configuration
     P2DNDTConfig<OptimizerOptionsT> localizer_config{
       ndt::P2DNDTOptimizationConfig{this->declare_parameter(
-          "localizer.optimization.outlier_ratio").template get<double>()},
+          "localizer.optimization.outlier_ratio").template get<float64_t>()},
       OptimizerOptionsT{
         static_cast<uint64_t>(
           this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
-        this->declare_parameter("localizer.optimizer.score_tolerance").template get<double>(),
-        this->declare_parameter("localizer.optimizer.parameter_tolerance").template get<double>(),
-        this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<double>()
+        this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
+        this->declare_parameter(
+          "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
+        this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
       },
       map_config,
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").

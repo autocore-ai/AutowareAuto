@@ -27,6 +27,10 @@
 #include <vector>
 #include <set>
 #include <map>
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -38,9 +42,9 @@ namespace ndt_nodes
 common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
   return common::types::PointXYZIF{
-    static_cast<float>(v(0)),
-    static_cast<float>(v(1)),
-    static_cast<float>(v(2))};
+    static_cast<float32_t>(v(0)),
+    static_cast<float32_t>(v(1)),
+    static_cast<float32_t>(v(2))};
 }
 
 class DenseNDTMapContext
@@ -48,14 +52,14 @@ class DenseNDTMapContext
 protected:
   static constexpr int POINTS_PER_DIM{5U};
   // how much should the points diverge from the center. It's fixed as there's no randomness.
-  static constexpr float FIXED_DEVIATION{0.3};
+  static constexpr float32_t FIXED_DEVIATION{0.3f};
   using PointXYZ = geometry_msgs::msg::Point32;
 
 // add the point `center` and 4 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance
   void add_cell(
     sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
-    const Eigen::Vector3d & center, double fixed_deviation)
+    const Eigen::Vector3d & center, float64_t fixed_deviation)
   {
     common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
 
@@ -100,8 +104,8 @@ protected:
     for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
       for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
         for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
-          Eigen::Vector3d center{static_cast<double>(x), static_cast<double>(y),
-            static_cast<double>(z)};
+          Eigen::Vector3d center{static_cast<float64_t>(x), static_cast<float64_t>(y),
+            static_cast<float64_t>(z)};
           add_cell(m_pc, m_pc_idx, center, FIXED_DEVIATION);
           m_voxel_centers[cfg.index(center)] = center;
         }

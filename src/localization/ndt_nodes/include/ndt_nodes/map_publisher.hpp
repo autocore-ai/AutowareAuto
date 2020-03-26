@@ -21,6 +21,9 @@
 #include <ndt/ndt_map.hpp>
 #include <string>
 #include <memory>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -65,7 +68,7 @@ public:
     const std::string & file_name,
     const uint32_t num_expected_subs,
     std::chrono::milliseconds init_timeout,
-    const bool viz_map = false,
+    const bool8_t viz_map = false,
     const std::string & viz_map_topic = "",
     const uint32_t num_expected_viz_subs = 1
   );
@@ -132,7 +135,7 @@ private:
   const std::string m_file_name;
   const uint32_t m_num_subs;
   const std::chrono::milliseconds m_timeout_ms;
-  const bool m_viz_map;
+  const bool8_t m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
   uint32_t m_num_viz_subs;
   std::unique_ptr<MapConfig> m_map_config_ptr;

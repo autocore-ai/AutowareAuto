@@ -18,6 +18,10 @@
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <string>
 #include <memory>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -52,7 +56,7 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const std::string & file_name,
   const uint32_t num_expected_subs,
   std::chrono::milliseconds init_timeout,
-  const bool viz_map,
+  const bool8_t viz_map,
   const std::string & viz_map_topic,
   const uint32_t num_expected_viz_subs
 )
@@ -81,22 +85,31 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   m_num_subs(static_cast<uint32_t>(declare_parameter("num_expected_subs").get<uint32_t>())),
   m_timeout_ms(std::chrono::milliseconds(
       static_cast<uint32_t>(declare_parameter("init_timeout_ms").get<uint32_t>()))),
-  m_viz_map(static_cast<bool>(declare_parameter("viz_map").get<bool>())),
+  m_viz_map(static_cast<bool8_t>(declare_parameter("viz_map").get<bool8_t>())),
   m_num_viz_subs(static_cast<uint32_t>(declare_parameter("num_expected_viz_subs").get<uint32_t>()))
 {
   using PointXYZ = perception::filters::voxel_grid::PointXYZ;
   PointXYZ min_point;
-  min_point.x = static_cast<float>(declare_parameter("map_config.min_point.x").get<float>());
-  min_point.y = static_cast<float>(declare_parameter("map_config.min_point.y").get<float>());
-  min_point.z = static_cast<float>(declare_parameter("map_config.min_point.z").get<float>());
+  min_point.x =
+    static_cast<float32_t>(declare_parameter("map_config.min_point.x").get<float32_t>());
+  min_point.y =
+    static_cast<float32_t>(declare_parameter("map_config.min_point.y").get<float32_t>());
+  min_point.z =
+    static_cast<float32_t>(declare_parameter("map_config.min_point.z").get<float32_t>());
   PointXYZ max_point;
-  max_point.x = static_cast<float>(declare_parameter("map_config.max_point.x").get<float>());
-  max_point.y = static_cast<float>(declare_parameter("map_config.max_point.y").get<float>());
-  max_point.z = static_cast<float>(declare_parameter("map_config.max_point.z").get<float>());
+  max_point.x =
+    static_cast<float32_t>(declare_parameter("map_config.max_point.x").get<float32_t>());
+  max_point.y =
+    static_cast<float32_t>(declare_parameter("map_config.max_point.y").get<float32_t>());
+  max_point.z =
+    static_cast<float32_t>(declare_parameter("map_config.max_point.z").get<float32_t>());
   PointXYZ voxel_size;
-  voxel_size.x = static_cast<float>(declare_parameter("map_config.voxel_size.x").get<float>());
-  voxel_size.y = static_cast<float>(declare_parameter("map_config.voxel_size.y").get<float>());
-  voxel_size.z = static_cast<float>(declare_parameter("map_config.voxel_size.z").get<float>());
+  voxel_size.x =
+    static_cast<float32_t>(declare_parameter("map_config.voxel_size.x").get<float32_t>());
+  voxel_size.y =
+    static_cast<float32_t>(declare_parameter("map_config.voxel_size.y").get<float32_t>());
+  voxel_size.z =
+    static_cast<float32_t>(declare_parameter("map_config.voxel_size.z").get<float32_t>());
   const std::size_t capacity =
     static_cast<std::size_t>(declare_parameter("map_config.capacity").get<std::size_t>());
   const std::string map_frame = declare_parameter("map_frame").get<std::string>();

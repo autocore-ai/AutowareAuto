@@ -37,10 +37,10 @@ TEST(PCDLoadTest, basics) {
   const std::string non_existing_fname = "NON_EXISTING_FILE_PCDLoadTest.XYZ";
   for (auto i = 0U; i < num_points; i++) {
     pcl::PointXYZI pt;
-    pt.x = static_cast<float>(i);
-    pt.y = static_cast<float>(i);
-    pt.z = static_cast<float>(i);
-    pt.intensity = static_cast<float>(i);
+    pt.x = static_cast<float32_t>(i);
+    pt.y = static_cast<float32_t>(i);
+    pt.z = static_cast<float32_t>(i);
+    pt.intensity = static_cast<float32_t>(i);
     dummy_cloud.push_back(pt);
   }
   pcl::io::savePCDFile(test_fname, dummy_cloud);
@@ -50,10 +50,10 @@ TEST(PCDLoadTest, basics) {
   EXPECT_THROW(read_from_pcd(non_existing_fname, msg), std::runtime_error);
   EXPECT_NO_THROW(read_from_pcd(test_fname, msg));
 
-  sensor_msgs::PointCloud2ConstIterator<float> x_it(msg, "x");
-  sensor_msgs::PointCloud2ConstIterator<float> y_it(msg, "y");
-  sensor_msgs::PointCloud2ConstIterator<float> z_it(msg, "z");
-  sensor_msgs::PointCloud2ConstIterator<float> intensity_it(msg, "intensity");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> intensity_it(msg, "intensity");
 
   auto counter = 0.0F;
 
@@ -84,7 +84,7 @@ TEST_F(MapPublisherTest, core_functionality)
 
   {
     NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
-      "filename", 1U, std::chrono::milliseconds(1U));
+                                  "filename", 1U, std::chrono::milliseconds(1U));
     // The map will not find any subscription listening to its topic and throw an error.
     EXPECT_THROW(publisher.run(), std::runtime_error);
   }
