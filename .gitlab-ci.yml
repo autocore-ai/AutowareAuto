@@ -3,8 +3,7 @@ stages:
   - build
   - deploy
 
-
-ade:
+.ade_base: &ade_base
   stage: ade
   image: docker
   services:
@@ -23,11 +22,11 @@ ade:
               -t image .;
       else
           (
-              docker pull $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA &&
-              docker tag $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA image
+              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA &&
+              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA image
           ) || (
-              docker pull $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE &&
-              docker tag $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE image
+              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE &&
+              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE image
           ) || (
               chmod og-w . -R;
               docker build
@@ -37,15 +36,14 @@ ade:
           );
       fi
       '
-    - docker tag image $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE
-    - docker tag image $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE/ade:$CI_COMMIT_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE/ade:commit-$LAST_CHANGE
-    - docker push $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE/ade:$CI_COMMIT_REF_SLUG
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
+    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
 
-
-build_barebones:
+.build_barebones_base: &build_barebones_base
   stage: build
   image: ubuntu:bionic
   script:
@@ -82,9 +80,9 @@ build_barebones:
              -DCMAKE_BUILD_TYPE=Debug
       '
 
-build:
+.build_base: &build_base
   stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
   script:
     - 'apt-get update && apt-get -y --no-install-recommends install
           git
@@ -127,6 +125,60 @@ build:
     - cp -a LICENSE /opt/AutowareAuto
     - chmod -R og-w /opt/AutowareAuto
     - tar cfz opt.tar.gz /opt/AutowareAuto
+
+.volume_base: &volume_base
+  stage: deploy
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
+    - |
+      cat >Dockerfile <<EOF
+      FROM alpine
+      ADD opt.tar.gz /
+      VOLUME /opt/AutowareAuto
+      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
+      EOF
+    - 'docker build
+          --label ade_image_commit_sha="$CI_COMMIT_SHA"
+          --label ade_image_commit_tag="$CI_COMMIT_TAG"
+          -t image .
+      '
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
+
+ade:
+  variables:
+    ARCH: ""
+  <<: *ade_base
+
+ade_arm64:
+  variables:
+    ARCH: "/arm64"
+  tags:
+    - arm64
+  <<: *ade_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+
+build_barebones:
+  <<: *build_barebones_base
+
+build_barebones_arm64:
+  tags:
+    - arm64
+  <<: *build_barebones_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+
+build:
+  variables:
+    ARCH: ""
+  <<: *build_base
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
@@ -135,6 +187,19 @@ build:
     reports:
       junit: test-results.xml
 
+build_arm64:
+  variables:
+    ARCH: "/arm64"
+  tags:
+    - arm64
+  <<: *build_base
+  artifacts:
+    name: "$CI_JOB_NAME$ARCH"
+    paths:
+      - log
+      - opt.tar.gz
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
 
 coverage:
   stage: build
@@ -173,7 +238,6 @@ coverage:
     COVERAGE_FLAGS: "-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
 
-
 docs:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
@@ -183,7 +247,6 @@ docs:
     name: "$CI_JOB_NAME"
     paths:
       - docs/_build/html
-
 
 pages:
   stage: deploy
@@ -201,7 +264,6 @@ pages:
   only:
     - master
 
-
 volume:
   stage: deploy
   image: docker
@@ -209,22 +271,21 @@ volume:
     - docker:dind
   dependencies:
     - build
-  script:
-    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
-    - |
-      cat >Dockerfile <<EOF
-      FROM alpine
-      ADD opt.tar.gz /
-      VOLUME /opt/AutowareAuto
-      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
-      EOF
-    - 'docker build
-          --label ade_image_commit_sha="$CI_COMMIT_SHA"
-          --label ade_image_commit_tag="$CI_COMMIT_TAG"
-          -t image .
-      '
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker tag image $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  variables:
+    ARCH: ""
+  <<: *volume_base
+
+volume_arm64:
+  stage: deploy
+  image: docker
+  services:
+    - docker:19.03.5-dind
+  dependencies:
+    - build_arm64
+  tags:
+    - arm64
+  variables:
+    ARCH: "/arm64"
+  <<: *volume_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto

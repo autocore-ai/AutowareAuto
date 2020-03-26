@@ -306,7 +306,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
   bool invertible{false};
   covariance.computeInverseWithCheck(inv_covariance, invertible);
   ASSERT_TRUE(invertible);
-  EXPECT_EQ(voxel.inverse_covariance(), inv_covariance);
+  EXPECT_TRUE(inv_covariance.isApprox(voxel.inverse_covariance()));
   EXPECT_TRUE(voxel.usable());
 }
 
