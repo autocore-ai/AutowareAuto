@@ -79,6 +79,7 @@ Install Autoware.Auto and learn how to develop applications.
 Guidelines for contributing to Autoware.Auto.
 
 - @subpage cpp-development-process
+- @subpage develop-in-a-fork
 
 # Links to other resources {#index-links-to-other-resources}
 

@@ -65,38 +65,9 @@ $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 
 ## Workflow
 
-We follow the standard fork and pull model popularized by GitHub.
+We follow the standard fork-and-pull model popularized by GitHub.
 
-All contributions start with a fork of https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git into your account.
-
-![Autoware.Auto fork](images/autoware-fork.png)
-
-Create a branch that best represents the work you are going to start. If it is related to an existing ticket,
-please prefix your branch with the number of the ticket.
-
-Make any changes to the source code you think appropriate. We advise committing and pushing often to avoid lose of data.
-
-The first time you push your branch, Gitlab will print a URL from where you can directly submit a merge
-request (put simply, GitLab's name for what GitHub calls a pull request).
-
-![Autoware.Auto merge request from push command line](images/autoware-merge-request.png)
-
-A merge request can also be triggered by going to the [Autoware project page](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto),
-where a message will pop up with a button to create new merge request.
-
-![Autoware.Auto merge request from project page](images/autoware-merge-request-project.png)
-
-Before a merge request can be merged, an approval from a member of the development team is required.
-
-Additionally, our continuous integration system will run tests for any merge request and if it fails, the merge
-request will be blocked from being merged.
-
-We assign the merge request to the reviewer(s) or to the author to decide at any moment who should be taking the next action items.
-
-When you submit a merge request for review, you should first assign it to yourself, until you think it's ready for review.
-
-If you don't know who should be the reviewers, feel free to assign your merge request to the project leads (\@esteve and \@gbiggs),
-and they will assign it to the right person.
+For a detailed description of this workflow, please see our [workflow guide](@ref develop-in-a-fork).
 
 ## Initial Build
 
