@@ -30,6 +30,7 @@ endif()
 install(DIRECTORY
   config
   launch
+  param
   DESTINATION share/${PROJECT_NAME}
 )
 

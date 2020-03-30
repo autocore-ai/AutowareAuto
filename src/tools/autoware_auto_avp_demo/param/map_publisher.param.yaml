@@ -1,0 +1,25 @@
+localization:
+  ndt_map_publisher_node:
+    ros__parameters:
+      map_topic: "ndt_map"
+      map_file_name: "map/path/here.pcd"
+      map_frame: "map"
+      num_expected_subs: 1
+      init_timeout_ms: 60000  # 60 seconds until publisher finds a subscriber
+      map_config:
+        capacity: 55000
+        min_point:
+          x: -130.0
+          y: -130.0
+          z: -3.0
+        max_point:
+          x: 130.0
+          y: 130.0
+          z: 3.0
+        voxel_size:
+          x: 2.0
+          y: 2.0
+          z: 2.0
+      viz_map: True
+      viz_map_topic: "viz_ndt_map"
+      num_expected_viz_subs: 1
