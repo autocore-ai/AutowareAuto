@@ -24,6 +24,7 @@
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
 using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace lgsvl_interface
 {
@@ -37,7 +38,9 @@ LgsvlInterface::LgsvlInterface(
   const std::string & kinematic_state_topic,
   Table1D && throttle_table,
   Table1D && brake_table,
-  Table1D && steer_table)
+  Table1D && steer_table,
+  bool publish_tf,
+  bool publish_pose)
 : m_throttle_table{throttle_table},
   m_brake_table{brake_table},
   m_steer_table{steer_table}
@@ -92,10 +95,18 @@ LgsvlInterface::LgsvlInterface(
   if (!sim_odom_topic.empty() && ("null" != sim_odom_topic)) {
     m_odom_sub = node.create_subscription<nav_msgs::msg::Odometry>(sim_odom_topic, rclcpp::QoS{10},
         [this](nav_msgs::msg::Odometry::SharedPtr msg) {on_odometry(*msg);});
-    // Ground truth state/transform publishers only work if there's a ground truth input
+    // Ground truth state/pose publishers only work if there's a ground truth input
     m_kinematic_state_pub = node.create_publisher<autoware_auto_msgs::msg::VehicleKinematicState>(
       kinematic_state_topic, rclcpp::QoS{10});
-    m_tf_pub = node.create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS{10});  // standard
+
+    if (publish_pose) {
+      m_pose_pub = node.create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "gnss/gnss_pose", rclcpp::QoS{10});
+    }
+
+    if (publish_tf) {
+      m_tf_pub = node.create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS{10});
+    }
   }
   m_state_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleStateReport>(
     sim_state_report_topic,
@@ -210,7 +221,36 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
 
     m_kinematic_state_pub->publish(vse);
   }
-  {
+
+  if (m_pose_pub) {
+    geometry_msgs::msg::PoseWithCovarianceStamped pose{};
+    pose.header = msg.header;
+    pose.pose.pose.position = msg.pose.pose.position;
+    pose.pose.pose.orientation = q;
+
+    constexpr auto EPS = std::numeric_limits<float32_t>::epsilon();
+    if (std::fabs(msg.pose.covariance[COV_X]) > EPS ||
+      std::fabs(msg.pose.covariance[COV_Y]) > EPS ||
+      std::fabs(msg.pose.covariance[COV_Z]) > EPS ||
+      std::fabs(msg.pose.covariance[COV_RX]) > EPS ||
+      std::fabs(msg.pose.covariance[COV_RY]) > EPS ||
+      std::fabs(msg.pose.covariance[COV_RZ]) > EPS)
+    {
+      pose.pose.covariance = {
+        COV_X_VAR, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, COV_Y_VAR, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, COV_Z_VAR, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, COV_RX_VAR, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, COV_RY_VAR, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, COV_RX_VAR};
+    } else {
+      pose.pose.covariance = msg.pose.covariance;
+    }
+
+    m_pose_pub->publish(pose);
+  }
+
+  if (m_tf_pub) {
     geometry_msgs::msg::TransformStamped tf{};
     tf.header = msg.header;
     tf.child_frame_id = msg.child_frame_id;
@@ -223,6 +263,7 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     tf_msg.transforms.emplace_back(std::move(tf));
     m_tf_pub->publish(tf_msg);
   }
+
   {
     autoware_auto_msgs::msg::VehicleOdometry odom_msg{};
     odom_msg.stamp = msg.header.stamp;

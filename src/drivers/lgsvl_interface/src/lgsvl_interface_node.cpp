@@ -54,6 +54,13 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
       declare_parameter(prefix + "range").get<std::vector<float64_t>>()
       };
     };
+  const auto pub_pose_param = declare_parameter("lgsvl.publish_pose");
+  const bool pub_pose = rclcpp::ParameterType::PARAMETER_NOT_SET == pub_pose_param.get_type() ?
+    PUBLISH : pub_pose_param.get<bool>();
+  const auto pub_tf_param = declare_parameter("lgsvl.publish_tf");
+  const bool pub_tf = rclcpp::ParameterType::PARAMETER_NOT_SET == pub_tf_param.get_type() ?
+    NO_PUBLISH : pub_tf_param.get<bool>();
+
   // Set up interface
   set_interface(std::make_unique<LgsvlInterface>(
       *this,
@@ -64,7 +71,9 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
       kinematic_state_topic,
       table("throttle"),
       table("brake"),
-      table("steer")
+      table("steer"),
+      pub_tf,
+      pub_pose
   ));
   // TODO(c.ho) low pass filter and velocity controller
 }

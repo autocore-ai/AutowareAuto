@@ -23,6 +23,7 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
@@ -37,6 +38,27 @@ namespace lgsvl_interface
 {
 
 using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
+
+// initialise default covariance for each measurement
+// if simulator does not provide estimate of a state variable
+// variance should be set high
+constexpr static double COV_X_VAR = 0.1;  // ros covariance array is float64 = double
+constexpr static double COV_Y_VAR = 0.1;
+constexpr static double COV_Z_VAR = 0.1;
+constexpr static double COV_RX_VAR = 1000.0;
+constexpr static double COV_RY_VAR = 1000.0;
+constexpr static double COV_RZ_VAR = 1000.0;
+
+// Covariance array index values
+constexpr static int32_t COV_X = 0;
+constexpr static int32_t COV_Y = 7;
+constexpr static int32_t COV_Z = 14;
+constexpr static int32_t COV_RX = 21;
+constexpr static int32_t COV_RY = 28;
+constexpr static int32_t COV_RZ = 35;
+
+constexpr bool PUBLISH = true;
+constexpr bool NO_PUBLISH = false;
 
 /// Platform interface implementation for LGSVL. Bridges data to and from the simulator
 /// where custom logic is required to get simulator data to adhere to ROS conventions.
@@ -54,7 +76,9 @@ public:
     const std::string & kinematic_state_topic,
     Table1D && throttle_table,
     Table1D && brake_table,
-    Table1D && steer_table);
+    Table1D && steer_table,
+    bool publish_tf = NO_PUBLISH,
+    bool publish_pose = PUBLISH);
 
   ~LgsvlInterface() noexcept override = default;
   /// Receives data from ROS 2 subscriber, and updates output messages.
@@ -70,7 +94,7 @@ public:
   bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override;
 
 private:
-  // Convert odometry into vehicle kinematic state and tf
+  // Convert odometry into vehicle kinematic state and pose
   void on_odometry(const nav_msgs::msg::Odometry & msg);
 
   rclcpp::Publisher<autoware_auto_msgs::msg::RawControlCommand>::SharedPtr m_cmd_pub{};
@@ -78,6 +102,7 @@ private:
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleKinematicState>::SharedPtr
     m_kinematic_state_pub{};
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_pub{};
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr m_pose_pub{};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_odom_sub{};
   rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_sub{};
 
