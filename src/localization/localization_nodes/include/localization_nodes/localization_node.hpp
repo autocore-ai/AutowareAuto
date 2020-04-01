@@ -124,7 +124,7 @@ public:
         declare_parameter("map_sub.topic").template get<std::string>(),
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter("map_sub.history_depth").
-            template get<size_t>())}},
+            template get<size_t>())}}.transient_local(),
         [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
         declare_parameter("pose_pub.topic").template get<std::string>(),
