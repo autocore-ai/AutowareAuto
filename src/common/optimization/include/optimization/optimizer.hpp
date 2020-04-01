@@ -92,18 +92,29 @@ public:
     using Jacobian = typename OptimizationProblemT::Jacobian;
     using Hessian = typename OptimizationProblemT::Hessian;
     TerminationType termination_type{TerminationType::NO_CONVERGENCE};
+    Value score_previous{0.0};
+    Jacobian jacobian{Jacobian{}.setZero()};
+    Hessian hessian{Hessian{}.setZero()};
+    DomainValueT opt_direction{DomainValueT{}.setZero()};
+
+    if (!x0.allFinite()) {   // Early exit for invalid input.
+      return OptimizationSummary{0.0, TerminationType::FAILURE, 0UL};
+    }
 
     // Initialize
-    Value x_delta_norm{0.0};
     x_out = x0;
 
-    // Get value, Jacobian and Hessian (pre-computed using evaluate)
+    // Get score, Jacobian and Hessian (pre-computed using evaluate)
     optimization_problem.evaluate(x_out, ComputeMode{}.set_score().set_jacobian().set_hessian());
-    auto score_previous = optimization_problem(x_out);
-    Jacobian jacobian;
+    score_previous = optimization_problem(x_out);
     optimization_problem.jacobian(x_out, jacobian);
-    Hessian hessian;
     optimization_problem.hessian(x_out, hessian);
+
+    // Early exit if the initial solution is good enough.
+    if (jacobian.template lpNorm<Eigen::Infinity>() <= options.gradient_tolerance()) {
+      // As there's no newton solution yet, jacobian can be a good substitute.
+      return OptimizationSummary{jacobian.norm(), TerminationType::CONVERGENCE, 0UL};
+    }
 
     // Iterate until convergence, error, or maximum number of iterations
     auto nr_iterations = 0UL;
@@ -114,31 +125,24 @@ public:
       }
       // Find decent direction using Newton's method
       EigenSolverT solver(hessian);
-      DomainValueT x_delta = solver.solve(-jacobian);
+      opt_direction = solver.solve(-jacobian);
 
       // Check if there was a problem during Eigen's solve()
-      x_delta_norm = x_delta.norm();
-      if (!std::isfinite(x_delta_norm)) {
+      if (!opt_direction.allFinite()) {
         termination_type = TerminationType::FAILURE;
         break;
       }
 
-      // TODO(yunus.caliskan): Probably copy CERES gradient check.
-      // // Check if converged
-      // if (x_delta_norm <= options.gradient_tolerance()) {
-      //   termination_type = TerminationType::CONVERGENCE;
-      //   break;
-      //   }
-
       // Calculate and apply step length
-      x_delta.normalize();
+      const auto normalized_direction = opt_direction.normalized();
       // TODO(zozen): with guarnteed sufficient decrease as in [More, Thuente 1994]
       // would need partial results passed to optimization_problem before call, as in:
       // computeStepLengthMT (x0, x_delta, x_delta_norm, transformation_epsilon_/2, ...
       // and would pre-compute score/jacobian/hessian as during init in evaluate!
       // also needs the sign to know the direction of optimization?
       const auto step = m_line_searcher.compute_step_length(optimization_problem);
-      x_delta *= step;  // TODO(zozen): fabs(step)?
+      const DomainValueT x_delta = normalized_direction * step;  // TODO(zozen): fabs(step)?
+      const auto prev_x_norm = x_out.norm();
       x_out += x_delta;
 
       // Check change in parameter relative to the parameter value
@@ -146,8 +150,8 @@ public:
       // (Inspired from https://github.com/ceres-solver/ceres-solver/blob/4362a2169966e08394252098
       // c80d1f26764becd0/include/ceres/tiny_solver.h#L244)
       const auto parameter_tolerance =
-        options.parameter_tolerance() * (x_out.norm() + options.parameter_tolerance());
-      if (x_delta.norm() < parameter_tolerance) {
+        options.parameter_tolerance() * (prev_x_norm + options.parameter_tolerance());
+      if (step <= parameter_tolerance) {
         termination_type = TerminationType::CONVERGENCE;
         break;
       }
@@ -158,9 +162,15 @@ public:
       optimization_problem.jacobian(x_out, jacobian);
       optimization_problem.hessian(x_out, hessian);
 
-      // Check change in cost function
-      if (fabs(score - score_previous) / std::fabs(score_previous) <=
-        options.function_tolerance())
+      // Check if the max-norm of the gradient is small enough.
+      if (jacobian.template lpNorm<Eigen::Infinity>() <= options.gradient_tolerance()) {
+        termination_type = TerminationType::CONVERGENCE;
+        break;
+      }
+
+      // Check change in cost function.
+      if (std::fabs(score - score_previous) <=
+        (options.function_tolerance() * std::fabs(score_previous)))
       {
         termination_type = TerminationType::CONVERGENCE;
         break;
@@ -171,7 +181,7 @@ public:
 
     // Returning summary consisting of the following three values:
     // estimated_distance_to_optimum, convergence_tolerance_criteria_met, number_of_iterations_made
-    return OptimizationSummary{x_delta_norm, termination_type, nr_iterations};
+    return OptimizationSummary{opt_direction.norm(), termination_type, nr_iterations};
   }
 
 private:
