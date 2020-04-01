@@ -36,6 +36,10 @@ namespace filters
 /// \brief Objects that tie voxel_grid classes to Apex.OS and interprocess communication
 namespace voxel_grid_nodes
 {
+rclcpp::QoS parse_qos(
+  const rclcpp::ParameterValue & durability_param,
+  const rclcpp::ParameterValue & depth_param, const rclcpp::QoS & default_qos = rclcpp::QoS(10));
+
 /// \brief Boilerplate node that subscribes to point clouds and publishes a downsampled version
 class VOXEL_GRID_NODES_PUBLIC VoxelCloudNode : public rclcpp_lifecycle::LifecycleNode
 {
@@ -53,12 +57,16 @@ public:
   /// \param[in] pub_topic Name of downsampled output topic
   /// \param[in] cfg Configuration object for VoxelGrid
   /// \param[in] is_approximate Whether the internal voxel grid is approximate or not (centroid)
+  /// \param sub_qos QoS profile for the subscription. By default, set to depth of 10.
+  /// \param pub_qos QoS profile for the publisher. By default, set to depth of 10.
   VoxelCloudNode(
     const std::string & node_name,
     const std::string & sub_topic,
     const std::string & pub_topic,
     const voxel_grid::Config & cfg,
-    const bool is_approximate);
+    const bool is_approximate,
+    const rclcpp::QoS sub_qos = rclcpp::QoS(10),
+    const rclcpp::QoS pub_qos = rclcpp::QoS(10));
 
   /// \brief Core run loop
   void callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
@@ -72,7 +80,6 @@ private:
   using Message = sensor_msgs::msg::PointCloud2;
 
   using Transition = lifecycle_msgs::msg::Transition;
-
 
   const rclcpp::Subscription<Message>::SharedPtr m_sub_ptr;
   const std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<Message>> m_pub_ptr;

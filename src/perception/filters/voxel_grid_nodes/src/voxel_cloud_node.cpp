@@ -21,8 +21,7 @@
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
 #include <memory>
 #include <string>
-
-#include "lidar_utils/point_cloud_utils.hpp"
+#include <algorithm>
 
 namespace autoware
 {
@@ -37,12 +36,14 @@ VoxelCloudNode::VoxelCloudNode(
   const std::string & node_name,
   const std::string & node_namespace)
 : LifecycleNode(
-    node_name.c_str(),
-    node_namespace.c_str()),
+    node_name.c_str(), node_namespace.c_str()),
   m_sub_ptr(create_subscription<Message>(declare_parameter("input_topic").get<std::string>(),
-    rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
+    parse_qos(declare_parameter("subscription.qos.durability"),
+    declare_parameter("subscription.qos.history_depth")),
+    std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
   m_pub_ptr(create_publisher<Message>(declare_parameter("downsample_topic").get<std::string>(),
-    rclcpp::QoS(10))),
+    parse_qos(declare_parameter("publisher.qos.durability"),
+    declare_parameter("publisher.qos.history_depth")))),
   m_has_failed(false)
 {
   // Build config manually (messages only have default constructors)
@@ -70,11 +71,13 @@ VoxelCloudNode::VoxelCloudNode(
   const std::string & sub_topic,
   const std::string & pub_topic,
   const voxel_grid::Config & cfg,
-  const bool is_approximate)
+  const bool is_approximate,
+  const rclcpp::QoS sub_qos,
+  const rclcpp::QoS pub_qos)
 : LifecycleNode(node_name.c_str()),
   m_sub_ptr(create_subscription<Message>(sub_topic.c_str(),
-    rclcpp::QoS(10), std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>(pub_topic.c_str(), rclcpp::QoS(10))),
+    sub_qos, std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
+  m_pub_ptr(create_publisher<Message>(pub_topic.c_str(), pub_qos)),
   m_has_failed(false)
 {
   init(cfg, is_approximate);
@@ -133,6 +136,37 @@ void VoxelCloudNode::init(const voxel_grid::Config & cfg, const bool is_approxim
   if (!register_on_deactivate(deactivate_fn)) {
     throw std::runtime_error("Could not register deactivate callback");
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+rclcpp::QoS parse_qos(
+  const rclcpp::ParameterValue & durability_param,
+  const rclcpp::ParameterValue & depth_param, const rclcpp::QoS & default_qos)
+{
+  if ((durability_param.get_type() == rclcpp::PARAMETER_NOT_SET) ||
+    (depth_param.get_type() == rclcpp::PARAMETER_NOT_SET))
+  {
+    RCLCPP_DEBUG(rclcpp::get_logger("qos_parse_logger"),
+      "Cannot parse the qos as there are missing fields in the parameter file. "
+      "A preset qos profile is used instead.");
+    return default_qos;
+  }
+  int32_t depth = depth_param.get<int32_t>();
+  std::string durability = durability_param.get<std::string>();
+
+  std::transform(durability.begin(), durability.end(), durability.begin(),
+    [](unsigned char c) {return std::tolower(c);}
+  );
+  auto qos = rclcpp::QoS(depth);
+  if (durability == "transient_local") {
+    qos.transient_local();
+  } else if (durability == "volatile") {
+    qos.durability_volatile();
+  } else {
+    throw std::runtime_error("Durability setting '" + durability + "' is not supported."
+            "Please try 'volatile' or 'transient_local'.");
+  }
+  return qos;
 }
 }  // namespace voxel_grid_nodes
 }  // namespace filters
