@@ -82,13 +82,6 @@ TEST_F(MapPublisherTest, core_functionality)
   const auto grid_config =
     perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
-  {
-    NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
-                                  "filename", 1U, std::chrono::milliseconds(1U));
-    // The map will not find any subscription listening to its topic and throw an error.
-    EXPECT_THROW(publisher.run(), std::runtime_error);
-  }
-
   const auto file_name = "MapPublisherTest_test.pcd";
   // have a validation map to transform the source cloud. The publisher's output
   // should match the cells in this map.
@@ -100,7 +93,8 @@ TEST_F(MapPublisherTest, core_functionality)
   Cloud received_cloud_map;
   const auto listener_node = rclcpp::Node::make_shared("MapPublisherTest_listener_node");
   const auto sub =
-    listener_node->create_subscription<Cloud>(map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)),
+    listener_node->create_subscription<Cloud>(map_topic,
+      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
       [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
         ++callback_counter;
         received_cloud_map = *msg;
@@ -108,7 +102,7 @@ TEST_F(MapPublisherTest, core_functionality)
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
   NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-    grid_config, file_name, 1U, std::chrono::seconds(5U));
+    grid_config, file_name);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
@@ -157,12 +151,6 @@ TEST_F(MapPublisherTest, viz_functionality)
   using Cloud = sensor_msgs::msg::PointCloud2;
   const auto grid_config =
     perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
-  {
-    NDTMapPublisherNode publisher("badpublisher", "", "faketopic", "framename", grid_config,
-      "filename", 1U, std::chrono::milliseconds(1U), true, "viz_faketopic", 1U);
-    // The map will not find any subscription listening to its topic and throw an error.
-    EXPECT_THROW(publisher.run(), std::runtime_error);
-  }
 
   const auto file_name = "MapPublisherTest_test.pcd";
   // have a validation source cloud. The viz cloud publisher's output
@@ -176,14 +164,16 @@ TEST_F(MapPublisherTest, viz_functionality)
   Cloud received_viz_cloud_map;
   const auto listener_node = rclcpp::Node::make_shared("MapPublisherTest_listener_node");
   const auto sub =
-    listener_node->create_subscription<Cloud>(map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)),
+    listener_node->create_subscription<Cloud>(map_topic,
+      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
       [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
         ++callback_counter;
         received_cloud_map = *msg;
       });
   const auto viz_listener_node = rclcpp::Node::make_shared("MapPublisherTest_viz_listener_node");
   const auto viz_sub =
-    viz_listener_node->create_subscription<Cloud>(viz_map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)),
+    viz_listener_node->create_subscription<Cloud>(viz_map_topic,
+      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
       [&received_viz_cloud_map, &viz_callback_counter](Cloud::ConstSharedPtr msg) {
         ++viz_callback_counter;
         received_viz_cloud_map = *msg;
@@ -191,7 +181,7 @@ TEST_F(MapPublisherTest, viz_functionality)
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
   NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-    grid_config, file_name, 1U, std::chrono::seconds(5U), true, viz_map_topic, 1U);
+    grid_config, file_name, true, viz_map_topic);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);

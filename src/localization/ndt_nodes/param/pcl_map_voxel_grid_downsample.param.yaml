@@ -6,6 +6,14 @@ voxel_grid_cloud_node:
     input_topic: "viz_ndt_map"
     downsample_topic: "viz_ndt_map_downsampled"
     is_approximate: false
+    publisher:
+      qos:
+        history_depth: 3
+        durability: transient_local
+    subscription:
+      qos:
+        history_depth: 3
+        durability: transient_local
     config:
       capacity: 10000000
       min_point:

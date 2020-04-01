@@ -52,13 +52,8 @@ public:
   /// \param map_frame The frame of the map.
   /// \param map_config The VoxelGrid configuration of the underlying DynamicNDTMap
   /// \param file_name The name of the file.
-  /// \param num_expected_subs Expected number of subscribers to the published maps.
-  /// \param init_timeout The time budget the map publisher can use to wait for matching
-  /// its recipients. If the publisher cannot match enough recipients,
-  /// then it will throw an exception.
   /// \param viz_map Boolean flag to choose whether to publish a visualizable point cloud.
   /// \param viz_map_topic The topic hte vizualizable map will be published to.
-  /// \param num_expected_viz_subs Expected number of subscribers to the blublished viz. map
   NDTMapPublisherNode(
     const std::string & node_name,
     const std::string & node_namespace,
@@ -66,11 +61,8 @@ public:
     const std::string & map_frame,
     const MapConfig & map_config,
     const std::string & file_name,
-    const uint32_t num_expected_subs,
-    std::chrono::milliseconds init_timeout,
     const bool8_t viz_map = false,
-    const std::string & viz_map_topic = "",
-    const uint32_t num_expected_viz_subs = 1
+    const std::string & viz_map_topic = ""
   );
 
   /// Construct with a config file.
@@ -111,14 +103,6 @@ private:
   /// Reset the internal point clouds and the ndt map.
   void reset();
 
-  /// Wait until the publisher has discovered enough subscriptions. Throws on timeout.
-  /// \param num_expected_subs Number of subscriptions listening to the publisher's topic.
-  /// \param match_timeout Time within the discovery is expected to occur.
-  /// \param num_expected_viz_subs Number of subscriptions to the viz.map topic.
-  void wait_for_matched(
-    const uint32_t num_expected_subs, std::chrono::milliseconds match_timeout,
-    const uint32_t num_expected_viz_subs = 1);
-
   /// Iterate over the map representation and convert it into a PointCloud2 message where each voxel
   /// in the map corresponds to a single point in the PointCloud2 field. See the documentation for
   /// the specs and the format of the point cloud message.
@@ -133,11 +117,8 @@ private:
   sensor_msgs::msg::PointCloud2 m_map_pc;
   sensor_msgs::msg::PointCloud2 m_source_pc;
   const std::string m_file_name;
-  const uint32_t m_num_subs;
-  const std::chrono::milliseconds m_timeout_ms;
   const bool8_t m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
-  uint32_t m_num_viz_subs;
   std::unique_ptr<MapConfig> m_map_config_ptr;
 };
 
