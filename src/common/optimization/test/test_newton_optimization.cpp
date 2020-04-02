@@ -26,45 +26,178 @@ namespace common
 {
 namespace optimization
 {
+using NewtonPolynomialTestParam1D = Polynomial1dParam<NewtonOptimizationOptions, FixedLineSearch>;
+class NewtonOptimizationParamTest
+  : public ::testing::TestWithParam<NewtonPolynomialTestParam1D> {};
 
-// Init
-int DummyObjective::sign = -1;
-using DummyOptimizationProblem =
-  UnconstrainedOptimizationProblem<DummyObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U>;
+TEST_P(NewtonOptimizationParamTest, newton_optimization_validation) {
+  auto problem = GetParam().problem;
+  auto objective = problem.get_objective();
+  const auto x0 = GetParam().x0;
+  const auto options = GetParam().options;
+  const auto line_search = GetParam().line_searcher;
+  const auto expected_termination = GetParam().expected_termination;
+  const auto solution = objective.solution;
+  const auto is_convex = objective.convex;
 
-TEST_F(TestNewtonOptimization, newton_optimization_validation) {
-  // set up varaibles
-  uint16_t max_iter = 21;
-  constexpr auto step = 0.1F;
-  FixedLineSearch fls;
-  fls.set_step_max(step);
+  NewtonsMethod<FixedLineSearch> optimizer(line_search);
 
-  // set up optimization
-  NewtonsMethod<FixedLineSearch> no(fls);
-  DummyOptimizationProblem dummy_optimization_problem;
-  DummyOptimizationProblem::DomainValue dummy_x0 = Eigen::Matrix<double, 1U, 1U>::Ones();
-  DummyOptimizationProblem::DomainValue dummy_x_out;
-
-  // using function_tolerance and parameter_tolerance does not make sense with fixed step length
-  const auto options = NewtonOptimizationOptions(max_iter, 1e-2, 1e-2, 1e-2);
-  EXPECT_EQ(options.max_num_iterations(), max_iter);
-
-  // test optimization with both positive and negative objective function
-  for (DummyObjective::sign = -1; DummyObjective::sign <= 1; DummyObjective::sign += 2) {
-    OptimizationSummary summary = no.solve(dummy_optimization_problem, dummy_x0, dummy_x_out,
-        options);
-    EXPECT_LE(summary.number_of_iterations_made(), max_iter);
-    EXPECT_EQ(summary.termination_type(), TerminationType::CONVERGENCE);
-    EXPECT_NEAR(dummy_x_out(0, 0), -1.0, step);
-    EXPECT_FLOAT_EQ(dummy_optimization_problem(dummy_x_out), DummyObjective::sign * 1.0);
-    EXPECT_LE(summary.estimated_distance_to_optimum(), step);
+  decltype(problem)::DomainValue x_out;
+  const auto summary = optimizer.solve(problem, x0, x_out, options);
+  EXPECT_EQ(summary.termination_type(), expected_termination);
+  if (is_convex && (expected_termination == TerminationType::CONVERGENCE)) {
+    EXPECT_FLOAT_EQ(x_out(0, 0), solution);
+    EXPECT_LE(summary.estimated_distance_to_optimum(), line_search.get_step_max());
   }
 }
 
-TEST_F(TestFixedLineSearch, fixed_line_search_validation) {
+INSTANTIATE_TEST_CASE_P(
+  test_termination,
+  NewtonOptimizationParamTest,
+  ::testing::Values(
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
+        Vector1D{3.0}, // x0 = 3
+        NewtonOptimizationOptions(30, 4e-2, 0.0, 0.0), // Square of the step size used as threshold.
+        FixedLineSearch(0.2),
+        TerminationType::CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
+        Vector1D{3.0}, // x0 = 3
+        NewtonOptimizationOptions(30, 0.0, 1e-5, 0.0),
+        FixedLineSearch(0.2),
+        TerminationType::NO_CONVERGENCE // Can't converge because 0.2 > 1e-5
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
+        Vector1D{3.0}, // x0 = 3
+        NewtonOptimizationOptions(30, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.2),
+        TerminationType::CONVERGENCE
+      }
+  )
+);
+
+// since the convex polynomial objective will have a zero gradient solution,
+// Using a gradient based tolerance will have less variance to the step size than
+// the function tolerance which depends on the step size. Parameter tolerance is useless for
+// fixed step search. Hence gradient tolerance is used for different cases.
+INSTANTIATE_TEST_CASE_P(
+  test_different_problems,
+  NewtonOptimizationParamTest,
+  ::testing::Values(
+    // N = 2
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{0.0, 2, -11.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{2.0, 2, 100.0},
+        Vector1D{2},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0},
+        Vector1D{100.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::NO_CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0},
+        Vector1D{2.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.0001), // won't converge because step size is too small
+        TerminationType::NO_CONVERGENCE
+      },
+    // Higher order N
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-2.0, 4, 10.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::CONVERGENCE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-2.0, 16, 10.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::CONVERGENCE
+      }
+  )
+);
+
+constexpr auto inf = std::numeric_limits<float64_t>::infinity();
+constexpr auto max = std::numeric_limits<float64_t>::max();
+constexpr auto nan = std::numeric_limits<float64_t>::quiet_NaN();
+
+INSTANTIATE_TEST_CASE_P(
+  test_numeric_failure,
+  NewtonOptimizationParamTest,
+  ::testing::Values(
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{inf},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::FAILURE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{max},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::FAILURE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{nan},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(0.5),
+        TerminationType::FAILURE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(inf),
+        TerminationType::FAILURE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(nan),
+        TerminationType::FAILURE
+      },
+    NewtonPolynomialTestParam1D{
+        Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
+        Vector1D{0.0},
+        NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+        FixedLineSearch(max),
+        TerminationType::FAILURE
+      }
+  )
+);
+
+TEST(TestFixedLineSearch, fixed_line_search_validation) {
   // set up varaibles
   constexpr auto step = 0.01F;
-  DummyOptimizationProblem dummy_optimization_problem;
+  Polynomial1DOptimizationProblem dummy_optimization_problem{-2.0, 16, 10.0};
 
   // test derived class
   FixedLineSearch fls;

@@ -27,21 +27,15 @@ namespace common
 {
 namespace optimization
 {
+using Vector1D = Eigen::Matrix<float64_t, 1U, 1U>;
 
-class TestNewtonOptimization : public ::testing::Test
+/// This is the expression for `y = (x + A)^N + B`.
+/// If N is even, then the expression is convex with a global minima at -A.
+class Polynomial1DObjective : public Expression<Polynomial1DObjective, Vector1D, 1U, 1U>
 {
-};
-
-class TestFixedLineSearch : public ::testing::Test
-{
-};
-
-/// This is the expression for `y = (x + 1)^2 +1`
-class DummyObjective : public Expression<DummyObjective,
-    Eigen::Matrix<float64_t, 1U, 1U>, 1U, 1U>
-{
+public:
   // getting aliases from the base class.
-  using ExpressionT = Expression<DummyObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U, 1U>;
+  using ExpressionT = Expression<Polynomial1DObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U, 1U>;
   using DomainValue = typename ExpressionT::DomainValue;
   using Value = typename ExpressionT::Value;
   using Jacobian = typename ExpressionT::Jacobian;
@@ -49,32 +43,59 @@ class DummyObjective : public Expression<DummyObjective,
   using JacobianRef = Eigen::Ref<Jacobian>;
   using HessianRef = Eigen::Ref<Hessian>;
 
-public:
-  static int sign;
-
+  Polynomial1DObjective(float64_t A_, int32_t N_, float64_t B_)
+  : A{A_}, B{B_}, N{N_}, solution{-A_}, convex{((N_ % 2) == 0)} {}
   /// Get the result of an expression for a given parameter value.
   /// \param x Parameter value
   /// \return Evaluated score
-  Value operator()(const DomainValue & x)
+  Value score_(const DomainValue & x)
   {
-    return sign * (std::pow(x(0, 0) + 1.0, 2.0) + 1.0);
+    return std::pow(x(0, 0) + A, N) + B;
   }
 
   /// Get the jacobian at a given parameter value.
   /// \param x Parameter value.
   /// \param out Evaluated jacobian matrix.
-  void jacobian(const DomainValue & x, JacobianRef out)
+  void jacobian_(const DomainValue & x, JacobianRef out)
   {
-    out(0, 0) = sign * 2.0 * (x(0, 0) + 1.0);
+    out(0, 0) = static_cast<float64_t>(N) * (std::pow( (x(0, 0) + A), N - 1));
   }
 
   /// Get the hessian at a given parameter value.
   /// \param x Parameter value.
   /// \param out Evaluated hessian matrix.
-  void hessian(const DomainValue & x, HessianRef out)
+  void hessian_(const DomainValue & x, HessianRef out)
   {
-    out(0, 0) = sign * 2.0;
+    out(0, 0) = static_cast<float64_t>(N) * (std::pow(x(0, 0) + A, N - 2));
   }
+
+  bool convex;
+  float64_t A;
+  float64_t B;
+  int32_t N;
+  float64_t solution;
+};
+
+class Polynomial1DOptimizationProblem : public
+  UnconstrainedOptimizationProblem<Polynomial1DObjective, Eigen::Matrix<float64_t, 1U, 1U>, 1U>
+{
+public:
+  using UnconstrainedOptimizationProblem::UnconstrainedOptimizationProblem;
+
+  Polynomial1DObjective get_objective()
+  {
+    return objective();
+  }
+};
+
+template<typename OptimmizationOptionsT, typename LineSearchT>
+struct Polynomial1dParam
+{
+  Polynomial1DOptimizationProblem problem;
+  Polynomial1DObjective::DomainValue x0;
+  OptimmizationOptionsT options;
+  LineSearchT line_searcher;
+  TerminationType expected_termination;
 };
 
 }  // namespace optimization
