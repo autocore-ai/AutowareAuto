@@ -179,13 +179,11 @@ TEST_F(MapPublisherTest, viz_functionality)
         received_viz_cloud_map = *msg;
       });
 
-  // Create map publisher. It is given 5 seconds to discover the test subscription.
-  NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-    grid_config, file_name, true, viz_map_topic);
+  const auto map_publisher_ptr = std::make_shared<NDTMapPublisherNode>("test_map_publisher", "",
+      map_topic, map_frame, grid_config, file_name, true, viz_map_topic);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
-
 
   // Save the dense map to be read.
   const auto pcl_source = from_pointcloud2(m_pc);
@@ -193,10 +191,11 @@ TEST_F(MapPublisherTest, viz_functionality)
   ASSERT_TRUE(std::ifstream{file_name}.good());
 
   // Read pcd, pass the cloud to the internal dynamic map.
-  EXPECT_NO_THROW(map_publisher.run());
+  EXPECT_NO_THROW(map_publisher_ptr->run());
 
 
   while (viz_callback_counter < 1U) {
+    rclcpp::spin_some(map_publisher_ptr);  // TODO(yunus.caliskan): Remove spinning in #380
     rclcpp::spin_some(listener_node);
     rclcpp::spin_some(viz_listener_node);
   }

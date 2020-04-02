@@ -24,13 +24,14 @@ int32_t main(const int32_t argc, char * argv[])
   try {
     autoware::localization::ndt_nodes::NDTMapPublisherNode map_publisher(
       "ndt_map_publisher_node", "");
-    // Map publishes ones and stops execution.
-    map_publisher.run();
 
-    // Run until terminated by user to ensure the published map gets received at the subscribers.
-    while (rclcpp::ok()) {
-      rclcpp::sleep_for(std::chrono::milliseconds(100LL));
-    }
+    auto map_publisher_ptr = std::make_shared
+      <autoware::localization::ndt_nodes::NDTMapPublisherNode>("ndt_map_publisher_node", "");
+
+    map_publisher_ptr->run();
+
+    rclcpp::spin(map_publisher_ptr);
+
     rclcpp::shutdown();
   } catch (const std::exception & e) {
     // RCLCPP logging macros are not used in error handling because they would depend on nd_ptr's

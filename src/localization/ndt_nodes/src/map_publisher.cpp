@@ -131,6 +131,14 @@ void NDTMapPublisherNode::init(const std::string & map_frame, const std::string 
   if (m_viz_map == true) {   // create a publisher for map_visualization
     m_viz_pub = create_publisher<sensor_msgs::msg::PointCloud2>(
       viz_map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+    // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
+    // TODO(yunus.caliskan): Remove the loop and publish only once after #380
+    m_visualization_timer = create_wall_timer(std::chrono::seconds(1),
+        [this]() {
+          if (m_source_pc.width > 0U) {
+            m_viz_pub->publish(m_source_pc);
+          }
+        });
   }
 }
 
@@ -224,9 +232,6 @@ void NDTMapPublisherNode::publish()
 {
   if (m_map_pc.width > 0U) {
     m_pub->publish(m_map_pc);
-  }
-  if (m_viz_map == true && m_source_pc.width > 0U) {
-    m_viz_pub->publish(m_source_pc);
   }
 }
 

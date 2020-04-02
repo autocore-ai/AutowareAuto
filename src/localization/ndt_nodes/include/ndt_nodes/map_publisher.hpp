@@ -120,6 +120,8 @@ private:
   const bool8_t m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
   std::unique_ptr<MapConfig> m_map_config_ptr;
+  // Workaround. TODO(yunus.caliskan): Remove in #380
+  rclcpp::TimerBase::SharedPtr m_visualization_timer{nullptr};
 };
 
 }  // namespace ndt_nodes
