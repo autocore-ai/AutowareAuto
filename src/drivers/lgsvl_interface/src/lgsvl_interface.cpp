@@ -19,7 +19,9 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <unordered_map>
 #include <utility>
+
 
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
@@ -28,6 +30,11 @@ using autoware::common::types::float32_t;
 
 namespace lgsvl_interface
 {
+
+const std::unordered_map<GEAR_TYPE, GEAR_TYPE> LgsvlInterface::autoware_to_lgsvl_gear {
+  {VSC::GEAR_DRIVE, static_cast<GEAR_TYPE>(LGSVL_GEAR::DRIVE)},               // Drive
+  {VSC::GEAR_REVERSE, static_cast<GEAR_TYPE>(LGSVL_GEAR::REVERSE)},           // Reverse
+};
 
 LgsvlInterface::LgsvlInterface(
   rclcpp::Node & node,
@@ -43,7 +50,8 @@ LgsvlInterface::LgsvlInterface(
   bool publish_pose)
 : m_throttle_table{throttle_table},
   m_brake_table{brake_table},
-  m_steer_table{steer_table}
+  m_steer_table{steer_table},
+  m_logger{node.get_logger()}
 {
   const auto check = [](const auto value, const auto ref) -> bool8_t {
       return std::fabs(value - ref) > std::numeric_limits<decltype(value)>::epsilon();
@@ -111,7 +119,7 @@ LgsvlInterface::LgsvlInterface(
   m_state_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleStateReport>(
     sim_state_report_topic,
     rclcpp::QoS{10},
-    [this](autoware_auto_msgs::msg::VehicleStateReport::SharedPtr msg) {state_report() = *msg;});
+    [this](autoware_auto_msgs::msg::VehicleStateReport::SharedPtr msg) {on_state_report(*msg);});
   // TODO(c.ho) real odometry
 }
 
@@ -126,10 +134,20 @@ bool8_t LgsvlInterface::update(std::chrono::nanoseconds timeout)
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::VehicleStateCommand & msg)
 {
+  auto msg_corrected = msg;
+
   // in autoware_auto_msgs::msg::VehicleStateCommand 1 is drive, 2 is reverse, https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/9744f6dc/src/messages/autoware_auto_msgs/msg/VehicleStateCommand.msg#L32
   // in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
-  auto msg_corrected = msg;
-  msg_corrected.gear = msg.gear == 2 ? 1 : 0;
+
+  auto const iter = autoware_to_lgsvl_gear.find(msg.gear);
+
+  if (iter != autoware_to_lgsvl_gear.end()) {
+    msg_corrected.gear = iter->second;
+  } else {
+    msg_corrected.gear = static_cast<uint8_t>(LGSVL_GEAR::DRIVE);
+    RCLCPP_WARN(m_logger, "Unsupported gear value in state command, defaulting to Drive");
+  }
+
   m_state_pub->publish(msg_corrected);
   return true;
 }
@@ -273,6 +291,32 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     odom_msg.rear_wheel_angle_rad = 0.0F;
     odometry() = odom_msg;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LgsvlInterface::on_state_report(const autoware_auto_msgs::msg::VehicleStateReport & msg)
+{
+  auto corrected_report = msg;
+
+  // in autoware_auto_msgs::msg::VehicleStateCommand 1 is drive, 2 is reverse, https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/9744f6dc/src/messages/autoware_auto_msgs/msg/VehicleStateCommand.msg#L32
+  // in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
+
+
+  // Find autoware gear via inverse mapping
+  const auto value_same = [&msg](const auto & kv) -> bool {  // also do some capture
+      return msg.gear == kv.second;
+    };
+  const auto it = std::find_if(autoware_to_lgsvl_gear.begin(),
+      autoware_to_lgsvl_gear.end(), value_same);
+
+  if (it != autoware_to_lgsvl_gear.end()) {
+    corrected_report.gear = it->first;
+  } else {
+    corrected_report.gear = msg.GEAR_NEUTRAL;
+    RCLCPP_WARN(m_logger, "Invalid gear value in state report from LGSVL simulator");
+  }
+
+  state_report() = corrected_report;
 }
 
 }  // namespace lgsvl_interface

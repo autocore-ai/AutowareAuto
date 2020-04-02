@@ -33,6 +33,8 @@
 
 #include <chrono>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace lgsvl_interface
 {
@@ -59,6 +61,15 @@ constexpr static int32_t COV_RZ = 35;
 
 constexpr bool PUBLISH = true;
 constexpr bool NO_PUBLISH = false;
+
+// in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
+using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
+using GEAR_TYPE = decltype(VSC::gear);
+enum class LGSVL_GEAR : GEAR_TYPE
+{
+  DRIVE = 0u,
+  REVERSE = 1u,
+};
 
 /// Platform interface implementation for LGSVL. Bridges data to and from the simulator
 /// where custom logic is required to get simulator data to adhere to ROS conventions.
@@ -94,8 +105,14 @@ public:
   bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override;
 
 private:
+  // Mapping from Autoware Gear to LGSVL Gear values
+  static const std::unordered_map<GEAR_TYPE, GEAR_TYPE> autoware_to_lgsvl_gear;
+
   // Convert odometry into vehicle kinematic state and pose
   void on_odometry(const nav_msgs::msg::Odometry & msg);
+
+  // store state_report with gear value correction
+  void on_state_report(const autoware_auto_msgs::msg::VehicleStateReport & msg);
 
   rclcpp::Publisher<autoware_auto_msgs::msg::RawControlCommand>::SharedPtr m_cmd_pub{};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_pub{};
@@ -112,6 +129,8 @@ private:
 
   bool m_odom_set{false};  // TODO(c.ho) this should be optional<Vector3>
   geometry_msgs::msg::Vector3 m_odom_zero{};
+
+  rclcpp::Logger m_logger;
 };  // class LgsvlInterface
 
 }  // namespace lgsvl_interface
