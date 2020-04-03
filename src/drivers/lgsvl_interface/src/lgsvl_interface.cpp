@@ -160,13 +160,18 @@ bool8_t LgsvlInterface::send_control_command(
   raw_msg.stamp = msg.stamp;
   raw_msg.throttle = 0;
   raw_msg.brake = 0;
-  if (msg.long_accel_mps2 >= decltype(msg.long_accel_mps2) {}) {
+
+  using VSR = autoware_auto_msgs::msg::VehicleStateReport;
+  const auto directional_accel = get_state_report().gear ==
+    VSR::GEAR_REVERSE ? -msg.long_accel_mps2 : msg.long_accel_mps2;
+
+  if (directional_accel >= decltype(msg.long_accel_mps2) {}) {
     // TODO(c.ho)  cast to double...
     raw_msg.throttle =
-      static_cast<decltype(raw_msg.throttle)>(m_throttle_table.lookup(msg.long_accel_mps2));
+      static_cast<decltype(raw_msg.throttle)>(m_throttle_table.lookup(directional_accel));
   } else {
     raw_msg.brake =
-      static_cast<decltype(raw_msg.brake)>(m_brake_table.lookup(msg.long_accel_mps2));
+      static_cast<decltype(raw_msg.brake)>(m_brake_table.lookup(directional_accel));
   }
   raw_msg.front_steer =
     static_cast<decltype(raw_msg.front_steer)>(m_steer_table.lookup(msg.front_wheel_angle_rad));
