@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
@@ -31,12 +32,13 @@
 #include <memory>
 #include <string>
 
+using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::bool8_t;
+
 namespace
 {
 
-using char8_t = char;
-using float32_t = float;
-using bool8_t = bool;
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using TrajectoryPointStamped = autoware_auto_msgs::msg::VehicleKinematicState;
@@ -230,7 +232,7 @@ private:
       // Since the angle of the trajectory is invariant PI/4 throughout the test and the velocity
       // of each trajectory point N equals to the origin x value of the trajectory + K
       // (linearly increasing), the desired steering angle and acceleration can be estimated.
-      constexpr float TOL = 1.0E-5F;
+      constexpr float32_t TOL = 1.0E-5F;
       const float32_t target_velocity = static_cast<float32_t>(iteration / 3U) + 6.0F;
       constexpr float32_t distance = 5.0F * sqrtf(2.0F);  // minimum distance = 6.0
       const float32_t accel = ((target_velocity * target_velocity) / (2.0F * distance));

@@ -13,12 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <motion_common/motion_common.hpp>
 
 #include <memory>
 #include <string>
 
 #include "pure_pursuit_nodes/pure_pursuit_node.hpp"
+
+using autoware::common::types::float64_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -29,8 +34,6 @@ namespace control
 /// \brief Resources relating to the pure pursuit node package
 namespace pure_pursuit_nodes
 {
-using float32_t = float;
-////////////////////////////////////////////////////////////////////////////////
 PurePursuitNode::PurePursuitNode(
   const std::string & node_name,
   const std::string & node_namespace)
@@ -38,19 +41,19 @@ PurePursuitNode::PurePursuitNode(
 {
   pure_pursuit::Config cfg{
     static_cast<float32_t>(declare_parameter(
-      "controller.minimum_lookahead_distance").get<double>()),
+      "controller.minimum_lookahead_distance").get<float64_t>()),
     static_cast<float32_t>(declare_parameter(
-      "controller.maximum_lookahead_distance").get<double>()),
+      "controller.maximum_lookahead_distance").get<float64_t>()),
     static_cast<float32_t>(
-      declare_parameter("controller.speed_to_lookahead_ratio").get<double>()),
-    declare_parameter("controller.is_interpolate_lookahead_point").get<bool>(),
-    declare_parameter("controller.is_delay_compensation").get<bool>(),
+      declare_parameter("controller.speed_to_lookahead_ratio").get<float64_t>()),
+    declare_parameter("controller.is_interpolate_lookahead_point").get<bool8_t>(),
+    declare_parameter("controller.is_delay_compensation").get<bool8_t>(),
     static_cast<float32_t>(declare_parameter(
-      "controller.emergency_stop_distance").get<double>()),
+      "controller.emergency_stop_distance").get<float64_t>()),
     static_cast<float32_t>(declare_parameter(
-      "controller.speed_thres_traveling_direction").get<double>()),
+      "controller.speed_thres_traveling_direction").get<float64_t>()),
     static_cast<float32_t>(declare_parameter(
-      "controller.dist_front_rear_wheels").get<double>())};
+      "controller.dist_front_rear_wheels").get<float64_t>())};
   set_controller(std::make_unique<pure_pursuit::PurePursuit>(cfg));
 }
 ////////////////////////////////////////////////////////////////////////////////
