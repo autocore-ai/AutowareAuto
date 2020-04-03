@@ -4,7 +4,7 @@ recordreplay_planner_nodes
 # Purpose / Use cases
 
 This package provides a ROS2 node for the computational package `recordreplay_planner`. This is done to
-separate the computation part from the ROS2-specific part. See the computational part for a rattionale of what
+separate the computation part from the ROS2-specific part. See the computational part for a rationale of what
 the functionality is to be used for.
 
 

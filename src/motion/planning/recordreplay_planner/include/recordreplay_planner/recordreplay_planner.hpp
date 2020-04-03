@@ -75,6 +75,9 @@ public:
   void set_heading_weight(double heading_weight);
   double get_heading_weight();
 
+  // Minimum distance configuration
+  void set_min_record_distance(double min_record_distance);
+  double get_min_record_distance() const;
 
   // Update bounding boxes to new perception
   void update_bounding_boxes(const BoundingBoxArray & bounding_boxes);
@@ -88,6 +91,7 @@ private:
 
   // Weight of heading in computations of differences between states
   double m_heading_weight = 0.1;
+  double m_min_record_distance = 0.0;
   VehicleConfig m_vehicle_param;
 
   std::deque<State> m_record_buffer;

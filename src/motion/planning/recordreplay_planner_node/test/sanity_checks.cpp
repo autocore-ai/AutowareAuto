@@ -40,6 +40,7 @@ TEST(mytest_base, basic)
   const auto trajectory_topic = "trajectory_topic";
   const auto bounding_boxes_topic = "bounding_boxes_topic";
   const auto heading_weight = 0.1;
+  const auto min_record_distance = 0.0;
   rclcpp::init(0, nullptr);
 
   auto plannernode = std::make_shared<RecordReplayPlannerNode>(
@@ -49,7 +50,8 @@ TEST(mytest_base, basic)
     trajectory_topic,
     bounding_boxes_topic,
     test_vehicle_params,
-    heading_weight);
+    heading_weight,
+    min_record_distance);
 
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
   const auto publisher =

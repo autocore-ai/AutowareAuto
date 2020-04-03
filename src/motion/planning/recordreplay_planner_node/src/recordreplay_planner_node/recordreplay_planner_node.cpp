@@ -31,6 +31,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
   const auto trajectory_topic = declare_parameter("trajectory_topic").get<std::string>();
   const auto bounding_boxes_topic = declare_parameter("bounding_boxes_topic").get<std::string>();
   const auto heading_weight = static_cast<double>(declare_parameter("heading_weight").get<float>());
+  const auto min_record_distance =
+    static_cast<double>(declare_parameter("min_record_distance").get<float>());
 
   const VehicleConfig vehicle_param{
     static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float>()),
@@ -43,7 +45,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
     static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float>()),
     static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float>())
   };
-  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight);
+  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
+    min_record_distance);
 }
 ////////////////////////////////////////////////////////////////////////////////
 RecordReplayPlannerNode::RecordReplayPlannerNode(
@@ -53,10 +56,12 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(
   const std::string & trajectory_topic,
   const std::string & bounding_boxes_topic,
   const VehicleConfig & vehicle_param,
-  const double heading_weight)
+  const double heading_weight,
+  const double min_record_distance)
 : Node{name, ns}
 {
-  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight);
+  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
+    min_record_distance);
 }
 
 void RecordReplayPlannerNode::init(
@@ -64,7 +69,8 @@ void RecordReplayPlannerNode::init(
   const std::string & trajectory_topic,
   const std::string & bounding_boxes_topic,
   const VehicleConfig & vehicle_param,
-  const double heading_weight
+  const double heading_weight,
+  const double min_record_distance
 )
 {
   using rclcpp::QoS;
@@ -108,6 +114,7 @@ void RecordReplayPlannerNode::init(
   // Create and set a planner object that we'll talk to
   m_planner = std::make_unique<recordreplay_planner::RecordReplayPlanner>(vehicle_param);
   m_planner->set_heading_weight(heading_weight);
+  m_planner->set_min_record_distance(min_record_distance);
 }
 
 

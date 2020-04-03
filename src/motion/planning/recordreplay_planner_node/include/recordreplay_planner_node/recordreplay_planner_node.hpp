@@ -67,7 +67,8 @@ public:
     const std::string & trajectory_topic,
     const std::string & bounding_boxes_topic,
     const VehicleConfig & vehicle_param,
-    const double heading_weight);
+    const double heading_weight,
+    const double min_record_distance);
 
 protected:
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
@@ -86,7 +87,8 @@ private:
     const std::string & trajectory_topic,
     const std::string & bounding_boxes_topic,
     const VehicleConfig & vehicle_param,
-    const double heading_weight);
+    const double heading_weight,
+    const double min_record_distance);
 
 
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);

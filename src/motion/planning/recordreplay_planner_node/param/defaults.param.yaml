@@ -5,6 +5,7 @@ recordreplay_planner:
     trajectory_topic: "trajectory"
     bounding_boxes_topic: "bounding_boxes"
     heading_weight: 0.1
+    min_record_distance: 0.5
     vehicle:
       cg_to_front_m: 1.0
       cg_to_rear_m: 1.0

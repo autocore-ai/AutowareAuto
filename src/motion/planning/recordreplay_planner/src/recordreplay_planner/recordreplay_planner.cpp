@@ -96,9 +96,36 @@ double RecordReplayPlanner::get_heading_weight()
   return m_heading_weight;
 }
 
+void RecordReplayPlanner::set_min_record_distance(double min_record_distance)
+{
+  if (min_record_distance < 0.0) {
+    throw std::domain_error{"Negative minumum distance do not make sense"};
+  }
+  m_min_record_distance = min_record_distance;
+}
+
+double RecordReplayPlanner::get_min_record_distance() const
+{
+  return m_min_record_distance;
+}
+
+
 void RecordReplayPlanner::record_state(const State & state_to_record)
 {
-  m_record_buffer.push_back(state_to_record);
+  if (m_record_buffer.empty()) {
+    m_record_buffer.push_back(state_to_record);
+    return;
+  }
+
+  auto previous_state = m_record_buffer.back();
+  auto distance_sq = (state_to_record.state.x - previous_state.state.x) *
+    (state_to_record.state.x - previous_state.state.x) +
+    (state_to_record.state.y - previous_state.state.y) *
+    (state_to_record.state.y - previous_state.state.y);
+
+  if (distance_sq >= (m_min_record_distance * m_min_record_distance) ) {
+    m_record_buffer.push_back(state_to_record);
+  }
 }
 
 const Trajectory & RecordReplayPlanner::plan(const State & current_state)
