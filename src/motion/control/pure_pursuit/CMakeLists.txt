@@ -20,6 +20,7 @@ project(pure_pursuit)
 ## dependencies
 find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED

@@ -16,6 +16,10 @@
 #define PURE_PURSUIT__CONFIG_HPP_
 
 #include <pure_pursuit/visibility_control.hpp>
+#include <common/types.hpp>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -25,10 +29,6 @@ namespace control
 {
 namespace pure_pursuit
 {
-
-using bool8_t = bool;
-using float32_t = float;
-
 /// \brief A configuration class for the PurePursuit class.
 class PURE_PURSUIT_PUBLIC Config
 {

@@ -19,6 +19,7 @@
 #include <motion_model/catr_model.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #include <time_utils/time_utils.hpp>
+#include <common/types.hpp>
 
 #include <string>
 
@@ -35,12 +36,11 @@ using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware::motion::motion_model::CatrModel;
 using autoware::motion::motion_model::CatrState;
 using Eigen::Matrix;
+using autoware::common::types::float32_t;
 
 constexpr auto PI = 3.14159F;
 
-static const float TOL = 1.0E-5F;
-
-using float32_t = float;
+static const float32_t TOL = 1.0E-5F;
 
 /// Hold some basic configuration parameters
 class PurePursuitTest : public ::testing::Test

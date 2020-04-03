@@ -13,6 +13,7 @@
     <depend>autoware_auto_msgs</depend>
     <depend>controller_common</depend>
     <depend>motion_model</depend>
+    <depend>autoware_auto_common</depend>
 
     <build_depend>builtin_interfaces</build_depend>
     <build_depend>motion_common</build_depend>

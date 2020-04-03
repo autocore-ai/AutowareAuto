@@ -17,6 +17,9 @@
 #include <motion_testing/motion_testing.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #include <time_utils/time_utils.hpp>
+#include <common/types.hpp>
+
+#include <algorithm>
 
 #include "pure_pursuit/pure_pursuit.hpp"
 
@@ -25,14 +28,17 @@ using motion::motion_testing::make_state;
 using autoware::motion::control::pure_pursuit::Config;
 using autoware::motion::control::pure_pursuit::PurePursuit;
 using autoware::motion::control::pure_pursuit::VehicleControlCommand;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 class sanity_checks : public ::testing::Test
 {
 protected:
-  float steer_angle(const float dx, const float lookahead) const
+  float32_t steer_angle(const float32_t dx, const float32_t lookahead) const
   {
     return std::atan(2.0F * dx * cfg_.get_distance_front_rear_wheel() / (lookahead * lookahead));
   }
-  void check_steer(const VehicleControlCommand cmd, const float guess, const float TOL = 1.0E-4F)
+  void check_steer(const VehicleControlCommand cmd,
+                   const float32_t guess, const float32_t TOL = 1.0E-4F)
   {
     EXPECT_LT(std::fabs(cmd.front_wheel_angle_rad - guess), TOL) <<
       cmd.front_wheel_angle_rad << ", " << guess;
@@ -50,9 +56,9 @@ constexpr auto ms100 = std::chrono::milliseconds{100LL};
 
 struct StraightTestParam
 {
-  float dx;
-  float dy;
-  bool is_pointing_north;
+  float32_t dx;
+  float32_t dy;
+  bool8_t is_pointing_north;
 };
 
 class sanity_checks_axis_aligned_straight
@@ -176,7 +182,7 @@ class sanity_checks_other : public sanity_checks
 {
 protected:
   static constexpr auto size{100U};
-  static constexpr auto th_per_iter{3.14159F / static_cast<float>(2U * size)};
+  static constexpr auto th_per_iter{3.14159F / static_cast<float32_t>(2U * size)};
   static constexpr auto r0{1.0F};
   static constexpr auto r_rate{0.1F};
   using Trajectory = autoware::motion::control::pure_pursuit::Trajectory;
@@ -186,7 +192,7 @@ protected:
     ret.points.reserve(size);
     for (auto idx = 0U; idx < size; ++idx) {
       autoware_auto_msgs::msg::TrajectoryPoint pt{};
-      const auto fdx = static_cast<float>(idx);
+      const auto fdx = static_cast<float32_t>(idx);
       const auto r = r0 + (r_rate * fdx);
       const auto th = th_per_iter * fdx;
       pt.x = r * std::cos(th);
