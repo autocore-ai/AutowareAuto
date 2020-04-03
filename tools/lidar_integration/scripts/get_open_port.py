@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2018 Apex.AI, Inc.
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
@@ -13,7 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script prints out a free port
+from lidar_integration import get_open_port
 
-find_package(ament_cmake_pytest REQUIRED)
 
-include("${autoware_auto_integration_tests_DIR}/integration_tests.cmake")
+print(get_open_port(), end='')

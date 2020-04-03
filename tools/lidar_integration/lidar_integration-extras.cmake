@@ -13,7 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-find_package(ament_cmake_pytest REQUIRED)
-
-include("${autoware_auto_integration_tests_DIR}/integration_tests.cmake")
+include("${lidar_integration_DIR}/lidar_integration.cmake")

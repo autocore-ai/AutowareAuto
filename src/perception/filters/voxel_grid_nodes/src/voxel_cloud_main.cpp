@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+constexpr const char * NODE_NAME = "voxel_grid_cloud_node";
 
 int32_t main(const int32_t argc, char * argv[])
 {
@@ -30,7 +31,7 @@ int32_t main(const int32_t argc, char * argv[])
   int32_t ret = 0;
   try {
     using autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode;
-    const auto nd_ptr = std::make_shared<VoxelCloudNode>("voxel_grid_cloud_node");
+    const auto nd_ptr = std::make_shared<VoxelCloudNode>(NODE_NAME);
 
     if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != nd_ptr->configure().id()) {
       throw std::runtime_error("Could not configure VoxelCloudNode!");
@@ -43,12 +44,13 @@ int32_t main(const int32_t argc, char * argv[])
 
     rclcpp::shutdown();
   } catch (const std::exception & e) {
-    // RCLCPP logging macros are not used in error handling because they would depend on nd_ptr's
-    // logger. This dependency would result in a crash when nd_ptr is a nullptr
-    std::cerr << (e.what());
+    // RCLCPP logging macros are not used in error handling because they would
+    // depend on nd_ptr's logger. This dependency would result in a crash when
+    // nd_ptr is a nullptr
+    std::cerr << NODE_NAME << ": " << (e.what()) << std::endl;
     ret = 2;
   } catch (...) {
-    std::cerr << "Unknown exception caught. Exiting...";
+    std::cerr << NODE_NAME << ": Unknown exception caught. Exiting..." << std::endl;
     ret = -1;
   }
   return ret;

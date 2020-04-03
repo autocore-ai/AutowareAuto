@@ -87,6 +87,10 @@ VelodyneCloudNode::VelodyneCloudNode(
   m_cloud_size(static_cast<std::size_t>(declare_parameter("cloud_size").get<std::size_t>()))
 {
   m_point_block.reserve(autoware::drivers::velodyne_driver::Vlp16Translator::POINT_BLOCK_CAPACITY);
+  // If your preallocated cloud size is too small, the node really won't operate well at all
+  if (static_cast<uint32_t>(m_point_block.capacity()) >= m_cloud_size) {
+    throw std::runtime_error("VelodyneCloudNode: cloud_size must be > PointBlock::CAPACITY");
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void VelodyneCloudNode::init_output(sensor_msgs::msg::PointCloud2 & output)

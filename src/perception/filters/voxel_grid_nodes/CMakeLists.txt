@@ -65,18 +65,24 @@ if(BUILD_TESTING)
   # run linters
   autoware_static_code_analysis()
   find_package(ament_cmake_gtest REQUIRED)
-
+  find_package(lidar_integration REQUIRED)
 
   # gtest
   set(VOXEL_GRID_NODE_GTEST voxel_algorithm_gtest)
   ament_add_gtest(${VOXEL_GRID_NODE_GTEST} test/test_voxel_grid_nodes.cpp)
   target_link_libraries(${VOXEL_GRID_NODE_GTEST} ${PROJECT_NAME})
   target_include_directories(${VOXEL_GRID_NODE_GTEST} PRIVATE "test/include" "include")
+
+  find_package(ros_testing REQUIRED)
+  add_ros_test(
+    test/voxel_grid_fuzzing.test.py
+    TIMEOUT "120"
+  )
 endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
-autoware_install(LIBRARIES ${PROJECT_NAME} EXECUTABLES ${VOXEL_CLOUD_EXE} HAS_INCLUDE)
+autoware_install(LIBRARIES ${PROJECT_NAME} EXECUTABLES ${VOXEL_CLOUD_EXE} HAS_INCLUDE HAS_PARAM)
 # Ament Exporting
 ament_export_dependencies("sensor_msgs" "voxel_grid" "rclcpp" "rclcpp_lifecycle")
 ament_package()

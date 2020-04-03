@@ -20,6 +20,8 @@
 
 #include "ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp"
 
+constexpr const char * NODE_NAME = "ray_ground_classifier";
+
 int32_t main(const int32_t argc, char * argv[])
 {
   int32_t ret = 0;
@@ -28,7 +30,7 @@ int32_t main(const int32_t argc, char * argv[])
 
     using
     autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
-    const auto nd_ptr = std::make_shared<RayGroundClassifierCloudNode>("ray_ground_classifier");
+    const auto nd_ptr = std::make_shared<RayGroundClassifierCloudNode>(NODE_NAME);
     if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != nd_ptr->configure().id()) {
       throw std::runtime_error("Could not configure RayGroundClassifierCloudNode!");
     }
@@ -41,15 +43,16 @@ int32_t main(const int32_t argc, char * argv[])
 
     exe.spin();
 
-    if (!rclcpp::shutdown()) {
-      throw std::runtime_error("rclcpp shutdown failed!");
-    }
+    rclcpp::shutdown();
   } catch (const std::exception & e) {
-    RCLCPP_INFO(rclcpp::get_logger("ray_ground_classifier_node"), e.what());
+    // RCLCPP logging macros are not used in error handling because they would
+    // depend on nd_ptr's logger. This dependency would result in a crash when
+    // nd_ptr is a nullptr
+    std::cerr << NODE_NAME << ": " << (e.what()) << std::endl;
+    ret = 2;
     ret = 2;
   } catch (...) {
-    RCLCPP_INFO(
-      rclcpp::get_logger("ray_ground_classifier_node"), "Unknown exception caught. Exiting...");
+    std::cerr << NODE_NAME << ": Unknown exception caught. Exiting..." << std::endl;
     ret = -1;
   }
   return ret;

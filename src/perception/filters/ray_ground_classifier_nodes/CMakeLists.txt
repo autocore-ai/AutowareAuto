@@ -47,6 +47,7 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   find_package(autoware_auto_common REQUIRED)
+  find_package(lidar_integration REQUIRED)
 
   ament_add_gtest(test_ray_ground_classifier_nodes_gtest
     test/src/test_ray_ground_classifier_nodes.cpp
@@ -61,6 +62,12 @@ if(BUILD_TESTING)
     "rclcpp"
     "ray_ground_classifier"
     "sensor_msgs"
+  )
+
+  find_package(ros_testing REQUIRED)
+  add_ros_test(
+    test/ray_ground_classifier_fuzzing.test.py
+    TIMEOUT "120"
   )
 endif()
 

@@ -52,7 +52,41 @@ autoware_set_compile_options(${CLOUD_EXEC})
 target_link_libraries(${CLOUD_EXEC} ${CLOUD_LIB})
 
 if(BUILD_TESTING)
+    # run common linters
     autoware_static_code_analysis()
+
+    # Test Node
+    set(TEST_NODE_NAME "test_listener_exe")
+    add_executable(${TEST_NODE_NAME} test/src/test_listener.cpp)
+    ament_target_dependencies(${TEST_NODE_NAME} "rclcpp" "sensor_msgs")
+
+    # "Unit" test
+    find_package(ament_cmake_gtest REQUIRED)
+    find_package(lidar_integration REQUIRED)
+    set(VELODYNE_NODE_GTEST velodyne_node_gtest)
+
+    ament_add_gtest(${VELODYNE_NODE_GTEST}
+      "test/src/test.cpp"
+      "test/src/velodyne_node_test.cpp"
+    )
+
+    target_include_directories(${VELODYNE_NODE_GTEST} PRIVATE include)
+    target_link_libraries(${VELODYNE_NODE_GTEST} ${CLOUD_LIB} ${BLOCK_LIB})
+    ament_target_dependencies(${VELODYNE_NODE_GTEST} "lidar_integration")
+
+    find_package(ros_testing REQUIRED)
+    add_ros_test(
+      test/velodyne_node.test.py
+      TIMEOUT "120"
+    )
+    add_ros_test(
+      test/velodyne_node_bad.test.py
+      TIMEOUT "10"
+    )
+    add_ros_test(
+      test/velodyne_node_half_cloud.test.py
+      TIMEOUT "120"
+    )
 endif()
 
 ## install stuff

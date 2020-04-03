@@ -13,9 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright 2018 Apex.AI, Inc.
-// All rights reserved.
-
 #include "motion_model/catr_model.hpp"
 
 using autoware::motion::motion_model::CatrModel;
