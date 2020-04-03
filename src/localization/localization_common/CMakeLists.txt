@@ -6,6 +6,7 @@ project(localization_common)
 
 #dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 # includes

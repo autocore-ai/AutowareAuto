@@ -25,7 +25,8 @@ namespace localization
 namespace localization_common
 {
 
-class BestEffortInitializationTest : public ::testing::TestWithParam<BestEffortInitializerTestParams>
+class BestEffortInitializationTest : public
+::testing::TestWithParam<BestEffortInitializerTestParams>
 {
 };
 
@@ -192,6 +193,6 @@ geometry_msgs::msg::Transform get_interpolation(
   return ret;
 }
 
-}          // namespace autoware
-}      // namespace localization
 }  // namespace localization_common
+}  // namespace localization
+}  // namespace autoware

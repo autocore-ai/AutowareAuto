@@ -24,13 +24,15 @@
 #include <optimization/optimizer_options.hpp>
 #include <string>
 
+#include "common/types.hpp"
+
 namespace autoware
 {
 namespace localization
 {
 namespace localization_common
 {
-using Real = double;
+using Real = autoware::common::types::float64_t;
 
 /// Basic Registration Summary for localizers using an optimizer.
 /// It only wraps the optimization summary of the optimizer.

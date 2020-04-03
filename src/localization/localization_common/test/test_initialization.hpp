@@ -18,6 +18,10 @@
 #include <gtest/gtest.h>
 #include <localization_common/initialization.hpp>
 
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
+
 namespace autoware
 {
 namespace localization
@@ -25,8 +29,8 @@ namespace localization
 namespace localization_common
 {
 geometry_msgs::msg::TransformStamped make_transform(
-  float ang_x, float ang_y, float ang_z,
-  float x, float y, float z);
+  float32_t ang_x, float32_t ang_y, float32_t ang_z,
+  float32_t x, float32_t y, float32_t z);
 
 void check_transform_eq(
   const geometry_msgs::msg::TransformStamped & t1,
@@ -34,7 +38,7 @@ void check_transform_eq(
 
 geometry_msgs::msg::Transform get_interpolation(
   const geometry_msgs::msg::Transform & tf1, const geometry_msgs::msg::Transform & tf2,
-  float ratio);
+  float32_t ratio);
 
 struct BestEffortInitializerTestParams
 {
@@ -44,8 +48,8 @@ struct BestEffortInitializerTestParams
   std::chrono::milliseconds dt_small;    // time diff less than dt (for interpolation)
 };
 
-}          // namespace autoware
-}      // namespace localization
 }  // namespace localization_common
+}  // namespace localization
+}  // namespace autoware
 
 #endif  // TEST_INITIALIZATION_HPP_
