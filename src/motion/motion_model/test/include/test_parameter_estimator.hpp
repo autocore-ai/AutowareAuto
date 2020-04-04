@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_PARAMETER_ESTIMATOR_HPP_
+#define TEST_PARAMETER_ESTIMATOR_HPP_
+
 #include <common/types.hpp>
 #include <motion_model/parameter_estimator.hpp>
 
@@ -52,3 +55,5 @@ TEST(motion_model, parameter_estimator)
   ASSERT_FLOAT_EQ(model[0], 1.0F);
   ASSERT_FLOAT_EQ(model[1], 2.0F);
 }
+
+#endif  // TEST_PARAMETER_ESTIMATOR_HPP_

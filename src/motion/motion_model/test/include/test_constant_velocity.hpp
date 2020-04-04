@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_CONSTANT_VELOCITY_HPP_
+#define TEST_CONSTANT_VELOCITY_HPP_
+
 #include <common/types.hpp>
 #include <motion_model/constant_velocity.hpp>
 
@@ -100,3 +103,5 @@ TEST(constant_velocity, basic)
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_X], vx);
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_Y], vy);
 }
+
+#endif  // TEST_CONSTANT_VELOCITY_HPP_
