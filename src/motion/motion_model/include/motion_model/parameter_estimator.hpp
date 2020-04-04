@@ -20,8 +20,11 @@
 #ifndef MOTION_MODEL__PARAMETER_ESTIMATOR_HPP_
 #define MOTION_MODEL__PARAMETER_ESTIMATOR_HPP_
 
+#include <common/types.hpp>
 #include <chrono>
 #include "motion_model/motion_model.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -32,7 +35,7 @@ namespace motion_model
 
 /// \brief Simple "motion model" with no dynamics for parameter estimation
 /// \tparam NumStates dimensionality of this model's state space
-template<int NumStates>
+template<int32_t NumStates>
 class ParameterEstimator : public MotionModel<NumStates>
 {
 public:
@@ -55,7 +58,7 @@ public:
   /// \param[out] x vector to store result into
   /// \param[in] dt prediction horizon based on current state
   void predict(
-    Eigen::Matrix<float, NumStates, 1U> & x,
+    Eigen::Matrix<float32_t, NumStates, 1U> & x,
     const std::chrono::nanoseconds & dt) const override
   {
     // parameter estimators have no dynamics, so the values should not change over time
@@ -78,7 +81,7 @@ public:
   /// \param[out] F matrix to store jacobian into
   /// \param[in] dt prediction horizon to build jacobian off of
   void compute_jacobian(
-    Eigen::Matrix<float, NumStates, NumStates> & F,
+    Eigen::Matrix<float32_t, NumStates, NumStates> & F,
     const std::chrono::nanoseconds & dt) override
   {
     (void)dt;
@@ -92,7 +95,7 @@ public:
   /// \param[out] F matrix to store jacobian into
   /// \param[in] dt prediction horizon to build jacobian off of
   void compute_jacobian_and_predict(
-    Eigen::Matrix<float, NumStates, NumStates> & F,
+    Eigen::Matrix<float32_t, NumStates, NumStates> & F,
     const std::chrono::nanoseconds & dt) override
   {
     compute_jacobian(F, dt);
@@ -101,25 +104,25 @@ public:
   /// \brief Get elements of the model's state.
   /// \param[in] idx index of state variable to get
   /// \return copy of state variable
-  float operator[](const motion_model::index_t idx) const override
+  float32_t operator[](const motion_model::index_t idx) const override
   {
     return m_state(idx);
   }
   /// \brief Set the state
   /// \param[in] x the state to store internally
-  void reset(const Eigen::Matrix<float, NumStates, 1U> & x) override
+  void reset(const Eigen::Matrix<float32_t, NumStates, 1U> & x) override
   {
     m_state = x;
   }
   /// \brief const access to internal state
   /// \return const reference to internal state vector
-  const Eigen::Matrix<float, NumStates, 1U> & get_state() const override
+  const Eigen::Matrix<float32_t, NumStates, 1U> & get_state() const override
   {
     return m_state;
   }
 
 private:
-  Eigen::Matrix<float, NumStates, 1U> m_state;
+  Eigen::Matrix<float32_t, NumStates, 1U> m_state;
 };  // class MotionModel
 }  // namespace motion_model
 }  // namespace motion

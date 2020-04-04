@@ -16,7 +16,10 @@
 /// \copyright Copyright 2018 Apex.AI, Inc.
 /// All rights reserved.
 
+#include <common/types.hpp>
 #include "motion_model/catr_core.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -25,16 +28,16 @@ namespace motion
 namespace motion_model
 {
 /////
-template<int NumStates>
+template<int32_t NumStates>
 void catr_workspace_init_invariant(
-  const Eigen::Matrix<float, NumStates, 1U> & x,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & x,
   CatrInvariantWorkspace & ws)
 {
   static_assert(NumStates >= 6U, "CATR model and derivatives must be at least 6-dimensional");
   // time invariant
   ws.a = x(CatrState::ACCELERATION);
   ws.w = x(CatrState::TURN_RATE);
-  const float th = x(CatrState::HEADING);
+  const float32_t th = x(CatrState::HEADING);
   ws.s = sinf(th);
   ws.c = cosf(th);
   // TODO(c.ho) sin/cos lookup table?
@@ -47,10 +50,10 @@ void catr_workspace_init_invariant(
 }
 
 /////
-template<int NumStates>
+template<int32_t NumStates>
 void catr_workspace_init_variant(
-  const Eigen::Matrix<float, NumStates, 1U> & x,
-  const float dt_s,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & x,
+  const float32_t dt_s,
   const CatrInvariantWorkspace & iws,
   CatrVariantWorkspace & ws)
 {
@@ -73,11 +76,11 @@ void catr_workspace_init_variant(
 }
 
 /////
-template<int NumStates>
+template<int32_t NumStates>
 void catr_compute_jacobian(
   const CatrInvariantWorkspace & iws,
   const CatrVariantWorkspace & vws,
-  Eigen::Matrix<float, NumStates, NumStates> & F)
+  Eigen::Matrix<float32_t, NumStates, NumStates> & F)
 {
   static_assert(NumStates >= 6U, "CATR model and derivatives must be at least 6-dimensional");
   // identity matrix
@@ -90,17 +93,17 @@ void catr_compute_jacobian(
   //// hard position terms: computed with SymPy
   if (iws.is_w_nonzero) {
     // * / dv
-    const float ds = vws.sp - iws.s;
+    const float32_t ds = vws.sp - iws.s;
     F(CatrState::POSE_X, CatrState::VELOCITY) =
       iws.w_inv * (ds);
-    const float dc = vws.cp - iws.c;
+    const float32_t dc = vws.cp - iws.c;
     F(CatrState::POSE_Y, CatrState::VELOCITY) =
       iws.w_inv * (-dc);
     // * / da
-    const float wT_sp = vws.wT * vws.sp;
+    const float32_t wT_sp = vws.wT * vws.sp;
     F(CatrState::POSE_X, CatrState::ACCELERATION) =
       iws.w2_inv * (wT_sp + dc);
-    const float wT_cp = vws.wT * vws.cp;
+    const float32_t wT_cp = vws.wT * vws.cp;
     F(CatrState::POSE_Y, CatrState::ACCELERATION) =
       iws.w2_inv * (ds - wT_cp);
     // * / dth
@@ -109,7 +112,7 @@ void catr_compute_jacobian(
     F(CatrState::POSE_Y, CatrState::HEADING) =
       iws.w2_inv * ((iws.a * (dc)) + (((iws.w * vws.vp) * vws.sp) - (iws.vw * iws.s)));
     // * / dw
-    const float w3_inv = iws.w2_inv * iws.w_inv;
+    const float32_t w3_inv = iws.w2_inv * iws.w_inv;
     F(CatrState::POSE_X, CatrState::TURN_RATE) =
       w3_inv * (
       (vws.wT * ((iws.w * vws.vp * vws.cp) - (2.0F * iws.a * vws.sp))) -
@@ -127,7 +130,7 @@ void catr_compute_jacobian(
     F(CatrState::POSE_Y, CatrState::VELOCITY) =
       vws.dt * iws.s;
     // * / da
-    const float dt2_2 = 0.5F * vws.dt * vws.dt;
+    const float32_t dt2_2 = 0.5F * vws.dt * vws.dt;
     F(CatrState::POSE_X, CatrState::ACCELERATION) =
       dt2_2 * iws.c;
     F(CatrState::POSE_Y, CatrState::ACCELERATION) =
@@ -142,16 +145,16 @@ void catr_compute_jacobian(
 }
 
 /////
-template<int NumStates>
+template<int32_t NumStates>
 void catr_predict(
-  const Eigen::Matrix<float, NumStates, 1U> & ref,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & ref,
   const CatrInvariantWorkspace & iws,
   const CatrVariantWorkspace & vws,
-  Eigen::Matrix<float, NumStates, 1U> & x)
+  Eigen::Matrix<float32_t, NumStates, 1U> & x)
 {
   static_assert(NumStates >= 6U, "CATR model and derivatives must be at least 6-dimensional");
   if (iws.is_w_nonzero) {
-    const float vw_awt = iws.vw + vws.awT;
+    const float32_t vw_awt = iws.vw + vws.awT;
     x(CatrState::POSE_X) = ref(CatrState::POSE_X) + (iws.w2_inv *
       ((vw_awt * vws.sp) +
       ((iws.a * (vws.cp - iws.c)) -
@@ -175,40 +178,40 @@ void catr_predict(
 /////// Template instantiation ////////
 // N = 6
 template void catr_workspace_init_invariant<6U>(
-  const Eigen::Matrix<float, 6U, 1U> &,
+  const Eigen::Matrix<float32_t, 6U, 1U> &,
   CatrInvariantWorkspace &);
 template void catr_workspace_init_variant<6U>(
-  const Eigen::Matrix<float, 6U, 1U> &,
-  const float,
+  const Eigen::Matrix<float32_t, 6U, 1U> &,
+  const float32_t,
   const CatrInvariantWorkspace &,
   CatrVariantWorkspace &);
 template void catr_compute_jacobian<6U>(
   const CatrInvariantWorkspace &,
   const CatrVariantWorkspace &,
-  Eigen::Matrix<float, 6U, 6U> &);
+  Eigen::Matrix<float32_t, 6U, 6U> &);
 template void catr_predict<6U>(
-  const Eigen::Matrix<float, 6U, 1U> &,
+  const Eigen::Matrix<float32_t, 6U, 1U> &,
   const CatrInvariantWorkspace &,
   const CatrVariantWorkspace &,
-  Eigen::Matrix<float, 6U, 1U> &);
+  Eigen::Matrix<float32_t, 6U, 1U> &);
 // N = 8
 template void catr_workspace_init_invariant<8U>(
-  const Eigen::Matrix<float, 8U, 1U> &,
+  const Eigen::Matrix<float32_t, 8U, 1U> &,
   CatrInvariantWorkspace &);
 template void catr_workspace_init_variant<8U>(
-  const Eigen::Matrix<float, 8U, 1U> &,
-  const float,
+  const Eigen::Matrix<float32_t, 8U, 1U> &,
+  const float32_t,
   const CatrInvariantWorkspace &,
   CatrVariantWorkspace &);
 template void catr_compute_jacobian<8U>(
   const CatrInvariantWorkspace &,
   const CatrVariantWorkspace &,
-  Eigen::Matrix<float, 8U, 8U> &);
+  Eigen::Matrix<float32_t, 8U, 8U> &);
 template void catr_predict<8U>(
-  const Eigen::Matrix<float, 8U, 1U> &,
+  const Eigen::Matrix<float32_t, 8U, 1U> &,
   const CatrInvariantWorkspace &,
   const CatrVariantWorkspace &,
-  Eigen::Matrix<float, 8U, 1U> &);
+  Eigen::Matrix<float32_t, 8U, 1U> &);
 }  // namespace motion_model
 }  // namespace motion
 }  // namespace autoware

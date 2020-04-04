@@ -13,16 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <motion_model/constant_velocity.hpp>
 
 using autoware::motion::motion_model::ConstantVelocity;
 using Eigen::Matrix;
+using autoware::common::types::float32_t;
 
 TEST(constant_velocity, basic)
 {
   ConstantVelocity model;
   const uint64_t sz = 4U;
-  Matrix<float, sz, 1U> x, y;
+  Matrix<float32_t, sz, 1U> x, y;
   x(0) = 0.0F;
   x(1) = 0.0F;
   x(2) = 1.0F;
@@ -34,8 +36,8 @@ TEST(constant_velocity, basic)
   std::chrono::nanoseconds milliseconds_100(std::chrono::milliseconds(100));
   std::chrono::nanoseconds milliseconds_500(std::chrono::milliseconds(500));
   // set state
-  const float vx = 1.0F;
-  const float vy = 2.0F;
+  const float32_t vx = 1.0F;
+  const float32_t vy = 2.0F;
   model.reset(x);
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::POSE_X], 0.0F);
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::POSE_Y], 0.0F);
@@ -53,7 +55,7 @@ TEST(constant_velocity, basic)
   ASSERT_FLOAT_EQ(y(2), vx);
   ASSERT_FLOAT_EQ(y(3), vy);
   // compute jacobian
-  Matrix<float, sz, sz> F;
+  Matrix<float32_t, sz, sz> F;
   model.compute_jacobian(F, milliseconds_100);
   for (uint32_t idx = 0U; idx < sz; ++idx) {
     for (uint32_t jdx = 0U; jdx < sz; ++jdx) {

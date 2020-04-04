@@ -15,7 +15,10 @@
 
 /// \copyright Copyright 2018 Apex.AI, Inc.
 /// All rights reserved.
+#include <common/types.hpp>
 #include "motion_model/catr_model.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -34,10 +37,10 @@ CatrModel & CatrModel::operator=(const CatrModel & rhs)
 }
 ///
 void CatrModel::predict(
-  Eigen::Matrix<float, 6U, 1U> & x,
+  Eigen::Matrix<float32_t, 6U, 1U> & x,
   const std::chrono::nanoseconds & dt) const
 {
-  const float Dt = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t Dt = static_cast<float32_t>(dt.count()) / 1000000000LL;
   catr_workspace_init_variant(
     m_state,
     Dt,
@@ -56,10 +59,10 @@ void CatrModel::predict(const std::chrono::nanoseconds & dt)
 
 ///
 void CatrModel::compute_jacobian(
-  Eigen::Matrix<float, 6U, 6U> & F,
+  Eigen::Matrix<float32_t, 6U, 6U> & F,
   const std::chrono::nanoseconds & dt)
 {
-  const float Dt = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t Dt = static_cast<float32_t>(dt.count()) / 1000000000LL;
   catr_workspace_init_variant(
     m_state,
     Dt,
@@ -70,10 +73,10 @@ void CatrModel::compute_jacobian(
 
 ///
 void CatrModel::compute_jacobian_and_predict(
-  Eigen::Matrix<float, 6U, 6U> & F,
+  Eigen::Matrix<float32_t, 6U, 6U> & F,
   const std::chrono::nanoseconds & dt)
 {
-  const float Dt = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t Dt = static_cast<float32_t>(dt.count()) / 1000000000LL;
   catr_workspace_init_variant(
     m_state,
     Dt,
@@ -89,14 +92,14 @@ void CatrModel::compute_jacobian_and_predict(
 float CatrModel::operator[](const index_t idx) const {return m_state(idx);}
 
 ///
-void CatrModel::reset(const Eigen::Matrix<float, 6U, 1U> & x)
+void CatrModel::reset(const Eigen::Matrix<float32_t, 6U, 1U> & x)
 {
   m_state = x;
   // m_state has been updated, recompute invariants
   catr_workspace_init_invariant(m_state, m_invariants);
 }
 ///
-const Eigen::Matrix<float, 6U, 1U> & CatrModel::get_state() const
+const Eigen::Matrix<float32_t, 6U, 1U> & CatrModel::get_state() const
 {
   return m_state;
 }

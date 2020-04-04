@@ -13,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <motion_model/constant_acceleration.hpp>
+
+using autoware::common::types::float32_t;
 
 using autoware::motion::motion_model::ConstantAcceleration;
 using Eigen::Matrix;
@@ -23,11 +26,11 @@ TEST(constant_acceleration, basic)
   ConstantAcceleration model;
   const uint64_t sz = 6U;
   // set state
-  const float vx = -1.0F;
-  const float vy = 2.0F;
-  const float ax = 2.0F;
-  const float ay = -1.0F;
-  Matrix<float, sz, 1U> x, y;
+  const float32_t vx = -1.0F;
+  const float32_t vy = 2.0F;
+  const float32_t ax = 2.0F;
+  const float32_t ay = -1.0F;
+  Matrix<float32_t, sz, 1U> x, y;
   x << 0.0F, 0.0F, vx, vy, ax, ay;
   // prepare duration objects for testing
   std::chrono::nanoseconds seconds(std::chrono::seconds(1));
@@ -45,10 +48,10 @@ TEST(constant_acceleration, basic)
   // push prediction eslewhere
 
   model.predict(y, seconds);
-  const float x1 = vx + (0.5F * 1.0F * 1.0F * ax);
-  const float y1 = vy + (0.5F * 1.0F * 1.0F * ay);
-  const float vx1 = vx + ax;
-  const float vy1 = vy + ay;
+  const float32_t x1 = vx + (0.5F * 1.0F * 1.0F * ax);
+  const float32_t y1 = vy + (0.5F * 1.0F * 1.0F * ay);
+  const float32_t vx1 = vx + ax;
+  const float32_t vy1 = vy + ay;
   ASSERT_FLOAT_EQ(y(0), x1);
   ASSERT_FLOAT_EQ(y(1), y1);
   ASSERT_FLOAT_EQ(y(2), vx1);
@@ -56,10 +59,10 @@ TEST(constant_acceleration, basic)
   ASSERT_FLOAT_EQ(y(4), ax);
   ASSERT_FLOAT_EQ(y(5), ay);
   model.predict(y, milliseconds_500);
-  const float x2 = 0.5F * vx + (0.5F * 0.5F * 0.5F * ax);
-  const float y2 = 0.5F * vy + (0.5F * 0.5F * 0.5F * ay);
-  const float vx2 = vx + 0.5F * ax;
-  const float vy2 = vy + 0.5F * ay;
+  const float32_t x2 = 0.5F * vx + (0.5F * 0.5F * 0.5F * ax);
+  const float32_t y2 = 0.5F * vy + (0.5F * 0.5F * 0.5F * ay);
+  const float32_t vx2 = vx + 0.5F * ax;
+  const float32_t vy2 = vy + 0.5F * ay;
   ASSERT_FLOAT_EQ(y(0), x2);
   ASSERT_FLOAT_EQ(y(1), y2);
   ASSERT_FLOAT_EQ(y(2), vx2);
@@ -67,7 +70,7 @@ TEST(constant_acceleration, basic)
   ASSERT_FLOAT_EQ(y(4), ax);
   ASSERT_FLOAT_EQ(y(5), ay);
   // compute jacobian
-  Matrix<float, sz, sz> F;
+  Matrix<float32_t, sz, sz> F;
   model.compute_jacobian(F, milliseconds_100);
   for (uint32_t idx = 0U; idx < sz; ++idx) {
     for (uint32_t jdx = 0U; jdx < sz; ++jdx) {
@@ -102,10 +105,10 @@ TEST(constant_acceleration, basic)
   ASSERT_FLOAT_EQ(y(3), vy2);
   ASSERT_FLOAT_EQ(y(4), ax);
   ASSERT_FLOAT_EQ(y(5), ay);
-  const float x3 = 0.1F * vx + (0.5F * 0.1F * 0.1F * ax);
-  const float y3 = 0.1F * vy + (0.5F * 0.1F * 0.1F * ay);
-  const float vx3 = vx + 0.1F * ax;
-  const float vy3 = vy + 0.1F * ay;
+  const float32_t x3 = 0.1F * vx + (0.5F * 0.1F * 0.1F * ax);
+  const float32_t y3 = 0.1F * vy + (0.5F * 0.1F * 0.1F * ay);
+  const float32_t vx3 = vx + 0.1F * ax;
+  const float32_t vy3 = vy + 0.1F * ay;
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_X], x3);
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_Y], y3);
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_X], vx3);
@@ -139,10 +142,10 @@ TEST(constant_acceleration, basic)
       }
     }
   }
-  const float x4 = x3 + 0.05F * vx3 + (0.5F * 0.05F * 0.05F * ax);
-  const float y4 = y3 + 0.05F * vy3 + (0.5F * 0.05F * 0.05F * ay);
-  const float vx4 = vx3 + 0.05F * ax;
-  const float vy4 = vy3 + 0.05F * ay;
+  const float32_t x4 = x3 + 0.05F * vx3 + (0.5F * 0.05F * 0.05F * ax);
+  const float32_t y4 = y3 + 0.05F * vy3 + (0.5F * 0.05F * 0.05F * ay);
+  const float32_t vx4 = vx3 + 0.05F * ax;
+  const float32_t vy4 = vy3 + 0.05F * ay;
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_X], x4);
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_Y], y4);
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_X], vx4);

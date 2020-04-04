@@ -13,24 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <motion_model/parameter_estimator.hpp>
 
 using Eigen::Matrix;
 using autoware::motion::motion_model::ParameterEstimator;
+using autoware::common::types::float32_t;
 
 TEST(motion_model, parameter_estimator)
 {
   ParameterEstimator<2> model;
-  Matrix<float, 2, 1> x({1, 2}), y, z;
-  Matrix<float, 2, 2> F;
+  Matrix<float32_t, 2, 1> x({1, 2}), y, z;
+  Matrix<float32_t, 2, 2> F;
 
   model.reset(x);
 
   std::chrono::nanoseconds dt(100LL);
   model.compute_jacobian_and_predict(F, dt);
   y = model.get_state();
-  for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < 2; ++j) {
+  for (uint8_t i = 0; i < 2; ++i) {
+    for (uint8_t j = 0; j < 2; ++j) {
       if (i == j) {
         ASSERT_FLOAT_EQ(F(i, j), 1.0F);
       } else {

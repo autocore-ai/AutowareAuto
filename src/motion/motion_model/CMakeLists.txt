@@ -5,6 +5,7 @@ project(motion_model)
 
 ## dependencies
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -25,7 +26,8 @@ add_library(${PROJECT_NAME} SHARED
   src/catr_core.cpp
   src/catr_model.cpp
 )
-ament_target_dependencies(${PROJECT_NAME})
+ament_target_dependencies(${PROJECT_NAME}
+  autoware_auto_common)
 autoware_set_compile_options(${PROJECT_NAME})
 
 if(BUILD_TESTING)

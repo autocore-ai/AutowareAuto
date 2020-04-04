@@ -20,8 +20,12 @@
 #ifndef MOTION_MODEL__CATR_CORE_HPP_
 #define MOTION_MODEL__CATR_CORE_HPP_
 
+#include <common/types.hpp>
 #include "motion_model/visibility_control.hpp"
 #include "motion_model/motion_model.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -34,27 +38,27 @@ namespace motion_model
 ///        jacobian and prediction computation, specifically those that are time invariant
 struct MOTION_MODEL_PUBLIC CatrInvariantWorkspace
 {
-  bool is_w_nonzero;  ///< if heading rate is above some small number threshold
-  float w;  ///< current state heading rate
-  float a;  ///< current state acceleration
-  float s;  ///< sine of current state's heading
-  float c;  ///< cosine of current state's heading
-  float vw;  ///< product of velocity times heading rate, not calculated if w is 0
-  float w_inv;  ///< inverse of heading rate, not calculated if w is 0
-  float w2_inv;  ///< inverse square of heading rate, not calculated if w is 0
+  bool8_t is_w_nonzero;  ///< if heading rate is above some small number threshold
+  float32_t w;  ///< current state heading rate
+  float32_t a;  ///< current state acceleration
+  float32_t s;  ///< sine of current state's heading
+  float32_t c;  ///< cosine of current state's heading
+  float32_t vw;  ///< product of velocity times heading rate, not calculated if w is 0
+  float32_t w_inv;  ///< inverse of heading rate, not calculated if w is 0
+  float32_t w2_inv;  ///< inverse square of heading rate, not calculated if w is 0
 };
 
 /// \brief This struct holds some common worker variables for CATR model's
 ///        jacobian and prediction computation, specifically those that are time varying
 struct MOTION_MODEL_PUBLIC CatrVariantWorkspace
 {
-  float dt;  ///< time step
-  float vp;  ///< next velocity after time step
-  float wT;  ///< product of heading rate and time step, not calculated if w is 0
-  float thp;  ///< next heading after time step
-  float sp;  ///< sine of next heading, not calculated if w is 0
-  float cp;  ///< cosine of next heading, not calculated if w is 0
-  float awT;  ///< product of acceleration, heading rate, and time step. If w is 0, path length
+  float32_t dt;  ///< time step
+  float32_t vp;  ///< next velocity after time step
+  float32_t wT;  ///< product of heading rate and time step, not calculated if w is 0
+  float32_t thp;  ///< next heading after time step
+  float32_t sp;  ///< sine of next heading, not calculated if w is 0
+  float32_t cp;  ///< cosine of next heading, not calculated if w is 0
+  float32_t awT;  ///< product of acceleration, heading rate, and time step. If w is 0, path length
 };
 
 
@@ -73,9 +77,9 @@ struct MOTION_MODEL_PUBLIC CatrState
 /// \param[in] x state vector to initialize invariants with
 /// \param[out] ws gets filled with invariants
 /// \tparam NumStates dimensionality of model, CATR model is assumed to take the first 6 slots
-template<int NumStates>
+template<int32_t NumStates>
 MOTION_MODEL_LOCAL void catr_workspace_init_invariant(
-  const Eigen::Matrix<float, NumStates, 1U> & x,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & x,
   CatrInvariantWorkspace & ws);
 
 /// \brief Initialize dt varying values for CATR model
@@ -85,10 +89,10 @@ MOTION_MODEL_LOCAL void catr_workspace_init_invariant(
 ///                the same x in catr_workspace_init_invariant()
 /// \param[inout] ws get filled with varying stuff
 /// \tparam NumStates dimensionality of model, CATR model is assumed to take the first 6 slots
-template<int NumStates>
+template<int32_t NumStates>
 MOTION_MODEL_LOCAL void catr_workspace_init_variant(
-  const Eigen::Matrix<float, NumStates, 1U> & x,
-  const float dt_s,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & x,
+  const float32_t dt_s,
   const CatrInvariantWorkspace & iws,
   CatrVariantWorkspace & ws);
 
@@ -97,11 +101,11 @@ MOTION_MODEL_LOCAL void catr_workspace_init_variant(
 /// \param[in] vws precompute worker variables for a given state and dt
 /// \param[out] F gets filled with jacobian
 /// \tparam NumStates dimensionality of model, CATR model is assumed to take the first 6 slots
-template<int NumStates>
+template<int32_t NumStates>
 MOTION_MODEL_LOCAL void catr_compute_jacobian(
   const CatrInvariantWorkspace & iws,
   const CatrVariantWorkspace & vws,
-  Eigen::Matrix<float, NumStates, NumStates> & F);
+  Eigen::Matrix<float32_t, NumStates, NumStates> & F);
 
 /// \brief Propagate CATR model forward in time
 /// \param[in] ref reference state to propagate forward
@@ -109,12 +113,12 @@ MOTION_MODEL_LOCAL void catr_compute_jacobian(
 /// \param[in] vws precomputed worker variables for ref and a given dt
 /// \param[out] x gets filled with reference state propagated forward
 /// \tparam NumStates dimensionality of model, CATR model is assumed to take the first 6 slots
-template<int NumStates>
+template<int32_t NumStates>
 MOTION_MODEL_LOCAL void catr_predict(
-  const Eigen::Matrix<float, NumStates, 1U> & ref,
+  const Eigen::Matrix<float32_t, NumStates, 1U> & ref,
   const CatrInvariantWorkspace & iws,
   const CatrVariantWorkspace & vws,
-  Eigen::Matrix<float, NumStates, 1U> & x);
+  Eigen::Matrix<float32_t, NumStates, 1U> & x);
 
 }  // namespace motion_model
 }  // namespace motion

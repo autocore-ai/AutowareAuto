@@ -13,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include "motion_model/constant_acceleration.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -31,12 +34,12 @@ ConstantAcceleration & ConstantAcceleration::operator=(const ConstantAcceleratio
 }
 ///
 void ConstantAcceleration::predict(
-  Eigen::Matrix<float, 6U, 1U> & x,
+  Eigen::Matrix<float32_t, 6U, 1U> & x,
   const std::chrono::nanoseconds & dt) const
 {
-  const float dt_s = static_cast<float>(dt.count()) / 1000000000LL;
-  const float ax_dt = dt_s * m_state(States::ACCELERATION_X);
-  const float ay_dt = dt_s * m_state(States::ACCELERATION_Y);
+  const float32_t dt_s = static_cast<float32_t>(dt.count()) / 1000000000LL;
+  const float32_t ax_dt = dt_s * m_state(States::ACCELERATION_X);
+  const float32_t ay_dt = dt_s * m_state(States::ACCELERATION_Y);
   x(States::POSE_X) =
     m_state(States::POSE_X) + (dt_s * m_state(States::VELOCITY_X)) + (0.5F * dt_s * ax_dt);
   x(States::POSE_Y) =
@@ -52,26 +55,26 @@ void ConstantAcceleration::predict(const std::chrono::nanoseconds & dt) {predict
 
 ///
 void ConstantAcceleration::compute_jacobian(
-  Eigen::Matrix<float, 6U, 6U> & F,
+  Eigen::Matrix<float32_t, 6U, 6U> & F,
   const std::chrono::nanoseconds & dt)
 {
   // identity matrix
   F.setIdentity();
 
-  const float dt_s = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t dt_s = static_cast<float32_t>(dt.count()) / 1000000000LL;
   // only nonzero elements are ones along diagonal + constant terms for velocity
   F(States::POSE_X, States::VELOCITY_X) = dt_s;
   F(States::POSE_Y, States::VELOCITY_Y) = dt_s;
   F(States::VELOCITY_X, States::ACCELERATION_X) = dt_s;
   F(States::VELOCITY_Y, States::ACCELERATION_Y) = dt_s;
-  const float dt2_s2 = dt_s * dt_s * 0.5F;
+  const float32_t dt2_s2 = dt_s * dt_s * 0.5F;
   F(States::POSE_X, States::ACCELERATION_X) = dt2_s2;
   F(States::POSE_Y, States::ACCELERATION_Y) = dt2_s2;
 }
 
 ///
 void ConstantAcceleration::compute_jacobian_and_predict(
-  Eigen::Matrix<float, 6U, 6U> & F,
+  Eigen::Matrix<float32_t, 6U, 6U> & F,
   const std::chrono::nanoseconds & dt)
 {
   compute_jacobian(F, dt);
@@ -80,12 +83,12 @@ void ConstantAcceleration::compute_jacobian_and_predict(
 ///
 float ConstantAcceleration::operator[](const index_t idx) const {return m_state(idx);}
 ///
-void ConstantAcceleration::reset(const Eigen::Matrix<float, 6U, 1U> & x)
+void ConstantAcceleration::reset(const Eigen::Matrix<float32_t, 6U, 1U> & x)
 {
   m_state = x;
 }
 ///
-const Eigen::Matrix<float, 6U, 1U> & ConstantAcceleration::get_state() const
+const Eigen::Matrix<float32_t, 6U, 1U> & ConstantAcceleration::get_state() const
 {
   return m_state;
 }

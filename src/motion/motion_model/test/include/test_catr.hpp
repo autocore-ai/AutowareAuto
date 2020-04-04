@@ -13,20 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include "motion_model/catr_model.hpp"
 
 using autoware::motion::motion_model::CatrModel;
 using autoware::motion::motion_model::CatrState;
 using Eigen::Matrix;
+using autoware::common::types::float32_t;
 
-static const float TOL = 1.0E-5F;
+static const float32_t TOL = 1.0E-5F;
 
 // catr model should safely decay to constant velocity
 TEST(catr_model, constant_velocity)
 {
   CatrModel model;
   // position at origin, unit velocity, no acceleration/yaw rate
-  Matrix<float, 6, 1> x, y;
+  Matrix<float32_t, 6, 1> x, y;
   x << 0, 0, 1, 0, 0, 0;
   model.reset(x);
   // duration in nanoseconds equal to one second
@@ -46,8 +48,8 @@ TEST(catr_model, constant_acceleration)
 {
   CatrModel model;
   // position at origin, unit velocity, unit acceleration, no yaw rate
-  const float th = 3.14159 / 2.0F;
-  Matrix<float, 6, 1> x;
+  const float32_t th = 3.14159 / 2.0F;
+  Matrix<float32_t, 6, 1> x;
   x << 0, 0, 1, 1, th, 0;
   model.reset(x);
 
@@ -70,25 +72,25 @@ TEST(catr_model, cvtr1)
   CatrModel model;
   // i should be able to simulate a full circle
   const uint32_t N = 100;
-  const float dt = 0.1;
+  const float32_t dt = 0.1;
   // full rotation in 100 steps = 10 seconds
-  const float dth = 2.0F * 3.14159F / (dt * N);
-  const float v = 2.0F;
+  const float32_t dth = 2.0F * 3.14159F / (dt * N);
+  const float32_t v = 2.0F;
   // travel circumference in 10 seconds
-  const float s = v * (dt * N);
-  const float r = s / (2.0F * 3.14159F);
+  const float32_t s = v * (dt * N);
+  const float32_t r = s / (2.0F * 3.14159F);
   // 0 heading == +x direction
-  Matrix<float, 6, 1> x;
+  Matrix<float32_t, 6, 1> x;
   x << 0, -r, v, 0, 0, dth;
 
   model.reset(x);
-  std::chrono::nanoseconds dt_seconds(static_cast<long>(dt * 1000.0F * 1000000.0F));
+  std::chrono::nanoseconds dt_seconds(static_cast<int64_t>(dt * 1000.0F * 1000000.0F));
   for (uint32_t i = 0; i < N; ++i) {
     model.predict(dt_seconds);
-    const float th = ((i + 1) * dth) / (1 / dt);
-    const float x = r * sinf(th);
-    const float y = -r * cosf(th);
-    const float TOL2 = 1.0E-4F;
+    const float32_t th = ((i + 1) * dth) / (1 / dt);
+    const float32_t x = r * sinf(th);
+    const float32_t y = -r * cosf(th);
+    const float32_t TOL2 = 1.0E-4F;
     ASSERT_LT(fabsf(model[CatrState::POSE_X] - x), TOL2);
     ASSERT_LT(fabsf(model[CatrState::POSE_Y] - y), TOL2);
     ASSERT_LT(fabsf(model[CatrState::VELOCITY] - v), TOL2);
@@ -103,27 +105,27 @@ TEST(catr_model, cvtr2)
   CatrModel model;
   // i should be able to simulate a full circle
   const uint32_t N = 200;
-  const float dt = 0.1;
+  const float32_t dt = 0.1;
   // full rotation in 100 steps = 10 seconds
-  const float dth = -2.0F * 3.14159F / (dt * N);
-  const float v = 3.0F;
+  const float32_t dth = -2.0F * 3.14159F / (dt * N);
+  const float32_t v = 3.0F;
   // travel circumference in 10 seconds
-  const float s = v * (dt * N);
-  const float r = s / (2.0F * 3.14159F);
-  const float th0 = 3.14159F;
+  const float32_t s = v * (dt * N);
+  const float32_t r = s / (2.0F * 3.14159F);
+  const float32_t th0 = 3.14159F;
   // 0 heading == +x direction
-  Matrix<float, 6, 1> x;
+  Matrix<float32_t, 6, 1> x;
   x << 0, -r, v, 0, th0, dth;
 
   model.reset(x);
 
-  std::chrono::nanoseconds dt_seconds(static_cast<long>(dt * 1000.0F * 1000000.0F));
+  std::chrono::nanoseconds dt_seconds(static_cast<int64_t>(dt * 1000.0F * 1000000.0F));
   for (uint32_t i = 0; i < N; ++i) {
     model.predict(dt_seconds);
-    const float th = ((i + 1) * dth) / (1.0 / dt) + th0;
-    const float x = -r * sinf(th);
-    const float y = r * cosf(th);
-    const float TOL2 = 1.0E-4F;
+    const float32_t th = ((i + 1) * dth) / (1.0 / dt) + th0;
+    const float32_t x = -r * sinf(th);
+    const float32_t y = r * cosf(th);
+    const float32_t TOL2 = 1.0E-4F;
     ASSERT_LT(fabsf(model[CatrState::POSE_X] - x), TOL2);
     ASSERT_LT(fabsf(model[CatrState::POSE_Y] - y), TOL2);
     ASSERT_LT(fabsf(model[CatrState::VELOCITY] - v), TOL2);
@@ -138,23 +140,23 @@ TEST(catr_model, basic)
   // positive yaw rate should put position away from initial heading, and continue on
   CatrModel model;
   // general case
-  float th = 0.0F;
-  Matrix<float, 6, 1> z1, z2;
+  float32_t th = 0.0F;
+  Matrix<float32_t, 6, 1> z1, z2;
   z1 << 0, 0, 1, 1, th, 0.1F;
   model.reset(z1);
 
   std::chrono::nanoseconds dt_seconds_100(std::chrono::milliseconds(100));
-  float x = model[CatrState::POSE_X];
-  float y = model[CatrState::POSE_Y];
+  float32_t x = model[CatrState::POSE_X];
+  float32_t y = model[CatrState::POSE_Y];
   model.predict(z2, dt_seconds_100);
   ASSERT_GT(z2(CatrState::POSE_X), 0.0F);
   ASSERT_GT(z2(CatrState::POSE_Y), 0.0F);
   ASSERT_LT(fabsf(z2(CatrState::HEADING) - 0.1 * 0.1), TOL);
   ASSERT_LT(fabsf(z2(CatrState::VELOCITY) - 1.1F), TOL);
   ASSERT_LT(fabsf(z2(CatrState::ACCELERATION) - 1.0F), TOL);
-  float xp = z2(CatrState::POSE_X);
-  float yp = z2(CatrState::POSE_Y);
-  float thp = atan2f(yp - y, xp - x);
+  float32_t xp = z2(CatrState::POSE_X);
+  float32_t yp = z2(CatrState::POSE_Y);
+  float32_t thp = atan2f(yp - y, xp - x);
   ASSERT_GT(thp, th);
   x = xp;
   y = yp;
@@ -178,19 +180,19 @@ TEST(catr_model, cv_jacobian)
 {
   CatrModel model;
   // position at origin, unit velocity, no acceleration/yaw rate
-  Matrix<float, 6, 6> F;
+  Matrix<float32_t, 6, 6> F;
   // 30 degrees
-  const float v = 1.0;
-  Matrix<float, 6, 1> x, y;
+  const float32_t v = 1.0;
+  Matrix<float32_t, 6, 1> x, y;
   x << 0, 0, v, 0, 30 * 3.14159F / 180, 0.0F;
   model.reset(x);
 
   std::chrono::nanoseconds dt_(std::chrono::milliseconds(100));
-  const float dt = static_cast<float>(dt_.count()) / 1000000000LL;
-  const float ds = dt * v;
+  const float32_t dt = static_cast<float32_t>(dt_.count()) / 1000000000LL;
+  const float32_t ds = dt * v;
   model.compute_jacobian_and_predict(F, dt_);
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
+  for (uint8_t i = 0; i < 6; ++i) {
+    for (uint8_t j = 0; j < 6; ++j) {
       if (i == j) {
         // diagonal
         ASSERT_LT(fabsf(F(i, i) - 1.0F), TOL);
@@ -236,20 +238,20 @@ TEST(catr_model, ca_jacobian)
 {
   CatrModel model;
   // position at origin, unit velocity, unit acceleration, no yaw rate
-  Matrix<float, 6, 6> F;
+  Matrix<float32_t, 6, 6> F;
   // -45 degrees
-  const float v = 1.0;
-  Matrix<float, 6, 1> x, y;
+  const float32_t v = 1.0;
+  Matrix<float32_t, 6, 1> x, y;
   x << 2, -3, v, 1, -3.14159F / 4, 0.0F;
   model.reset(x);
 
   std::chrono::nanoseconds dt_(std::chrono::milliseconds(200));
-  const float dt = static_cast<float>(dt_.count()) / 1000000000LL;
-  const float ds = dt * v + 0.5F * dt * dt;
-  const float cs = sqrtf(2) * 0.5F;
+  const float32_t dt = static_cast<float32_t>(dt_.count()) / 1000000000LL;
+  const float32_t ds = dt * v + 0.5F * dt * dt;
+  const float32_t cs = sqrtf(2) * 0.5F;
   model.compute_jacobian(F, dt_);
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
+  for (uint8_t i = 0; i < 6; ++i) {
+    for (uint8_t j = 0; j < 6; ++j) {
       if (i == j) {
         // diagonal
         ASSERT_LT(fabsf(F(i, i) - 1.0F), TOL);
@@ -298,15 +300,15 @@ TEST(catr_model, cvtr_jacobian)
 {
   CatrModel model;
   // constant velocity, turn rate model, path = circle
-  Matrix<float, 6, 6> F;
+  Matrix<float32_t, 6, 6> F;
   // -45 degrees
-  const Matrix<float, 6, 1> x((Eigen::Matrix<float, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
-  Matrix<float, 6, 1> dx[6];
+  const Matrix<float32_t, 6, 1> x((Eigen::Matrix<float32_t, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
+  Matrix<float32_t, 6, 1> dx[6];
 
   std::chrono::nanoseconds dt_(1000000LL);
   // compute deltas
-  const float del = 0.01;
-  for (int i = 0; i < 6; ++i) {
+  const float32_t del = 0.01;
+  for (uint8_t i = 0; i < 6; ++i) {
     dx[i] = x;
     dx[i](i) += del;
     model.reset(dx[i]);
@@ -317,10 +319,10 @@ TEST(catr_model, cvtr_jacobian)
   model.compute_jacobian_and_predict(F, dt_);
 
   // compare analytical derivative to numerical derivative
-  const float TOL2 = 3.0E-4F;
+  const float32_t TOL2 = 3.0E-4F;
   ASSERT_LT(TOL2, del);
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
+  for (uint8_t i = 0; i < 6; ++i) {
+    for (uint8_t j = 0; j < 6; ++j) {
       if (i == j) {
         // diagonal is 1
         ASSERT_EQ(F(i, j), 1.0F);
@@ -329,7 +331,7 @@ TEST(catr_model, cvtr_jacobian)
         ASSERT_LT(fabsf(F(i, j)), TOL);
       } else {
         // should be approximately the same
-        const float delta = (dx[j](i) - model[i]) / del;
+        const float32_t delta = (dx[j](i) - model[i]) / del;
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {
@@ -348,14 +350,14 @@ TEST(catr_model, catr_jacobian)
 {
   CatrModel model;
   // general case
-  Matrix<float, 6, 6> F;
+  Matrix<float32_t, 6, 6> F;
   // -45 degrees
-  const Matrix<float, 6, 1> x((Eigen::Matrix<float, 6, 1>() <<-10, 3, 5, 3, -0.5F, -0.3F).finished());
-  Matrix<float, 6, 1> dx[6];
+  const Matrix<float32_t, 6, 1> x((Eigen::Matrix<float32_t, 6, 1>() <<-10, 3, 5, 3, -0.5F, -0.3F).finished());
+  Matrix<float32_t, 6, 1> dx[6];
   std::chrono::nanoseconds dt_(1000000LL);
   // compute deltas
-  const float del = 0.01;
-  for (int i = 0; i < 6; ++i) {
+  const float32_t del = 0.01;
+  for (uint8_t i = 0; i < 6; ++i) {
     dx[i] = x;
     dx[i](i) += del;
     model.reset(dx[i]);
@@ -366,10 +368,10 @@ TEST(catr_model, catr_jacobian)
   model.compute_jacobian_and_predict(F, dt_);
 
   // compare analytical derivative to numerical derivative
-  const float TOL2 = 3.0E-4F;
+  const float32_t TOL2 = 3.0E-4F;
   ASSERT_LT(TOL2, del);
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
+  for (uint8_t i = 0; i < 6; ++i) {
+    for (uint8_t j = 0; j < 6; ++j) {
       if (i == j) {
         // diagonal is 1
         ASSERT_EQ(F(i, j), 1.0F);
@@ -378,7 +380,7 @@ TEST(catr_model, catr_jacobian)
         ASSERT_LT(fabsf(F(i, j)), TOL);
       } else {
         // should be approximately the same
-        const float delta = (dx[j](i) - model[i]) / del;
+        const float32_t delta = (dx[j](i) - model[i]) / del;
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {

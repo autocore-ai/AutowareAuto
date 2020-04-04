@@ -16,7 +16,10 @@
 /// \copyright Copyright 2018 Apex.AI, Inc.
 /// All rights reserved.
 
+#include <common/types.hpp>
 #include "motion_model/constant_velocity.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -34,10 +37,10 @@ ConstantVelocity & ConstantVelocity::operator=(const ConstantVelocity & rhs)
 }
 ///
 void ConstantVelocity::predict(
-  Eigen::Matrix<float, 4U, 1U> & x,
+  Eigen::Matrix<float32_t, 4U, 1U> & x,
   const std::chrono::nanoseconds & dt) const
 {
-  const float dt_s = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t dt_s = static_cast<float32_t>(dt.count()) / 1000000000LL;
   x(States::POSE_X) = m_state(States::POSE_X) + (dt_s * m_state(States::VELOCITY_X));
   x(States::POSE_Y) = m_state(States::POSE_Y) + (dt_s * m_state(States::VELOCITY_Y));
   x(States::VELOCITY_X) = m_state(States::VELOCITY_X);
@@ -52,10 +55,10 @@ void ConstantVelocity::predict(const std::chrono::nanoseconds & dt)
 
 ///
 void ConstantVelocity::compute_jacobian(
-  Eigen::Matrix<float, 4U, 4U> & F,
+  Eigen::Matrix<float32_t, 4U, 4U> & F,
   const std::chrono::nanoseconds & dt)
 {
-  const float dt_s = static_cast<float>(dt.count()) / 1000000000LL;
+  const float32_t dt_s = static_cast<float32_t>(dt.count()) / 1000000000LL;
   // identity matrix
   F.setIdentity();
   // only nonzero elements are ones along diagonal + constant terms for velocity
@@ -65,7 +68,7 @@ void ConstantVelocity::compute_jacobian(
 
 ///
 void ConstantVelocity::compute_jacobian_and_predict(
-  Eigen::Matrix<float, 4U, 4U> & F,
+  Eigen::Matrix<float32_t, 4U, 4U> & F,
   const std::chrono::nanoseconds & dt)
 {
   compute_jacobian(F, dt);
@@ -74,12 +77,12 @@ void ConstantVelocity::compute_jacobian_and_predict(
 ///
 float ConstantVelocity::operator[](const index_t idx) const {return m_state(idx);}
 ///
-void ConstantVelocity::reset(const Eigen::Matrix<float, 4U, 1U> & x)
+void ConstantVelocity::reset(const Eigen::Matrix<float32_t, 4U, 1U> & x)
 {
   m_state = x;
 }
 ///
-const Eigen::Matrix<float, 4U, 1U> & ConstantVelocity::get_state() const
+const Eigen::Matrix<float32_t, 4U, 1U> & ConstantVelocity::get_state() const
 {
   return m_state;
 }

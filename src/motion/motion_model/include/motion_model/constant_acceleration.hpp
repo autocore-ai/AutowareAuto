@@ -17,9 +17,12 @@
 #ifndef MOTION_MODEL__CONSTANT_ACCELERATION_HPP_
 #define MOTION_MODEL__CONSTANT_ACCELERATION_HPP_
 
+#include <common/types.hpp>
 #include <chrono>
 #include "motion_model/motion_model.hpp"
 #include "motion_model/visibility_control.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -55,7 +58,7 @@ public:
   /// \param[out] x vector to store result into
   /// \param[in] dt prediction horizon based on current state
   void predict(
-    Eigen::Matrix<float, 6U, 1U> & x,
+    Eigen::Matrix<float32_t, 6U, 1U> & x,
     const std::chrono::nanoseconds & dt) const override;
 
   /// \brief Update current state with a given motion. Note that this should be called
@@ -70,7 +73,7 @@ public:
   /// \param[out] F matrix to store jacobian into
   /// \param[in] dt prediction horizon to build jacobian off of
   void compute_jacobian(
-    Eigen::Matrix<float, 6U, 6U> & F,
+    Eigen::Matrix<float32_t, 6U, 6U> & F,
     const std::chrono::nanoseconds & dt) override;
 
   /// \brief This is called by Esrcf. This should be first a computation of the jacobian, and
@@ -80,24 +83,24 @@ public:
   /// \param[out] F matrix to store jacobian into
   /// \param[in] dt prediction horizon to build jacobian off of
   void compute_jacobian_and_predict(
-    Eigen::Matrix<float, 6U, 6U> & F,
+    Eigen::Matrix<float32_t, 6U, 6U> & F,
     const std::chrono::nanoseconds & dt) override;
 
   /// \brief Get elements of the model's state.
   /// \param[in] idx index of state variable to get
   /// \return copy of state variable
-  float operator[](const index_t idx) const override;
+  float32_t operator[](const index_t idx) const override;
 
   /// \brief Set the state
   /// \param[in] x the state to store internally
-  void reset(const Eigen::Matrix<float, 6U, 1U> & x) override;
+  void reset(const Eigen::Matrix<float32_t, 6U, 1U> & x) override;
 
   /// \brief const access to internal state
   /// \return const reference to internal state vector
-  const Eigen::Matrix<float, 6U, 1U> & get_state() const override;
+  const Eigen::Matrix<float32_t, 6U, 1U> & get_state() const override;
 
 private:
-  Eigen::Matrix<float, 6U, 1U> m_state;
+  Eigen::Matrix<float32_t, 6U, 1U> m_state;
 };  // class ConstantAcceleration
 }  // namespace motion_model
 }  // namespace motion
