@@ -13,9 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_CONSTANT_ACCELERATION_HPP_
-#define TEST_CONSTANT_ACCELERATION_HPP_
-
 #include <common/types.hpp>
 #include <motion_model/constant_acceleration.hpp>
 
@@ -81,24 +78,18 @@ TEST(constant_acceleration, basic)
       if (idx == jdx) {
         ASSERT_FLOAT_EQ(F(idx, idx), 1.0F);
       // first order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::VELOCITY_X == jdx) {
+      } else if (ConstantAcceleration::States::POSE_X == idx && ConstantAcceleration::States::VELOCITY_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::VELOCITY_Y == jdx) {
+      } else if (ConstantAcceleration::States::POSE_Y == idx && ConstantAcceleration::States::VELOCITY_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::VELOCITY_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (ConstantAcceleration::States::VELOCITY_X == idx && ConstantAcceleration::States::ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::VELOCITY_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (ConstantAcceleration::States::VELOCITY_Y == idx && ConstantAcceleration::States::ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
       // second order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (ConstantAcceleration::States::POSE_X == idx && ConstantAcceleration::States::ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F * 0.1F * 0.5F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (ConstantAcceleration::States::POSE_Y == idx && ConstantAcceleration::States::ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F * 0.1F * 0.5F);
       // other terms
       } else {
@@ -132,24 +123,18 @@ TEST(constant_acceleration, basic)
       if (idx == jdx) {
         ASSERT_FLOAT_EQ(F(idx, idx), 1.0F);
       // first order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::VELOCITY_X == jdx) {
+      } else if (ConstantAcceleration::States::POSE_X == idx && ConstantAcceleration::States::VELOCITY_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::VELOCITY_Y == jdx) {
+      } else if (ConstantAcceleration::States::POSE_Y == idx && ConstantAcceleration::States::VELOCITY_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::VELOCITY_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (ConstantAcceleration::States::VELOCITY_X == idx && ConstantAcceleration::States::ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::VELOCITY_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (ConstantAcceleration::States::VELOCITY_Y == idx && ConstantAcceleration::States::ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
       // second order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (ConstantAcceleration::States::POSE_X == idx && ConstantAcceleration::States::ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F * 0.05F * 0.5F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (ConstantAcceleration::States::POSE_Y == idx && ConstantAcceleration::States::ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F * 0.05F * 0.5F);
       // other terms
       } else {
@@ -168,5 +153,3 @@ TEST(constant_acceleration, basic)
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_X], ax);
   ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_Y], ay);
 }
-
-#endif  // TEST_CONSTANT_ACCELERATION_HPP_

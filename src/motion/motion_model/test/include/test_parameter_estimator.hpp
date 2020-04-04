@@ -55,5 +55,3 @@ TEST(motion_model, parameter_estimator)
   ASSERT_FLOAT_EQ(model[0], 1.0F);
   ASSERT_FLOAT_EQ(model[1], 2.0F);
 }
-
-#endif  // TEST_PARAMETER_ESTIMATOR_HPP_

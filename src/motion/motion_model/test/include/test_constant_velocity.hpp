@@ -103,5 +103,3 @@ TEST(constant_velocity, basic)
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_X], vx);
   ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_Y], vy);
 }
-
-#endif  // TEST_CONSTANT_VELOCITY_HPP_
