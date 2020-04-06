@@ -37,17 +37,10 @@ static const uint16_t POINTS_PER_FIRE_SEQ = 16U;
 ////////////////////////////////////////////////////////////////////////////////
 Vlp16Translator::Vlp16Translator(const Config & config)
 : m_fire_id(0U),
-  m_num_firing_per_scan(0U),
-  m_offset_m(),
-  m_min_radius_m(0.0F),
-  m_max_radius_m(std::numeric_limits<float32_t>::max()),
-  m_min_azimuth_ind(0U),
-  m_max_azimuth_ind(0U)  // should be large max value, but probably ok?
+  m_num_firing_per_scan(0U)
 {
   // technically don't need these, but pclint would yell at you
   (void)memset(static_cast<void *>(m_altitude_ind), 0, sizeof(m_altitude_ind));
-  (void)memset(static_cast<void *>(m_azimuth_ind), 0, sizeof(m_azimuth_ind));
-  (void)memset(static_cast<void *>(m_rot_mat), 0, sizeof(m_rot_mat));
   // do precomputation
   init_tables(config);
 }
@@ -87,20 +80,17 @@ void Vlp16Translator::convert(const Packet & pkt, std::vector<PointXYZIF> & outp
         // distance
         const float32_t r = compute_distance_m(channel.data[1U], channel.data[0U]);
 
-        // ignore points according to azimuth angle and radial distance
-        if (accept_point(r, th)) {
-          // altitude angle from firing order
-          const uint32_t phi = m_altitude_ind[jdx];
-          /// convert from polar to xyz, push to buffer
-          PointXYZIF pt;
-          polar_to_xyz(pt, r, th, phi);
-          // beam intensity
-          pt.intensity = m_intensity_table[channel.data[2U]];
-          pt.id = static_cast<uint16_t>((jdx < POINTS_PER_FIRE_SEQ) ? m_fire_id :
-            (m_fire_id + 1U));
-          output.push_back(pt);
-          // No need to check if this will overflow because of static asserts
-        }
+        // altitude angle from firing order
+        const uint32_t phi = m_altitude_ind[jdx];
+        /// convert from polar to xyz, push to buffer
+        PointXYZIF pt;
+        polar_to_xyz(pt, r, th, phi);
+        // beam intensity
+        pt.intensity = m_intensity_table[channel.data[2U]];
+        pt.id = static_cast<uint16_t>((jdx < POINTS_PER_FIRE_SEQ) ? m_fire_id :
+          (m_fire_id + 1U));
+        output.push_back(pt);
+        // No need to check if this will overflow because of static asserts
       }
       // prevent overflow
       m_fire_id = static_cast<uint16_t>(m_fire_id + 2U);
@@ -122,19 +112,11 @@ void Vlp16Translator::convert(const Packet & pkt, std::vector<PointXYZIF> & outp
 ////////////////////////////////////////////////////////////////////////////////
 void Vlp16Translator::init_tables(const Config & config)
 {
-  m_offset_m = config.get_offset();
-  m_max_radius_m = config.get_max_distance();
-  m_min_radius_m = config.get_min_distance();
   init_azimuth_table_num_points(
     clamp<float32_t>(config.get_rpm(), MIN_RPM, MAX_RPM));
   init_trig_tables();
   init_altitude_table();
-  init_extreme_azimuth_indices(config.get_min_angle(), config.get_max_angle());
   init_intensity_table();
-  init_rotation_matrix(
-    config.get_rotation().x,
-    config.get_rotation().y,
-    config.get_rotation().z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,60 +203,6 @@ void Vlp16Translator::init_intensity_table()
   for (uint64_t idx = 0U; idx < NUM_INTENSITY_VALUES; ++idx) {
     m_intensity_table[idx] = static_cast<float32_t>(idx);
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Vlp16Translator::init_extreme_azimuth_indices(
-  const float32_t min_azimuth_deg,
-  const float32_t max_azimuth_deg)
-{
-  // convert to index
-  uint32_t max_idx =
-    std::min(
-    static_cast<uint32_t>(std::floor(max_azimuth_deg *
-    (static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F))),
-    AZIMUTH_ROTATION_RESOLUTION - 1U);
-  uint32_t min_idx =
-    static_cast<uint32_t>(std::floor(min_azimuth_deg *
-    (static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F)));
-  // check if you would roll over
-  max_idx = (max_idx) % AZIMUTH_ROTATION_RESOLUTION;
-  min_idx = (min_idx) % AZIMUTH_ROTATION_RESOLUTION;
-  if (max_idx > min_idx) {
-    m_max_azimuth_ind = max_idx;
-    m_min_azimuth_ind = min_idx;
-    m_exclude_ranges = false;
-  } else if (max_idx < min_idx) {
-    m_max_azimuth_ind = min_idx;
-    m_min_azimuth_ind = max_idx;
-    m_exclude_ranges = true;
-  } else {
-    throw std::runtime_error("Velodyne Driver: overlapping max/min azimuth indices");
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Vlp16Translator::init_rotation_matrix(
-  const float32_t roll_rad,
-  const float32_t pitch_rad,
-  const float32_t yaw_rad)
-{
-  const float32_t cx = cosf(roll_rad);
-  const float32_t sx = sinf(roll_rad);
-  const float32_t cy = cosf(pitch_rad);
-  const float32_t sy = sinf(pitch_rad);
-  const float32_t cz = cosf(yaw_rad);
-  const float32_t sz = sinf(yaw_rad);
-  // compute rotation matrix per: http://planning.cs.uiuc.edu/node102.html
-  m_rot_mat[0U][0U] = cz * cy;
-  m_rot_mat[0U][1U] = (cz * sy * sx) - (sz * cx);
-  m_rot_mat[0U][2U] = (cz * sy * cx) + (sz * sx);
-  m_rot_mat[1U][0U] = sz * cy;
-  m_rot_mat[1U][1U] = (sz * sy * sx) + (cz * cx);
-  m_rot_mat[1U][2U] = (sz * sy * cx) - (cz * sx);
-  m_rot_mat[2U][0U] = -sy;
-  m_rot_mat[2U][1U] = cy * sx;
-  m_rot_mat[2U][2U] = cy * cx;
 }
 
 }  // namespace velodyne_driver

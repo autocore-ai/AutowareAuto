@@ -18,17 +18,24 @@
 #ifndef LIDAR_UTILS__POINT_CLOUD_UTILS_HPP_
 #define LIDAR_UTILS__POINT_CLOUD_UTILS_HPP_
 
+#include <lidar_utils/visibility_control.hpp>
+
+#include <common/types.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry/common_3d.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-#include <common/types.hpp>
-#include <lidar_utils/visibility_control.hpp>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <atomic>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
+
 
 namespace autoware
 {
@@ -89,6 +96,24 @@ private:
   /// Internal storage of the iterators
   ::std::vector<sensor_msgs::PointCloud2Iterator<float32_t>> m_its;
 };
+
+/// \brief Compute minimum safe length of point cloud access
+/// \param[in] msg The point cloud message to validate
+/// \return Byte index of one past the end of the last point ok to access
+LIDAR_UTILS_PUBLIC
+std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2 & msg) noexcept;
+
+struct SafeCloudIndices
+{
+  std::size_t point_step;
+  std::size_t data_length;
+};
+
+/// Compute the safe stride and max length for given point cloud
+/// \return A pair size of data ok to read per point, and last index ok to read, for use with the
+/// form `for (auto idx = 0U; idx < ret.data_length; idx += msg.point_step)
+/// {memcpy(&pt, msg.data[idx], ret.point_step);}`
+LIDAR_UTILS_PUBLIC SafeCloudIndices sanitize_point_cloud(const sensor_msgs::msg::PointCloud2 & msg);
 
 /// \brief initializes header information for point cloud for x, y, z and intensity
 /// \param[out] msg a point cloud message to initialize
@@ -241,6 +266,123 @@ sensor_msgs::msg::PointCloud2::SharedPtr create_custom_pcl(
   msg->header.frame_id = "base_link";
   return msg;
 }
+
+/// \brief Filter class to check if a point lies within a range defined by a min and max radius.
+class LIDAR_UTILS_PUBLIC DistanceFilter
+{
+public:
+  /// \brief Cosntructor
+  /// \param min_radius The radius the point's radius should be greater than
+  /// \param max_radius The radius the point's radius should be lesser than
+  DistanceFilter(float32_t min_radius, float32_t max_radius);
+  static constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
+
+  /// \brief Check if the point is within the allowed range of the filter. Check is done in
+  /// square form to avoid `sqrt`
+  /// \tparam T Point type
+  /// \param pt Point to be filtered
+  /// \return True if point is within the filter's range.
+  template<typename T>
+  bool8_t operator()(const T & pt) const
+  {
+    using common::geometry::dot_3d;
+    auto pt_radius = dot_3d(pt, pt);
+    return ((pt_radius + FEPS) >= m_min_r2) && ((pt_radius - FEPS) <= m_max_r2);
+  }
+
+private:
+  float32_t m_min_r2;
+  float32_t m_max_r2;
+};
+
+/// \brief Transform to apply a constant transform to given points.
+class LIDAR_UTILS_PUBLIC StaticTransformer
+{
+public:
+  /// \brief Constructor. Pre-computes the rotation and translation matrices from the transform
+  /// msg.
+  /// \param tf Transform msg to be applied to points.
+  explicit StaticTransformer(const geometry_msgs::msg::Transform & tf);
+
+  /// \brief Apply the transform to a point that has the proper point adapters defined.
+  /// \tparam T Point type
+  /// \param ref Input point
+  /// \param out Reference to output point
+  template<typename T>
+  void transform(const T & ref, T & out) const //NOLINT (false positive: this is not std::transform)
+  {
+    using common::geometry::point_adapter::x_;
+    using common::geometry::point_adapter::y_;
+    using common::geometry::point_adapter::z_;
+    using common::geometry::point_adapter::xr_;
+    using common::geometry::point_adapter::yr_;
+    using common::geometry::point_adapter::zr_;
+    Eigen::Matrix<float32_t, 3U, 1U> ref_mat({x_(ref), y_(ref), z_(ref)});
+    Eigen::Vector3f out_mat = m_tf * ref_mat;
+    xr_(out) = out_mat(0U, 0U);
+    yr_(out) = out_mat(0U, 1U);
+    zr_(out) = out_mat(0U, 2U);
+  }
+
+private:
+  Eigen::Transform<float32_t, 3U, Eigen::Affine, Eigen::ColMajor> m_tf;
+};
+
+/// \brief Filter class to check if a point's azimuth lies within a range defined by a start and
+/// end angles. The range is defined from start to the end angles in counter-clock-wise direction.
+class LIDAR_UTILS_PUBLIC AngleFilter
+{
+public:
+  /// \brief Constructor
+  /// \param start_angle Minimum angle in radians
+  /// \param end_angle Maximum angle in radians
+  AngleFilter(float32_t start_angle, float32_t end_angle);
+
+  using VectorT = autoware::common::types::PointXYZIF;
+  static constexpr float32_t PI = 3.14159265359F;
+  static constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon() * 1e2F;
+
+  /// \brief Check if a point's azimuth lies in the range [start, end] in
+  /// counter-clock-wise-direction. The point is treated as a 2D vector whose projection on the
+  /// range normal is compared to a threshold.
+  /// \tparam T Point type
+  /// \param pt point to check
+  /// \return return true if the point is contained within the range.
+  template<typename T>
+  bool8_t operator()(const T & pt) const
+  {
+    using common::geometry::dot_2d;
+    bool8_t ret = false;
+
+    // Squared magnitude of the vector
+    const auto pt_len2 = dot_2d(pt, pt);
+    const auto proj_on_normal = dot_2d(pt, m_range_normal);
+    const auto proj_on_normal2 = proj_on_normal * proj_on_normal;
+    const auto is_proj_negative = (proj_on_normal + FEPS) < 0.0F;
+
+    // Since the input vector's projection is scaled by the length of itself, the
+    // threshold is also scaled by the length of the input vector to make the comparison possible.
+
+    // To avoid computing the length using sqrt, the expressions are kept in square form, hence
+    // the following sign checks are made to ensure the correctness of the comparisons in
+    // squared form.
+    if ((!m_threshold_negative) && (!is_proj_negative)) {
+      ret = (proj_on_normal2) >= (pt_len2 * (m_threshold2 - FEPS));
+    } else if (m_threshold_negative && (!is_proj_negative)) {
+      ret = true;
+    } else if ((!m_threshold_negative) && is_proj_negative) {
+      ret = false;
+    } else {
+      ret = (proj_on_normal2) <= (pt_len2 * (m_threshold2 + FEPS));
+    }
+    return ret;
+  }
+
+private:
+  VectorT m_range_normal;
+  bool8_t m_threshold_negative;
+  float32_t m_threshold2;
+};
 
 }  // namespace lidar_utils
 }  // namespace common

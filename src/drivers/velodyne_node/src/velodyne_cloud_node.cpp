@@ -63,23 +63,8 @@ VelodyneCloudNode::VelodyneCloudNode(
   const std::string & node_namespace)
 : UdpDriverNode(node_name, node_namespace),
   m_translator(
-      {
-        static_cast<float32_t>(declare_parameter("rpm").get<int>()),
-        velodyne_driver::make_point(
-          static_cast<float32_t>(declare_parameter("translation.dx_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("translation.dy_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("translation.dz_m").get<float32_t>())
-        ),
-        velodyne_driver::make_point(
-          static_cast<float32_t>(declare_parameter("rotation.roll_rad").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("rotation.pitch_rad").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("rotation.yaw_rad").get<float32_t>())
-        ),
-        static_cast<float32_t>(declare_parameter("filter.min_radius_m").get<float32_t>()),
-        static_cast<float32_t>(declare_parameter("filter.max_radius_m").get<float32_t>()),
-        static_cast<float32_t>(declare_parameter("filter.min_angle_deg").get<float32_t>()),
-        static_cast<float32_t>(declare_parameter("filter.max_angle_deg").get<float32_t>())
-      }),
+    velodyne_driver::Vlp16Translator::Config{
+        static_cast<float32_t>(declare_parameter("rpm").get<int>())}),
   m_published_cloud(false),
   m_remainder_start_idx(0U),
   m_point_cloud_idx(0),

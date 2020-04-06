@@ -28,60 +28,14 @@ namespace drivers
 namespace velodyne_driver
 {
 ////////////////////////////////////////////////////////////////////////////////
-Vlp16Translator::Config::Config(
-  const float32_t rpm,
-  const geometry_msgs::msg::Point32 offset_m,
-  const geometry_msgs::msg::Point32 rotation_rad,
-  const float32_t min_distance_m,
-  const float32_t max_distance_m,
-  const float32_t min_angle_deg,
-  const float32_t max_angle_deg)
-: m_rpm(rpm),
-  m_offset_m(offset_m),
-  m_rotation_rad(rotation_rad),
-  m_min_distance_m(min_distance_m),
-  m_max_distance_m(max_distance_m),
-  m_min_angle_deg(min_angle_deg),
-  m_max_angle_deg(max_angle_deg)
+Vlp16Translator::Config::Config(const float32_t rpm)
+: m_rpm(rpm)
 {
-  if (m_max_distance_m < m_min_distance_m) {
-    throw std::runtime_error("Velodyne Driver: Invalid max/min radial configuration");
-  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 float32_t Vlp16Translator::Config::get_rpm() const
 {
   return m_rpm;
-}
-////////////////////////////////////////////////////////////////////////////////
-const geometry_msgs::msg::Point32 & Vlp16Translator::Config::get_offset() const
-{
-  return m_offset_m;
-}
-////////////////////////////////////////////////////////////////////////////////
-const geometry_msgs::msg::Point32 & Vlp16Translator::Config::get_rotation() const
-{
-  return m_rotation_rad;
-}
-////////////////////////////////////////////////////////////////////////////////
-float32_t Vlp16Translator::Config::get_min_distance() const
-{
-  return m_min_distance_m;
-}
-////////////////////////////////////////////////////////////////////////////////
-float32_t Vlp16Translator::Config::get_max_distance() const
-{
-  return m_max_distance_m;
-}
-////////////////////////////////////////////////////////////////////////////////
-float32_t Vlp16Translator::Config::get_min_angle() const
-{
-  return m_min_angle_deg;
-}
-////////////////////////////////////////////////////////////////////////////////
-float32_t Vlp16Translator::Config::get_max_angle() const
-{
-  return m_max_angle_deg;
 }
 
 }  // namespace velodyne_driver

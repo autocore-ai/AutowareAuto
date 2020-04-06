@@ -36,15 +36,7 @@ TEST(velodyne_node, constructor)
   const auto cloud_size = 10000U;
   const auto sensor_id = 0U;
   using autoware::drivers::velodyne_driver::Vlp16Translator;
-  const auto config = Vlp16Translator::Config{
-    600.0F,
-    autoware::drivers::velodyne_driver::make_point(0.0F, 0.0F, 0.0F),
-    autoware::drivers::velodyne_driver::make_point(0.0F, 0.0F, 0.0F),
-    0.0F,
-    130.0F,
-    0.0F,
-    360.0F
-  };
+  const auto config = Vlp16Translator::Config{600.0F};
 
   using autoware::drivers::velodyne_node::VelodyneCloudNode;
   EXPECT_NO_THROW(
@@ -87,7 +79,9 @@ public:
 protected:
 };  // class velodyne_node_integration
 
-TEST_P(velodyne_node_integration, test)
+// FIXME(esteve): Reenable
+// https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/388
+TEST_P(velodyne_node_integration, DISABLED_test)
 {
   rclcpp::init(0, nullptr);
 
@@ -102,15 +96,7 @@ TEST_P(velodyne_node_integration, test)
   const auto runtime = std::chrono::seconds(10);
   std::string topic = "velodyne_test_topic_cloud";
   using autoware::drivers::velodyne_driver::Vlp16Translator;
-  const auto config = Vlp16Translator::Config(
-    600.0F,
-    autoware::drivers::velodyne_driver::make_point(0.0F, 0.0F, 0.0F),
-    autoware::drivers::velodyne_driver::make_point(0.0F, 0.0F, 0.0F),
-    1.5F,
-    150.0F,
-    185.0F,
-    175.0F
-  );
+  const auto config = Vlp16Translator::Config{600.0F};
 
   // Node
   using autoware::drivers::velodyne_node::VelodyneCloudNode;

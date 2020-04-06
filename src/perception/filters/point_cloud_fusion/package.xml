@@ -13,7 +13,6 @@
     <depend>lidar_utils</depend>
     <depend>sensor_msgs</depend>
     <depend>rclcpp</depend>
-    <depend>rclcpp_lifecycle</depend>
     <depend>message_filters</depend>
     <depend>tf2_ros</depend>
     <depend>tf2_geometry_msgs</depend>

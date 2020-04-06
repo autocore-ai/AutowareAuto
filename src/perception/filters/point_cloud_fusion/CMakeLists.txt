@@ -48,7 +48,6 @@ ament_target_dependencies(${PC_FUSION_LIB}
   "lidar_utils"
   "sensor_msgs"
   "rclcpp"
-  "rclcpp_lifecycle"
   "message_filters"
   "tf2_ros"
   "tf2_geometry_msgs"
@@ -91,5 +90,5 @@ autoware_install(LIBRARIES ${PC_FUSION_LIB}
           EXECUTABLES ${PC_FUSION_EXEC}
 )
 # Ament Exporting
-ament_export_dependencies("sensor_msgs" "rclcpp" "rclcpp_lifecycle" "message_filters" "tf2_ros" "tf2_geometry_msgs")
+ament_export_dependencies("sensor_msgs" "rclcpp" "message_filters" "tf2_ros" "tf2_geometry_msgs")
 ament_package()

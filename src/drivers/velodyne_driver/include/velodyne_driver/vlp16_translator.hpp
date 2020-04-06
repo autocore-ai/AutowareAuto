@@ -94,57 +94,14 @@ public:
 public:
     /// \brief Constructor
     /// \param[in] rpm rotation speed of the velodyne, determines how many points per scan
-    /// \param[in] offset_m Linear offset from the origin of the frame the sensor lives in
-    /// \param[in] rotation_rad Rotational offset: z-y-x euler angles in radians
-    /// \param[in] min_distance_m Points with distances below this are ignored
-    /// \param[in] max_distance_m Points with distances above this are ignored
-    /// \param[in] min_angle_deg Points with angles below this are ignored (IN THE SENSOR'S FRAME)
-    /// \param[in] max_angle_deg Points with angles above this are ignored (IN THE SENSOR'S FRAME)
-    Config(
-      const float32_t rpm,
-      const geometry_msgs::msg::Point32 offset_m,
-      const geometry_msgs::msg::Point32 rotation_rad,
-      const float32_t min_distance_m,
-      const float32_t max_distance_m,
-      const float32_t min_angle_deg,
-      const float32_t max_angle_deg);
+    explicit Config(const float32_t rpm);
     /// \brief Gets rpm value
     /// \return rpm
     float32_t get_rpm() const;
-    /// \brief Gets translational offset
-    /// \return Translation of point frame relative to sensor origin in meters
-    const geometry_msgs::msg::Point32 & get_offset() const;
-    /// \brief Gets rotational offset
-    /// \return z-y-x Euler angles in radians
-    const geometry_msgs::msg::Point32 & get_rotation() const;
-    /// \brief Gets distance below which points are filtered
-    /// \return Minimum point distance in meters
-    float32_t get_min_distance() const;
-    /// \brief Gets distance above which points are filtered
-    /// \return Maximum point distance in meters
-    float32_t get_max_distance() const;
-    /// \brief Gets angle below which points are filtered
-    /// \return Minimum point azimuth angle (in sensor's x-y plane) in degrees
-    float32_t get_min_angle() const;
-    /// \brief Gets angle above which points are filtered
-    /// \return Maximum point azimuth angle (in sensor's x-y plane) in degrees
-    float32_t get_max_angle() const;
 
 private:
     /// rotation speed of the velodyne, determines how many points per scan
     float32_t m_rpm;
-    /// linear offset from the origin of the frame the sensor lives in
-    geometry_msgs::msg::Point32 m_offset_m;
-    /// rotational offset: z-y-x euler angles in radians
-    geometry_msgs::msg::Point32 m_rotation_rad;
-    /// points with distances below this are ignored
-    float32_t m_min_distance_m;
-    /// points with distances above this are ignored
-    float32_t m_max_distance_m;
-    /// points with angles below this are ignored (IN THE SENSOR'S FRAME)
-    float32_t m_min_angle_deg;
-    /// points with angles above this are ignored (IN THE SENSOR'S FRAME)
-    float32_t m_max_angle_deg;
   };
 
   /// \brief corresponds to an individual laser's firing and return
@@ -201,24 +158,12 @@ private:
     autoware::common::types::PointXYZIF & pt,
     const float32_t r_m,
     const uint32_t th_ind,
-    const uint32_t phi_ind)
+    const uint32_t phi_ind) const
   {
     const float32_t r_xy = r_m * m_cos_table[phi_ind];
-    // get nominal x, y in ROS frame (x forward), translate
-    const float32_t x_tmp = r_xy * m_cos_table[th_ind];  // y (vlp-frame)
-    const float32_t y_tmp = -r_xy * m_sin_table[th_ind];  // -x (vlp-frame)
-    const float32_t z_tmp = r_m * m_sin_table[phi_ind];
-    // rotate z-y-x, then translate
-    // Note for small matrices, naive approach is probably fine or better
-    pt.x =
-      (m_rot_mat[0U][0U] * x_tmp) + (m_rot_mat[0U][1U] * y_tmp) + (m_rot_mat[0U][2U] * z_tmp) +
-      m_offset_m.x;
-    pt.y =
-      (m_rot_mat[1U][0U] * x_tmp) + (m_rot_mat[1U][1U] * y_tmp) + (m_rot_mat[1U][2U] * z_tmp) +
-      m_offset_m.y;
-    pt.z =
-      (m_rot_mat[2U][0U] * x_tmp) + (m_rot_mat[2U][1U] * y_tmp) + (m_rot_mat[2U][2U] * z_tmp) +
-      m_offset_m.z;
+    pt.x = r_xy * m_cos_table[th_ind];  // y (vlp-frame)
+    pt.y = -r_xy * m_sin_table[th_ind];  // -x (vlp-frame)
+    pt.z = r_m * m_sin_table[phi_ind];
   }
 
   /// \brief converts the two byte representation of distance into meters
@@ -229,15 +174,6 @@ private:
   {
     const uint32_t dist_2mm = to_uint32(first, second);
     return static_cast<float32_t>(dist_2mm) * 0.002F;    // convert from units of 2mm to m
-  }
-
-  /// \brief checks point radial distance, and angle, ignores if necessary
-  inline bool8_t accept_point(const float32_t r_m, const uint32_t th_ind) const
-  {
-    return (r_m >= m_min_radius_m) &&
-           (r_m <= m_max_radius_m) &&
-           (((th_ind >= m_min_azimuth_ind) && (th_ind <= m_max_azimuth_ind)) !=
-           m_exclude_ranges);
   }
 
   template<typename T>
@@ -267,18 +203,6 @@ private:
   /// \brief initializes intensity lookup table
   VELODYNE_DRIVER_LOCAL void init_intensity_table();
 
-  /// \brief sets max/min index
-  VELODYNE_DRIVER_LOCAL void init_extreme_azimuth_indices(
-    const float32_t min_azimuth_deg,
-    const float32_t max_azimuth_deg);
-
-  /// \brief precompute rotation matrix
-  VELODYNE_DRIVER_LOCAL void init_rotation_matrix(
-    const float32_t roll_rad,
-    const float32_t pitch_rad,
-    const float32_t yaw_rad);
-
-
   /// tau = 2 pi
   static constexpr float32_t TAU = 6.283185307179586476925286766559F;
 
@@ -298,21 +222,6 @@ private:
   /// mask to avoid modulo: packet id can go up to 3617: 0000 1111 1111 1111 = 4096
   uint16_t m_fire_id;
   uint16_t m_num_firing_per_scan;
-
-  /// linear translation for all points
-  geometry_msgs::msg::Point32 m_offset_m;
-  /// rotation matrix
-  float32_t m_rot_mat[3U][3U];
-  /// min radius
-  float32_t m_min_radius_m;
-  /// max radius
-  float32_t m_max_radius_m;
-  /// min angle
-  uint32_t m_min_azimuth_ind;
-  /// max angle
-  uint32_t m_max_azimuth_ind;
-  /// flag to denote if being inside min/max angle is considered ok (false) or not ok (true)
-  bool8_t m_exclude_ranges;
 };  // class Driver
 
 }  // namespace velodyne_driver

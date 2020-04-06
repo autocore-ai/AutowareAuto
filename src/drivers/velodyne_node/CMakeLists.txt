@@ -75,18 +75,22 @@ if(BUILD_TESTING)
     ament_target_dependencies(${VELODYNE_NODE_GTEST} "lidar_integration")
 
     find_package(ros_testing REQUIRED)
-    add_ros_test(
-      test/velodyne_node.test.py
-      TIMEOUT "120"
-    )
+    # FIXME(esteve): Reenable
+    # https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/388
+    # add_ros_test(
+    #   test/velodyne_node.test.py
+    #   TIMEOUT "120"
+    # )
     add_ros_test(
       test/velodyne_node_bad.test.py
       TIMEOUT "10"
     )
-    add_ros_test(
-      test/velodyne_node_half_cloud.test.py
-      TIMEOUT "120"
-    )
+    # FIXME(esteve): Reenable
+    # https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/388
+    # add_ros_test(
+    #   test/velodyne_node_half_cloud.test.py
+    #   TIMEOUT "120"
+    # )
 endif()
 
 ## install stuff

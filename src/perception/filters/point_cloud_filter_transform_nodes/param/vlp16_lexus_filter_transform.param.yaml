@@ -1,0 +1,55 @@
+# config/test.param.yaml
+---
+lidar_front:
+  filter_transform_vlp16_front:
+    ros__parameters:
+      timeout_ms:       110
+      raw_topic:       "points_raw"
+      filtered_topic:  "points_filtered"
+      pcl_size:         55000
+      input_frame_id:  "lidar_front"
+      output_frame_id: "base_link"
+      init_timeout_ms:  5000
+      expected_num_subscribers: 2
+      expected_num_publishers:  1
+      start_angle:            3.22886       # radians
+      end_angle:              3.05433
+      min_radius:             1.5       # meters
+      max_radius:             150.0
+      static_transformer:
+        quaternion:
+          x:                    0.01423
+          y:                    0.0617607
+          z:                    0.0562799
+          w:                    0.9964014
+        translation:
+          x:                    1.42849
+          y:                    -0.017811
+          z:                    1.4802
+
+lidar_rear:
+  filter_transform_vlp16_rear:
+    ros__parameters:
+      timeout_ms:       110
+      raw_topic:       "points_raw"
+      filtered_topic:  "points_filtered"
+      pcl_size:         55000
+      input_frame_id:  "lidar_rear"
+      output_frame_id: "base_link"
+      init_timeout_ms:  5000
+      expected_num_subscribers: 2
+      expected_num_publishers:  1
+      start_angle:            4.71239       # radians
+      end_angle:              1.5708
+      min_radius:             1.5       # meters
+      max_radius:             150.0
+      static_transformer:
+        quaternion:
+          x:                    -0.0732027
+          y:                    0.0004243
+          z:                    0.9973002
+          w:                    0.0057807
+        translation:
+          x:                    0.1
+          y:                    0.01
+          z:                    1.44803

@@ -14,12 +14,15 @@
 // limitations under the License.
 
 //lint -e537 pclint vs cpplint NOLINT
+#include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <common/types.hpp>
+
+#include <algorithm>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "sensor_msgs/point_cloud2_iterator.hpp"
-#include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 
 namespace autoware
@@ -102,6 +105,34 @@ void PointCloudIts::reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx)
   intensity_it() += idx;
 }
 
+/////
+std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2 & msg) noexcept
+{
+  // Count expected amount of data from various source of truths
+  //lint -e9123 NOLINT There's absolutely nothing wrong with casting to a larger type...
+  const auto expected_total_data1 =
+    static_cast<std::size_t>(msg.point_step * (msg.width * msg.height));
+  //lint -e9123 NOLINT There's absolutely nothing wrong with casting to a larger type...
+  const auto expected_total_data2 = static_cast<std::size_t>(msg.row_step * msg.height);
+  const auto actual_total_data = msg.data.size();
+  // Get the smallest of these
+  const auto min_data =
+    std::min(std::min(expected_total_data1, expected_total_data2), actual_total_data);
+  // Remove any data that doesn't align correctly with point_step
+  const auto last_index = min_data - (min_data % msg.point_step);
+  return last_index;
+}
+
+/////
+SafeCloudIndices sanitize_point_cloud(const sensor_msgs::msg::PointCloud2 & msg)
+{
+  /// XYZI or XYZ, or throw
+  auto num_floats = 3U;
+  if (has_intensity_and_throw_if_no_xyz(msg)) {
+    num_floats = 4U;
+  }
+  return SafeCloudIndices{num_floats * sizeof(float32_t), index_after_last_safe_byte_index(msg)};
+}
 
 ////
 void init_pcl_msg(
@@ -222,6 +253,68 @@ void resize_pcl_msg(
 {
   sensor_msgs::PointCloud2Modifier pc_modifier(msg);
   pc_modifier.resize(new_size);
+}
+
+DistanceFilter::DistanceFilter(float32_t min_radius, float32_t max_radius)
+: m_min_r2(min_radius * min_radius), m_max_r2(max_radius * max_radius)
+{
+  if (m_max_r2 < m_min_r2) {
+    throw std::domain_error("DistanceFilter: max_radius cannot be less than min_radius");
+  }
+}
+
+
+StaticTransformer::StaticTransformer(const geometry_msgs::msg::Transform & tf)
+{
+  Eigen::Quaternionf rotation(tf.rotation.w, tf.rotation.x, tf.rotation.y, tf.rotation.z);
+  if (std::fabs(rotation.norm() - 1.0f) > std::numeric_limits<float32_t>::epsilon()) {
+    throw std::domain_error("StaticTransformer: quaternion is not normalized");
+  }
+  m_tf.setIdentity();
+  m_tf.rotate(rotation);
+  m_tf.translate(Eigen::Vector3f(tf.translation.x, tf.translation.y, tf.translation.z));
+}
+
+AngleFilter::AngleFilter(float32_t start_angle, float32_t end_angle)
+{
+  using autoware::common::geometry::make_unit_vector2d;
+  using autoware::common::geometry::cross_2d;
+  using autoware::common::geometry::get_normal;
+  using autoware::common::geometry::plus_2d;
+  using autoware::common::geometry::times_2d;
+  using autoware::common::geometry::norm_2d;
+  using autoware::common::geometry::dot_2d;
+
+  const auto start_vec = make_unit_vector2d<VectorT>(start_angle);
+  const auto end_vec = make_unit_vector2d<VectorT>(end_angle);
+
+  // Handle the case where two angles are in opposite direction (small_angle_dir = 0)
+  if (std::fabs(dot_2d(start_vec, end_vec) - (-1.0F)) < FEPS) {
+    m_range_normal = get_normal(start_vec);
+  } else {
+    // range normal is the unit vector in the middle of the accepted range.(normalize(start + end))
+    m_range_normal = plus_2d(start_vec, end_vec);
+    m_range_normal = times_2d(m_range_normal,
+        (1.0F / norm_2d(m_range_normal)));
+
+    // If the small angle is not in CCW direction, then we need the wide angle, so the normal is
+    // inverted.
+    const auto small_angle_dir = cross_2d(start_vec, end_vec);
+    if ((small_angle_dir + FEPS) < 0.0F) {
+      m_range_normal = times_2d(m_range_normal, -1.0F);
+    }
+  }
+
+  // Threshold is the cosine of the half of the accepted angle range.
+  // The geometrical interpretation:
+  // The closer a point's azimuth to the range normal is, the bigger its projection length on the
+  // range normal will be. (proportional to the cosine of the angle between them). Hence the
+  // projection length is an indicator of a point's angular distance to the angle range.
+  // The min and max of the angle range define a lower bound on this metric.
+  const auto thresh = dot_2d(start_vec, m_range_normal);
+  m_threshold_negative = (thresh + FEPS) < 0.0F;
+  // square is pre-computed as the check will happen in the square space to avoid sqrt() calls.
+  m_threshold2 = thresh * thresh;
 }
 
 }  // namespace lidar_utils

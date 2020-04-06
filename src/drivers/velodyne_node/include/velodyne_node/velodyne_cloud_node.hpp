@@ -55,7 +55,7 @@ public:
   /// \param[in] frame_id Frame id for the published point cloud messages
   /// \param[in] cloud_size Preallocated capacity (in number of points) for the point cloud messages
   ///                       must be greater than PointBlock::CAPACITY
-  /// \param[in] config Config struct with rpm, transform, radial and angle pruning params
+  /// \param[in] config Config struct with rpm params
   /// \throw std::runtime_error If cloud_size is not sufficiently large
   VelodyneCloudNode(
     const std::string & node_name,

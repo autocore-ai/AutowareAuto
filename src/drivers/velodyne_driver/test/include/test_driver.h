@@ -150,14 +150,7 @@ TEST_F(velodyne_driver, basic)
 {
   const geometry_msgs::msg::Point32 offset_m;
   const geometry_msgs::msg::Point32 rotation_rad;
-  const Vlp16Translator::Config cfg{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(0.0F, 0.0F, 0.0F),
-    0.0F,
-    100.0F,
-    0.0F,
-    360.0F};
+  const Vlp16Translator::Config cfg{300.0F};
   Vlp16Translator driver(cfg);
   driver.convert(pkt, out);
   EXPECT_LE(out.size(),
@@ -211,153 +204,10 @@ TEST_F(velodyne_driver, basic)
   EXPECT_LE(phi_diff, (20.0F * 3.14159F / 180.0F) + 0.001F);
 }
 
-/// Force errors
-TEST_F(velodyne_driver, bad_cases)
-{
-  // r_max < r_min case
-  EXPECT_THROW(
-      Vlp16Translator::Config cfg(
-      300.0F,
-      make_point(0.0F, 0.0F, 0.0F),
-      make_point(0.0F, 0.0F, 0.0F),
-      90.0F,
-      10.0F,
-      0.0F,
-      360.0F),
-  std::runtime_error);
-  // overlapping min/max azimuth case (approximately equal -> indices are equal)
-  Vlp16Translator::Config cfg2{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(0.0F, 0.0F, 0.0F),
-    10.0F,
-    90.0F,
-    299.99999F,
-    300.0F};
-  EXPECT_THROW(Vlp16Translator driver(cfg2), std::runtime_error);
-}
-
-// Make sure configurations do what they say they do
-TEST_F(velodyne_driver, config_radius)
-{
-  const float32_t min_r = 7.0F;
-  const float32_t max_r = 25.0F;
-  ASSERT_LT(min_r, max_r);
-  const Vlp16Translator::Config cfg{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(0.0F, 0.0F, 0.0F),
-    min_r,
-    max_r,
-    0.0F,
-    360.0F};
-  Vlp16Translator driver(cfg);
-  driver.convert(pkt, out);
-  EXPECT_LE(out.size(),
-    Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
-  uint32_t last_id = 0U;
-  for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::common::types::PointXYZIF & pt = out[idx];
-    if (0U == idx) {
-      last_id = pt.id;
-    }
-    const float32_t th = atan2f(pt.y, pt.x);
-    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float32_t phi = atan2f(pt.z, r_xy);
-    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
-    EXPECT_LE(r, max_r);
-    EXPECT_GE(r, min_r);
-    // Sanity check on intensity
-    EXPECT_LE(pt.intensity, 255.0F);
-    EXPECT_GE(pt.intensity, 0.0F);
-    // IDs are contiguous
-    EXPECT_TRUE((pt.id == last_id) || (pt.id == (last_id + 1U)));
-    last_id = pt.id;
-  }
-}
-
-// z axis rotation
-TEST_F(velodyne_driver, config_rotation1)
-{
-  const Vlp16Translator::Config cfg{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(0.0F, 0.0F, -1.0F),
-    0.1F,
-    150.0F,
-    0.0F,
-    360.0F};
-  Vlp16Translator driver(cfg);
-  driver.convert(pkt, out);
-  EXPECT_LE(out.size(),
-    Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
-  uint32_t last_id = 0U;
-  for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::common::types::PointXYZIF & pt = out[idx];
-    if (0U == idx) {
-      last_id = pt.id;
-    }
-    const float32_t th = atan2f(pt.y, pt.x);
-    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float32_t phi = atan2f(pt.z, r_xy);
-    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
-    // We know that th is normally around 1.4-1.5, so now it should be around 0.4
-    EXPECT_LT(fabsf(th - 0.45F), 0.1F) << th;
-    // Sanity check on intensity
-    EXPECT_LE(pt.intensity, 255.0F);
-    EXPECT_GE(pt.intensity, 0.0F);
-    // IDs are contiguous
-    EXPECT_TRUE((pt.id == last_id) || (pt.id == (last_id + 1U)));
-    last_id = pt.id;
-  }
-}
-// do a roll / x axis rotation
-TEST_F(velodyne_driver, config_rotation2)
-{
-  const Vlp16Translator::Config cfg{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(3.14159F / 2.0F, 0.0F, 0.0F),
-    0.1F,
-    150.0F,
-    0.0F,
-    360.0F};
-  Vlp16Translator driver(cfg);
-  driver.convert(pkt, out);
-  EXPECT_LE(out.size(),
-    Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
-  uint32_t last_id = 0U;
-  for (uint32_t idx = 0U; idx < out.size(); ++idx) {
-    autoware::common::types::PointXYZIF & pt = out[idx];
-    if (0U == idx) {
-      last_id = pt.id;
-    }
-    const float32_t th = atan2f(pt.y, pt.x);
-    const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
-    const float32_t phi = atan2f(pt.z, r_xy);
-    const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
-    // points should vaguely be pointing up
-    EXPECT_LT(fabsf(phi - 3.14159F / 2.0F), 0.3F);
-    // Sanity check on intensity
-    EXPECT_LE(pt.intensity, 255.0F);
-    EXPECT_GE(pt.intensity, 0.0F);
-    // IDs are contiguous
-    EXPECT_TRUE((pt.id == last_id) || (pt.id == (last_id + 1U)));
-    last_id = pt.id;
-  }
-}
-
 // figure out what the runtime of convert() is, locally
 TEST_F(velodyne_driver, benchmark)
 {
-  const Vlp16Translator::Config cfg{
-    300.0F,
-    make_point(0.0F, 0.0F, 0.0F),
-    make_point(0.0F, 0.0F, 0.0F),
-    0.0F,
-    100.0F,
-    0.0F,
-    360.0F};
+  const Vlp16Translator::Config cfg{300.0F};
   autoware::drivers::velodyne_driver::Vlp16Translator driver(cfg);
   const uint32_t num_runs = 200U;
   auto time_begin = std::chrono::steady_clock::now();

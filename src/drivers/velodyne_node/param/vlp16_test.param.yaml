@@ -11,16 +11,3 @@ lidar_front:
       frame_id: "base_link"
       timeout_ms: 10
       rpm:        600
-      translation:
-        dx_m: 1.42849
-        dy_m: -0.017811
-        dz_m: 1.4802
-      rotation:
-        roll_rad:  0.0215759
-        pitch_rad: 0.125004
-        yaw_rad:   0.111496
-      filter:
-        min_radius_m: 1.5
-        max_radius_m: 150.0
-        min_angle_deg: 185.0
-        max_angle_deg: 175.0
