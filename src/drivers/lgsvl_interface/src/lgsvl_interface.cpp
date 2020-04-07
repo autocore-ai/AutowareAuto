@@ -148,6 +148,13 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
     RCLCPP_WARN(m_logger, "Unsupported gear value in state command, defaulting to Drive");
   }
 
+  // Correcting blinker, they are shifted down by one,
+  // as the first value BLINKER_NO_COMMAND does not exisit in LGSVL
+  if (msg.blinker == VSC::BLINKER_NO_COMMAND) {
+    msg_corrected.blinker = get_state_report().blinker;
+  }
+  msg_corrected.blinker--;
+
   m_state_pub->publish(msg_corrected);
   return true;
 }
@@ -320,6 +327,12 @@ void LgsvlInterface::on_state_report(const autoware_auto_msgs::msg::VehicleState
     corrected_report.gear = msg.GEAR_NEUTRAL;
     RCLCPP_WARN(m_logger, "Invalid gear value in state report from LGSVL simulator");
   }
+
+  // Correcting blinker value, they are shifted up by one,
+  // as the first value BLINKER_NO_COMMAND does not exisit in LGSVL
+  // not setting  VSC::BLINKER_NO_COMMAND, when get.state_report.blinker == msg.blinker
+  // instead reporting true blinker status
+  corrected_report.blinker++;
 
   state_report() = corrected_report;
 }
