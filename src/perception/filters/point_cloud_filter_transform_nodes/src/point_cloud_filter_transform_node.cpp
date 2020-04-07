@@ -67,9 +67,9 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
   const std::string & node_namespace)
 : PointCloudFilterTransformNodeBase(
     node_name, node_namespace),
-  m_input_frame_id{get_parameter("input_frame_id").as_string()},
-  m_output_frame_id{get_parameter("output_frame_id").as_string()},
-  m_pcl_size{static_cast<size_t>(get_parameter("pcl_size").as_int())}
+  m_input_frame_id{declare_parameter("input_frame_id").get<std::string>()},
+  m_output_frame_id{declare_parameter("output_frame_id").get<std::string>()},
+  m_pcl_size{static_cast<size_t>(declare_parameter("pcl_size").get<int32_t>())}
 {
   common::lidar_utils::init_pcl_msg(m_filtered_transformed_msg,
     m_output_frame_id.c_str(), m_pcl_size);
