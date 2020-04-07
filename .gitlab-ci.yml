@@ -100,7 +100,7 @@ stages:
            --merge-install
            --packages-skip apex_test_tools test_apex_test_tools
            --install-base /opt/AutowareAuto
-           --abort-on-error
+           --return-code-on-test-failure
       '
     - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
     - colcon test-result --verbose
@@ -221,7 +221,7 @@ coverage:
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.base --initial'
     - 'colcon test
            --packages-skip apex_test_tools test_apex_test_tools
-           --abort-on-error
+           --return-code-on-test-failure
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
     - 'lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total'
