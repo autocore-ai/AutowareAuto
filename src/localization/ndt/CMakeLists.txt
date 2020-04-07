@@ -8,6 +8,7 @@ project(ndt)
 find_package(Eigen3 REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 # includes
@@ -30,7 +31,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_map.hpp
     include/ndt/ndt_scan.hpp
     include/ndt/ndt_localizer.hpp
-        include/ndt/utils.hpp)
+    include/ndt/utils.hpp)
 
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED

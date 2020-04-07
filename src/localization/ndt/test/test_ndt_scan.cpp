@@ -15,8 +15,10 @@
 
 #include <ndt/ndt_scan.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
-#include "test_ndt_scan.hpp"
 #include <gtest/gtest.h>
+#include <vector>
+#include <algorithm>
+#include "test_ndt_scan.hpp"
 
 namespace autoware
 {

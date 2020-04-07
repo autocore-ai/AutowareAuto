@@ -16,8 +16,12 @@
 #ifndef TEST_NDT_SCAN_HPP_
 #define TEST_NDT_SCAN_HPP_
 #include <gtest/gtest.h>
-#include "test_ndt_map.hpp"
 #include <Eigen/Core>
+#include <vector>
+#include "test_ndt_map.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -35,9 +39,9 @@ public:
   NDTScanTest()
   {
     for (auto i = 0U; i < m_num_points; i++) {
-      m_points.emplace_back(static_cast<double>(i),
-        static_cast<double>(i),
-        static_cast<double>(i));
+      m_points.emplace_back(static_cast<float64_t>(i),
+        static_cast<float64_t>(i),
+        static_cast<float64_t>(i));
     }
     m_pc = make_pcl(m_points);
   }

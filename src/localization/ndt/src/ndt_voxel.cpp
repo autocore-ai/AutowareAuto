@@ -15,6 +15,11 @@
 
 #include <ndt/ndt_voxel.hpp>
 #include <ndt/utils.hpp>
+#include <Eigen/LU>
+#include <limits>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -50,7 +55,7 @@ void DynamicNDTVoxel::add_observation(const Point & pt)
   }
 }
 
-bool DynamicNDTVoxel::usable() const noexcept
+bool8_t DynamicNDTVoxel::usable() const noexcept
 {
   return m_num_points >= NUM_POINT_THRESHOLD;
 }
@@ -91,7 +96,7 @@ StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & covariance)
 : m_centroid{centroid}, m_covariance{covariance}, m_occupied{true}
 {
   if (try_stabilize_covariance(m_covariance)) {
-    bool invertible{false};
+    bool8_t invertible{false};
     m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
     if (!invertible) {
       m_occupied = false;
@@ -127,7 +132,7 @@ const Eigen::Matrix3d & StaticNDTVoxel::inverse_covariance() const
   return m_inv_covariance;
 }
 
-bool StaticNDTVoxel::usable() const noexcept
+bool8_t StaticNDTVoxel::usable() const noexcept
 {
   return m_occupied;
 }

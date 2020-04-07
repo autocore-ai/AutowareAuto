@@ -13,12 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "test_ndt_optimization.hpp"
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <ndt/ndt_localizer.hpp>
 #include <optimization/optimizer.hpp>
+#include <limits>
+#include "test_ndt_optimization.hpp"
 #include "test_ndt_utils.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {

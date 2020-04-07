@@ -17,10 +17,17 @@
 #define TEST_NDT_OPTIMIZATION_HPP_
 
 #include <ndt/ndt_optimization_problem.hpp>
-#include "test_ndt_map.hpp"
-#include "test_ndt_utils.hpp"
 #include <pcl/registration/ndt.h>
 #include <gtest/gtest.h>
+#include <vector>
+#include <algorithm>
+#include <limits>
+#include "test_ndt_map.hpp"
+#include "test_ndt_utils.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -39,7 +46,8 @@ public:
       m_capacity), m_dynamic_map(m_grid_config), m_static_map(m_grid_config)
   {
     // build a pointcloud map.
-    // It contains 5*5*5*7 points where each cell would have a center (ranging from (1,1,1) to (5,5,5))
+    // It contains 5*5*5*7 points where each cell would have a center
+    // (ranging from (1,1,1) to (5,5,5))
     // and 6 surrounding points with a 0.3 distance from the center
     build_pc(m_grid_config);
     std::vector<Eigen::Vector3d> down_sampled_pts;
@@ -107,11 +115,11 @@ void numerical_diff(
 struct OptTestParams
 {
   OptTestParams(
-    double x, double y, double z, double ang_x, double ang_y, double ang_z,
-    bool large, bool check_pcl);
+    float64_t x, float64_t y, float64_t z, float64_t ang_x, float64_t ang_y, float64_t ang_z,
+    bool8_t large, bool8_t check_pcl);
   EigenPose<Real> diff;
-  bool is_large;
-  bool check_pcl;
+  bool8_t is_large;
+  bool8_t check_pcl;
 };
 
 template<typename T>

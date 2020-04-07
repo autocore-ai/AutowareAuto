@@ -18,6 +18,9 @@
 
 #include <ndt/ndt_representations.hpp>
 #include <voxel_grid/voxels.hpp>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -48,7 +51,7 @@ public:
 
   /// Check if the cell contains enough points to be used in ndt matching
   /// \return True if cell has more points than NUM_POINT_THRESHOLD
-  bool usable() const noexcept;
+  bool8_t usable() const noexcept;
 
   /// Returns the covariance of the points in the voxel. If not all points are used to update the
   /// covariance or the cell does not have enough points for covariance calculation,
@@ -98,13 +101,13 @@ public:
 
   /// Check if the voxel is usable.
   /// \return true if the voxel is not empty
-  bool usable() const noexcept;
+  bool8_t usable() const noexcept;
 
 private:
   Point m_centroid;
   Cov m_covariance;
   Cov m_inv_covariance;
-  bool m_occupied{false};
+  bool8_t m_occupied{false};
 };
 
 

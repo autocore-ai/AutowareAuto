@@ -25,6 +25,9 @@
 #include <unordered_map>
 #include <utility>
 #include <string>
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -63,7 +66,7 @@ public:
   /// \param z z coordinate
   /// \return A vector containing the cell at given coordinates. A vector is used to support
   /// near-neighbour cell queries in the future.
-  const std::vector<VoxelT> & cell(float_t x, float_t y, float_t z) const
+  const std::vector<VoxelT> & cell(float32_t x, float32_t y, float32_t z) const
   {
     return cell(Point({x, y, z}));
   }
@@ -203,9 +206,9 @@ public:
   /// \param msg PointCloud2 message to add.
   void insert_(const sensor_msgs::msg::PointCloud2 & msg)
   {
-    sensor_msgs::PointCloud2ConstIterator<float> x_it(msg, "x");
-    sensor_msgs::PointCloud2ConstIterator<float> y_it(msg, "y");
-    sensor_msgs::PointCloud2ConstIterator<float> z_it(msg, "z");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
 
     while (x_it != x_it.end() &&
       y_it != y_it.end() &&

@@ -25,6 +25,9 @@
 #include <Eigen/Core>
 #include <vector>
 #include <algorithm>
+#include "common/types.hpp"
+
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -32,8 +35,6 @@ namespace localization
 {
 namespace ndt
 {
-using float64_t = double;
-using float32_t = float;
 using Real = float64_t;
 /// Class Representing a base NDT grid cell. Functionality is implemented by CRTP derived classes.
 /// \tparam Derived Implementation class

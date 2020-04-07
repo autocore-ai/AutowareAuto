@@ -26,6 +26,10 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <tuple>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -35,9 +39,9 @@ namespace ndt
 {
 
 template<typename ScalarT>
-bool is_valid_probability(ScalarT p)
+bool8_t is_valid_probability(ScalarT p)
 {
-  bool ret = true;
+  bool8_t ret = true;
   if (std::isnan(p) || p > ScalarT{1.0} || p < ScalarT{0.0}) {
     ret = false;
   }
@@ -62,8 +66,8 @@ public:
   using Point = Map::Point;
   using Comparator = common::optimization::EigenComparator;
   using ComputeMode = common::optimization::ComputeMode;
-  using PointGrad = Eigen::Matrix<double, 3, 6>;
-  using PointHessian = Eigen::Matrix<double, 18, 6>;
+  using PointGrad = Eigen::Matrix<float64_t, 3, 6>;
+  using PointHessian = Eigen::Matrix<float64_t, 18, 6>;
 
   /// Constructor. It should be noted here that ndt optimization problem does not take
   /// ownership of neither the scan nor the map but uses the references. Hence an optimization
@@ -83,7 +87,7 @@ public:
   void evaluate_(const DomainValue & x, const ComputeMode & mode)
   {
     // Convert pose vector to transform matrix for easy point transformation
-    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> transform;
+    Eigen::Transform<float64_t, 3, Eigen::Affine, Eigen::ColMajor> transform;
     transform.setIdentity();
     transform_adapters::pose_to_transform(x, transform);
 

@@ -25,6 +25,11 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <string>
+#include "common/types.hpp"
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -97,7 +102,7 @@ class DenseNDTMapContext
 protected:
   static constexpr int POINTS_PER_DIM{5U};
   // how much should the points diverge from the center. It's fixed as there's no randomness.
-  static constexpr float FIXED_DEVIATION{0.3};
+  static constexpr float32_t FIXED_DEVIATION{0.3};
 
   DenseNDTMapContext();
 

@@ -16,6 +16,12 @@
 #include "test_ndt_optimization.hpp"
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <limits>
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -24,8 +30,8 @@ namespace localization
 namespace ndt
 {
 OptTestParams::OptTestParams(
-  double x, double y, double z, double ang_x, double ang_y, double ang_z,
-  bool large, bool check_pcl)
+  float64_t x, float64_t y, float64_t z, float64_t ang_x, float64_t ang_y, float64_t ang_z,
+  bool8_t large, bool8_t check_pcl)
 : is_large{large}, check_pcl{check_pcl}
 {
   // euler angles XYZ
@@ -130,7 +136,7 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
       problem.jacobian(guess, jacobian);
       problem.hessian(guess, hessian);
       // Solve for decent direction using newton method
-      Eigen::JacobiSVD<Eigen::Matrix<double, 6, 6>> sv(hessian,
+      Eigen::JacobiSVD<Eigen::Matrix<float64_t, 6, 6>> sv(hessian,
         Eigen::ComputeFullU | Eigen::ComputeFullV);
       // Negative for maximization as opposed to minimization
       decltype(guess) delta = sv.solve(-jacobian);
@@ -154,15 +160,15 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     *map_cloud = from_pointcloud2(m_pc);
 
     pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> pcl_ndt;
-    Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> init_guess;
+    Eigen::Transform<float32_t, 3, Eigen::Affine, Eigen::ColMajor> init_guess;
     init_guess.matrix().setIdentity();
     pcl_ndt.setInputSource(scan_cloud);
     pcl_ndt.setInputTarget(map_cloud);
     pcl_ndt.align(*result_cloud, init_guess.matrix());
 
     init_guess.matrix() = pcl_ndt.getFinalTransformation();
-    pcl_guess.head(3) = init_guess.translation().cast<double>();
-    pcl_guess.tail(3) = init_guess.rotation().eulerAngles(0, 1, 2).cast<double>();
+    pcl_guess.head(3) = init_guess.translation().cast<float64_t>();
+    pcl_guess.tail(3) = init_guess.rotation().eulerAngles(0, 1, 2).cast<float64_t>();
 
     // Using high error tolerance since two different implementations may vary in result greatly.
     is_pose_approx(pcl_guess, neg_diff, 0.2, 0.1);
@@ -196,9 +202,9 @@ INSTANTIATE_TEST_CASE_P(numerical_analysis, P2DOptimizationNumericalTest,
 pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointCloud2 & msg)
 {
   pcl::PointCloud<pcl::PointXYZ> res{};
-  sensor_msgs::PointCloud2ConstIterator<float> x_it(msg, "x");
-  sensor_msgs::PointCloud2ConstIterator<float> y_it(msg, "y");
-  sensor_msgs::PointCloud2ConstIterator<float> z_it(msg, "z");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
 
   while (x_it != x_it.end() &&
     y_it != y_it.end() &&

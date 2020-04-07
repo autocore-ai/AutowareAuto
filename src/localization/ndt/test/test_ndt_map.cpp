@@ -19,6 +19,14 @@
 #include <ndt/utils.hpp>
 #include <Eigen/LU>
 #include <vector>
+#include <limits>
+#include <string>
+#include "test_ndt_map.hpp"
+#include "common/types.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -171,7 +179,8 @@ TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
   // Add points to the voxel ([0,0,0]... to [4,4,4])
   for (auto i = 0U; i < num_points; i++) {
     auto point =
-      Eigen::Vector3d{static_cast<double>(i), static_cast<double>(i), static_cast<double>(i)};
+      Eigen::Vector3d{static_cast<float64_t>(i),
+              static_cast<float64_t>(i), static_cast<float64_t>(i)};
     points.push_back(point);
     voxel.add_observation(point);
   }
@@ -204,7 +213,8 @@ TEST_F(DenseNDTMapTest, map_lookup) {
   EXPECT_TRUE(ndt_map.cell(0.0, 0.0, 0.0).empty());
 
   // build a pointcloud map.
-  // It contains 5*5*5*7 points where each cell would have a center (ranging from (1,1,1) to (5,5,5))
+  // It contains 5*5*5*7 points where each cell would have a center
+  // (ranging from (1,1,1) to (5,5,5))
   // and 6 surrounding points with a 0.3 distance from the center
   build_pc(grid_config);
 
@@ -284,7 +294,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
 TEST(StaticNDTVoxelTest, ndt_map_voxel_bad_covariance) {
   StaticNDTVoxel::Covariance bad_covariance = StaticNDTVoxel::Covariance{}.setOnes();
   StaticNDTVoxel::Covariance bad_covariance_inv{};
-  bool invertible{false};
+  bool8_t invertible{false};
   bad_covariance.computeInverseWithCheck(bad_covariance_inv, invertible);
   ASSERT_FALSE(invertible);
   StaticNDTVoxel voxel{Eigen::Vector3d{1.0, 1.0, 1.0}, bad_covariance};
@@ -303,7 +313,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
 
   ASSERT_TRUE(try_stabilize_covariance(covariance));
   StaticNDTVoxel::Covariance inv_covariance{};
-  bool invertible{false};
+  bool8_t invertible{false};
   covariance.computeInverseWithCheck(inv_covariance, invertible);
   ASSERT_TRUE(invertible);
   EXPECT_TRUE(inv_covariance.isApprox(voxel.inverse_covariance()));
@@ -383,14 +393,14 @@ TEST_F(NDTMapTest, map_representation_basics) {
     }) &&
     cell_id_it != cell_id_it.end())
   {
-
     const Eigen::Vector3d added_pt{value, value, value};
     // Turn the point into a pointcloud to insert. The point should be inserted enough to make
     // the voxel usable. (equal to NUM_POINT_THRESHOLD)
     generator_grid.insert(make_pcl(std::vector<Eigen::Vector3d>{
             DynamicNDTVoxel::NUM_POINT_THRESHOLD, added_pt}));
 
-    // For simplicity, the inserted points already correspond to the centroids and there's point per voxel.
+    // For simplicity,
+    // the inserted points already correspond to the centroids and there's point per voxel.
     const auto & generating_voxel = generator_grid.cell(added_pt)[0U];
     ASSERT_TRUE(generating_voxel.centroid().isApprox(added_pt,
       std::numeric_limits<Real>::epsilon()));
@@ -496,9 +506,9 @@ void populate_pc(
 common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
   common::types::PointXYZIF ptF{};
-  ptF.x = static_cast<float>(v(0));
-  ptF.y = static_cast<float>(v(1));
-  ptF.z = static_cast<float>(v(2));
+  ptF.x = static_cast<float32_t>(v(0));
+  ptF.y = static_cast<float32_t>(v(1));
+  ptF.z = static_cast<float32_t>(v(2));
   return ptF;
 }
 
@@ -506,7 +516,7 @@ common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 // resulting in 7 points with random but bounded covariance
 void add_cell(
   sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
-  const Eigen::Vector3d & center, double fixed_deviation)
+  const Eigen::Vector3d & center, float64_t fixed_deviation)
 {
   common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
 
@@ -561,8 +571,8 @@ void DenseNDTMapContext::build_pc(const perception::filters::voxel_grid::Config 
   for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
     for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
       for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
-        Eigen::Vector3d center{static_cast<double>(x), static_cast<double>(y),
-          static_cast<double>(z)};
+        Eigen::Vector3d center{static_cast<float64_t>(x), static_cast<float64_t>(y),
+          static_cast<float64_t>(z)};
         add_cell(m_pc, m_pc_idx, center, FIXED_DEVIATION);
         m_voxel_centers[cfg.index(center)] = center;
       }
