@@ -179,17 +179,12 @@ class POINT_CLOUD_FILTER_TRANSFORM_NODES_PUBLIC PointCloud2FilterTransformNode :
   PointCloudFilterTransformNodeBase<PointCloud2>
 {
 public:
-  /// \brief Apex settings constructor
-  /// \param node_name Name of this node.
-  PointCloud2FilterTransformNode(
-    const std::string & node_name);
-
   /// \brief Parameter constructor
   /// \param node_name Name of this node.
   /// \param node_namespace Name of this node's namespace
   PointCloud2FilterTransformNode(
     const std::string & node_name,
-    const std::string & node_namespace);
+    const std::string & node_namespace = "");
 
   /// \brief Explicit constructor
   /// \param node_name Name of this node

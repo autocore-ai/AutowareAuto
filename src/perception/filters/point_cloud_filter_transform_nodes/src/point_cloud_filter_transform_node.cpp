@@ -102,30 +102,6 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
     m_output_frame_id.c_str(), m_pcl_size);
 }
 
-
-PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
-  const std::string & node_name)
-: PointCloud2FilterTransformNode(
-    node_name,
-    "",
-    std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()},
-    std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()},
-    declare_parameter("input_frame_id").get<std::string>().data(),
-    declare_parameter("output_frame_id").get<std::string>().data(),
-    declare_parameter("raw_topic").get<std::string>().data(),
-    declare_parameter("filtered_topic").get<std::string>().data(),
-    declare_parameter("start_angle").get<float64_t>(),
-    declare_parameter("end_angle").get<float64_t>(),
-    declare_parameter("min_radius").get<float64_t>(),
-    declare_parameter("max_radius").get<float64_t>(),
-    get_transform_from_parameters("static_transformer"),
-    declare_parameter("pcl_size").get<int32_t>(),
-    declare_parameter("expected_num_publishers").get<int32_t>(),
-    declare_parameter("expected_num_subscribers").get<int32_t>())
-{
-}
-
-
 const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const PointCloud2 & msg)
 {
   m_filtered_transformed_msg.data.clear();
