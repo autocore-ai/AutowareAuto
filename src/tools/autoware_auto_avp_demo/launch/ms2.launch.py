@@ -114,13 +114,13 @@ def generate_launch_description():
     map_state_estimator = Node(
         package='robot_localization',
         node_executable='ekf_node',
-        node_namespace='localization/odom',
+        node_namespace='localization/map',
         parameters=[LaunchConfiguration('map_state_estimator_param')]
     )
     odom_state_estimator = Node(
         package='robot_localization',
         node_executable='ekf_node',
-        node_namespace='localization/map',
+        node_namespace='localization/odom',
         parameters=[LaunchConfiguration('odom_state_estimator_param')]
     )
     rviz2 = Node(
