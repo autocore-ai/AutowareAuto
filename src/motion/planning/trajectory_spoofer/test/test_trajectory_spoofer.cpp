@@ -24,10 +24,18 @@
 #include <cmath>
 #include <iostream>
 
+
+#if !ASSERT_DURATION_MILLI_EQ
+# define ASSERT_DURATION_MILLI_EQ(t1,t2) \
+    ASSERT_TRUE( ( (t1-t2) < std::chrono::milliseconds(1)) && ( (t1-t2)  > std::chrono::milliseconds(-1)) ) << \
+    std::chrono::duration_cast<std::chrono::milliseconds>(t1).count() <<" not within 1ms of "<< \
+    std::chrono::duration_cast<std::chrono::milliseconds>(t2).count();
+#endif
+
+
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::msg::VehicleKinematicState;
-using autoware::trajectory_spoofer::NANO_IN_SEC;
 using autoware::trajectory_spoofer::TrajectorySpoofer;
 
 using autoware::common::types::float32_t;
@@ -35,7 +43,7 @@ using autoware::common::types::float64_t;
 using autoware::common::types::TAU;
 
 TEST(test_trajectory_spoofer, straight_trajectory) {
-  TrajectorySpoofer ts(10.0);
+  TrajectorySpoofer ts(20.0);
   VehicleKinematicState starting_point;
 
   int32_t num_of_points = 20;
@@ -47,18 +55,17 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
 
   auto first_point = traj.points.front();
   auto last_point = traj.points.back();
-  auto last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
+
+  auto last_time = time_utils::from_message(last_point.time_from_start);
   // Have to use floating point values due to rounding errors
   // in the calculation of nanosecond times in TrajectorySpoofer
-  float64_t end_time =
-    (static_cast<float64_t>(
-      time_utils::from_message(starting_point.state.time_from_start).count()) /
-    NANO_IN_SEC) + (length / ts.get_target_speed());
+  auto end_time = time_utils::from_message(starting_point.state.time_from_start) +
+    std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
+//std::chrono::duration_cast<std::chrono::nanoseconds>
   // Initial heading of 0 should mean travelling straight along the X axis
   ASSERT_EQ(traj.points.size(), num_of_points);
-  ASSERT_FLOAT_EQ(last_time, end_time);
+  ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   ASSERT_FLOAT_EQ(last_point.x, length);
   ASSERT_FLOAT_EQ(last_point.y, first_point.y);
   ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
@@ -81,18 +88,16 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
 
   first_point = traj.points.front();
   last_point = traj.points.back();
-  last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
-  end_time = (static_cast<float64_t>(
-      time_utils::from_message(starting_point.state.time_from_start).count()) /
-    NANO_IN_SEC) + (length / ts.get_target_speed());
+  last_time = time_utils::from_message(last_point.time_from_start);
+  end_time = time_utils::from_message(starting_point.state.time_from_start) +
+    std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
   // Calc x and y of last point
   const float32_t end_x = std::cos(head_rad) * length;
   const float32_t end_y = std::sin(head_rad) * length;
 
   ASSERT_EQ(traj.points.size(), num_of_points);
-  ASSERT_FLOAT_EQ(last_time, end_time);
+  ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   ASSERT_FLOAT_EQ(last_point.x, end_x);
   ASSERT_FLOAT_EQ(last_point.y, end_y);
   ASSERT_FLOAT_EQ(last_point.heading.real, first_point.heading.real);
@@ -119,18 +124,15 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
 
   auto first_point = traj.points.front();
   auto last_point = traj.points.back();
-  auto last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
+  auto last_time = time_utils::from_message(last_point.time_from_start);
   float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   // Chord distance * number of segments
   float64_t length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
-  float64_t end_time = 
-    (static_cast<float64_t>(
-      time_utils::from_message(starting_point.state.time_from_start).count()) /
-    NANO_IN_SEC) + (length / ts.get_target_speed());
+  auto end_time = time_utils::from_message(starting_point.state.time_from_start) +
+    std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
   ASSERT_EQ(traj.points.size(), num_of_points);
-  ASSERT_FLOAT_EQ(last_time, end_time);
+  ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   // last point should have the same x/y as first point
   ASSERT_FLOAT_EQ(last_point.x, first_point.x);
   ASSERT_FLOAT_EQ(last_point.y, first_point.y);
@@ -150,17 +152,15 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
 
   first_point = traj.points.front();
   last_point = traj.points.back();
-  last_time = static_cast<float64_t>(
-    time_utils::from_message(last_point.time_from_start).count()) / NANO_IN_SEC;
-  seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
+  last_time = time_utils::from_message(last_point.time_from_start);
   // Chord distance * number of segments
+  seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
   length = (2.0 * radius * std::sin(seg_angle_rad / 2.0)) * (num_of_points - 1);
-  end_time = (static_cast<float64_t>(
-      time_utils::from_message(starting_point.state.time_from_start).count()) /
-    NANO_IN_SEC) + (length / ts.get_target_speed());
+  end_time = time_utils::from_message(starting_point.state.time_from_start) +
+    std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
   ASSERT_EQ(traj.points.size(), num_of_points);
-  ASSERT_FLOAT_EQ(last_time, end_time);
+  ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   // last point should have the same x/y as first point
   ASSERT_FLOAT_EQ(last_point.x, first_point.x);
   ASSERT_FLOAT_EQ(last_point.y, first_point.y);
@@ -170,3 +170,5 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   ASSERT_FLOAT_EQ(last_point.longitudinal_velocity_mps, first_point.longitudinal_velocity_mps);
   ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
 }
+
+

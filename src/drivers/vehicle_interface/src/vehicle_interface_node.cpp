@@ -198,30 +198,39 @@ template<>
 void VehicleInterfaceNode::on_command_message(
   const autoware_auto_msgs::msg::VehicleControlCommand & msg)
 {
-  const auto maybe_state_command = m_last_state_command;
-  m_last_state_command.reset();
-  // Hit command with low pass filter TODO(c.ho) Don't repeat yourself on stamp conversion
   const auto stamp = time_utils::from_message(msg.stamp);
   const auto dt = stamp - m_last_command_stamp;
-  if (dt <= std::chrono::nanoseconds::zero()) {
+
+  // Time should not go backwards
+  if (dt < std::chrono::nanoseconds::zero()) {
     throw std::domain_error{"Vehicle interface command went backwards in time!"};
   }
-  m_last_command_stamp = stamp;
-  const auto filter = [dt](auto & filter_ptr, auto & val) -> void {
-      if (filter_ptr) {val = filter_ptr->filter(val, dt);}
-    };
-  auto cmd = msg;
-  filter(m_filter.longitudinal, cmd.long_accel_mps2);
-  filter(m_filter.front_steer, cmd.front_wheel_angle_rad);
-  filter(m_filter.rear_steer, cmd.rear_wheel_angle_rad);
-  // Hit commands with state machine
-  const auto commands = m_state_machine->compute_safe_commands({cmd, maybe_state_command});
-  // Send
-  if (!m_interface->send_control_command(commands.control())) {
-    on_control_send_failure();
+
+  // Hit command with low pass filter TODO(c.ho) Don't repeat yourself on stamp conversion
+  // Continue with filter using message only if dt>0
+  if (dt > std::chrono::nanoseconds::zero()) {
+    const auto maybe_state_command = m_last_state_command;
+    m_last_state_command.reset();
+    m_last_command_stamp = stamp;
+    const auto filter = [dt](auto & filter_ptr, auto & val) -> void {
+        if (filter_ptr) {val = filter_ptr->filter(val, dt);}
+      };
+    auto cmd = msg;
+    filter(m_filter.longitudinal, cmd.long_accel_mps2);
+    filter(m_filter.front_steer, cmd.front_wheel_angle_rad);
+    filter(m_filter.rear_steer, cmd.rear_wheel_angle_rad);
+    // Hit commands with state machine
+    const auto commands = m_state_machine->compute_safe_commands({cmd, maybe_state_command});
+    // Send
+    if (!m_interface->send_control_command(commands.control())) {
+      on_control_send_failure();
+    }
+    send_state_command(commands.state());
+    state_machine_report();
+
+  } else {
+    RCLCPP_WARN(logger(), "Vehicle interface time did not increase, skipping");
   }
-  send_state_command(commands.state());
-  state_machine_report();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

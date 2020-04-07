@@ -48,7 +48,6 @@ using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 using autoware::common::types::TAU;
 
-constexpr float64_t NANO_IN_SEC = 1000000000.0L;
 
 class TrajectorySpoofer
 {
@@ -59,7 +58,7 @@ class TrajectorySpoofer
   };
 
 private:
-  std::chrono::nanoseconds get_travel_time(float32_t dist, float32_t speed);
+  std::chrono::nanoseconds get_travel_time_ns(float32_t dist, float32_t speed);
   Trajectory init_trajectory(
     const VehicleKinematicState & starting_state,
     TrajectoryPoint & first_point);

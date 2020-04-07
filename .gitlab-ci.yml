@@ -98,6 +98,7 @@ stages:
       '
     - 'colcon test
            --merge-install
+           --packages-skip apex_test_tools test_apex_test_tools
            --install-base /opt/AutowareAuto
            --abort-on-error
       '
@@ -219,6 +220,7 @@ coverage:
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.base --initial'
     - 'colcon test
+           --packages-skip apex_test_tools test_apex_test_tools
            --abort-on-error
       '
     - 'lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test'
