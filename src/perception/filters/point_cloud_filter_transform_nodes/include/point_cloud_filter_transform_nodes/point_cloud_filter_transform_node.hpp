@@ -33,13 +33,14 @@ namespace filters
 namespace point_cloud_filter_transform_nodes
 {
 
-using sensor_msgs::msg::PointCloud2;
+using autoware::common::types::float64_t;
 using geometry_msgs::msg::Transform;
+using sensor_msgs::msg::PointCloud2;
 using std::placeholders::_1;
 
 Transform get_transform(
-  double r_x, double r_y, double r_z, double r_w, double t_x,
-  double t_y, double t_z);
+  float64_t r_x, float64_t r_y, float64_t r_z, float64_t r_w, float64_t t_x,
+  float64_t t_y, float64_t t_z);
 
 /// \brief Base class to subscribe to raw point cloud and transform and filter it to publish
 ///        filtered point cloud. Calls angle filter, distance filter and static transformer.
@@ -99,30 +100,30 @@ public:
     const std::string & node_name,
     const std::string & node_namespace)
   : Node(node_name.c_str(), node_namespace.c_str()),
-    m_angle_filter{static_cast<float32_t>(get_parameter("start_angle").as_double()),
-      static_cast<float32_t>(get_parameter("end_angle").as_double())},
-    m_distance_filter{static_cast<float32_t>(get_parameter("min_radius").as_double()),
-      static_cast<float32_t>(get_parameter("max_radius").as_double())},
-    m_static_transformer{get_transform(get_parameter(
-          "static_transformer.quaternion.x").as_double(),
-        get_parameter("static_transformer.quaternion.y").as_double(),
-        get_parameter("static_transformer.quaternion.z").as_double(),
-        get_parameter("static_transformer.quaternion.w").as_double(),
-        get_parameter("static_transformer.translation.x").as_double(),
-        get_parameter("static_transformer.translation.y").as_double(),
-        get_parameter("static_transformer.translation.z").as_double())},
-    m_init_timeout{std::chrono::milliseconds{get_parameter("init_timeout_ms").as_int()}},
-    m_timeout{std::chrono::milliseconds{get_parameter("timeout_ms").as_int()}},
+    m_angle_filter{static_cast<float32_t>(declare_parameter("start_angle").get<float64_t>()),
+      static_cast<float32_t>(declare_parameter("end_angle").get<float64_t>())},
+    m_distance_filter{static_cast<float32_t>(declare_parameter("min_radius").get<float64_t>()),
+      static_cast<float32_t>(declare_parameter("max_radius").get<float64_t>())},
+    m_static_transformer{get_transform(declare_parameter(
+          "static_transformer.quaternion.x").get<float64_t>(),
+        declare_parameter("static_transformer.quaternion.y").get<float64_t>(),
+        declare_parameter("static_transformer.quaternion.z").get<float64_t>(),
+        declare_parameter("static_transformer.quaternion.w").get<float64_t>(),
+        declare_parameter("static_transformer.translation.x").get<float64_t>(),
+        declare_parameter("static_transformer.translation.y").get<float64_t>(),
+        declare_parameter("static_transformer.translation.z").get<float64_t>())},
+    m_init_timeout{std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()}},
+    m_timeout{std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()}},
     m_sub_ptr{create_subscription<PointCloudT>(
-        get_parameter("raw_topic").as_string(), rclcpp::QoS{10},
+        declare_parameter("raw_topic").get<std::string>(), rclcpp::QoS{10},
         std::bind(
           &PointCloudFilterTransformNodeBase::process_filtered_transformed_message, this, _1))},
     m_pub_ptr{create_publisher<PointCloudT>(
-        get_parameter("filtered_topic").as_string(), rclcpp::QoS{10})},
+        declare_parameter("filtered_topic").get<std::string>(), rclcpp::QoS{10})},
     m_expected_num_publishers{
-      static_cast<size_t>(get_parameter("expected_num_publishers").as_int())},
+      static_cast<size_t>(declare_parameter("expected_num_publishers").get<int32_t>())},
     m_expected_num_subscribers{
-      static_cast<size_t>(get_parameter("expected_num_subscribers").as_int())}
+      static_cast<size_t>(declare_parameter("expected_num_subscribers").get<int32_t>())}
   {
   }
 
