@@ -55,6 +55,11 @@ def generate_launch_description():
     lgsvl_pkg_prefix = get_package_share_directory('lgsvl_interface')
     lgsvl_param_file = os.path.join(lgsvl_pkg_prefix, 'lgsvl.param.yaml')
 
+    pc_filter_transform_pkg_prefix = get_package_share_directory(
+        'point_cloud_filter_transform_nodes')
+    pc_filter_transform_param_file = os.path.join(
+        pc_filter_transform_pkg_prefix, 'param/vlp16_sim_lexus_filter_transform.param.yaml')
+
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
 
@@ -85,6 +90,11 @@ def generate_launch_description():
         default_value=odom_state_estimator_param_file,
         description='Path to config file for Odometry State Estimator'
     )
+    pc_filter_transform_param = DeclareLaunchArgument(
+        'pc_filter_transform_param',
+        default_value=pc_filter_transform_param_file,
+        description='Path to config file for Point Cloud Filter/Transform Nodes'
+    )
     with_rviz_param = DeclareLaunchArgument(
         'with_rviz',
         default_value='True',
@@ -98,6 +108,20 @@ def generate_launch_description():
         node_executable='lgsvl_interface_exe',
         output='screen',
         parameters=[LaunchConfiguration('lgsvl_interface_param')]
+    )
+    filter_transform_vlp16_front = Node(
+        package='point_cloud_filter_transform_nodes',
+        node_executable='point_cloud_filter_transform_node_exe',
+        node_name='filter_transform_vlp16_front',
+        node_namespace='lidar_front',
+        parameters=[LaunchConfiguration('pc_filter_transform_param')]
+    )
+    filter_transform_vlp16_rear = Node(
+        package='point_cloud_filter_transform_nodes',
+        node_executable='point_cloud_filter_transform_node_exe',
+        node_name='filter_transform_vlp16_rear',
+        node_namespace='lidar_rear',
+        parameters=[LaunchConfiguration('pc_filter_transform_param')]
     )
     map_downsampler = Node(
         package='voxel_grid_nodes',
@@ -143,9 +167,12 @@ def generate_launch_description():
         map_publisher_param,
         map_state_estimator_param,
         odom_state_estimator_param,
+        pc_filter_transform_param,
         with_rviz_param,
         urdf_publisher,
         lgsvl_interface,
+        filter_transform_vlp16_front,
+        filter_transform_vlp16_rear,
         map_downsampler,
         map_publisher,
         map_state_estimator,
