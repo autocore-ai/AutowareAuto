@@ -320,8 +320,8 @@ public:
     Eigen::Matrix<float32_t, 3U, 1U> ref_mat({x_(ref), y_(ref), z_(ref)});
     Eigen::Vector3f out_mat = m_tf * ref_mat;
     xr_(out) = out_mat(0U, 0U);
-    yr_(out) = out_mat(0U, 1U);
-    zr_(out) = out_mat(0U, 2U);
+    yr_(out) = out_mat(1U, 0U);
+    zr_(out) = out_mat(2U, 0U);
   }
 
 private:
