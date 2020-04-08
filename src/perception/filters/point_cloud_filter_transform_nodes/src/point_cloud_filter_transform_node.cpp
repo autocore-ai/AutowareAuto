@@ -104,8 +104,12 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
 
 const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const PointCloud2 & msg)
 {
-  m_filtered_transformed_msg.data.clear();
-  m_filtered_transformed_msg.width = 0U;
+  // TODO(esteve): replace the following code with
+  // autoware::common::lidar_utils::reset_pcl_msg when addressing
+  // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/381
+  sensor_msgs::PointCloud2Modifier pc_modifier(m_filtered_transformed_msg);
+  pc_modifier.clear();
+  pc_modifier.resize(m_pcl_size);
   // Verify frame_id
   if (msg.header.frame_id != m_input_frame_id) {
     throw std::runtime_error("Raw topic from unexpected frame");
