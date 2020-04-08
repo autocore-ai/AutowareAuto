@@ -31,6 +31,7 @@ using sensor_msgs::msg::PointCloud2;
 using geometry_msgs::msg::Transform;
 using autoware::common::types::PointXYZIF;
 using common::lidar_utils::has_intensity_and_throw_if_no_xyz;
+using common::lidar_utils::resize_pcl_msg;
 
 using autoware::common::types::float64_t;
 
@@ -142,8 +143,9 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
       }
     }
   }
-  m_filtered_transformed_msg.row_step = m_filtered_transformed_msg.width *
-    m_filtered_transformed_msg.point_step;
+  resize_pcl_msg(
+    m_filtered_transformed_msg,
+    m_filtered_transformed_msg.width * m_filtered_transformed_msg.point_step);
   return m_filtered_transformed_msg;
 }
 
