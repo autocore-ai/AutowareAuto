@@ -107,7 +107,6 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
 
 const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const PointCloud2 & msg)
 {
-
   // Verify frame_id
   if (msg.header.frame_id != m_input_frame_id) {
     throw std::runtime_error("Raw topic from unexpected frame");
@@ -121,10 +120,9 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
     RCLCPP_WARN(get_logger(), "Misaligned data: Using only a subset of Point cloud data");
   }
 
-  m_filtered_transformed_msg.header.stamp = msg.header.stamp;
-
   auto point_cloud_idx = 0U;
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
+   m_filtered_transformed_msg.header.stamp = msg.header.stamp;
   for (auto idx = 0U; idx < indices.data_length; idx += msg.point_step) {
     PointXYZIF pt;
     //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
