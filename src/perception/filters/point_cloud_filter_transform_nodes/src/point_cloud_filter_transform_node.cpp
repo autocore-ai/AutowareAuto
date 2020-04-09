@@ -114,10 +114,10 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   // Sanitize indexing for iteration; warn if sanitation occured
   const auto indices = sanitize_point_cloud(msg);
   if (indices.point_step != msg.point_step) {
-    RCLCPP_WARN(get_logger(), "Using only a subset of Point cloud fields");
+    RCLCPP_WARN_ONCE(get_logger(), "Using only a subset of Point cloud fields");
   }
   if (indices.data_length != msg.data.size()) {
-    RCLCPP_WARN(get_logger(), "Misaligned data: Using only a subset of Point cloud data");
+    RCLCPP_WARN_ONCE(get_logger(), "Misaligned data: Using only a subset of Point cloud data");
   }
 
   auto point_cloud_idx = 0U;
