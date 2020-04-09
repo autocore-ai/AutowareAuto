@@ -27,13 +27,15 @@ namespace filters
 /// \brief Boilerplate Apex.OS nodes around point_cloud_filter_transform_nodes
 namespace point_cloud_filter_transform_nodes
 {
-using sensor_msgs::msg::PointCloud2;
-using geometry_msgs::msg::Transform;
-using autoware::common::types::PointXYZIF;
-using common::lidar_utils::has_intensity_and_throw_if_no_xyz;
-using common::lidar_utils::resize_pcl_msg;
-
+using autoware::common::lidar_utils::add_point_to_cloud;
+using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
+using autoware::common::lidar_utils::reset_pcl_msg;
+using autoware::common::lidar_utils::resize_pcl_msg;
+using autoware::common::lidar_utils::sanitize_point_cloud;
 using autoware::common::types::float64_t;
+using autoware::common::types::PointXYZIF;
+using geometry_msgs::msg::Transform;
+using sensor_msgs::msg::PointCloud2;
 
 Transform PointCloud2FilterTransformNode::get_transform_from_parameters(const std::string & prefix)
 {
@@ -105,18 +107,13 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
 
 const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const PointCloud2 & msg)
 {
-  // TODO(esteve): replace the following code with
-  // autoware::common::lidar_utils::reset_pcl_msg when addressing
-  // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/381
-  sensor_msgs::PointCloud2Modifier pc_modifier(m_filtered_transformed_msg);
-  pc_modifier.clear();
-  pc_modifier.resize(m_pcl_size);
+
   // Verify frame_id
   if (msg.header.frame_id != m_input_frame_id) {
     throw std::runtime_error("Raw topic from unexpected frame");
   }
   // Sanitize indexing for iteration; warn if sanitation occured
-  const auto indices = autoware::common::lidar_utils::sanitize_point_cloud(msg);
+  const auto indices = sanitize_point_cloud(msg);
   if (indices.point_step != msg.point_step) {
     RCLCPP_WARN(get_logger(), "Using only a subset of Point cloud fields");
   }
@@ -127,6 +124,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   m_filtered_transformed_msg.header.stamp = msg.header.stamp;
 
   auto point_cloud_idx = 0U;
+  reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
   for (auto idx = 0U; idx < indices.data_length; idx += msg.point_step) {
     PointXYZIF pt;
     //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
@@ -135,7 +133,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
       static_cast<const void *>(&msg.data[idx]),
       indices.point_step);
     if (point_not_filtered(pt)) {
-      if (!autoware::common::lidar_utils::add_point_to_cloud(
+      if (!add_point_to_cloud(
           m_filtered_transformed_msg, transform_point(pt), point_cloud_idx))
       {
         throw std::runtime_error(
@@ -143,9 +141,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
       }
     }
   }
-  resize_pcl_msg(
-    m_filtered_transformed_msg,
-    m_filtered_transformed_msg.width * m_filtered_transformed_msg.point_step);
+  resize_pcl_msg(m_filtered_transformed_msg, point_cloud_idx);
   return m_filtered_transformed_msg;
 }
 
