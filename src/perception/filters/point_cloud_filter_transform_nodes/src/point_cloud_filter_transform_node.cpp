@@ -122,7 +122,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
 
   auto point_cloud_idx = 0U;
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
-   m_filtered_transformed_msg.header.stamp = msg.header.stamp;
+  m_filtered_transformed_msg.header.stamp = msg.header.stamp;
   for (auto idx = 0U; idx < indices.data_length; idx += msg.point_step) {
     PointXYZIF pt;
     //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
