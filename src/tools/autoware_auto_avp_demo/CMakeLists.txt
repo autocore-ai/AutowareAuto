@@ -29,6 +29,7 @@ endif()
 # Install stuff
 install(DIRECTORY
   config
+  data
   launch
   param
   DESTINATION share/${PROJECT_NAME}

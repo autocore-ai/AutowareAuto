@@ -88,6 +88,7 @@ stages:
           git
           clang-tidy
       '
+    - 'git lfs pull --include="*" --exclude=""'
     - 'git submodule update --init --recursive'
     # build and test
     - 'colcon build
