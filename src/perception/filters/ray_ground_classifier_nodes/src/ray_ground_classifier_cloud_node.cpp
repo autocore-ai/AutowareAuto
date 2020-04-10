@@ -123,7 +123,10 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     reset();
     // Verify header
     if (msg->header.frame_id != m_ground_msg.header.frame_id) {
-      throw std::runtime_error("RayGroundClassifierCloudNode: raw topic from unexpected frame");
+      throw std::runtime_error(
+              "RayGroundClassifierCloudNode: raw topic from unexpected "
+              "frame (expected '" + m_ground_msg.header.frame_id +
+              "', got '" + msg->header.frame_id + "')");
     }
     // Verify the consistency of PointCloud msg
     const auto data_length = msg->width * msg->height * msg->point_step;
