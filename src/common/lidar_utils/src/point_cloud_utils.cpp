@@ -56,28 +56,31 @@ bool8_t has_intensity_and_throw_if_no_xyz(
   const auto check_field = [](
     const sensor_msgs::msg::PointField & field,
     const char8_t * const name,
-    const uint32_t offset) -> bool8_t {
+    const uint32_t offset,
+    const decltype(sensor_msgs::msg::PointField::datatype) datatype) -> bool8_t {
       bool8_t res = true;
       if ((name != field.name) || (offset != field.offset) ||
-        (sensor_msgs::msg::PointField::FLOAT32 != field.datatype) || (1U != field.count))
+        (datatype != field.datatype) || (1U != field.count))
       {
         res = false;
       }
       return res;
     };
 
-  if (!check_field(cloud.fields[0U], "x", 0U)) {
+  if (!check_field(cloud.fields[0U], "x", 0U, sensor_msgs::msg::PointField::FLOAT32)) {
     throw std::runtime_error("PointCloud doesn't have correct x field");
-  } else if (!check_field(cloud.fields[1U], "y", 4U)) {
+  } else if (!check_field(cloud.fields[1U], "y", 4U, sensor_msgs::msg::PointField::FLOAT32)) {
     throw std::runtime_error("PointCloud doesn't have correct y field");
-  } else if (!check_field(cloud.fields[2U], "z", 8U)) {
+  } else if (!check_field(cloud.fields[2U], "z", 8U, sensor_msgs::msg::PointField::FLOAT32)) {
     throw std::runtime_error("PointCloud doesn't have correct z field");
   } else {
     // do nothing
   }
   if (cloud.fields.size() >= 4U) {
-    if (!check_field(cloud.fields[3U], "intensity", 12U)) {
-      ret = false;
+    if (!check_field(cloud.fields[3U], "intensity", 12U, sensor_msgs::msg::PointField::FLOAT32)) {
+      if (!check_field(cloud.fields[3U], "intensity", 16U, sensor_msgs::msg::PointField::UINT8)) {
+        ret = false;
+      }
     }
   } else {
     ret = false;
