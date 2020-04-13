@@ -66,32 +66,32 @@ def generate_launch_description():
     # Arguments
 
     lgsvl_interface_param = DeclareLaunchArgument(
-        'lgsvl_interface_param',
+        'lgsvl_interface_param_file',
         default_value=lgsvl_param_file,
         description='Path to config file for LGSVL Interface'
     )
     map_downsampler_param = DeclareLaunchArgument(
-        'map_downsampler_param',
+        'map_downsampler_param_file',
         default_value=map_downsampler_param_file,
         description='Path to config file for Map Downsampler'
     )
     map_publisher_param = DeclareLaunchArgument(
-        'map_publisher_param',
+        'map_publisher_param_file',
         default_value=map_publisher_param_file,
         description='Path to config file for Map Publisher'
     )
     map_state_estimator_param = DeclareLaunchArgument(
-        'map_state_estimator_param',
+        'map_state_estimator_param_file',
         default_value=map_state_estimator_param_file,
         description='Path to config file for Map State Estimator'
     )
     odom_state_estimator_param = DeclareLaunchArgument(
-        'odom_state_estimator_param',
+        'odom_state_estimator_param_file',
         default_value=odom_state_estimator_param_file,
         description='Path to config file for Odometry State Estimator'
     )
     pc_filter_transform_param = DeclareLaunchArgument(
-        'pc_filter_transform_param',
+        'pc_filter_transform_param_file',
         default_value=pc_filter_transform_param_file,
         description='Path to config file for Point Cloud Filter/Transform Nodes'
     )
@@ -107,45 +107,45 @@ def generate_launch_description():
         package='lgsvl_interface',
         node_executable='lgsvl_interface_exe',
         output='screen',
-        parameters=[LaunchConfiguration('lgsvl_interface_param')]
+        parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_front',
         node_namespace='lidar_front',
-        parameters=[LaunchConfiguration('pc_filter_transform_param')]
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_rear',
         node_namespace='lidar_rear',
-        parameters=[LaunchConfiguration('pc_filter_transform_param')]
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')]
     )
     map_downsampler = Node(
         package='voxel_grid_nodes',
         node_executable='voxel_grid_cloud_node_exe',
         node_namespace='localization',
-        parameters=[LaunchConfiguration('map_downsampler_param')]
+        parameters=[LaunchConfiguration('map_downsampler_param_file')]
     )
     map_publisher = Node(
         package='ndt_nodes',
         node_executable='ndt_map_publisher_exe',
         node_namespace='localization',
-        parameters=[LaunchConfiguration('map_publisher_param')]
+        parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
     map_state_estimator = Node(
         package='robot_localization',
         node_executable='ekf_node',
         node_namespace='localization/map',
-        parameters=[LaunchConfiguration('map_state_estimator_param')]
+        parameters=[LaunchConfiguration('map_state_estimator_param_file')]
     )
     odom_state_estimator = Node(
         package='robot_localization',
         node_executable='ekf_node',
         node_namespace='localization/odom',
-        parameters=[LaunchConfiguration('odom_state_estimator_param')]
+        parameters=[LaunchConfiguration('odom_state_estimator_param_file')]
     )
     rviz2 = Node(
         package='rviz2',
