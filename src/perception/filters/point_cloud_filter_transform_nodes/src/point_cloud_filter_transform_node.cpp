@@ -111,25 +111,27 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   if (msg.header.frame_id != m_input_frame_id) {
     throw std::runtime_error("Raw topic from unexpected frame");
   }
-  // Sanitize indexing for iteration; warn if sanitation occured
-  const auto indices = sanitize_point_cloud(msg);
-  if (indices.point_step != msg.point_step) {
-    RCLCPP_WARN_ONCE(get_logger(), "Using only a subset of Point cloud fields");
-  }
-  if (indices.data_length != msg.data.size()) {
-    RCLCPP_WARN_ONCE(get_logger(), "Misaligned data: Using only a subset of Point cloud data");
-  }
+
+  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
+  sensor_msgs::PointCloud2ConstIterator<uint8_t> intensity_it(msg, "intensity");
 
   auto point_cloud_idx = 0U;
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
   m_filtered_transformed_msg.header.stamp = msg.header.stamp;
-  for (auto idx = 0U; idx < indices.data_length; idx += msg.point_step) {
+
+  while (x_it != x_it.end() &&
+    y_it != y_it.end() &&
+    z_it != z_it.end() &&
+    intensity_it != intensity_it.end())
+  {
     PointXYZIF pt;
-    //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
-    (void)memmove(
-      static_cast<void *>(&pt.x),
-      static_cast<const void *>(&msg.data[idx]),
-      indices.point_step);
+    pt.x = *x_it;
+    pt.y = *y_it;
+    pt.z = *z_it;
+    pt.intensity = *intensity_it;
+
     if (point_not_filtered(pt)) {
       if (!add_point_to_cloud(
           m_filtered_transformed_msg, transform_point(pt), point_cloud_idx))
@@ -138,6 +140,11 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
                 "Overran cloud msg point capacity");
       }
     }
+
+    ++x_it;
+    ++y_it;
+    ++z_it;
+    ++intensity_it;
   }
   resize_pcl_msg(m_filtered_transformed_msg, point_cloud_idx);
   return m_filtered_transformed_msg;
