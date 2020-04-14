@@ -2,7 +2,8 @@ localization:
   ndt_map_publisher_node:
     ros__parameters:
       map_topic: "ndt_map"
-      map_file_name: "map/path/here.pcd"
+      map_pcd_file: "/opt/AutowareAuto/share/autoware_auto_avp_demo/data/autonomoustuff_parking_lot.pcd"
+      map_yaml_file: "/opt/AutowareAuto/share/autoware_auto_avp_demo/data/autonomoustuff_parking_lot.yaml"
       map_frame: "map"
       map_config:
         capacity: 55000
