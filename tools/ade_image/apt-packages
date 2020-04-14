@@ -39,6 +39,7 @@ ros-dashing-launch-ros
 ros-dashing-launch-testing
 ros-dashing-launch-testing-ament-cmake
 ros-dashing-launch-testing-ros
+ros-dashing-nmea-msgs
 ros-dashing-osrf-testing-tools-cpp
 ros-dashing-rclcpp
 ros-dashing-rclcpp-action
@@ -52,6 +53,7 @@ ros-dashing-ros1-bridge
 ros-dashing-ros2bag
 ros-dashing-rosbag2
 ros-dashing-rosbag2-storage
+ros-dashing-rosbag2-storage-default-plugins
 ros-dashing-rosbag2-transport
 ros-dashing-rviz2
 ros-dashing-sensor-msgs
