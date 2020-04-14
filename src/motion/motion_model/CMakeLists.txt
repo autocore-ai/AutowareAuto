@@ -5,9 +5,11 @@ project(motion_model)
 
 ## dependencies
 find_package(autoware_auto_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_common REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)
