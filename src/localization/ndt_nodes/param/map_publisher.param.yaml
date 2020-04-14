@@ -4,7 +4,7 @@
 ndt_map_publisher_node:
   ros__parameters:
     map_topic: "ndt_map"
-    map_file_name: "map/path/here.pcd"
+    map_yaml_file: "map/path/here.yaml"
     map_frame: "map"
     map_config:
       capacity: 55000

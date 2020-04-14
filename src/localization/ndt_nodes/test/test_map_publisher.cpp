@@ -18,9 +18,10 @@
 #include <gtest/gtest.h>
 #include <ndt_nodes/map_publisher.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
+#include <yaml-cpp/yaml.h>
 #include <string>
 #include <limits>
-
+#include <memory>
 
 namespace autoware
 {
@@ -28,6 +29,23 @@ namespace localization
 {
 namespace ndt_nodes
 {
+
+std::string build_yaml_string()
+{
+  YAML::Emitter yaml_out;
+  yaml_out << YAML::Comment("test_map.yaml");
+  yaml_out << YAML::BeginMap;
+  yaml_out << YAML::Key << "map_config";
+  yaml_out << YAML::Value << YAML::BeginMap;
+  yaml_out << YAML::Key << "latitude" << YAML::Value << 0.0;
+  yaml_out << YAML::Key << "longitude" << YAML::Value << 0.0;
+  yaml_out << YAML::Key << "elevation" << YAML::Value << 0.0;
+  yaml_out << YAML::EndMap;
+  yaml_out << YAML::EndMap;
+  std::string yaml_string(yaml_out.c_str());
+  return yaml_string;
+}
+
 TEST(PCDLoadTest, basics) {
   constexpr auto num_points = 5U;
   pcl::PointCloud<pcl::PointXYZI> dummy_cloud{};
@@ -35,6 +53,7 @@ TEST(PCDLoadTest, basics) {
   common::lidar_utils::init_pcl_msg(msg, "base_link", num_points);
   const std::string test_fname = "PCDLoadTest_test_pcd_file.pcd";
   const std::string non_existing_fname = "NON_EXISTING_FILE_PCDLoadTest.XYZ";
+
   for (auto i = 0U; i < num_points; i++) {
     pcl::PointXYZI pt;
     pt.x = static_cast<float32_t>(i);
@@ -47,8 +66,8 @@ TEST(PCDLoadTest, basics) {
 
   ASSERT_TRUE(std::ifstream{test_fname}.good());
   ASSERT_FALSE(std::ifstream{non_existing_fname}.good());
-  EXPECT_THROW(read_from_pcd(non_existing_fname, msg), std::runtime_error);
-  EXPECT_NO_THROW(read_from_pcd(test_fname, msg));
+  EXPECT_THROW(read_from_pcd(non_existing_fname, &msg), std::runtime_error);
+  EXPECT_NO_THROW(read_from_pcd(test_fname, &msg));
 
   sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
   sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
@@ -76,13 +95,47 @@ TEST(PCDLoadTest, basics) {
   remove(test_fname.c_str());
 }
 
+TEST(YamlLoadTest, basics) {
+  const std::string test_fname = "YamlLoadTest_test_yaml_file.yaml";
+  const std::string non_existing_fname = "NON_EXISTING_FILE_yamlLoadTest.XYZ";
+  const std::string test_pcd_fname = "test.pcd";
+
+  std::string yaml_string = build_yaml_string();
+
+  std::ofstream yaml_fout(test_fname);
+  yaml_fout << yaml_string << std::endl;
+  yaml_fout.close();
+
+  geocentric_pose_t gp{0, 0, 0, 0, 0, 0};
+  ASSERT_TRUE(std::ifstream{test_fname}.good());
+  ASSERT_FALSE(std::ifstream{non_existing_fname}.good());
+  EXPECT_THROW(
+    read_from_yaml(
+      non_existing_fname, &gp),
+    std::runtime_error);
+  EXPECT_NO_THROW(
+    read_from_yaml(
+      test_fname, &gp));
+
+  remove(test_fname.c_str());
+}
+
 TEST_F(MapPublisherTest, core_functionality)
 {
   using Cloud = sensor_msgs::msg::PointCloud2;
   const auto grid_config =
     perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
-  const auto file_name = "MapPublisherTest_test.pcd";
+  std::string yaml_file_name = "MapPublisherTest_test.yaml";
+  const auto pcl_file_name = "MapPublisherTest_test.pcd";
+  std::string yaml_string = build_yaml_string();
+
+  std::ofstream yaml_fout(yaml_file_name);
+  yaml_fout << yaml_string << std::endl;
+  yaml_fout.close();
+
+  ASSERT_TRUE(std::ifstream{yaml_file_name}.good());
+
   // have a validation map to transform the source cloud. The publisher's output
   // should match the cells in this map.
   ndt::DynamicNDTMap dynamic_validation_map(grid_config);
@@ -101,8 +154,9 @@ TEST_F(MapPublisherTest, core_functionality)
       });
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
+
   NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-    grid_config, file_name);
+      grid_config, pcl_file_name, yaml_file_name);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
@@ -114,12 +168,11 @@ TEST_F(MapPublisherTest, core_functionality)
 
   // Save the dense map to be read.
   const auto pcl_source = from_pointcloud2(m_pc);
-  pcl::io::savePCDFile(file_name, pcl_source);
-  ASSERT_TRUE(std::ifstream{file_name}.good());
+  pcl::io::savePCDFile(pcl_file_name, pcl_source);
+  ASSERT_TRUE(std::ifstream{pcl_file_name}.good());
 
   // Read pcd, pass the cloud to the internal dynamic map.
   EXPECT_NO_THROW(map_publisher.run());
-
 
   while (callback_counter < 1U) {
     rclcpp::spin_some(listener_node);
@@ -143,7 +196,8 @@ TEST_F(MapPublisherTest, core_functionality)
     EXPECT_TRUE(received_cell.covariance().isApprox(reference_cell.covariance(),
       std::numeric_limits<ndt::Real>::epsilon() * 1e2));
   }
-  remove(file_name);
+  remove(pcl_file_name);
+  remove(yaml_file_name.c_str());
 }
 
 TEST_F(MapPublisherTest, viz_functionality)
@@ -152,7 +206,8 @@ TEST_F(MapPublisherTest, viz_functionality)
   const auto grid_config =
     perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
-  const auto file_name = "MapPublisherTest_test.pcd";
+  std::string yaml_file_name = "MapPublisherTest_test.yaml";
+  const auto pcl_file_name = "MapPublisherTest_test.pcd";
   // have a validation source cloud. The viz cloud publisher's output
   // should match the cells in this map.
   const auto map_topic = "publisher_test_map_topic";
@@ -179,20 +234,28 @@ TEST_F(MapPublisherTest, viz_functionality)
         received_viz_cloud_map = *msg;
       });
 
+  std::string yaml_string = build_yaml_string();
+  std::ofstream yaml_fout(yaml_file_name);
+  yaml_fout << yaml_string << std::endl;
+  yaml_fout.close();
+
+  ASSERT_TRUE(std::ifstream{yaml_file_name}.good());
+
+  // Create map publisher. It is given 5 seconds to discover the test subscription.
   const auto map_publisher_ptr = std::make_shared<NDTMapPublisherNode>("test_map_publisher", "",
-      map_topic, map_frame, grid_config, file_name, true, viz_map_topic);
+      map_topic, map_frame,
+      grid_config, pcl_file_name, yaml_file_name, true, viz_map_topic);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
 
   // Save the dense map to be read.
   const auto pcl_source = from_pointcloud2(m_pc);
-  pcl::io::savePCDFile(file_name, pcl_source);
-  ASSERT_TRUE(std::ifstream{file_name}.good());
+  pcl::io::savePCDFile(pcl_file_name, pcl_source);
+  ASSERT_TRUE(std::ifstream{pcl_file_name}.good());
 
   // Read pcd, pass the cloud to the internal dynamic map.
   EXPECT_NO_THROW(map_publisher_ptr->run());
-
 
   while (viz_callback_counter < 1U) {
     rclcpp::spin_some(map_publisher_ptr);  // TODO(yunus.caliskan): Remove spinning in #380
@@ -204,7 +267,8 @@ TEST_F(MapPublisherTest, viz_functionality)
   // Check that received viz pointcloud is a valid ndt map in terms of meta information.
   EXPECT_EQ(received_viz_cloud_map.width, m_pc.width);
 
-  remove(file_name);
+  remove(pcl_file_name);
+  remove(yaml_file_name.c_str());
 }
 
 }  // namespace ndt_nodes

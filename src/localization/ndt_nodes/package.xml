@@ -11,6 +11,8 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
     <build_depend>libpcl-all-dev</build_depend>
     <build_depend>autoware_auto_common</build_depend>
+    <build_depend>geographiclib</build_depend>
+    <build_depend>yaml-cpp</build_depend>
 
     <depend>rclcpp</depend>
     <depend>ndt</depend>

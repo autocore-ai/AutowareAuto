@@ -16,12 +16,17 @@
 #include <ndt_nodes/map_publisher.hpp>
 #include <pcl/io/pcd_io.h>
 #include <lidar_utils/point_cloud_utils.hpp>
+#include <yaml-cpp/yaml.h>
+#include <GeographicLib/Geocentric.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <string>
 #include <memory>
 #include "common/types.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -30,20 +35,59 @@ namespace localization
 namespace ndt_nodes
 {
 
-void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 & msg)
+void read_from_yaml(
+  const std::string & yaml_file_name,
+  geocentric_pose_t * geo_pose)
+{
+  try {
+    YAML::Node map_info = YAML::LoadFile(yaml_file_name);
+    if (map_info["map_config"]) {
+      if (map_info["map_config"]["latitude"] &&
+        map_info["map_config"]["longitude"] &&
+        map_info["map_config"]["elevation"])
+      {
+        geo_pose->latitude = map_info["map_config"]["latitude"].as<double>();
+        geo_pose->longitude = map_info["map_config"]["longitude"].as<double>();
+        geo_pose->elevation = map_info["map_config"]["elevation"].as<double>();
+      } else {
+        throw std::runtime_error("Yaml file: map origin not found\n");
+      }
+      if (map_info["map_config"]["roll"]) {
+        geo_pose->roll = map_info["map_config"]["roll"].as<double>();
+      }
+      if (map_info["map_config"]["pitch"]) {
+        geo_pose->pitch = map_info["map_config"]["pitch"].as<double>();
+      }
+      if (map_info["map_config"]["yaw"]) {
+        geo_pose->yaw = map_info["map_config"]["yaw"].as<double>();
+      }
+    } else {
+      throw std::runtime_error("Yaml file: map config not found\n");
+    }
+  } catch (const YAML::BadFile & ex) {
+    throw std::runtime_error("Yaml file not found\n");
+  } catch (const YAML::ParserException & ex) {
+    throw std::runtime_error("Yaml syntax error\n");
+  }
+}
+
+void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 * msg)
 {
   pcl::PointCloud<pcl::PointXYZI> cloud{};
   if (pcl::io::loadPCDFile<pcl::PointXYZI>(file_name, cloud) == -1) {  // load the file
-    throw std::runtime_error("File not found.");
+    throw std::runtime_error("PCD file not found.");
+  }
+  if (!(cloud.size() > 0)) {
+    throw std::runtime_error("PCD Cloud empty\n");
   }
   // TODO(yunus.caliskan): validate the map format. #102
-  common::lidar_utils::resize_pcl_msg(msg, cloud.size());
+  common::lidar_utils::resize_pcl_msg(*msg, cloud.size());
 
   auto id = 0U;
   for (const auto & pt : cloud) {
     common::types::PointXYZIF point{pt.x, pt.y, pt.z, pt.intensity,
       static_cast<uint16_t>(id)};
-    common::lidar_utils::add_point_to_cloud(msg, point, id);    // id is incretemented inside
+    common::lidar_utils::add_point_to_cloud(*msg, point, id);    // id is incremented inside
   }
 }
 
@@ -53,19 +97,18 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const std::string & map_topic,
   const std::string & map_frame,
   const MapConfig & map_config,
-  const std::string & file_name,
+  const std::string & pcl_file_name,
+  const std::string & yaml_file_name,
   const bool8_t viz_map,
   const std::string & viz_map_topic
 )
 : Node(node_name, node_namespace),
-  m_pub(create_publisher<sensor_msgs::msg::PointCloud2>(map_topic,
-    rclcpp::QoS(rclcpp::KeepLast(
-      5U)).transient_local())),
-  m_file_name(file_name),
+  m_pcl_file_name(pcl_file_name),
+  m_yaml_file_name(yaml_file_name),
   m_viz_map(viz_map),
   m_map_config_ptr{std::make_unique<MapConfig>(map_config)}
 {
-  init(map_frame, viz_map_topic);
+  init(map_frame, map_topic, viz_map_topic);
 }
 
 NDTMapPublisherNode::NDTMapPublisherNode(
@@ -73,10 +116,8 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const std::string & node_namespace
 )
 : Node(node_name, node_namespace),
-  m_pub(
-    create_publisher<sensor_msgs::msg::PointCloud2>(declare_parameter("map_topic").
-    get<std::string>(), rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local())),
-  m_file_name(declare_parameter("map_file_name").get<std::string>()),
+  m_pcl_file_name(declare_parameter("map_pcd_file").get<std::string>()),
+  m_yaml_file_name(declare_parameter("map_yaml_file").get<std::string>()),
   m_viz_map(static_cast<bool8_t>(declare_parameter("viz_map").get<bool8_t>()))
 {
   using PointXYZ = perception::filters::voxel_grid::PointXYZ;
@@ -104,14 +145,18 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const std::size_t capacity =
     static_cast<std::size_t>(declare_parameter("map_config.capacity").get<std::size_t>());
   const std::string map_frame = declare_parameter("map_frame").get<std::string>();
+  const std::string map_topic = declare_parameter("map_topic").get<std::string>();
   const std::string viz_map_topic = declare_parameter("viz_map_topic").get<std::string>();
 
   m_map_config_ptr = std::make_unique<MapConfig>(min_point, max_point, voxel_size, capacity);
-  init(map_frame, viz_map_topic);
+  init(map_frame, map_topic, viz_map_topic);
 }
 
 
-void NDTMapPublisherNode::init(const std::string & map_frame, const std::string & viz_map_topic)
+void NDTMapPublisherNode::init(
+  const std::string & map_frame,
+  const std::string & map_topic,
+  const std::string & viz_map_topic)
 {
   m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(*m_map_config_ptr);
 
@@ -128,6 +173,9 @@ void NDTMapPublisherNode::init(const std::string & map_frame, const std::string 
     "cov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
 
+  m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(map_topic,
+      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+
   if (m_viz_map == true) {   // create a publisher for map_visualization
     m_viz_pub = create_publisher<sensor_msgs::msg::PointCloud2>(
       viz_map_topic, rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
@@ -140,21 +188,70 @@ void NDTMapPublisherNode::init(const std::string & map_frame, const std::string 
           }
         });
   }
+
+  m_earth_map_broadcaster =
+    std::make_unique<tf2_ros::StaticTransformBroadcaster>(this);
 }
 
 void NDTMapPublisherNode::run()
 {
-  load_pcd_file();
+  load_map();
   publish();
 }
 
-void NDTMapPublisherNode::load_pcd_file()
+void NDTMapPublisherNode::load_map()
 {
   reset_pc_msg(m_map_pc);  // TODO(yunus.caliskan): Change in #102
   reset_pc_msg(m_source_pc);  // TODO(yunus.caliskan): Change in #102
-  read_from_pcd(m_file_name, m_source_pc);
+
+  geocentric_pose_t geo_pose{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+  if (!m_yaml_file_name.empty()) {
+    read_from_yaml(m_yaml_file_name, &geo_pose);
+  } else {
+    throw std::runtime_error("YAML file name empty\n");
+  }
+
+  if (!m_pcl_file_name.empty()) {
+    read_from_pcd(m_pcl_file_name, &m_source_pc);
+  } else {
+    throw std::runtime_error("PCD file name empty\n");
+  }
+
+  float64_t x(0.0), y(0.0), z(0.0);
+
+  GeographicLib::Geocentric earth(
+    GeographicLib::Constants::WGS84_a(),
+    GeographicLib::Constants::WGS84_f());
+
+  earth.Forward(
+    geo_pose.latitude,
+    geo_pose.longitude,
+    geo_pose.elevation,
+    x, y, z);
+  publish_earth_to_map_transform(x, y, z,
+    geo_pose.roll, geo_pose.pitch, geo_pose.yaw);
+
   m_ndt_map_ptr->insert(m_source_pc);
   map_to_pc();
+}
+
+void NDTMapPublisherNode::publish_earth_to_map_transform(
+  float64_t x, float64_t y, float64_t z,
+  float64_t roll, float64_t pitch, float64_t yaw)
+{
+  geometry_msgs::msg::TransformStamped tf;
+
+  tf.transform.translation.x = x;
+  tf.transform.translation.y = y;
+  tf.transform.translation.z = z;
+
+  tf2::Quaternion q;
+  q.setRPY(roll, pitch, yaw);
+  tf.transform.rotation = tf2::toMsg(q);
+  tf.header.frame_id = "earth";
+  tf.child_frame_id = "map";
+  m_earth_map_broadcaster->sendTransform(tf);
 }
 
 void NDTMapPublisherNode::map_to_pc()

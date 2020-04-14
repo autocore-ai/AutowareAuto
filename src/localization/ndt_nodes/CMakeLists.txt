@@ -4,16 +4,19 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt_nodes)
 
-#dependencies
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+find_package(GEOGRAPHICLIB REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
 find_package(ament_cmake_auto REQUIRED)
+
 find_package(autoware_auto_cmake REQUIRED)
 find_package(autoware_auto_common REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io)
-ament_auto_find_build_dependencies()
 
-# includes
-include_directories(include)
-include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+ament_auto_find_build_dependencies()
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIRS})
 
 set(NDT_NODES_LIB_SRC
     src/map_publisher.cpp
@@ -32,7 +35,10 @@ ${PROJECT_NAME} SHARED
 
 autoware_set_compile_options(${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+  ${PCL_LIBRARIES}
+  ${GeographicLib_LIBRARIES}
+  ${YAML_CPP_LIBRARIES})
 
 set(MAP_PUBLISHER_EXE ndt_map_publisher_exe)
 ament_auto_add_executable(${MAP_PUBLISHER_EXE} src/map_publisher_main.cpp)
@@ -53,7 +59,11 @@ if(BUILD_TESTING)
 
   ament_add_gtest(${NDT_NODES_TEST}
           test/test_map_publisher.cpp)
-  target_link_libraries(${NDT_NODES_TEST} ${PROJECT_NAME})
+  target_link_libraries(${NDT_NODES_TEST}
+    ${PROJECT_NAME}
+    ${GeographicLib_LIBRARIES}
+    ${YAML_CPP_LIBRARIES})
+
   ament_target_dependencies(${NDT_NODES_TEST} ${PROJECT_NAME})
 endif()
 

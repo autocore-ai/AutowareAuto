@@ -65,6 +65,9 @@ vim
 # ndt localization dependency for loading pcd files
 libpcl-dev
 
+# ndt georeferencing dependency
+libgeographic-dev
+
 # Doxygen
 bison
 flex

@@ -19,11 +19,13 @@
 #include <ndt_nodes/visibility_control.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ndt/ndt_map.hpp>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <string>
 #include <memory>
 #include "common/types.hpp"
 
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -32,12 +34,32 @@ namespace localization
 namespace ndt_nodes
 {
 
+/// struct to hold geocentric pose of map origin
+/// decribed as a latitude, longitude, and elevation
+/// along with an orientation: roll, pitch and yaw
+struct geocentric_pose_t
+{
+  float64_t latitude;
+  float64_t longitude;
+  float64_t elevation;
+  float64_t roll;
+  float64_t pitch;
+  float64_t yaw;
+};
+
+/// Read the map info from a yaml file. Throws if the file cannot be read.
+/// \param[in] yaml_file_name Name of the ymal file.
+/// \param[out] geo_pose Geocentric pose describing map orgin
+void NDT_NODES_PUBLIC read_from_yaml(
+  const std::string & yaml_file_name,
+  geocentric_pose_t * geo_pose);
+
 /// Read the pcd file into a PointCloud2 message. Throws if the file cannot be read.
 /// \param[in] file_name Name of the pcd file.
-/// \param[out] msg PointCloud2 message
+/// \param[out] msg Pointer to PointCloud2 message
 void NDT_NODES_PUBLIC read_from_pcd(
   const std::string & file_name,
-  sensor_msgs::msg::PointCloud2 & msg);
+  sensor_msgs::msg::PointCloud2 * msg);
 
 /// Node to read pcd files, transform to ndt maps and publish the resulting maps in PointCloud2
 /// format
@@ -51,7 +73,8 @@ public:
   /// \param map_topic The topic the maps will be published to.
   /// \param map_frame The frame of the map.
   /// \param map_config The VoxelGrid configuration of the underlying DynamicNDTMap
-  /// \param file_name The name of the file.
+  /// \param pcl_file_name The name of the pcl map data file in pcd format.
+  /// \param yaml_file_name The name of the yaml file with map orgin data.
   /// \param viz_map Boolean flag to choose whether to publish a visualizable point cloud.
   /// \param viz_map_topic The topic hte vizualizable map will be published to.
   NDTMapPublisherNode(
@@ -60,7 +83,8 @@ public:
     const std::string & map_topic,
     const std::string & map_frame,
     const MapConfig & map_config,
-    const std::string & file_name,
+    const std::string & pcl_file_name,
+    const std::string & yaml_file_name,
     const bool8_t viz_map = false,
     const std::string & viz_map_topic = ""
   );
@@ -84,17 +108,23 @@ public:
 private:
   /// Initialize and allocate memory for the point clouds that are used as intermediate
   /// representations during  conversions. & setup visualization publisher if required
-  /// \param map_frame Frame of the
+  /// \param map_frame Frame of the map
+  /// \param map_topic Topic name for ndt map
   /// \param viz_map_topic Topic name for map visualization
   void init(
     const std::string & map_frame,
+    const std::string & map_topic,
     const std::string & viz_map_topic);
 
   /// Read the pcd file with filename into a PointCloud2 message, transform it into an NDT
   /// representation and then serialize the ndt representation back into a PointCloud2 message
   /// that can be published.
   /// \param fn File name of the pcd file.
-  void load_pcd_file();
+  void load_map();
+
+  void publish_earth_to_map_transform(
+    float64_t x, float64_t y, float64_t z,
+    float64_t roll, float64_t pitch, float64_t yaw);
 
   /// Publish the loaded map file. If no new map is loaded, it will publish the
   /// previous map, or an empty map.
@@ -112,11 +142,13 @@ private:
   /// Can be removed when #102 is merged in.
   void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg);
 
+  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> m_earth_map_broadcaster;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pub;
   std::unique_ptr<ndt::DynamicNDTMap> m_ndt_map_ptr;
   sensor_msgs::msg::PointCloud2 m_map_pc;
   sensor_msgs::msg::PointCloud2 m_source_pc;
-  const std::string m_file_name;
+  const std::string m_pcl_file_name;
+  const std::string m_yaml_file_name;
   const bool8_t m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
   std::unique_ptr<MapConfig> m_map_config_ptr;
