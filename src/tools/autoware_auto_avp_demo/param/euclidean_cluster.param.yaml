@@ -1,0 +1,36 @@
+# config/vlp16_lexus_cluster.param.yaml
+---
+
+perception:
+  euclidean_cluster_cloud_node:
+    ros__parameters:
+      cloud_topic: "points_nonground"
+      cluster_topic: "points_clustered"
+      box_topic: "lidar_bounding_boxes"
+      max_cloud_size: 55000
+      downsample: False
+      use_lfit: True
+      use_z: True
+      cluster:
+        frame_id: "base_link"
+        min_cluster_size: 10
+        max_num_clusters: 256
+      hash:
+        min_x: -130.0
+        max_x:  130.0
+        min_y: -130.0
+        max_y:  130.0
+        side_length: 1.0
+      voxel:
+        min_point:
+          x: -130.0
+          y: -130.0
+          z: -130.0
+        max_point:
+          x: 130.0
+          y: 130.0
+          z: 130.0
+        voxel_size:
+          x: 0.2
+          y: 0.2
+          z: 0.2

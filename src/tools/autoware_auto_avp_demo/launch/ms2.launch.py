@@ -42,6 +42,8 @@ def generate_launch_description():
     be found at https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/24.
     """
     avp_demo_pkg_prefix = get_package_share_directory('autoware_auto_avp_demo')
+    euclidean_cluster_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/euclidean_cluster.param.yaml')
     map_downsampler_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/map_downsampler.param.yaml')
     map_publisher_param_file = os.path.join(
@@ -50,6 +52,8 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/map_state_estimator.param.yaml')
     odom_state_estimator_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/odom_state_estimator.param.yaml')
+    ray_ground_classifier_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
     rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms2.rviz')
 
     lgsvl_pkg_prefix = get_package_share_directory('lgsvl_interface')
@@ -65,6 +69,11 @@ def generate_launch_description():
 
     # Arguments
 
+    euclidean_cluster_param = DeclareLaunchArgument(
+        'euclidean_cluster_param_file',
+        default_value=euclidean_cluster_param_file,
+        description='Path to config file for Euclidean Clustering'
+    )
     lgsvl_interface_param = DeclareLaunchArgument(
         'lgsvl_interface_param_file',
         default_value=lgsvl_param_file,
@@ -95,6 +104,11 @@ def generate_launch_description():
         default_value=pc_filter_transform_param_file,
         description='Path to config file for Point Cloud Filter/Transform Nodes'
     )
+    ray_ground_classifier_param = DeclareLaunchArgument(
+        'ray_ground_classifier_param_file',
+        default_value=ray_ground_classifier_param_file,
+        description='Path to config file for Ray Ground Classifier'
+    )
     with_rviz_param = DeclareLaunchArgument(
         'with_rviz',
         default_value='True',
@@ -103,11 +117,11 @@ def generate_launch_description():
 
     # Nodes
 
-    lgsvl_interface = Node(
-        package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        output='screen',
-        parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
+    euclidean_clustering = Node(
+        package='euclidean_cluster_nodes',
+        node_executable='euclidean_cluster_exe',
+        node_namespace='perception',
+        parameters=[LaunchConfiguration('euclidean_cluster_param_file')]
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
@@ -122,6 +136,12 @@ def generate_launch_description():
         node_name='filter_transform_vlp16_rear',
         node_namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')]
+    )
+    lgsvl_interface = Node(
+        package='lgsvl_interface',
+        node_executable='lgsvl_interface_exe',
+        output='screen',
+        parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
     )
     map_downsampler = Node(
         package='voxel_grid_nodes',
@@ -147,6 +167,12 @@ def generate_launch_description():
         node_namespace='localization/odom',
         parameters=[LaunchConfiguration('odom_state_estimator_param_file')]
     )
+    ray_ground_classifier = Node(
+        package='ray_ground_classifier_nodes',
+        node_executable='ray_ground_classifier_cloud_node_exe',
+        node_namespace='perception',
+        parameters=[LaunchConfiguration('ray_ground_classifier_param_file')]
+    )
     rviz2 = Node(
         package='rviz2',
         node_executable='rviz2',
@@ -162,20 +188,24 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        euclidean_cluster_param,
         lgsvl_interface_param,
         map_downsampler_param,
         map_publisher_param,
         map_state_estimator_param,
         odom_state_estimator_param,
         pc_filter_transform_param,
+        ray_ground_classifier_param,
         with_rviz_param,
         urdf_publisher,
-        lgsvl_interface,
+        euclidean_clustering,
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
+        lgsvl_interface,
         map_downsampler,
         map_publisher,
         map_state_estimator,
         odom_state_estimator,
+        ray_ground_classifier,
         rviz2
     ])
