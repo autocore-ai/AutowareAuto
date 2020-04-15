@@ -145,6 +145,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
     ++y_it;
     ++z_it;
     ++intensity_it;
+    ++point_cloud_idx;
   }
   resize_pcl_msg(m_filtered_transformed_msg, point_cloud_idx);
   return m_filtered_transformed_msg;
