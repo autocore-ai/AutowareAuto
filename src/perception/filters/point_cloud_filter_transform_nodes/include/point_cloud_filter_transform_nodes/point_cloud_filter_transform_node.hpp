@@ -160,68 +160,72 @@ protected:
     return pt_final;
   }
 
-  class intensity_iterator_wrapper {
-    private:
-      sensor_msgs::PointCloud2ConstIterator<uint8_t> m_intensity_it_uint8;
-      sensor_msgs::PointCloud2ConstIterator<float32_t> m_intensity_it_float32;
-      decltype(sensor_msgs::msg::PointField::datatype) m_intensity_datatype;
-    public:
-      intensity_iterator_wrapper(const PointCloud2 & msg) :
-        m_intensity_it_uint8(msg, "intensity"),
-        m_intensity_it_float32(msg, "intensity")
-      {
-          auto && intensity_field_it = std::find_if(std::cbegin(msg.fields), std::cend(msg.fields), [](const sensor_msgs::msg::PointField & field){return field.name == "intensity";});
-          m_intensity_datatype = (*intensity_field_it).datatype;
-          switch(m_intensity_datatype) {
-            case sensor_msgs::msg::PointField::UINT8:
-            case sensor_msgs::msg::PointField::FLOAT32:
-              break;
-            default:
-              throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-          }
-      }
+  class intensity_iterator_wrapper
+  {
+private:
+    sensor_msgs::PointCloud2ConstIterator<uint8_t> m_intensity_it_uint8;
+    sensor_msgs::PointCloud2ConstIterator<float32_t> m_intensity_it_float32;
+    decltype(sensor_msgs::msg::PointField::datatype) m_intensity_datatype;
 
-      void next()
-      {
-        switch(m_intensity_datatype) {
-          case sensor_msgs::msg::PointField::UINT8:
-            ++m_intensity_it_uint8;
-            break;
-          case sensor_msgs::msg::PointField::FLOAT32:
-            ++m_intensity_it_float32;
-            break;
-          default:
-            throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-        }
+public:
+    intensity_iterator_wrapper(const PointCloud2 & msg)
+    : m_intensity_it_uint8(msg, "intensity"),
+      m_intensity_it_float32(msg, "intensity")
+    {
+      auto && intensity_field_it =
+        std::find_if(std::cbegin(msg.fields), std::cend(msg.fields),
+          [](const sensor_msgs::msg::PointField & field) {return field.name == "intensity";});
+      m_intensity_datatype = (*intensity_field_it).datatype;
+      switch (m_intensity_datatype) {
+        case sensor_msgs::msg::PointField::UINT8:
+        case sensor_msgs::msg::PointField::FLOAT32:
+          break;
+        default:
+          throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
       }
+    }
 
-      bool8_t eof()
-      {
-        switch(m_intensity_datatype) {
-          // For some reason, the equality operator (==) does not work with PointCloud2ConstIterator
-          case sensor_msgs::msg::PointField::UINT8:
-            return !(m_intensity_it_uint8 != m_intensity_it_uint8.end());
-          case sensor_msgs::msg::PointField::FLOAT32:
-            return !(m_intensity_it_float32 != m_intensity_it_float32.end());
-          default:
-            throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-        }
+    void next()
+    {
+      switch (m_intensity_datatype) {
+        case sensor_msgs::msg::PointField::UINT8:
+          ++m_intensity_it_uint8;
+          break;
+        case sensor_msgs::msg::PointField::FLOAT32:
+          ++m_intensity_it_float32;
+          break;
+        default:
+          throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
       }
+    }
 
-      template<typename PointFieldValueT>
-      void get_curent_value(PointFieldValueT & point_field_value)
-      {
-        switch(m_intensity_datatype) {
-          case sensor_msgs::msg::PointField::UINT8:
-            point_field_value = *m_intensity_it_uint8;
-            break;
-          case sensor_msgs::msg::PointField::FLOAT32:
-            point_field_value = *m_intensity_it_float32;
-            break;
-          default:
-            throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-        }
+    bool8_t eof()
+    {
+      switch (m_intensity_datatype) {
+        // For some reason, the equality operator (==) does not work with PointCloud2ConstIterator
+        case sensor_msgs::msg::PointField::UINT8:
+          return !(m_intensity_it_uint8 != m_intensity_it_uint8.end());
+        case sensor_msgs::msg::PointField::FLOAT32:
+          return !(m_intensity_it_float32 != m_intensity_it_float32.end());
+        default:
+          throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
       }
+    }
+
+    template<typename PointFieldValueT>
+    void get_curent_value(PointFieldValueT & point_field_value)
+    {
+      switch (m_intensity_datatype) {
+        case sensor_msgs::msg::PointField::UINT8:
+          point_field_value = *m_intensity_it_uint8;
+          break;
+        case sensor_msgs::msg::PointField::FLOAT32:
+          point_field_value = *m_intensity_it_float32;
+          break;
+        default:
+          throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+      }
+    }
   };
 
 private:
