@@ -133,8 +133,10 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
     pt.intensity = *intensity_it;
 
     if (point_not_filtered(pt)) {
+      auto transformed_point = transform_point(pt);
+      transformed_point.intensity = pt.intensity;
       if (!add_point_to_cloud(
-          m_filtered_transformed_msg, transform_point(pt), point_cloud_idx))
+          m_filtered_transformed_msg, transformed_point, point_cloud_idx))
       {
         throw std::runtime_error(
                 "Overran cloud msg point capacity");
