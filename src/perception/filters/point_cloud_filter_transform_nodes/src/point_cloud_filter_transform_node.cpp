@@ -115,7 +115,8 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
   sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
   sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
-  sensor_msgs::PointCloud2ConstIterator<uint8_t> intensity_it(msg, "intensity");
+
+  auto && intensity_it = intensity_iterator_wrapper(msg);
 
   auto point_cloud_idx = 0U;
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
@@ -124,13 +125,13 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   while (x_it != x_it.end() &&
     y_it != y_it.end() &&
     z_it != z_it.end() &&
-    intensity_it != intensity_it.end())
+    !intensity_it.eof())
   {
     PointXYZIF pt;
     pt.x = *x_it;
     pt.y = *y_it;
     pt.z = *z_it;
-    pt.intensity = *intensity_it;
+    intensity_it.get_curent_value(pt.intensity);
 
     if (point_not_filtered(pt)) {
       auto transformed_point = transform_point(pt);
@@ -146,7 +147,8 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
     ++x_it;
     ++y_it;
     ++z_it;
-    ++intensity_it;
+    intensity_it.next();
+
     ++point_cloud_idx;
   }
   resize_pcl_msg(m_filtered_transformed_msg, point_cloud_idx);
