@@ -21,8 +21,8 @@
 #define MOTION_MODEL__MOTION_MODEL_HPP_
 
 #include <common/types.hpp>
+#include <Eigen/Core>
 #include <chrono>
-#include "Eigen/Core"
 #include "motion_model/visibility_control.hpp"
 
 using autoware::common::types::float32_t;
