@@ -83,7 +83,8 @@ public:
     const std::string & sim_cmd_topic,
     const std::string & sim_state_cmd_topic,
     const std::string & sim_state_report_topic,
-    const std::string & sim_odom_topic,
+    const std::string & sim_nav_odom_topic,
+    const std::string & sim_veh_odom_topic,
     const std::string & kinematic_state_topic,
     Table1D && throttle_table,
     Table1D && brake_table,
@@ -120,8 +121,9 @@ private:
     m_kinematic_state_pub{};
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_pub{};
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr m_pose_pub{};
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_odom_sub{};
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_nav_odom_sub{};
   rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_sub{};
+  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleOdometry>::SharedPtr m_veh_odom_sub{};
 
   Table1D m_throttle_table;
   Table1D m_brake_table;

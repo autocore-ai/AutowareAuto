@@ -41,7 +41,8 @@ LgsvlInterface::LgsvlInterface(
   const std::string & sim_cmd_topic,
   const std::string & sim_state_cmd_topic,
   const std::string & sim_state_report_topic,
-  const std::string & sim_odom_topic,
+  const std::string & sim_nav_odom_topic,
+  const std::string & sim_veh_odom_topic,
   const std::string & kinematic_state_topic,
   Table1D && throttle_table,
   Table1D && brake_table,
@@ -100,8 +101,9 @@ LgsvlInterface::LgsvlInterface(
   m_state_pub = node.create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>(
     sim_state_cmd_topic, rclcpp::QoS{10});
   // Make subscribers
-  if (!sim_odom_topic.empty() && ("null" != sim_odom_topic)) {
-    m_odom_sub = node.create_subscription<nav_msgs::msg::Odometry>(sim_odom_topic, rclcpp::QoS{10},
+  if (!sim_nav_odom_topic.empty() && ("null" != sim_nav_odom_topic)) {
+    m_nav_odom_sub = node.create_subscription<nav_msgs::msg::Odometry>(sim_nav_odom_topic,
+        rclcpp::QoS{10},
         [this](nav_msgs::msg::Odometry::SharedPtr msg) {on_odometry(*msg);});
     // Ground truth state/pose publishers only work if there's a ground truth input
     m_kinematic_state_pub = node.create_publisher<autoware_auto_msgs::msg::VehicleKinematicState>(
@@ -116,11 +118,16 @@ LgsvlInterface::LgsvlInterface(
       m_tf_pub = node.create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS{10});
     }
   }
+
   m_state_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleStateReport>(
     sim_state_report_topic,
     rclcpp::QoS{10},
     [this](autoware_auto_msgs::msg::VehicleStateReport::SharedPtr msg) {on_state_report(*msg);});
-  // TODO(c.ho) real odometry
+
+  m_veh_odom_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleOdometry>(
+    sim_veh_odom_topic,
+    rclcpp::QoS{10},
+    [this](autoware_auto_msgs::msg::VehicleOdometry::SharedPtr msg) {odometry() = *msg;});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,17 +244,18 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
       vse.state.heading.imag = static_cast<decltype(vse.state.heading.imag)>(q.z * inv_mag);
       // LGSVL is y-up and left handed
     }
-    vse.state.longitudinal_velocity_mps =
-      static_cast<decltype(vse.state.longitudinal_velocity_mps)>(msg.twist.twist.linear.x);
+
+    // Get values from vehicle odometry
+    vse.state.longitudinal_velocity_mps = get_odometry().velocity_mps;
+    vse.state.front_wheel_angle_rad = get_odometry().front_wheel_angle_rad;
+    vse.state.rear_wheel_angle_rad = get_odometry().rear_wheel_angle_rad;
+
     vse.state.lateral_velocity_mps =
       static_cast<decltype(vse.state.lateral_velocity_mps)>(msg.twist.twist.linear.y);
     // TODO(jitrc): populate with correct value when acceleration is available from simulator
     vse.state.acceleration_mps2 = 0.0F;
     vse.state.heading_rate_rps =
       static_cast<decltype(vse.state.heading_rate_rps)>(msg.twist.twist.angular.z);
-    // TODO(jitrc): populate with correct value when steering angle is available from simulator
-    vse.state.front_wheel_angle_rad = 0.0F;
-    vse.state.rear_wheel_angle_rad = 0.0F;
 
     m_kinematic_state_pub->publish(vse);
   }
@@ -292,16 +300,6 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     tf2_msgs::msg::TFMessage tf_msg{};
     tf_msg.transforms.emplace_back(std::move(tf));
     m_tf_pub->publish(tf_msg);
-  }
-
-  {
-    autoware_auto_msgs::msg::VehicleOdometry odom_msg{};
-    odom_msg.stamp = msg.header.stamp;
-    odom_msg.velocity_mps = static_cast<decltype(odom_msg.velocity_mps)>(msg.twist.twist.linear.x);
-    // TODO(jitrc): populate with correct value when steering angle is available from simulator
-    odom_msg.front_wheel_angle_rad = 0.0F;
-    odom_msg.rear_wheel_angle_rad = 0.0F;
-    odometry() = odom_msg;
   }
 }
 

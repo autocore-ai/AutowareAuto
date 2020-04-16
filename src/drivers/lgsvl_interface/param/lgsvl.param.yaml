@@ -19,7 +19,8 @@ lgsvl_interface:
       control_command_topic: "lgsvl/vehicle_control_cmd"
       state_command_topic: "lgsvl/vehicle_state_cmd"
       state_report_topic: "lgsvl/state_report"
-      odometry_topic: "lgsvl/gnss_odom"
+      nav_odometry_topic: "lgsvl/gnss_odom"
+      veh_odometry_topic: "lgsvl/vehicle_odom"
       kinematic_state_topic: "vehicle_kinematic_state"
       throttle:
         domain: [0.0, 3.0]

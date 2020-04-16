@@ -38,13 +38,15 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
     declare_parameter("lgsvl.state_command_topic").get<std::string>();
   const auto sim_state_rpt_topic =
     declare_parameter("lgsvl.state_report_topic").get<std::string>();
+  const auto sim_veh_odom_topic =
+    declare_parameter("lgsvl.veh_odometry_topic").get<std::string>();
   // Optional
-  const auto sim_odom_topic_param =
-    declare_parameter("lgsvl.odometry_topic");
-  const std::string sim_odom_topic =
-    rclcpp::ParameterType::PARAMETER_NOT_SET == sim_odom_topic_param.get_type() ?
+  const auto sim_nav_odom_topic_param =
+    declare_parameter("lgsvl.nav_odometry_topic");
+  const std::string sim_nav_odom_topic =
+    rclcpp::ParameterType::PARAMETER_NOT_SET == sim_nav_odom_topic_param.get_type() ?
     "" :
-    sim_odom_topic_param.get<std::string>();
+    sim_nav_odom_topic_param.get<std::string>();
   const auto kinematic_state_topic =
     declare_parameter("lgsvl.kinematic_state_topic").get<std::string>();
   const auto table = [this](const std::string & prefix_raw) -> Table1D {
@@ -67,7 +69,8 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
       sim_ctrl_cmd_topic,
       sim_state_cmd_topic,
       sim_state_rpt_topic,
-      sim_odom_topic,
+      sim_nav_odom_topic,
+      sim_veh_odom_topic,
       kinematic_state_topic,
       table("throttle"),
       table("brake"),

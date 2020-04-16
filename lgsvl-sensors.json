@@ -176,7 +176,7 @@
     "type": "Vehicle Odometry",
     "name": "Vehicle Odometry Sensor",
     "params": {
-      "Topic": "/lgsvl/vehicle_odometry"
+      "Topic": "/lgsvl/vehicle_odom"
     }
   },
   {
