@@ -19,8 +19,6 @@
 #include <recordreplay_planner_actions/action/record_trajectory.hpp>
 #include <recordreplay_planner_actions/action/replay_trajectory.hpp>
 
-
-#include <tf2_msgs/msg/tf_message.hpp>
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
@@ -41,7 +39,6 @@ namespace planning
 namespace recordreplay_planner_node
 {
 using PlannerPtr = std::unique_ptr<motion::planning::recordreplay_planner::RecordReplayPlanner>;
-using tf2_msgs::msg::TFMessage;
 using autoware_auto_msgs::msg::BoundingBoxArray;
 using autoware_auto_msgs::msg::Trajectory;
 using recordreplay_planner_actions::action::RecordTrajectory;

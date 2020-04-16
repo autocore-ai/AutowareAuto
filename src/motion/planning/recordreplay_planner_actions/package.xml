@@ -11,15 +11,9 @@
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <depend>recordreplay_planner</depend>
-  <depend>rclcpp</depend>
-  <depend>rclcpp_action</depend>
   <depend>action_msgs</depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
-
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

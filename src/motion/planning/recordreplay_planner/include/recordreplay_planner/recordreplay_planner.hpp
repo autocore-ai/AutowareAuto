@@ -21,8 +21,8 @@
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_common/config.hpp>
 
-#include <ostream>
 #include <deque>
+#include <string>
 
 namespace motion
 {
@@ -75,9 +75,12 @@ public:
   void set_heading_weight(double heading_weight);
   double get_heading_weight();
 
-  // Minimum distance configuration
   void set_min_record_distance(double min_record_distance);
   double get_min_record_distance() const;
+
+  // Writing/Loading buffered trajectory information to/from disk
+  void writeTrajectoryBufferToFile(const std::string & record_path);
+  void readTrajectoryBufferFromFile(const std::string & replay_path);
 
   // Update bounding boxes to new perception
   void update_bounding_boxes(const BoundingBoxArray & bounding_boxes);

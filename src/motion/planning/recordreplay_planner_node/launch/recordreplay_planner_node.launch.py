@@ -13,37 +13,34 @@
 # limitations under the License.
 
 
+import ament_index_python
 import launch
 import launch_ros.actions
-import launch.substitutions
-import ros2launch.api
-
-
-def get_param(package_name, param_file):
-    return ros2launch.api.get_share_file_path_from_package(
-        package_name=package_name,
-        file_name=param_file
-    )
 
 
 def generate_launch_description():
     """Launch recordreplay_planner_node with default configuration."""
-    # --------------------------------- Params -------------------------------
-    recordreplay_planner_param = launch.actions.DeclareLaunchArgument(
-        'recordreplay_planner_param',
-        default_value=[
-            get_param('recordreplay_planner_node', 'defaults.param.yaml')
-        ],
-        description='Path to config file for recordreplay planner node')
-
     # -------------------------------- Nodes-----------------------------------
     recordreplay_planner_node = launch_ros.actions.Node(
         package='recordreplay_planner_node',
         node_executable='recordreplay_planner_node_exe',
+        node_name='recordreplay_planner',
         output='screen',
-        parameters=[launch.substitutions.LaunchConfiguration('recordreplay_planner_param')])
+        parameters=[
+            "{}/defaults.param.yaml".format(
+                ament_index_python.get_package_share_directory(
+                    "recordreplay_planner_node"
+                )
+            ),
+        ],
+        remappings=[
+            ('vehicle_state', '/vehicle_kinematic_state'),
+            ('planned_trajectory', '/trajectory'),
+            ('obstacle_bounding_boxes', '/bounding_boxes'),
+        ]
+    )
 
     ld = launch.LaunchDescription([
-        recordreplay_planner_param,
-        recordreplay_planner_node])
+        recordreplay_planner_node]
+    )
     return ld

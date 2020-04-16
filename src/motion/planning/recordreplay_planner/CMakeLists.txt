@@ -4,9 +4,9 @@ project(recordreplay_planner)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_geometry REQUIRED)
 
 ament_auto_find_build_dependencies()
+
 ### Compile options
 set(CMAKE_CXX_STANDARD 14)
 
@@ -14,8 +14,6 @@ set(CMAKE_CXX_STANDARD 14)
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner/recordreplay_planner.cpp
 )
-
-ament_target_dependencies(${PROJECT_NAME} "autoware_auto_geometry")
 
 ### Test
 if(BUILD_TESTING)

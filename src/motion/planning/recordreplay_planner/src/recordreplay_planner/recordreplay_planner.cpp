@@ -23,7 +23,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <memory>
+#include <string>
 #include <vector>
+
+#include "rcl/types.h"
+#include "rosidl_typesupport_cpp/message_type_support.hpp"
+#include "rmw/rmw.h"
+#include "rmw/serialized_message.h"
 
 namespace motion
 {
@@ -215,6 +223,131 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   return trajectory;
 }
 
+void RecordReplayPlanner::writeTrajectoryBufferToFile(const std::string & record_path)
+{
+  if (record_path.empty()) {
+    throw std::runtime_error("record_path cannot be empty");
+  }
+
+  rcl_serialized_message_t serialized_msg_;
+
+  serialized_msg_ = rmw_get_zero_initialized_serialized_message();
+  auto allocator = rcutils_get_default_allocator();
+  auto initial_capacity = 0u;
+  auto ret = rmw_serialized_message_init(
+    &serialized_msg_,
+    initial_capacity,
+    &allocator);
+  if (ret != RCL_RET_OK) {
+    throw std::runtime_error("failed to initialize serialized message");
+  }
+
+  std::ofstream file;
+  file.open(record_path, std::fstream::binary);
+
+  if (file.is_open()) {
+    for (auto msg : m_record_buffer) {
+      auto state_msg = std::make_shared<State>(msg);
+
+      auto state_ts =
+        rosidl_typesupport_cpp::get_message_type_support_handle<State>();
+
+      auto ret = rmw_serialize(state_msg.get(), state_ts, &serialized_msg_);
+      if (ret != RMW_RET_OK) {
+        throw std::runtime_error("failed to serialize message");
+      } else {
+        const char * ref(reinterpret_cast<char *>(serialized_msg_.buffer));
+        file.write(ref, serialized_msg_.buffer_length);
+      }
+    }
+  } else {
+    throw std::runtime_error("failed to open file for writing");
+  }
+  file.close();
+}
+
+void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & replay_path)
+{
+  if (replay_path.empty()) {
+    throw std::runtime_error("replay_path cannot be empty");
+  }
+
+  // Init serialized message buffer
+  rcl_serialized_message_t serialized_state_msg =
+    rmw_get_zero_initialized_serialized_message();
+  auto allocator = rcutils_get_default_allocator();
+  auto initial_capacity = 0u;
+  auto ret = rmw_serialized_message_init(
+    &serialized_state_msg,
+    initial_capacity,
+    &allocator);
+  if (ret != RCL_RET_OK) {
+    throw std::runtime_error("failed to initialize serialized message");
+  }
+
+  // Clear current trajectory deque
+  clear_record();
+
+  // Open file
+  std::ifstream file;
+  file.open(replay_path, std::fstream::binary);
+
+  // Should be enough - long frame names might need a larger buffer size
+  auto upper_bound_buffer_length = 200;
+  auto current_read_buffer_length = upper_bound_buffer_length;
+  char serialized_msg_buffer[200];
+
+  rmw_serialized_message_t serialized_message_struct;
+  serialized_message_struct.buffer =
+    reinterpret_cast<unsigned char *>(serialized_msg_buffer);
+  serialized_message_struct.buffer_length = upper_bound_buffer_length;
+  serialized_message_struct.buffer_capacity = upper_bound_buffer_length;
+  serialized_message_struct.allocator = rcutils_get_default_allocator();
+
+  if (file.is_open()) {
+    // Save end of file ptr
+    file.seekg(0, std::ios::end);
+    auto file_end = file.tellg();
+    file.seekg(0, std::ios::beg);
+    // Read from file
+    while (file.read(serialized_msg_buffer, current_read_buffer_length)) {
+      // Deserialize data
+      auto state_msg = std::make_shared<State>();
+      auto state_ts =
+        rosidl_typesupport_cpp::get_message_type_support_handle<State>();
+      ret = rmw_deserialize(&serialized_message_struct, state_ts,
+          state_msg.get());
+      if (ret != RMW_RET_OK) {
+        throw std::runtime_error("failed to deserialize message");
+      }
+
+      // Fill deque buffer
+      record_state(*state_msg.get());
+
+      // Reserialize data to get its length in binary file
+      ret = rmw_serialize(state_msg.get(), state_ts, &serialized_state_msg);
+      if (ret != RMW_RET_OK) {
+        throw std::runtime_error("failed to serialize message");
+      }
+
+      // Move filestream ptr to start of next message
+      int32_t offset =
+        serialized_state_msg.buffer_length - current_read_buffer_length;
+      file.seekg(offset, std::ios_base::cur);
+
+      // We have to resize the buffer to read the whole file
+      auto file_remaining = file_end - file.tellg();
+      if (file_remaining == 0) {
+        break;
+      } else if (file_remaining < current_read_buffer_length) {
+        current_read_buffer_length = file_remaining;
+      }
+    }
+  } else {
+    throw std::runtime_error("failed to open file for reading");
+  }
+  file.close();
+}
 
 void RecordReplayPlanner::update_bounding_boxes(const BoundingBoxArray & bounding_boxes)
 {

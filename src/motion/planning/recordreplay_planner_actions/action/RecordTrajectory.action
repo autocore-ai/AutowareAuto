@@ -1,6 +1,6 @@
 # RecordTrajectory.action
 
+string record_path
 ---
-int32[] current_length
 ---
-int32 final_length
+int32 current_length

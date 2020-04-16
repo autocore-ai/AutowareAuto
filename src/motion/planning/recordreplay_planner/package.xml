@@ -10,17 +10,22 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
   <depend>autoware_auto_msgs</depend>
   <depend>autoware_auto_geometry</depend>
   <depend>geometry_msgs</depend>
-  <depend>time_utils</depend>
   <depend>motion_common</depend>
+  <depend>rcutils</depend>
+  <depend>rcl</depend>
+  <depend>rmw</depend>
+  <depend>rmw_fastrtps_cpp</depend>
+  <depend>rosidl_typesupport_cpp</depend>
+  <depend>time_utils</depend>
 
   <build_depend>motion_testing</build_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>autoware_auto_geometry</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

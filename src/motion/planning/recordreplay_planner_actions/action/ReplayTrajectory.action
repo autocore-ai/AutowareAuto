@@ -1,6 +1,6 @@
 # ReplayTrajectory.action
 
+string replay_path
 ---
-int32[] current_length
 ---
-int32 final_length
+int32 remaining_length

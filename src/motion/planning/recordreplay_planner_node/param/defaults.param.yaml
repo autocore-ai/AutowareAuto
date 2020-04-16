@@ -1,9 +1,6 @@
 
 recordreplay_planner:
   ros__parameters:
-    ego_topic: "vehicle_kinematic_state"
-    trajectory_topic: "trajectory"
-    bounding_boxes_topic: "bounding_boxes"
     heading_weight: 0.1
     min_record_distance: 0.5
     vehicle:

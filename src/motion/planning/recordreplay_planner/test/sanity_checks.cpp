@@ -30,6 +30,8 @@
 #include <chrono>
 #include <set>
 #include <algorithm>
+#include <string>
+#include <cstdio>
 
 using motion::planning::recordreplay_planner::RecordReplayPlanner;
 using std::chrono::system_clock;
@@ -396,4 +398,47 @@ TEST(recordreplay_geometry_checks, collision_check) {
         aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
     EXPECT_TRUE(collision);
   }
+}
+
+// Test write/read trajectory to/from file
+TEST(RecordreplayWriteReadTrajectory, WriteReadTrajectory)
+{
+  std::string file_name("write_test.trajectory");
+
+  const auto N = 5;
+  auto planner = helper_create_and_record_example(N);
+
+  // Write, clear buffer and read the written data again
+  planner.writeTrajectoryBufferToFile(file_name);
+
+  planner.clear_record();
+  EXPECT_EQ(planner.get_record_length(), 0);
+
+  planner.readTrajectoryBufferFromFile(file_name);
+
+  EXPECT_EQ(std::remove(file_name.c_str()), 0);
+  EXPECT_EQ(planner.get_record_length(), 5);
+
+  const auto t0 = system_clock::from_time_t({});
+  auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
+
+  for (uint32_t k = {}; k < N; ++k) {
+    EXPECT_EQ(1.0F * k, trajectory.points[k].x);
+  }
+}
+
+TEST(RecordreplayWriteReadTrajectory, writeTrajectoryEmptyPath)
+{
+  const auto N = 5;
+  auto planner = helper_create_and_record_example(N);
+
+  ASSERT_THROW(planner.writeTrajectoryBufferToFile(""), std::runtime_error);
+}
+
+TEST(RecordreplayWriteReadTrajectory, readTrajectoryEmptyPath)
+{
+  const auto N = 5;
+  auto planner = helper_create_and_record_example(N);
+
+  ASSERT_THROW(planner.readTrajectoryBufferFromFile(""), std::runtime_error);
 }
