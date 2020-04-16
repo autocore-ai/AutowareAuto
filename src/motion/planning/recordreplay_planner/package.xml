@@ -24,6 +24,7 @@
   <depend>time_utils</depend>
 
   <build_depend>motion_testing</build_depend>
+  <build_depend>autoware_auto_common</build_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

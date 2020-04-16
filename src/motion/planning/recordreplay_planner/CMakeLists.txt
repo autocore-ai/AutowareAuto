@@ -4,6 +4,8 @@ project(recordreplay_planner)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+find_package(autoware_auto_geometry REQUIRED)
 
 ament_auto_find_build_dependencies()
 

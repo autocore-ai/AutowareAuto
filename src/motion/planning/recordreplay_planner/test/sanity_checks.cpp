@@ -26,6 +26,7 @@
 
 #include <geometry/intersection.hpp>
 #include <geometry/vehicle_bounding_box.hpp>
+#include <common/types.hpp>
 
 #include <chrono>
 #include <set>
@@ -47,6 +48,9 @@ using autoware::common::geometry::intersect;
 using autoware::common::geometry::norm_2d;
 using autoware::common::geometry::minus_2d;
 using autoware::common::geometry::compute_boundingbox_from_trajectorypoint;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 const VehicleConfig test_vehicle_params{1.0, 1.0, 0.5, 0.5, 1500, 12, 2.0, 0.5, 0.2};
 
@@ -88,9 +92,9 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
 
   // Test: Check that the plan returned has the expected time length
   auto trajectory = planner_.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
-  double trajectory_time_length = trajectory.points[N - 1].time_from_start.sec + 1e-9F *
+  float64_t trajectory_time_length = trajectory.points[N - 1].time_from_start.sec + 1e-9F *
     trajectory.points[N - 1].time_from_start.nanosec;
-  EXPECT_EQ(std::chrono::duration<float>(trajectory_time_length), 1.0F * (N - 1) * time_increment);
+  EXPECT_EQ(std::chrono::duration<float32_t>(trajectory_time_length), 1.0F * (N - 1) * time_increment);
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -314,7 +318,7 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
   // https://stackoverflow.com/questions/2620862/using-custom-stdset-comparator
   struct point_compare
   {
-    bool operator()(const Point32 & p1, const Point32 & p2) const noexcept
+    bool8_t operator()(const Point32 & p1, const Point32 & p2) const noexcept
     {
       const auto eps = 1e-6;  // close enough
       if (std::abs(p2.x - p1.x) > eps) {

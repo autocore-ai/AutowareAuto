@@ -20,9 +20,13 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_common/config.hpp>
+#include <common/types.hpp>
 
 #include <deque>
 #include <string>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 namespace motion
 {
@@ -50,8 +54,8 @@ public:
   explicit RecordReplayPlanner(const VehicleConfig & vehicle_param);
 
   // Record and replay control
-  bool is_recording() const noexcept;
-  bool is_replaying() const noexcept;
+  bool8_t is_recording() const noexcept;
+  bool8_t is_replaying() const noexcept;
   void start_recording() noexcept;
   void stop_recording() noexcept;
   void start_replaying() noexcept;
@@ -72,11 +76,11 @@ public:
   std::size_t get_record_length() const noexcept;
 
   // Heading weight configuration
-  void set_heading_weight(double heading_weight);
-  double get_heading_weight();
+  void set_heading_weight(float64_t heading_weight);
+  float64_t get_heading_weight();
 
-  void set_min_record_distance(double min_record_distance);
-  double get_min_record_distance() const;
+  void set_min_record_distance(float64_t min_record_distance);
+  float64_t get_min_record_distance() const;
 
   // Writing/Loading buffered trajectory information to/from disk
   void writeTrajectoryBufferToFile(const std::string & record_path);
@@ -93,8 +97,8 @@ private:
   RECORDREPLAY_PLANNER_LOCAL std::size_t get_closest_state(const State & current_state);
 
   // Weight of heading in computations of differences between states
-  double m_heading_weight = 0.1;
-  double m_min_record_distance = 0.0;
+  float64_t m_heading_weight = 0.1;
+  float64_t m_min_record_distance = 0.0;
   VehicleConfig m_vehicle_param;
 
   std::deque<State> m_record_buffer;

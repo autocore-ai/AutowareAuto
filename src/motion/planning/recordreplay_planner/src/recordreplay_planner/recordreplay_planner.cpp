@@ -20,6 +20,7 @@
 #include <geometry/vehicle_bounding_box.hpp>
 #include <time_utils/time_utils.hpp>
 #include <motion_common/motion_common.hpp>
+#include <common/types.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -32,6 +33,11 @@
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 #include "rmw/rmw.h"
 #include "rmw/serialized_message.h"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+using autoware::common::types::uchar8_t;
+using autoware::common::types::float64_t;
 
 namespace motion
 {
@@ -50,12 +56,12 @@ RecordReplayPlanner::RecordReplayPlanner(const VehicleConfig & vehicle_param)
 }
 
 // These may do more in the future
-bool RecordReplayPlanner::is_recording() const noexcept
+bool8_t RecordReplayPlanner::is_recording() const noexcept
 {
   return m_recordreplaystate == RecordReplayState::RECORDING;
 }
 
-bool RecordReplayPlanner::is_replaying() const noexcept
+bool8_t RecordReplayPlanner::is_replaying() const noexcept
 {
   return m_recordreplaystate == RecordReplayState::REPLAYING;
 }
@@ -91,7 +97,7 @@ std::size_t RecordReplayPlanner::get_record_length() const noexcept
 }
 
 
-void RecordReplayPlanner::set_heading_weight(double heading_weight)
+void RecordReplayPlanner::set_heading_weight(float64_t heading_weight)
 {
   if (heading_weight < 0.0) {
     throw std::domain_error{"Negative weights do not make sense"};
@@ -99,12 +105,12 @@ void RecordReplayPlanner::set_heading_weight(double heading_weight)
   m_heading_weight = heading_weight;
 }
 
-double RecordReplayPlanner::get_heading_weight()
+float64_t RecordReplayPlanner::get_heading_weight()
 {
   return m_heading_weight;
 }
 
-void RecordReplayPlanner::set_min_record_distance(double min_record_distance)
+void RecordReplayPlanner::set_min_record_distance(float64_t min_record_distance)
 {
   if (min_record_distance < 0.0) {
     throw std::domain_error{"Negative minumum distance do not make sense"};
@@ -112,7 +118,7 @@ void RecordReplayPlanner::set_min_record_distance(double min_record_distance)
   m_min_record_distance = min_record_distance;
 }
 
-double RecordReplayPlanner::get_min_record_distance() const
+float64_t RecordReplayPlanner::get_min_record_distance() const
 {
   return m_min_record_distance;
 }
@@ -256,7 +262,7 @@ void RecordReplayPlanner::writeTrajectoryBufferToFile(const std::string & record
       if (ret != RMW_RET_OK) {
         throw std::runtime_error("failed to serialize message");
       } else {
-        const char * ref(reinterpret_cast<char *>(serialized_msg_.buffer));
+        const char8_t * ref(reinterpret_cast<char8_t *>(serialized_msg_.buffer));
         file.write(ref, serialized_msg_.buffer_length);
       }
     }
@@ -295,11 +301,11 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
   // Should be enough - long frame names might need a larger buffer size
   auto upper_bound_buffer_length = 200;
   auto current_read_buffer_length = upper_bound_buffer_length;
-  char serialized_msg_buffer[200];
+  char8_t serialized_msg_buffer[200];
 
   rmw_serialized_message_t serialized_message_struct;
   serialized_message_struct.buffer =
-    reinterpret_cast<unsigned char *>(serialized_msg_buffer);
+    reinterpret_cast<uchar8_t *>(serialized_msg_buffer);
   serialized_message_struct.buffer_length = upper_bound_buffer_length;
   serialized_message_struct.buffer_capacity = upper_bound_buffer_length;
   serialized_message_struct.allocator = rcutils_get_default_allocator();
