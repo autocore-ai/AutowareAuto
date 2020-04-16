@@ -94,7 +94,8 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
   auto trajectory = planner_.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
   float64_t trajectory_time_length = trajectory.points[N - 1].time_from_start.sec + 1e-9F *
     trajectory.points[N - 1].time_from_start.nanosec;
-  EXPECT_EQ(std::chrono::duration<float32_t>(trajectory_time_length), 1.0F * (N - 1) * time_increment);
+  EXPECT_EQ(std::chrono::duration<float32_t>(trajectory_time_length),
+    1.0F * (N - 1) * time_increment);
 }
 
 INSTANTIATE_TEST_CASE_P(
