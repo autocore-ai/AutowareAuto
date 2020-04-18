@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <common/types.hpp>
-#include "recordreplay_planner_node/recordreplay_planner_node.hpp"
 
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "recordreplay_planner_node/recordreplay_planner_node.hpp"
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
@@ -33,7 +34,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
   const auto ego_topic = "vehicle_state";
   const auto trajectory_topic = "planned_trajectory";
   const auto bounding_boxes_topic = "obstacle_bounding_boxes";
-  const auto heading_weight = static_cast<float64_t>(declare_parameter("heading_weight").get<float32_t>());
+  const auto heading_weight =
+    static_cast<float64_t>(declare_parameter("heading_weight").get<float32_t>());
   const auto min_record_distance =
     static_cast<float64_t>(declare_parameter("min_record_distance").get<float32_t>());
 
