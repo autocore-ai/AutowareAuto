@@ -25,12 +25,15 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <motion_common/motion_common.hpp>
 #include <motion_common/config.hpp>
+#include <common/types.hpp>
 
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <string>
 #include <memory>
+
+using autoware::common::types::float64_t;
 
 namespace motion
 {
@@ -64,8 +67,8 @@ public:
     const std::string & trajectory_topic,
     const std::string & bounding_boxes_topic,
     const VehicleConfig & vehicle_param,
-    const double heading_weight,
-    const double min_record_distance);
+    const float64_t heading_weight,
+    const float64_t min_record_distance);
 
 protected:
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
@@ -84,8 +87,8 @@ private:
     const std::string & trajectory_topic,
     const std::string & bounding_boxes_topic,
     const VehicleConfig & vehicle_param,
-    const double heading_weight,
-    const double min_record_distance);
+    const float64_t heading_weight,
+    const float64_t min_record_distance);
 
 
   RECORDREPLAY_PLANNER_NODE_LOCAL void on_ego(const State::SharedPtr & msg);

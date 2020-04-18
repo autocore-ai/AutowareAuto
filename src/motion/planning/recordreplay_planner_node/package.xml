@@ -19,6 +19,7 @@
   <depend>rclcpp_action</depend>
 
   <build_depend>motion_testing</build_depend>
+  <build_depend>autoware_auto_common</build_depend>
 
   <exec_depend>launch_ros</exec_depend>
 

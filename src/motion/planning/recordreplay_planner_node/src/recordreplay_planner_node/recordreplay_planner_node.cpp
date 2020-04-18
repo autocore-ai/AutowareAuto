@@ -11,11 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <common/types.hpp>
 #include "recordreplay_planner_node/recordreplay_planner_node.hpp"
 
 #include <memory>
 #include <string>
 #include <utility>
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace motion
 {
@@ -29,20 +33,20 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
   const auto ego_topic = "vehicle_state";
   const auto trajectory_topic = "planned_trajectory";
   const auto bounding_boxes_topic = "obstacle_bounding_boxes";
-  const auto heading_weight = static_cast<double>(declare_parameter("heading_weight").get<float>());
+  const auto heading_weight = static_cast<float64_t>(declare_parameter("heading_weight").get<float32_t>());
   const auto min_record_distance =
-    static_cast<double>(declare_parameter("min_record_distance").get<float>());
+    static_cast<float64_t>(declare_parameter("min_record_distance").get<float32_t>());
 
   const VehicleConfig vehicle_param{
-    static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.cg_to_rear_m").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.front_corner_stiffness").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.rear_corner_stiffness").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.mass_kg").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.yaw_inertia_kgm2").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.width_m").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float>()),
-    static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float>())
+    static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.cg_to_rear_m").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.front_corner_stiffness").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_corner_stiffness").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.mass_kg").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.yaw_inertia_kgm2").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.width_m").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float32_t>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float32_t>())
   };
   init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
     min_record_distance);
@@ -55,8 +59,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(
   const std::string & trajectory_topic,
   const std::string & bounding_boxes_topic,
   const VehicleConfig & vehicle_param,
-  const double heading_weight,
-  const double min_record_distance)
+  const float64_t heading_weight,
+  const float64_t min_record_distance)
 : Node{name, ns}
 {
   init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
@@ -68,8 +72,8 @@ void RecordReplayPlannerNode::init(
   const std::string & trajectory_topic,
   const std::string & bounding_boxes_topic,
   const VehicleConfig & vehicle_param,
-  const double heading_weight,
-  const double min_record_distance
+  const float64_t heading_weight,
+  const float64_t min_record_distance
 )
 {
   using rclcpp::QoS;
