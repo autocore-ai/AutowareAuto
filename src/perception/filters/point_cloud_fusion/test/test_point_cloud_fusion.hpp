@@ -17,6 +17,7 @@
 #define TEST_POINT_CLOUD_FUSION_HPP_
 
 #include <gtest/gtest.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <point_cloud_fusion/point_cloud_transform.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
@@ -24,7 +25,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -90,7 +90,6 @@ void check_pcl_eq(sensor_msgs::msg::PointCloud2 & msg1, sensor_msgs::msg::PointC
     intensity_it_2 != intensity_it_2.end()
   )
   {
-
     EXPECT_FLOAT_EQ(*x_it_1, *x_it_2);
     EXPECT_FLOAT_EQ(*y_it_1, *y_it_2);
     EXPECT_FLOAT_EQ(*z_it_1, *z_it_2);
@@ -107,16 +106,6 @@ void check_pcl_eq(sensor_msgs::msg::PointCloud2 & msg1, sensor_msgs::msg::PointC
     ++intensity_it_2;
   }
 
-  if (x_it_1 != x_it_1.end() ||
-    y_it_1 != y_it_1.end() ||
-    z_it_1 != z_it_1.end() ||
-    intensity_it_1 != intensity_it_1.end() ||
-    x_it_2 != x_it_2.end() ||
-    y_it_2 != y_it_2.end() ||
-    z_it_2 != z_it_2.end() ||
-    intensity_it_2 != intensity_it_2.end())
-  {
-  }
   // Operator== is not defined for some reason
   EXPECT_FALSE(x_it_1 != x_it_1.end());
   EXPECT_FALSE(y_it_1 != y_it_1.end());
@@ -251,7 +240,7 @@ TEST_F(TestPCF, test_transformed_fusion) {
 
   auto sub_ptr = pcf_node->create_subscription<sensor_msgs::msg::PointCloud2>("points_concat",
       rclcpp::QoS(10), handle_concat);
-  //publish tf message that will help the fusion node transform the transformed_pc2
+  // publish tf message that will help the fusion node transform the transformed_pc2
   tf2_pub_ptr2->publish(tf_msg);
 
   pub_ptr1->publish(pc1);
