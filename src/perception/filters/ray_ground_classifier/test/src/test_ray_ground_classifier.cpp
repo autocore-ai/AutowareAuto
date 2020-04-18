@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
+
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include <random>
 #include <tuple>
 #include <vector>
-
-#include <common/types.hpp>
 
 #include "gtest/gtest.h"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"

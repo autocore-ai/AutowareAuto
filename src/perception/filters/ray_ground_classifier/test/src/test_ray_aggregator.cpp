@@ -225,8 +225,10 @@ TEST(ray_aggregator, segfault)
   RayAggregator agg{cfg};
   // Ensure the segfault conditions are reproduced.
   //
-  // {m_point = {x = -16.376606, y = -3.12589109e-05, z = 6.11320305, intensity = 13, id = 0, static END_OF_SCAN_ID = 65535}, m_r_xy = 16.376606}
-  // $4 = {m_min_ray_points = 512, m_num_rays = 1257, m_ray_width_rad = 0.00499999989, m_min_angle_rad = -3.14159012, m_domain_crosses_180 = false}
+  // {m_point = {x = -16.376606, y = -3.12589109e-05, z = 6.11320305, intensity = 13,
+  //  id = 0, static END_OF_SCAN_ID = 65535}, m_r_xy = 16.376606}
+  // $4 = {m_min_ray_points = 512, m_num_rays = 1257, m_ray_width_rad = 0.00499999989,
+  //  m_min_angle_rad = -3.14159012, m_domain_crosses_180 = false}
 
   EXPECT_EQ(cfg.get_num_rays(), 1257);
   EXPECT_EQ(cfg.get_min_ray_points(), 512);

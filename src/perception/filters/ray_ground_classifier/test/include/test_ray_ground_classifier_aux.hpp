@@ -16,11 +16,11 @@
 #ifndef TEST_RAY_GROUND_CLASSIFIER_AUX_HPP_
 #define TEST_RAY_GROUND_CLASSIFIER_AUX_HPP_
 
+#include <common/types.hpp>
+
 #include <functional>
 #include <vector>
 #include <tuple>
-
-#include <common/types.hpp>
 
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 #include "ray_ground_classifier/ray_ground_classifier.hpp"
