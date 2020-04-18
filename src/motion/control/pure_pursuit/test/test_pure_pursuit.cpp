@@ -16,7 +16,6 @@
 #include <gtest/gtest.h>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_common/motion_common.hpp>
-#include <motion_model/catr_model.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #include <time_utils/time_utils.hpp>
 #include <common/types.hpp>
@@ -33,9 +32,6 @@ using TrajectoryPointStamped = autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware::motion::control::pure_pursuit::ControllerDiagnostic;
 using ::motion::motion_common::from_angle;
 using autoware_auto_msgs::msg::VehicleControlCommand;
-using autoware::motion::motion_model::CatrModel;
-using autoware::motion::motion_model::CatrState;
-using Eigen::Matrix;
 using autoware::common::types::float32_t;
 
 constexpr auto PI = 3.14159F;
