@@ -56,7 +56,7 @@ public:
   }
 
 protected:
-  std::vector<std::tuple<float32_t, float32_t, int>> dat;
+  std::vector<std::tuple<float32_t, float32_t, uint8_t>> dat;
   std::vector<autoware::common::types::PointXYZIF> pts;
   std::vector<bool8_t> labels;
   Config cfg;
@@ -68,7 +68,7 @@ void generate_groundspace(
   const float32_t rf,
   const size_t num_points,
   const std::function<float32_t(float32_t)> & f,
-  std::vector<std::tuple<float32_t, float32_t, int>> & out)
+  std::vector<std::tuple<float32_t, float32_t, uint8_t>> & out)
 {
   const float32_t den = (num_points < 1U) ? 1.0F : static_cast<float32_t>(num_points - 1U);
   const float32_t dr = (rf - ro) / den;
