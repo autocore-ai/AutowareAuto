@@ -14,11 +14,15 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <common/types.hpp>
 
 #include <tuple>
 #include <vector>
 
 #include "test_ray_ground_classifier_aux.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace test_ray_ground_classifier
 {
@@ -43,9 +47,9 @@ public:
   }
 
 protected:
-  std::vector<std::tuple<float, float, int>> dat;
+  std::vector<std::tuple<float32_t, float32_t, uint8_t>> dat;
   std::vector<PointXYZIF> pts;
-  std::vector<bool> labels;
+  std::vector<bool8_t> labels;
   Config cfg;
 };
 

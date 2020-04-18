@@ -35,12 +35,14 @@ namespace ray_ground_classifier
 using autoware::common::types::FEPS;
 using autoware::common::types::PI;
 using autoware::common::types::POINT_BLOCK_CAPACITY;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 RayAggregator::Config::Config(
-  const float min_ray_angle_rad,
-  const float max_ray_angle_rad,
-  const float ray_width_rad,
+  const float32_t min_ray_angle_rad,
+  const float32_t max_ray_angle_rad,
+  const float32_t ray_width_rad,
   const std::size_t min_ray_points)
 : m_min_ray_points(min_ray_points),
   m_num_rays(),
@@ -49,7 +51,7 @@ RayAggregator::Config::Config(
   m_domain_crosses_180(max_ray_angle_rad < min_ray_angle_rad)
 {
   if (m_domain_crosses_180) {
-    const float angle_range = (PI - min_ray_angle_rad) +
+    const float32_t angle_range = (PI - min_ray_angle_rad) +
       (PI + max_ray_angle_rad);
     m_num_rays = static_cast<std::size_t>(std::ceil(angle_range / ray_width_rad));
   } else {
@@ -75,17 +77,17 @@ std::size_t RayAggregator::Config::get_num_rays() const
   return m_num_rays;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float RayAggregator::Config::get_min_angle() const
+float32_t RayAggregator::Config::get_min_angle() const
 {
   return m_min_angle_rad;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float RayAggregator::Config::get_ray_width() const
+float32_t RayAggregator::Config::get_ray_width() const
 {
   return m_ray_width_rad;
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool RayAggregator::Config::domain_crosses_180() const
+bool8_t RayAggregator::Config::domain_crosses_180() const
 {
   return m_domain_crosses_180;
 }
@@ -167,7 +169,7 @@ void RayAggregator::insert(const PointBlock & blk)
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool RayAggregator::is_ray_ready() const
+bool8_t RayAggregator::is_ray_ready() const
 {
   return m_num_ready != 0U;
 }
@@ -192,14 +194,14 @@ const Ray & RayAggregator::get_next_ray()
 ////////////////////////////////////////////////////////////////////////////////
 std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
 {
-  const float x = pt.get_point_pointer()->x;
-  const float y = pt.get_point_pointer()->y;
+  const float32_t x = pt.get_point_pointer()->x;
+  const float32_t y = pt.get_point_pointer()->y;
   // (0, 0) is always bin 0
-  float idx = 0.0F;
+  float32_t idx = 0.0F;
   if ((fabsf(x) > autoware::common::types::FEPS) ||
     (fabsf(y) > autoware::common::types::FEPS))
   {
-    const float th = autoware::common::lidar_utils::fast_atan2(y, x);
+    const float32_t th = autoware::common::lidar_utils::fast_atan2(y, x);
     idx = th - m_cfg.get_min_angle();
     if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
       // Case where receptive field crosses the +PI/-PI singularity

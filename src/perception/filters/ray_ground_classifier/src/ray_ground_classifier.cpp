@@ -24,6 +24,9 @@
 #include "ray_ground_classifier/ray_ground_classifier.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+
 namespace autoware
 {
 namespace perception
@@ -57,7 +60,7 @@ void RayGroundClassifier::insert(const PointXYZIFR & pt)
   m_sort_array.push_back(pt);
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool RayGroundClassifier::can_fit_result(
+bool8_t RayGroundClassifier::can_fit_result(
   const Ray & ray,
   const PointBlock & ground_block,
   const PointBlock & nonground_block) const
@@ -66,7 +69,7 @@ bool RayGroundClassifier::can_fit_result(
          autoware::common::types::POINT_BLOCK_CAPACITY;
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool RayGroundClassifier::can_fit_result(
+bool8_t RayGroundClassifier::can_fit_result(
   const PointBlock & ground_block,
   const PointBlock & nonground_block) const
 {
@@ -76,7 +79,7 @@ bool RayGroundClassifier::can_fit_result(
 void RayGroundClassifier::partition(
   PointBlock & ground_block,
   PointBlock & nonground_block,
-  const bool presorted)
+  const bool8_t presorted)
 {
   if (!presorted) {
     sort_ray();
@@ -153,7 +156,7 @@ void RayGroundClassifier::partition(
   for (std::size_t idx = 0U; idx < ray.size(); ++idx) {
     const std::size_t jdx = idx;  // fixes PCLint FP: idx modified in loop
     const PointXYZIFR & pt = ray[jdx];
-    const float z = pt.get_z();
+    const float32_t z = pt.get_z();
     if ((m_max_height_m >= z) && (m_min_height_m <= z)) {
       const RayGroundPointClassifier::PointLabel label = m_point_classifier.is_ground(pt);
       // modify label of last point

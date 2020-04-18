@@ -39,6 +39,8 @@ namespace ray_ground_classifier
 {
 
 using autoware::common::types::PointBlock;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 /// \brief Used as a prefiltering step for RayGroundClassifier. Aggregates unstructured
 ///        blobs into rays of points that the RayGroundClassifier can partition.
@@ -56,9 +58,9 @@ public:
     /// \param[in] min_ray_points Number of points needed in a ray before it's ready for
     ///                           partitioning
     Config(
-      const float min_ray_angle_rad,
-      const float max_ray_angle_rad,
-      const float ray_width_rad,
+      const float32_t min_ray_angle_rad,
+      const float32_t max_ray_angle_rad,
+      const float32_t ray_width_rad,
       const std::size_t min_ray_points);
 
     /// \brief Get number of rays
@@ -69,21 +71,21 @@ public:
     std::size_t get_min_ray_points() const;
     /// \brief Get minimum ray angle
     /// \return Value
-    float get_min_angle() const;
+    float32_t get_min_angle() const;
     /// \brief Get maximum ray angle
     /// \return Value
-    float get_ray_width() const;
+    float32_t get_ray_width() const;
     /// \brief Whether domain crosses the -PI/+PI singularity, e.g. min_ray_angle=300,
     ///        max_ray_angle = -300
     /// \return Value
-    bool domain_crosses_180() const;
+    bool8_t domain_crosses_180() const;
 
 private:
     const std::size_t m_min_ray_points;
     std::size_t m_num_rays;
-    const float m_ray_width_rad;
-    const float m_min_angle_rad;
-    const bool m_domain_crosses_180;
+    const float32_t m_ray_width_rad;
+    const float32_t m_min_angle_rad;
+    const bool8_t m_domain_crosses_180;
   };  // class Config
 
   /// \brief Constructor
@@ -113,7 +115,7 @@ private:
 
   /// \brief Whether a ray is ready for processing
   /// \return Value
-  bool is_ray_ready() const;
+  bool8_t is_ray_ready() const;
   /// \brief Get next ray that is ready for partitioning
   /// \return Const reference to next ray ready for processing
   /// \throw std::runtime_error If no ray is ready

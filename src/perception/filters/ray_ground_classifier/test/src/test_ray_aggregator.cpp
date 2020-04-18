@@ -16,31 +16,33 @@
 #include <gtest/gtest.h>
 #include <ray_ground_classifier/ray_aggregator.hpp>
 #include <ray_ground_classifier/ray_ground_point_classifier.hpp>
+#include <common/types.hpp>
 
 namespace
 {
 
 using autoware::common::types::PointXYZIF;
+using autoware::common::types::float32_t;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 using autoware::perception::filters::ray_ground_classifier::Ray;
 using autoware::perception::filters::ray_ground_classifier::RayAggregator;
 
-void check_ray(const Ray & ray, const float th)
+void check_ray(const Ray & ray, const float32_t th)
 {
-  float last_x = -1.0F;
-  float last_y = -1.0F;
-  float last_r = -1.0F;
+  float32_t last_x = -1.0F;
+  float32_t last_y = -1.0F;
+  float32_t last_r = -1.0F;
   for (const auto & pt : ray) {
-    const float x = pt.get_point_pointer()->x;
-    const float y = pt.get_point_pointer()->y;
+    const float32_t x = pt.get_point_pointer()->x;
+    const float32_t y = pt.get_point_pointer()->y;
     // (0, 0) is a special case
     if ((fabsf(x) > 0.0001F) || (fabsf(y) > 0.0001F)) {
       EXPECT_LT(autoware::perception::filters::ray_ground_classifier::angle_distance_rad(th,
         atan2f(y, x)), 0.1F) <<
         x << ", " << y;
     }
-    const float r = (x * x) + (y * y);
+    const float32_t r = (x * x) + (y * y);
     EXPECT_GE(fabsf(x), last_x);
     EXPECT_GE(fabsf(y), last_y);
     EXPECT_GE(r, last_r);
@@ -61,15 +63,15 @@ TEST(ray_aggregator, basic) {
     // insert points along one ray
     for (uint32_t idx = 0U; idx < min_ray_points - 1U; ++idx) {
       PointXYZIF pt;
-      pt.x = static_cast<float>(idx % 3U) + (0.1F * static_cast<float>(idx)) + 0.1F;
-      pt.y = static_cast<float>(idx % 3U) + (0.1F * static_cast<float>(idx)) + 0.1F;
+      pt.x = static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F;
+      pt.y = static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F;
       agg.insert(pt);
       EXPECT_FALSE(agg.is_ray_ready()) << idx;
     }
     // insert one more
     PointXYZIF pt;
-    pt.x = static_cast<float>(min_ray_points - 1U);
-    pt.y = static_cast<float>(min_ray_points - 1U);
+    pt.x = static_cast<float32_t>(min_ray_points - 1U);
+    pt.y = static_cast<float32_t>(min_ray_points - 1U);
     agg.insert(pt);
     // ready
     EXPECT_TRUE(agg.is_ray_ready());
@@ -94,7 +96,7 @@ TEST(ray_aggregator, multi_flipped)
   for (uint32_t idx = 0U; idx < num_points; ++idx) {
     PointXYZIF pt;
     // .. generate points ..
-    float u, v;
+    float32_t u, v;
     switch (idx % 3U) {
       case 0U:
         u = -1.0F;
@@ -109,8 +111,8 @@ TEST(ray_aggregator, multi_flipped)
         v = 0.0F;
         break;
     }
-    pt.x = u * (static_cast<float>(idx % 3U) + (0.1F * static_cast<float>(idx)) + 0.1F);
-    pt.y = v * (static_cast<float>(idx % 3U) + (0.1F * static_cast<float>(idx)) + 0.1F);
+    pt.x = u * (static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F);
+    pt.y = v * (static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F);
     blk.push_back(pt);
   }
   agg.insert(blk);
@@ -207,8 +209,8 @@ TEST(ray_aggregator, bad_cases)
   RayAggregator agg{cfg};
   for (uint32_t idx = 0U; idx < capacity; ++idx) {
     PointXYZIF pt;
-    pt.x = 0.1F + static_cast<float>(idx);
-    pt.y = 0.1F + static_cast<float>(idx);
+    pt.x = 0.1F + static_cast<float32_t>(idx);
+    pt.y = 0.1F + static_cast<float32_t>(idx);
     agg.insert(pt);
   }
   PointXYZIF pt2;

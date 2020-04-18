@@ -33,6 +33,8 @@ namespace ray_ground_classifier
 {
 
 using autoware::common::types::PointBlock;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 /// \brief Given a ray, partitions into ground and nonground points
 class RAY_GROUND_CLASSIFIER_PUBLIC RayGroundClassifier
@@ -57,13 +59,13 @@ public:
   /// \param[in] ground_block The block that should hold the resulting ground points
   /// \param[in] nonground_block The block that should hold the resulting nonground points
   /// \return false if provided output blocks could not fit ray
-  bool can_fit_result(const PointBlock & ground_block, const PointBlock & nonground_block) const;
+  bool8_t can_fit_result(const PointBlock & ground_block, const PointBlock & nonground_block) const;
   /// \brief check if the provided output blocks can definitely fit the result of a partition
   /// \param[in] ground_block The block that should hold the resulting ground points
   /// \param[in] nonground_block The block that should hold the resulting nonground points
   /// \param[in] ray The ray to be partitioned
   /// \return false if provided output blocks could not fit ray
-  bool can_fit_result(
+  bool8_t can_fit_result(
     const Ray & ray,
     const PointBlock & ground_block,
     const PointBlock & nonground_block) const;
@@ -81,7 +83,7 @@ public:
   void partition(
     PointBlock & ground_block,
     PointBlock & nonground_block,
-    const bool presorted);
+    const bool8_t presorted);
 
   /// \brief Partitions points from raw block into ground points and nonground points
   /// \param[in] raw_block A full point block of one or more rays. Rays are assumed to be contiguous
@@ -130,8 +132,8 @@ private:
   RayGroundPointClassifier m_point_classifier;
 
   /// misc parameters for height filtering
-  const float m_min_height_m;
-  const float m_max_height_m;
+  const float32_t m_min_height_m;
+  const float32_t m_max_height_m;
 };  // class RayGroundClassifier
 }  // namespace ray_ground_classifier
 }  // namespace filters

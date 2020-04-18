@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "common/types.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
 namespace autoware
@@ -30,22 +31,23 @@ namespace ray_ground_classifier
 
 using autoware::common::types::FEPS;
 using autoware::common::types::PointXYZIF;
+using autoware::common::types::float32_t;
 
 Config::Config(
-  const float sensor_height_m,
-  const float max_local_slope_deg,
-  const float max_global_slope_deg,
-  const float nonground_retro_thresh_deg,
-  const float min_height_thresh_m,
-  const float max_global_height_thresh_m,
-  const float max_last_local_ground_thresh_m,
-  const float max_provisional_ground_distance_m,
-  const float min_height_m,
-  const float max_height_m)
+  const float32_t sensor_height_m,
+  const float32_t max_local_slope_deg,
+  const float32_t max_global_slope_deg,
+  const float32_t nonground_retro_thresh_deg,
+  const float32_t min_height_thresh_m,
+  const float32_t max_global_height_thresh_m,
+  const float32_t max_last_local_ground_thresh_m,
+  const float32_t max_provisional_ground_distance_m,
+  const float32_t min_height_m,
+  const float32_t max_height_m)
 : m_ground_z_m(-sensor_height_m),
-  m_max_local_slope(tanf(static_cast<float>(deg2rad(max_local_slope_deg)))),
-  m_max_global_slope(tanf(static_cast<float>(deg2rad(max_global_slope_deg)))),
-  m_nonground_retro_thresh(tanf(static_cast<float>(deg2rad(nonground_retro_thresh_deg)))),
+  m_max_local_slope(tanf(static_cast<float32_t>(deg2rad(max_local_slope_deg)))),
+  m_max_global_slope(tanf(static_cast<float32_t>(deg2rad(max_global_slope_deg)))),
+  m_nonground_retro_thresh(tanf(static_cast<float32_t>(deg2rad(nonground_retro_thresh_deg)))),
   m_min_height_thresh_m(min_height_thresh_m),
   m_max_global_height_thresh_m(max_global_height_thresh_m),
   m_max_last_local_ground_thresh_m(max_last_local_ground_thresh_m),
@@ -87,57 +89,57 @@ Config::Config(
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_sensor_height() const
+float32_t Config::get_sensor_height() const
 {
   return -m_ground_z_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_ground_z() const
+float32_t Config::get_ground_z() const
 {
   return m_ground_z_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_local_slope() const
+float32_t Config::get_max_local_slope() const
 {
   return m_max_local_slope;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_global_slope() const
+float32_t Config::get_max_global_slope() const
 {
   return m_max_global_slope;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_nonground_retro_thresh() const
+float32_t Config::get_nonground_retro_thresh() const
 {
   return m_nonground_retro_thresh;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_min_height_thresh() const
+float32_t Config::get_min_height_thresh() const
 {
   return m_min_height_thresh_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_global_height_thresh() const
+float32_t Config::get_max_global_height_thresh() const
 {
   return m_max_global_height_thresh_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_last_local_ground_thresh() const
+float32_t Config::get_max_last_local_ground_thresh() const
 {
   return m_max_last_local_ground_thresh_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_provisional_ground_distance() const
+float32_t Config::get_max_provisional_ground_distance() const
 {
   return m_max_provisional_ground_distance_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_min_height() const
+float32_t Config::get_min_height() const
 {
   return m_min_height_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float Config::get_max_height() const
+float32_t Config::get_max_height() const
 {
   return m_max_height_m;
 }
@@ -148,12 +150,12 @@ PointXYZIFR::PointXYZIFR(const PointXYZIF & pt)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
-float PointXYZIFR::get_r() const
+float32_t PointXYZIFR::get_r() const
 {
   return m_r_xy;
 }
 ////////////////////////////////////////////////////////////////////////////////
-float PointXYZIFR::get_z() const
+float32_t PointXYZIFR::get_z() const
 {
   return m_point.z;
 }

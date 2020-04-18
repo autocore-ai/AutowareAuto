@@ -21,6 +21,9 @@
 #include "common/types.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+
 namespace autoware
 {
 namespace perception
@@ -53,22 +56,22 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
 {
   // consider inline if benchmarkings shows that this is slow
   PointLabel ret;
-  const float height_m = pt.get_z();
-  const float radius_m = pt.get_r();
+  const float32_t height_m = pt.get_z();
+  const float32_t radius_m = pt.get_r();
 
   // a small fudge factor is added because we check in the sorting process for "almost zero"
   // This is because points which are almost collinear are sorted by height
-  const float dr_m = (radius_m - m_prev_radius_m) + autoware::common::types::FEPS;
+  const float32_t dr_m = (radius_m - m_prev_radius_m) + autoware::common::types::FEPS;
   if (dr_m < 0.0F) {
     throw std::runtime_error("Ray Ground filter must receive points in increasing radius");
   }
 
-  const float dh_m = fabsf(height_m - m_prev_height_m);
-  const bool is_local = (dh_m < clamp(m_config.get_max_local_slope() * dr_m,
+  const float32_t dh_m = fabsf(height_m - m_prev_height_m);
+  const bool8_t is_local = (dh_m < clamp(m_config.get_max_local_slope() * dr_m,
     m_config.get_min_height_thresh(), m_config.get_max_global_height_thresh()));
-  const float global_height_thresh_m =
+  const float32_t global_height_thresh_m =
     std::min(m_config.get_max_global_slope() * radius_m, m_config.get_max_global_height_thresh());
-  const bool has_vertical_structure = (dh_m > (dr_m * m_config.get_nonground_retro_thresh()));
+  const bool8_t has_vertical_structure = (dh_m > (dr_m * m_config.get_nonground_retro_thresh()));
   if (m_last_was_ground) {
     if (is_local) {
       // local in height, so ground
@@ -85,9 +88,9 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
         PointLabel::NONLOCAL_NONGROUND;
     }
   } else {
-    const float drg_m = (radius_m - m_prev_ground_radius_m);
-    const float dhg_m = fabsf(height_m - m_prev_ground_height_m);
-    const bool is_local_to_last_ground =
+    const float32_t drg_m = (radius_m - m_prev_ground_radius_m);
+    const float32_t dhg_m = fabsf(height_m - m_prev_ground_height_m);
+    const bool8_t is_local_to_last_ground =
       (dhg_m <= clamp(m_config.get_max_local_slope() * drg_m, m_config.get_min_height_thresh(),
       m_config.get_max_last_local_ground_thresh()));
     if (is_local_to_last_ground) {
@@ -116,7 +119,7 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool RayGroundPointClassifier::label_is_ground(const RayGroundPointClassifier::PointLabel label)
+bool8_t RayGroundPointClassifier::label_is_ground(const RayGroundPointClassifier::PointLabel label)
 {
   return static_cast<int8_t>(label) <= static_cast<int8_t>(0);
 }

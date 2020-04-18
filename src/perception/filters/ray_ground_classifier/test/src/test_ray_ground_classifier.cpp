@@ -31,6 +31,7 @@ namespace test_ray_ground_classifier
 {
 
 using autoware::common::types::POINT_BLOCK_CAPACITY;
+using autoware::common::types::float32_t;
 
 // do basic sanity checks
 TEST_F(ray_ground_classifier, point_classification)
@@ -85,7 +86,7 @@ n = not ground point
 TEST_F(ray_ground_classifier, flat_ground)
 {
   generate_groundspace(5.0F, 35.0F, 32U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   generate_points(cfg, dat, pts, labels);
 
@@ -103,12 +104,12 @@ TEST_F(ray_ground_classifier, flat_ground)
  */
 TEST_F(ray_ground_classifier, wall)
 {
-  const float ro = 5.0F, rf = 20.0F;
+  const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   // build a wall
-  float height = 0.0F, dh = 0.5F;
+  float32_t height = 0.0F, dh = 0.5F;
   for (size_t idx = 0U; idx < 16U; ++idx) {
     height += dh;
     dat.push_back(std::make_tuple(rf, height, 1));
@@ -131,13 +132,13 @@ TEST_F(ray_ground_classifier, wall)
  */
 TEST_F(ray_ground_classifier, wall2)
 {
-  const float ro = 5.0F, rf = 20.0F;
+  const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   // build a wall
-  const float dr = 1.0F;
-  float height = 0.0F, dh = 0.5F;
+  const float32_t dr = 1.0F;
+  float32_t height = 0.0F, dh = 0.5F;
   for (size_t idx = 0U; idx < 16U; ++idx) {
     height += dh;
     dat.push_back(std::make_tuple(rf + dr, height, 1));
@@ -160,14 +161,14 @@ TEST_F(ray_ground_classifier, wall2)
  */
 TEST_F(ray_ground_classifier, ditch)
 {
-  const float ro = 5.0F, rf = 20.0F;
+  const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   // build a wall
-  const float w = 5.0F;
-  const float rd = w + rf;
-  float height = -2.0F, dh = 0.5F;
+  const float32_t w = 5.0F;
+  const float32_t rd = w + rf;
+  float32_t height = -2.0F, dh = 0.5F;
   for (size_t idx = 0U; idx < 16U; ++idx) {
     height += dh;
     dat.push_back(std::make_tuple(rd, height, 1));
@@ -189,14 +190,14 @@ TEST_F(ray_ground_classifier, ditch)
  */
 TEST_F(ray_ground_classifier, gap)
 {
-  const float ro = 5.0F, rf = 20.0F;
+  const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   // build a wall
-  const float w = 1.0F;
-  const float rd = w + rf;
-  float height = 0.0F, dh = 0.5F;
+  const float32_t w = 1.0F;
+  const float32_t rd = w + rf;
+  float32_t height = 0.0F, dh = 0.5F;
   for (size_t idx = 0U; idx < 16U; ++idx) {
     height += dh;
     dat.push_back(std::make_tuple(rd, height, 1));
@@ -223,14 +224,14 @@ TEST_F(ray_ground_classifier, gap)
 TEST_F(ray_ground_classifier, valley)
 {
   // linearly varying slope until max slope
-  const float max_slope = 1.0F / 5.145F;
+  const float32_t max_slope = 1.0F / 5.145F;
   // from http://www.ugpti.org/dotsc/engcenter/downloads/2010-07_VerticalCurves.pdf page 10
   // 25 mph/40 kmh => K = L/A ~4; A = max_grade
   // ==> L = 80m => dmdr = max_slope / L
-  const float dmdr = max_slope / 80.0F;
+  const float32_t dmdr = max_slope / 80.0F;
 
-  auto zfn = [ = ](const float r) {
-      const float bp = max_slope / dmdr;
+  auto zfn = [ = ](const float32_t r) {
+      const float32_t bp = max_slope / dmdr;
       if (r < bp) {
         return 0.5 * dmdr * r * r;
       } else {
@@ -238,7 +239,7 @@ TEST_F(ray_ground_classifier, valley)
       }
     };
 
-  const float ro = 5.0F, rf = 35.0F;
+  const float32_t ro = 5.0F, rf = 35.0F;
   generate_groundspace(ro, rf, 32U, zfn, dat);
 
   generate_points(cfg, dat, pts, labels);
@@ -259,14 +260,14 @@ TEST_F(ray_ground_classifier, valley)
 TEST_F(ray_ground_classifier, crest)
 {
   // linearly varying slope until max slope
-  const float max_slope = -1.0F / 5.145F;
+  const float32_t max_slope = -1.0F / 5.145F;
   // from http://www.ugpti.org/dotsc/engcenter/downloads/2010-07_VerticalCurves.pdf page 10
   // 25 mph/40 kmh => K = L/A ~4; A = max_grade
   // ==> L = 80m => dmdr = max_slope / L
-  const float dmdr = max_slope / 80.0F;
+  const float32_t dmdr = max_slope / 80.0F;
 
-  auto zfn = [ = ](const float r) {
-      const float bp = max_slope / dmdr;
+  auto zfn = [ = ](const float32_t r) {
+      const float32_t bp = max_slope / dmdr;
       if (r < bp) {
         return 0.5 * dmdr * r * r;
       } else {
@@ -274,7 +275,7 @@ TEST_F(ray_ground_classifier, crest)
       }
     };
 
-  const float ro = 5.0F, rf = 35.0F;
+  const float32_t ro = 5.0F, rf = 35.0F;
   generate_groundspace(ro, rf, 32U, zfn, dat);
 
   generate_points(cfg, dat, pts, labels);
@@ -294,11 +295,11 @@ TEST_F(ray_ground_classifier, crest)
 TEST_F(ray_ground_classifier, rough)
 {
   // up to 10 cm variation in height
-  auto zfn = [](const float r) {
+  auto zfn = [](const float32_t r) {
       return 0.1F * sinf(r);
     };
 
-  const float ro = 5.0F, rf = 40.0F;
+  const float32_t ro = 5.0F, rf = 40.0F;
   generate_groundspace(ro, rf, 32U, zfn, dat);
 
   generate_points(cfg, dat, pts, labels);
@@ -319,26 +320,26 @@ TEST_F(ray_ground_classifier, rough)
 TEST_F(ray_ground_classifier, driveway)
 {
   // driveway itself
-  const float ro = 5.0F, rf = 10.0F;
-  generate_groundspace(ro, rf, 12U, [](float r) {return 0.0F;}, dat);
-  const float W = 1.5F;
-  const float dr = 1.0;
-  const float H = 0.25F;  // 10-20 cm curb + dip
+  const float32_t ro = 5.0F, rf = 10.0F;
+  generate_groundspace(ro, rf, 12U, [](float32_t r) {return 0.0F;}, dat);
+  const float32_t W = 1.5F;
+  const float32_t dr = 1.0F;
+  const float32_t H = 0.25F;  // 10-20 cm curb + dip
   // dip
-  float r1 = rf + dr, r2 = rf + dr + W;
+  float32_t r1 = rf + dr, r2 = rf + dr + W;
   generate_groundspace(r1, r2, 3U,
-    [ = ](float r) {
+    [ = ](float32_t r) {
       return (r - r1) * (-H / W);
     }, dat);
 
   // undip
   r1 = rf + 2 * dr + W, r2 = rf + 2 * dr + 2 * W;
   generate_groundspace(r1, r2, 3U,
-    [ = ](float r) {
+    [ = ](float32_t r) {
       return (r - r1) * (H / W);
     }, dat);
   // road
-  generate_groundspace(r2 + dr, r2 + dr + 10, 12U, [](float r) {return 0.0F;}, dat);
+  generate_groundspace(r2 + dr, r2 + dr + 10, 12U, [](float32_t r) {return 0.0F;}, dat);
 
   generate_points(cfg, dat, pts, labels);
 
@@ -368,20 +369,20 @@ TEST_F(ray_ground_classifier, plateau_ground)
   ASSERT_LT(fabsf(cfg2.get_max_local_slope() - tanf(10.0F * 3.14159F / 180.0F)), 0.001F);
   dat =
   {
-    std::tuple<float, float, int>(1.0F, 0.0F, 0),
-    std::tuple<float, float, int>(2.0F, 0.0F, 0),
-    std::tuple<float, float, int>(3.0F, 0.0F, 0),
-    std::tuple<float, float, int>(4.0F, 0.0F, 0),
-    std::tuple<float, float, int>(5.0F, 0.0F, 0),
-    std::tuple<float, float, int>(5.0F, 2.0F, 1),
-    std::tuple<float, float, int>(6.0F, 2.0F, 1),
-    std::tuple<float, float, int>(7.0F, 2.0F, 1),
-    std::tuple<float, float, int>(8.0F, 2.0F, 1),
-    std::tuple<float, float, int>(8.1F, 0.5F, 0),
-    std::tuple<float, float, int>(9.0F, 0.5F, 0),
-    std::tuple<float, float, int>(10.0F, 0.5F, 0),
-    std::tuple<float, float, int>(11.0F, 0.5F, 0),
-    std::tuple<float, float, int>(12.0F, 0.5F, 0)
+    std::tuple<float32_t, float32_t, uint8_t>(1.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(2.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(3.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(4.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(5.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(5.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(6.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(7.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(8.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(8.1F, 0.5F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(9.0F, 0.5F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(10.0F, 0.5F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(11.0F, 0.5F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(12.0F, 0.5F, 0)
   };
   generate_points(cfg2, dat, pts, labels);
   label_and_check(cfg2, pts, labels, false, false);
@@ -412,18 +413,18 @@ TEST_F(ray_ground_classifier, provisional_ground)
   ASSERT_LT(fabsf(cfg2.get_max_last_local_ground_thresh() - 5.0F), 0.001F);
   dat =
   {
-    std::tuple<float, float, int>(1.0F, 0.0F, 0),
-    std::tuple<float, float, int>(2.0F, 0.0F, 0),
-    std::tuple<float, float, int>(3.0F, 0.0F, 0),
-    std::tuple<float, float, int>(4.0F, 0.0F, 0),
-    std::tuple<float, float, int>(5.0F, 0.0F, 0),
-    std::tuple<float, float, int>(6.0F, 2.0F, 1),
-    std::tuple<float, float, int>(7.0F, 2.0F, 1),
-    std::tuple<float, float, int>(8.0F, 0.0F, 1),
-    std::tuple<float, float, int>(9.0F, 1.0F, 1),
-    std::tuple<float, float, int>(10.0F, 0.0F, 0),
-    std::tuple<float, float, int>(20.0F, 2.0F, 1),
-    std::tuple<float, float, int>(21.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(1.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(2.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(3.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(4.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(5.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(6.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(7.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(8.0F, 0.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(9.0F, 1.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(10.0F, 0.0F, 0),
+    std::tuple<float32_t, float32_t, uint8_t>(20.0F, 2.0F, 1),
+    std::tuple<float32_t, float32_t, uint8_t>(21.0F, 2.0F, 1),
   };
   generate_points(cfg2, dat, pts, labels);
   label_and_check(cfg2, pts, labels, false);
@@ -453,12 +454,12 @@ TEST_F(ray_ground_classifier, height_filter)
 // same as wall, but just a different path to exercise the logic
 TEST_F(ray_ground_classifier, structured_partition_and_other)
 {
-  const float ro = 5.0F, rf = 20.0F;
+  const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float r) {return 0.0F;}, dat);
+    [](float32_t r) {return 0.0F;}, dat);
 
   // build a wall
-  float height = 0.0F, dh = 0.1F;
+  float32_t height = 0.0F, dh = 0.1F;
   for (size_t idx = 0U; idx < 16U; ++idx) {
     height += dh;
     dat.push_back(std::make_tuple(rf, height, 1));
@@ -708,23 +709,23 @@ TEST_F(ray_ground_classifier, benchmark)
   PointBlock raw_points, ground_points, nonground_points;
   autoware::perception::filters::ray_ground_classifier::RayGroundClassifier cls{cfg};
   std::mt19937 gen(1338U);  // Standard mersenne_twister_engine seeded with value
-  using unif_distr = std::uniform_real_distribution<float>;
+  using unif_distr = std::uniform_real_distribution<float32_t>;
   unif_distr mode_samp{0.0F, 1.0F};
   unif_distr dr_inc_samp{0.1F, 5.0F};
   unif_distr dr_unif_samp{0.0F, 0.2F};
   unif_distr dh_unif_samp{0.1F, 1.0F};
-  std::normal_distribution<float> dh_gauss_samp{0.0F, 0.1F};
+  std::normal_distribution<float32_t> dh_gauss_samp{0.0F, 0.1F};
   auto fn = [&](const uint32_t ray_size) {
       raw_points.clear();
       // generate points using a simple markov chain
-      constexpr float ground2vert_prob = 0.1F;
-      constexpr float nonground2vert_prob = 0.2F;
-      constexpr float vert2nonground_prob = 0.7F;
-      constexpr float vert2ground_prob = 0.8F;
+      constexpr float32_t ground2vert_prob = 0.1F;
+      constexpr float32_t nonground2vert_prob = 0.2F;
+      constexpr float32_t vert2nonground_prob = 0.7F;
+      constexpr float32_t vert2ground_prob = 0.8F;
       // initialize state variables
       uint32_t mode = 0;  // 0 = ground, 1 = nonground, 2 = vertical structure ground -> nonground
       //                     3 = veritcal structure nonground->ground
-      float last_dr = 1.0F;
+      float32_t last_dr = 1.0F;
       PointXYZIF pt;
       for (uint32_t idx = 0U;
         idx <
@@ -739,7 +740,7 @@ TEST_F(ray_ground_classifier, benchmark)
           pt.z = cfg.get_ground_z();
         }
         // check state transition
-        const float r = mode_samp(gen);
+        const float32_t r = mode_samp(gen);
         switch (mode) {
           case 0:
             if (r < ground2vert_prob) {
@@ -765,7 +766,7 @@ TEST_F(ray_ground_classifier, benchmark)
             throw std::runtime_error("Test failure: Mode transition");
         }
         // generate point
-        float dr, dh = 0.0F;
+        float32_t dr, dh = 0.0F;
         switch (mode) {
           case 0:
           case 1:

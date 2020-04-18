@@ -30,6 +30,8 @@ namespace test_ray_ground_classifier
 
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::POINT_BLOCK_CAPACITY;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 using autoware::perception::filters::ray_ground_classifier::Config;
 using autoware::perception::filters::ray_ground_classifier::PointBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
@@ -54,25 +56,25 @@ public:
   }
 
 protected:
-  std::vector<std::tuple<float, float, int>> dat;
+  std::vector<std::tuple<float32_t, float32_t, int>> dat;
   std::vector<autoware::common::types::PointXYZIF> pts;
-  std::vector<bool> labels;
+  std::vector<bool8_t> labels;
   Config cfg;
 };
 
 /// adds num_points ground points to out of form (r, f(r), ground)
 void generate_groundspace(
-  const float ro,
-  const float rf,
+  const float32_t ro,
+  const float32_t rf,
   const size_t num_points,
-  const std::function<float(float)> & f,
-  std::vector<std::tuple<float, float, int>> & out)
+  const std::function<float32_t(float32_t)> & f,
+  std::vector<std::tuple<float32_t, float32_t, int>> & out)
 {
-  const float den = (num_points < 1U) ? 1.0F : static_cast<float>(num_points - 1U);
-  const float dr = (rf - ro) / den;
+  const float32_t den = (num_points < 1U) ? 1.0F : static_cast<float32_t>(num_points - 1U);
+  const float32_t dr = (rf - ro) / den;
   for (size_t idx = 0U; idx < num_points; ++idx) {
-    float r = ro + static_cast<float>(idx) * dr;
-    float h = f(r);
+    float32_t r = ro + static_cast<float32_t>(idx) * dr;
+    float32_t h = f(r);
     out.push_back(std::make_tuple(r, h, 0));
   }
 }
@@ -80,9 +82,9 @@ void generate_groundspace(
 /// convert data format into actual points and labels for processing
 void generate_points(
   const Config & cfg,
-  const std::vector<std::tuple<float, float, int>> & in,
+  const std::vector<std::tuple<float32_t, float32_t, uint8_t>> & in,
   std::vector<PointXYZIF> & pts_out,
-  std::vector<bool> & label_out)
+  std::vector<bool8_t> & label_out)
 {
   for (auto & x : in) {
     // height is relative to ground
@@ -102,9 +104,9 @@ void generate_points(
 void label_and_check(
   const Config & cfg,
   const std::vector<PointXYZIF> & pts,
-  const std::vector<bool> & label,
-  const bool ground_only = true,
-  const bool do_reverse = true)
+  const std::vector<bool8_t> & label,
+  const bool8_t ground_only = true,
+  const bool8_t do_reverse = true)
 {
   ASSERT_EQ(pts.size(), label.size());
 
