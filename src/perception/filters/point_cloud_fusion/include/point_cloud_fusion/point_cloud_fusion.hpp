@@ -24,9 +24,12 @@
 #include <tf2_ros/transform_listener.h>
 #include <rclcpp/rclcpp.hpp>
 #include <point_cloud_fusion/visibility_control.hpp>
+#include <common/types.hpp>
 #include <string>
 #include <memory>
 #include <vector>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -80,7 +83,7 @@ private:
     const PointCloudMsgT::ConstSharedPtr & msg5, const PointCloudMsgT::ConstSharedPtr & msg6,
     const PointCloudMsgT::ConstSharedPtr & msg7, const PointCloudMsgT::ConstSharedPtr & msg8);
 
-  bool concatenate_pointcloud(
+  bool8_t concatenate_pointcloud(
     const PointCloudMsgT & pc_in, PointCloudMsgT & pc_out,
     uint32_t & concat_idx) const;
 

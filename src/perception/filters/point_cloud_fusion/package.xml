@@ -19,6 +19,7 @@
     <depend>tf2_sensor_msgs</depend>
 
     <build_depend>eigen</build_depend>
+    <build_depend>autoware_auto_common</build_depend>
 
     <build_export_depend>eigen</build_export_depend>
 

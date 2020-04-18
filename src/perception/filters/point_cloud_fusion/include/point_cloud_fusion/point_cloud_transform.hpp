@@ -20,9 +20,12 @@
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <common/types.hpp>
 #include <string>
 #include <cstdlib>
 #include <limits>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -35,7 +38,7 @@ namespace point_cloud_fusion
 /// \brief Function to check if an input transform is identity
 /// \param t_in transform to be checked
 /// \return True if the transform is identity. False otherwise.
-inline bool is_identity(const geometry_msgs::msg::TransformStamped & t_in)
+inline bool8_t is_identity(const geometry_msgs::msg::TransformStamped & t_in)
 {
   auto ret = false;
   constexpr auto eps = std::numeric_limits<decltype(t_in.transform.translation.x)>::epsilon();

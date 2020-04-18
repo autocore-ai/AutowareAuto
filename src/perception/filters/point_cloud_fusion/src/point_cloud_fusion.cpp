@@ -17,10 +17,14 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <point_cloud_fusion/point_cloud_transform.hpp>
+#include <common/types.hpp>
 #include <memory>
 #include <vector>
 #include <algorithm>
 #include <string>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -149,7 +153,7 @@ uint32_t PointCloudFusionNode::fuse_pc_msgs(
 
   for (size_t i = 0; i < m_input_topics.size(); ++i) {
     try {
-      bool concat_success;
+      bool8_t concat_success;
       auto tf_lookup_time = std::chrono::time_point<std::chrono::system_clock,
           std::chrono::nanoseconds>(convert_msg_time(msgs[i]->header.stamp));
 
@@ -182,7 +186,7 @@ uint32_t PointCloudFusionNode::fuse_pc_msgs(
   return pc_concat_idx;
 }
 
-bool PointCloudFusionNode::concatenate_pointcloud(
+bool8_t PointCloudFusionNode::concatenate_pointcloud(
   const sensor_msgs::msg::PointCloud2 & pc_in,
   sensor_msgs::msg::PointCloud2 & pc_out,
   uint32_t & concat_idx) const
@@ -194,10 +198,10 @@ bool PointCloudFusionNode::concatenate_pointcloud(
       "Pointcloud is too large to be fused and will be ignored.");
     ret = false;
   } else {
-    sensor_msgs::PointCloud2ConstIterator<float> x_it_in(pc_in, "x");
-    sensor_msgs::PointCloud2ConstIterator<float> y_it_in(pc_in, "y");
-    sensor_msgs::PointCloud2ConstIterator<float> z_it_in(pc_in, "z");
-    sensor_msgs::PointCloud2ConstIterator<float> intensity_it_in(pc_in, "intensity");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> x_it_in(pc_in, "x");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> y_it_in(pc_in, "y");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> z_it_in(pc_in, "z");
+    sensor_msgs::PointCloud2ConstIterator<float32_t> intensity_it_in(pc_in, "intensity");
 
     while (x_it_in != x_it_in.end() &&
       y_it_in != y_it_in.end() &&

@@ -19,6 +19,7 @@ cmake_minimum_required(VERSION 3.5)
 project(point_cloud_fusion)
 
 ## dependencies
+find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 find_package(lidar_utils REQUIRED)
@@ -29,6 +30,8 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_sensor_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+ament_auto_find_build_dependencies()
 
 include_directories(
   SYSTEM ${EIGEN3_INCLUDE_DIR}

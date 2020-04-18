@@ -16,10 +16,13 @@
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rcutils/cmdline_parser.h>
+#include <common/types.hpp>
 #include <string>
 #include <memory>
 #include <vector>
 #include <cstdio>
+
+using autoware::common::types::char8_t;
 
 
 // this file is simply a main file to create a ros1 style standalone node
@@ -27,12 +30,12 @@ int32_t main(const int32_t argc, char ** const argv)
 {
   int32_t ret = 0;
   try {
-    const char * node_name = "point_cloud_fusion_node";
-    const char * arg = rcutils_cli_get_option(argv, &argv[argc], "--node_name");
+    const char8_t * node_name = "point_cloud_fusion_node";
+    const char8_t * arg = rcutils_cli_get_option(argv, &argv[argc], "--node_name");
     if (nullptr != arg) {
       node_name = arg;
     }
-    const char * node_namespace = "";
+    const char8_t * node_namespace = "";
     arg = rcutils_cli_get_option(argv, &argv[argc], "--node_namespace");
     if (nullptr != arg) {
       node_namespace = arg;

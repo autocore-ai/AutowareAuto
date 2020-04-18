@@ -20,10 +20,14 @@
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <point_cloud_fusion/point_cloud_transform.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <common/types.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 class TestPCF : public ::testing::Test
 {
@@ -66,15 +70,15 @@ void check_pcl_eq(sensor_msgs::msg::PointCloud2 & msg1, sensor_msgs::msg::PointC
   EXPECT_EQ(msg1.header.stamp, msg2.header.stamp);
 
 
-  sensor_msgs::PointCloud2ConstIterator<float> x_it_1(msg1, "x");
-  sensor_msgs::PointCloud2ConstIterator<float> y_it_1(msg1, "y");
-  sensor_msgs::PointCloud2ConstIterator<float> z_it_1(msg1, "z");
-  sensor_msgs::PointCloud2ConstIterator<float> intensity_it_1(msg1, "intensity");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it_1(msg1, "x");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it_1(msg1, "y");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it_1(msg1, "z");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> intensity_it_1(msg1, "intensity");
 
-  sensor_msgs::PointCloud2ConstIterator<float> x_it_2(msg2, "x");
-  sensor_msgs::PointCloud2ConstIterator<float> y_it_2(msg2, "y");
-  sensor_msgs::PointCloud2ConstIterator<float> z_it_2(msg2, "z");
-  sensor_msgs::PointCloud2ConstIterator<float> intensity_it_2(msg2, "intensity");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it_2(msg2, "x");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it_2(msg2, "y");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it_2(msg2, "z");
+  sensor_msgs::PointCloud2ConstIterator<float32_t> intensity_it_2(msg2, "intensity");
 
   while (x_it_1 != x_it_1.end() &&
     y_it_1 != y_it_1.end() &&
@@ -149,7 +153,7 @@ TEST_F(TestPCF, test_basic_fusion) {
     std::make_shared<autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode>(
     "test_pcf_node", "", "points_concat", topics, "base_link", 55000U);
 
-  bool test_completed = false;
+  bool8_t test_completed = false;
   auto time0 = std::chrono::system_clock::now();
   auto t0 = to_msg_time(time0);
   auto t1 = to_msg_time(time0 + std::chrono::nanoseconds(1));
@@ -203,7 +207,7 @@ TEST_F(TestPCF, test_transformed_fusion) {
     std::make_shared<autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode>(
     "test_pcf_node", "", "points_concat", topics, "base_link", 55000U);
 
-  bool test_completed = false;
+  bool8_t test_completed = false;
   auto time0 = std::chrono::system_clock::now();
   auto t0 = to_msg_time(time0);
   auto t1 = to_msg_time(time0 + std::chrono::nanoseconds(1));
