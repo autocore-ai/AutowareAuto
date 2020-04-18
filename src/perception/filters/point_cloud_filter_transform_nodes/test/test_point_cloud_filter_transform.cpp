@@ -168,7 +168,6 @@ public:
 
   void process_pcl_data()
   {
-
   }
 
   // bool collect_pcl_data(
