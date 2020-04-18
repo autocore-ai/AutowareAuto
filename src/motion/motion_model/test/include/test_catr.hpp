@@ -65,7 +65,6 @@ TEST(catr_model, constant_acceleration)
   ASSERT_LT(fabsf(model[CatrState::ACCELERATION] - 1), TOL);
   ASSERT_LT(fabsf(model[CatrState::HEADING] - th), TOL);
   ASSERT_LT(fabsf(model[CatrState::TURN_RATE] - 0), TOL);
-
 }
 
 
@@ -294,7 +293,6 @@ TEST(catr_model, ca_jacobian)
   ASSERT_LT(fabsf(model[CatrState::ACCELERATION] - 1), TOL);
   ASSERT_LT(fabsf(model[CatrState::HEADING] + 3.14159 / 4), TOL);
   ASSERT_LT(fabsf(model[CatrState::TURN_RATE] - 0), TOL);
-
 }
 
 // check correctness of jacobian in constant velocity, constant turn rate case
@@ -305,7 +303,8 @@ TEST(catr_model, cvtr_jacobian)
   // constant velocity, turn rate model, path = circle
   Matrix<float32_t, 6, 6> F;
   // -45 degrees
-  const Matrix<float32_t, 6, 1> x((Eigen::Matrix<float32_t, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
+  const Matrix<float32_t, 6, 1>
+    x((Eigen::Matrix<float32_t, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
   Matrix<float32_t, 6, 1> dx[6];
 
   std::chrono::nanoseconds dt_(1000000LL);
@@ -338,7 +337,8 @@ TEST(catr_model, cvtr_jacobian)
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {
-          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta)) << i << ", " << j;
+          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta))
+            << i << ", " << j;
         }
       }
       // const float delta2 = (dx[j](i) - model[i]) / del;
@@ -355,7 +355,8 @@ TEST(catr_model, catr_jacobian)
   // general case
   Matrix<float32_t, 6, 6> F;
   // -45 degrees
-  const Matrix<float32_t, 6, 1> x((Eigen::Matrix<float32_t, 6, 1>() <<-10, 3, 5, 3, -0.5F, -0.3F).finished());
+  const Matrix<float32_t, 6, 1>
+    x((Eigen::Matrix<float32_t, 6, 1>() <<-10, 3, 5, 3, -0.5F, -0.3F).finished());
   Matrix<float32_t, 6, 1> dx[6];
   std::chrono::nanoseconds dt_(1000000LL);
   // compute deltas
@@ -387,7 +388,8 @@ TEST(catr_model, catr_jacobian)
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {
-          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta)) << i << ", " << j;
+          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta))
+            << i << ", " << j;
         }
       }
       // const float delta2 = (dx[j](i) - model[i]) / del;
@@ -395,5 +397,5 @@ TEST(catr_model, catr_jacobian)
     }
     // std::cerr << "\n";
   }
-
 }
+#endif  // TEST_CATR_HPP_
