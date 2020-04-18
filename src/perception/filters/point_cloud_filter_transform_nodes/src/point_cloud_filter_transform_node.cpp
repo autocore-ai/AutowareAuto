@@ -51,8 +51,8 @@ Transform PointCloud2FilterTransformNode::get_transform_from_parameters(const st
 }
 
 Transform get_transform(
-  double r_x, double r_y, double r_z, double r_w, double t_x,
-  double t_y, double t_z)
+  float64_t r_x, float64_t r_y, float64_t r_z, float64_t r_w, float64_t t_x,
+  float64_t t_y, float64_t t_z)
 {
   Transform ret;
   ret.rotation.x = r_x;

@@ -25,6 +25,9 @@
 #include <string>
 #include <vector>
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
 // FIXME(esteve): this function is copied from test_point_cloud_fusion.hpp
@@ -90,9 +93,9 @@ protected:
   }
 
   const uint32_t m_cloud_size{55000U};
-  const char * const m_ip{"127.0.0.1"};
+  const char8_t * const m_ip{"127.0.0.1"};
   const std::chrono::seconds m_init_timeout{std::chrono::seconds(5)};
-  const char * const m_frame_id{"base_link"};
+  const char8_t * const m_frame_id{"base_link"};
   const uint32_t m_sensor_id{0U};
   const float32_t m_start_angle = 0.0;
   const float32_t m_end_angle = 6.28;

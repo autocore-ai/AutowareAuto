@@ -33,6 +33,8 @@ namespace filters
 namespace point_cloud_filter_transform_nodes
 {
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 using geometry_msgs::msg::Transform;
 using sensor_msgs::msg::PointCloud2;
@@ -143,7 +145,7 @@ protected:
   /// \tparam PointType type with x, y, z.
   /// \param pt point with x, y, z
   /// \return True if the point is within the desired radius and angle limits. False otherwise.
-  bool point_not_filtered(const PointType & pt) const
+  bool8_t point_not_filtered(const PointType & pt) const
   {
     return m_angle_filter(pt) && m_distance_filter(pt);
   }

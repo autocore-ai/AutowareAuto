@@ -19,6 +19,7 @@ project(point_cloud_filter_transform_nodes)
 
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ### build node as library
