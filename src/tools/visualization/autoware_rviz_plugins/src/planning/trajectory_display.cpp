@@ -14,9 +14,13 @@
 // limitations under the License.
 
 #include <planning/trajectory_display.hpp>
+#include <common/types.hpp>
 
 #include <memory>
 #include <string>
+
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -44,7 +48,7 @@ void TrajectoryDisplay::load(const rviz_common::Config & config)
   m_marker_common->load(config);
 }
 
-void TrajectoryDisplay::update(float wall_dt, float ros_dt)
+void TrajectoryDisplay::update(float32_t wall_dt, float32_t ros_dt)
 {
   m_marker_common->update(wall_dt, ros_dt);
 }
@@ -84,8 +88,8 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_pose_marker
   marker->type = visualization_msgs::msg::Marker::ARROW;
   marker->action = visualization_msgs::msg::Marker::ADD;
   marker->ns = "trajectory_arrow";
-  marker->pose.position.x = static_cast<double>(point.x);
-  marker->pose.position.y = static_cast<double>(point.y);
+  marker->pose.position.x = static_cast<float64_t>(point.x);
+  marker->pose.position.y = static_cast<float64_t>(point.y);
   marker->pose.position.z = 0.0;
   marker->pose.orientation.x = 0.0;
   marker->pose.orientation.y = 0.0;
@@ -109,8 +113,8 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_velocity_ma
   marker->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   marker->action = visualization_msgs::msg::Marker::ADD;
   marker->ns = "trajectory_velocity";
-  marker->pose.position.x = static_cast<double>(point.x);
-  marker->pose.position.y = static_cast<double>(point.y);
+  marker->pose.position.x = static_cast<float64_t>(point.x);
+  marker->pose.position.y = static_cast<float64_t>(point.y);
   marker->pose.position.z = 0.1;
   marker->scale.z = 0.2;
   marker->color.a = 0.85F;  // Don't forget to set the alpha!
