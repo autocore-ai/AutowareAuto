@@ -162,7 +162,8 @@ bool8_t LidarIntegrationListener::is_success(
          has_valid_size(m_stats, m_expected_size));
 }
 
-void LidarIntegrationListener::console_statistics(const Statistics & stat, const char8_t * src) const
+void LidarIntegrationListener::console_statistics(
+  const Statistics & stat, const char8_t * src) const
 {
   RCLCPP_INFO(get_logger(), ("Statistics of " + std::string(src)).c_str());
   RCLCPP_INFO(get_logger(), "\tsuccess: %s", stat.success ? "true" : "false");
