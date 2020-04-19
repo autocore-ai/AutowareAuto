@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17) # For variant
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 # Node library
 ament_auto_add_library(joystick_vehicle_interface_node src/joystick_vehicle_interface_node.cpp)

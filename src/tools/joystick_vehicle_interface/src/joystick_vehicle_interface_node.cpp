@@ -12,10 +12,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <common/types.hpp>
+
 #include "joystick_vehicle_interface/joystick_vehicle_interface_node.hpp"
 
 #include <string>
 #include <type_traits>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 namespace joystick_vehicle_interface
 {
@@ -42,7 +47,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
         using MapT = std::remove_reference_t<decltype(map)>;
         using ValT = typename MapT::mapped_type;
         const auto val_raw =
-          param.get<std::conditional_t<std::is_floating_point<ValT>::value, double, int64_t>>();
+          param.get<std::conditional_t<std::is_floating_point<ValT>::value, float64_t, int64_t>>();
         map[key] = static_cast<ValT>(val_raw);
       }
     };
@@ -137,7 +142,7 @@ void JoystickVehicleInterfaceNode::init(
   const AxisScaleMap & axis_offset_map,
   const ButtonMap & button_map)
 {
-  const auto check = [](const std::string & topic) -> bool {
+  const auto check = [](const std::string & topic) -> bool8_t {
       return (!topic.empty()) && (topic != "null");
     };
   const auto qos = rclcpp::QoS{10U}.reliable().durability_volatile();
@@ -232,7 +237,7 @@ void JoystickVehicleInterfaceNode::on_joy(const sensor_msgs::msg::Joy::SharedPtr
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool JoystickVehicleInterfaceNode::update_state_command(const sensor_msgs::msg::Joy & msg)
+bool8_t JoystickVehicleInterfaceNode::update_state_command(const sensor_msgs::msg::Joy & msg)
 {
   auto ret = false;
   m_state_command = decltype(m_state_command) {};
@@ -254,7 +259,7 @@ bool JoystickVehicleInterfaceNode::update_state_command(const sensor_msgs::msg::
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool JoystickVehicleInterfaceNode::handle_active_button(Buttons button)
+bool8_t JoystickVehicleInterfaceNode::handle_active_button(Buttons button)
 {
   auto ret = true;
   using VSC = decltype(m_state_command);

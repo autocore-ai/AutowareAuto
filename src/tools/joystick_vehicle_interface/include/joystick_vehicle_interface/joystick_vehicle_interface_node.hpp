@@ -25,10 +25,13 @@
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+#include <common/types.hpp>
 
 #include <variant>
 #include <map>
 #include <string>
+
+using autoware::common::types::bool8_t;
 
 namespace joystick_vehicle_interface
 {
@@ -107,9 +110,9 @@ private:
   /// Callback for joystick subscription: compute control and state command and publish
   JOYSTICK_VEHICLE_INTERFACE_LOCAL void on_joy(const sensor_msgs::msg::Joy::SharedPtr msg);
   /// Compute state command
-  JOYSTICK_VEHICLE_INTERFACE_LOCAL bool update_state_command(const sensor_msgs::msg::Joy & msg);
+  JOYSTICK_VEHICLE_INTERFACE_LOCAL bool8_t update_state_command(const sensor_msgs::msg::Joy & msg);
   /// Given an active button, update the state command
-  JOYSTICK_VEHICLE_INTERFACE_LOCAL bool handle_active_button(Buttons button);
+  JOYSTICK_VEHICLE_INTERFACE_LOCAL bool8_t handle_active_button(Buttons button);
   /// Convert raw axis value with affine transform for type
   template<typename T>
   JOYSTICK_VEHICLE_INTERFACE_LOCAL
@@ -151,11 +154,11 @@ private:
   AxisScaleMap m_axis_scale_map{};
   AxisScaleMap m_axis_offset_map{};
   ButtonMap m_button_map{};
-  bool m_autonomous{false};
-  bool m_wipers_on{false};
-  bool m_headlights_on{false};
-  bool m_hand_brake_on{false};
-  bool m_horn_on{false};
+  bool8_t m_autonomous{false};
+  bool8_t m_wipers_on{false};
+  bool8_t m_headlights_on{false};
+  bool8_t m_hand_brake_on{false};
+  bool8_t m_horn_on{false};
   decltype(HighLevelControl::velocity_mps) m_velocity{};
 
   autoware_auto_msgs::msg::VehicleStateCommand m_state_command{};

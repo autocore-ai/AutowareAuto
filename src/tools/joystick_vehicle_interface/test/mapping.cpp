@@ -16,6 +16,7 @@
 #include <experimental/optional>
 #include <gtest/gtest.h>
 #include <joystick_vehicle_interface/joystick_vehicle_interface_node.hpp>
+#include <common/types.hpp>
 
 #include <chrono>
 #include <cmath>
@@ -27,6 +28,7 @@
 using joystick_vehicle_interface::Axes;
 using joystick_vehicle_interface::Buttons;
 using joystick_vehicle_interface::JoystickVehicleInterfaceNode;
+using autoware::common::types::bool8_t;
 
 enum class PubType
 {
@@ -145,7 +147,7 @@ TEST_P(joy_vi_test, basic_mapping)
     if (HasFailure()) {FAIL();}
   }
   // Helper
-  const auto axis_check_fn = [ = ](Axes axis, auto value) -> bool {
+  const auto axis_check_fn = [ = ](Axes axis, auto value) -> bool8_t {
       const auto it = param.axis_map.find(axis);
       if ((param.axis_map.end() != it) && (it->second < joy_msg.axes.size())) {
         const auto scale_it = param.axis_scale_map.find(axis);
