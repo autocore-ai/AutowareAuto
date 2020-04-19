@@ -32,8 +32,8 @@ template<typename T, uint64_t H, uint64_t W>
 void print(const Matrix<T, H, W> & A)
 {
   std::cerr << "\nPrint Matrix:\n\n";
-  for (int i = 0; i < H; ++i) {
-    for (int j = 0; j < W; ++j) {
+  for (uint64_t i = 0; i < H; ++i) {
+    for (uint64_t j = 0; j < W; ++j) {
       std::cerr << A(i, j) << ", \t";
     }
     std::cerr << "\n";
@@ -101,7 +101,6 @@ TEST(srcf_core, multivariate)
   Matrix<float32_t, 2, 1> h_row = H.row(0);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
-  int info = 1;
   // higher TOL to match matlab precision
   const float32_t TOL2 = 1.0E-4F;
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
@@ -209,7 +208,6 @@ TEST(srcf_core, DISABLED_degenerate)
   C << sigma * sigma, 0, 0, sigma * sigma;
   Matrix<float32_t, 2, 1> R({1, 1}), x;
   // cholesky on C
-  int info = 1;
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
 
   C(0, 1) = 0.0F;
@@ -438,8 +436,8 @@ TEST(esrcf, convergence)
   }
   P_last -= P_p;
   float32_t norm = 0.0F;
-  for (int i = 0; i < P_last.rows(); ++i) {
-    for (int j = 0; j < P_last.cols(); ++j) {
+  for (uint32_t i = 0; i < P_last.rows(); ++i) {
+    for (uint32_t j = 0; j < P_last.cols(); ++j) {
       norm += P_last(i, j) * P_last(i, j);
     }
   }
@@ -550,7 +548,6 @@ TEST(esrcf, hidden_state)
 TEST(esrcf, imm_mix)
 {
   static const uint32_t dim = 2U;
-  int info;
   Matrix<float32_t, dim, dim> P1, P2, P, C, GQ;
   Matrix<float32_t, dim, 1> x1, x2, x_mix;
   P1 << 2.0F, 2.0F, 2.0F, 4.0F;

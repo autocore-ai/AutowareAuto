@@ -42,7 +42,7 @@ namespace kalman_filter
 ///        to do any factorization on its own.
 /// \tparam NumStates dimensionality of state space
 /// \tparam ProcessNoiseDim dimensionality of process noise space
-template<int NumStates, int ProcessNoiseDim>
+template<int32_t NumStates, int32_t ProcessNoiseDim>
 class Esrcf
 {
   using state_vec_t = typename SrcfCore<NumStates, ProcessNoiseDim>::state_vec_t;
@@ -127,7 +127,7 @@ public:
   /// \param[in] z observation vector
   /// \param[in] H observation matrix: z = H * x
   /// \param[in] R_diag diagonal of measurement noise covariance matrix
-  template<int NumObs>
+  template<int32_t NumObs>
   float32_t observation_update(
     const Eigen::Matrix<float32_t, NumObs, 1U> & z,
     const Eigen::Matrix<float32_t, NumObs, NumStates> & H,

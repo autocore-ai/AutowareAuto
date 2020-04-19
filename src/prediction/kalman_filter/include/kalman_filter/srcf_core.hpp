@@ -42,7 +42,7 @@ using index_t = Eigen::Index;
 ///        for the square root covariance filter.
 /// \tparam NumStates dimensionality of state space
 /// \tparam ProcessNoiseDim dimensionality of process noise space
-template<int NumStates, int ProcessNoiseDim>
+template<int32_t NumStates, int32_t ProcessNoiseDim>
 class SrcfCore
 {
 public:
@@ -65,7 +65,7 @@ public:
   /// \param[in] row The row of B to be zero'd
   /// \param[in] col_start The starting point in the given row of B to be zero'd
   /// \param[in] col_end The ending point in the given row of B to be zero'd
-  template<int ColN1, int ColN2>
+  template<int32_t ColN1, int32_t ColN2>
   static void zero_row(
     Eigen::Matrix<float32_t, NumStates, ColN1> & A,
     Eigen::Matrix<float32_t, NumStates, ColN2> & B,
@@ -113,7 +113,7 @@ public:
   /// \param[inout] A The matrix that will get lower triangularized
   /// \param[inout] B The remainder matrix that will be zero'd during triangularization
   /// \param[in] b_rank The number of columns to zero out in B
-  template<int NCols2>
+  template<int32_t NCols2>
   static void right_lower_triangularize_matrices(
     square_mat_t & A,
     Eigen::Matrix<float32_t, NumStates, NCols2> & B,
