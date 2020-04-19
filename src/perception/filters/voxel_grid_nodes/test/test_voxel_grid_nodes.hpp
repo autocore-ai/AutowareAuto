@@ -50,7 +50,6 @@ protected:
   const std::size_t m_capacity;
 
 public:
-
   VoxelAlgorithm() : m_capacity(10U)
   {
     // Initialize config
