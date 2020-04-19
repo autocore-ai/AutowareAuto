@@ -34,6 +34,7 @@ namespace voxel_grid
 {
 
 using autoware::common::types::PointXYZIF;
+using autoware::common::types::float32_t;
 
 /// \brief Default addition operator for a point type for use with CentroidVoxel
 /// \tparam PointT Point type, assumed to have fields x, y, and z
@@ -56,7 +57,7 @@ VOXEL_GRID_PUBLIC PointT operator+(const PointT & lhs, const PointT & rhs)
 /// \param[in] rhs Right hand operator, a floating point value
 /// \return lhs * rhs
 template<typename PointT>
-VOXEL_GRID_PUBLIC PointT operator*(const PointT & lhs, const float rhs)
+VOXEL_GRID_PUBLIC PointT operator*(const PointT & lhs, const float32_t rhs)
 {
   PointT ret = lhs;
   ret.x *= rhs;
@@ -91,7 +92,7 @@ template<>
 inline VOXEL_GRID_PUBLIC PointXYZIF operator*(
   //lint -e{9073} NOLINT This is a template specialization, not a token mismatch
   const PointXYZIF & lhs,
-  const float rhs)
+  const float32_t rhs)
 {
   PointXYZIF ret = lhs;
   ret.x *= rhs;
@@ -102,12 +103,12 @@ inline VOXEL_GRID_PUBLIC PointXYZIF operator*(
 }
 
 /// \brief A specialization of the Voxel class, accumulates points to a moving centroid
-/// \tparam PointT The point type, must have operator+ and operator*(float) defined, and
-///                float members x, y, and z
+/// \tparam PointT The point type, must have operator+ and operator*(float32_t) defined, and
+///                float32_t members x, y, and z
 ///
 /// A note on extending this to point types with additional fields: The default behavior only
 /// updates the x, y, and z fields of the points. To get proper behavior for other types,
-/// you can define operator+(PointT, PointT) and operator*(PointT, float), in this namespace
+/// you can define operator+(PointT, PointT) and operator*(PointT, float32_t), in this namespace
 /// or the global namespace to get proper resolution.
 template<typename PointT>
 class VOXEL_GRID_PUBLIC CentroidVoxel : public Voxel<PointT>
@@ -118,9 +119,9 @@ public:
   /// \param[in] pt The observed point
   void add_observation(const PointT & pt)
   {
-    const float last = static_cast<float>(Voxel<PointT>::count());
+    const float32_t last = static_cast<float32_t>(Voxel<PointT>::count());
     Voxel<PointT>::set_count(Voxel<PointT>::count() + 1U);
-    const float count_inv = 1.0F / static_cast<float>(Voxel<PointT>::count());
+    const float32_t count_inv = 1.0F / static_cast<float32_t>(Voxel<PointT>::count());
     // Incremental update: u' = ((u * n) + x) / (n + 1), u = mean, x = obs, n = count
     const PointT tmp = ((Voxel<PointT>::get() * last) + pt) * count_inv;
     Voxel<PointT>::set_centroid(tmp);
@@ -137,7 +138,7 @@ public:
 };  // class CentroidVoxel
 
 /// \brief A specialization of the Voxel class, only returns centroid of voxel
-/// \tparam PointT The point type, must have float members x, y, and z
+/// \tparam PointT The point type, must have float32_t members x, y, and z
 template<typename PointT>
 class VOXEL_GRID_PUBLIC ApproximateVoxel : public Voxel<PointT>
 {

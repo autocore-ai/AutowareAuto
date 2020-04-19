@@ -13,8 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <limits>
 #include "voxel_grid/voxel_grid.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -26,9 +31,9 @@ namespace voxel_grid
 {
 ////////////////////////////////////////////////////////////////////////////////
 uint64_t Config::check_basis_direction(
-  const float min,
-  const float max,
-  const float size) const
+  const float32_t min,
+  const float32_t max,
+  const float32_t size) const
 {
   // check leaf size against lb to prevent division by zero
   //lint -e{1938} read only access is ok NOLINT
@@ -40,12 +45,12 @@ uint64_t Config::check_basis_direction(
   }
   // This family of checks is to ensure that you don't get weird casting effects due to huge
   // floating point values
-  const double dmax = static_cast<double>(max);
-  const double dmin = static_cast<double>(min);
-  const double width = (dmax - dmin) / static_cast<double>(size);
+  const float64_t dmax = static_cast<float64_t>(max);
+  const float64_t dmin = static_cast<float64_t>(min);
+  const float64_t width = (dmax - dmin) / static_cast<float64_t>(size);
   // This check is to ensure that you don't get weird casting effects due to huge
   // floating point values
-  constexpr double fltmax = static_cast<double>(std::numeric_limits<float>::max());
+  constexpr float64_t fltmax = static_cast<float64_t>(std::numeric_limits<float32_t>::max());
   if (fltmax <= width) {
     throw std::domain_error("voxel_grid::Config: voxel size approaching floating point limit");
   }
@@ -66,7 +71,7 @@ Config::Config(
   // tiny function to check if the multiplication of unsigned longs will overflow
   auto mul_will_overflow_u64 = [](const uint64_t x, const uint64_t y)
     {
-      bool retval = false;
+      bool8_t retval = false;
       if ((x != 0U) && (y != 0U)) {
         retval = x > (UINT64_MAX / y);
       }
@@ -91,9 +96,9 @@ Config::Config(
   // small fudging to prevent weird boundary effects
   // (e.g (x=xmax, y) rolls index over to (x=0, y+1)
   //lint -e{1938} read only access is fine NOLINT
-  m_max_point.x -= std::numeric_limits<float>::epsilon();
-  m_max_point.y -= std::numeric_limits<float>::epsilon();
-  m_max_point.z -= std::numeric_limits<float>::epsilon();
+  m_max_point.x -= std::numeric_limits<float32_t>::epsilon();
+  m_max_point.y -= std::numeric_limits<float32_t>::epsilon();
+  m_max_point.z -= std::numeric_limits<float32_t>::epsilon();
 }
 ////////////////////////////////////////////////////////////////////////////////
 const PointXYZ & Config::get_min_point() const

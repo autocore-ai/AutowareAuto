@@ -20,10 +20,13 @@ project(voxel_grid)
 
 ## dependencies
 find_package(autoware_auto_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(lidar_utils REQUIRED)
 find_package(autoware_auto_geometry REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)

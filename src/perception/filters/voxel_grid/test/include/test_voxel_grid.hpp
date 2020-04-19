@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include "voxel_grid/voxel_grid.hpp"
 namespace test_voxel_grid
 {
@@ -24,6 +25,8 @@ using autoware::perception::filters::voxel_grid::ApproximateVoxel;
 using autoware::perception::filters::voxel_grid::CentroidVoxel;
 using autoware::perception::filters::voxel_grid::VoxelGrid;
 using autoware::perception::filters::voxel_grid::PointXYZIF;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 /// Hold some basic configuration parameters
 class VoxelTest : public ::testing::Test
@@ -64,7 +67,7 @@ public:
   using VoxelTest::VoxelTest;
 
 protected:
-  PointT make(const float x, const float y, const float z) const
+  PointT make(const float32_t x, const float32_t y, const float32_t z) const
   {
     PointT pt;
     pt.x = x;
@@ -93,9 +96,9 @@ TEST_F(VoxelTest, basic)
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().y, min_point.y);
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().z, min_point.z);
   // Max point
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x, max_point.x - std::numeric_limits<float>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y, max_point.y - std::numeric_limits<float>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z, max_point.z - std::numeric_limits<float>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x, max_point.x - std::numeric_limits<float32_t>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y, max_point.y - std::numeric_limits<float32_t>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z, max_point.z - std::numeric_limits<float32_t>::epsilon());
   // Voxel Size
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().x, voxel_size.x);
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().y, voxel_size.y);
@@ -131,8 +134,8 @@ TEST_F(VoxelTest, bad_cases)
   // Overflow: y stride
   tmp = min_point;
   PointXYZ tmp2 = max_point;
-  constexpr float min = -1.0E13F;
-  constexpr float max = 1.0E13F;
+  constexpr float32_t min = -1.0E13F;
+  constexpr float32_t max = 1.0E13F;
   tmp.x = min;
   tmp2.x = max;
   tmp.y = min;
@@ -146,8 +149,8 @@ TEST_F(VoxelTest, bad_cases)
   tmp.y = min;
   tmp2.y = max;
   EXPECT_THROW(Config(tmp, tmp2, voxel_size, capacity), std::domain_error);
-  constexpr float min2 = -std::numeric_limits<float>::max();
-  constexpr float max2 = std::numeric_limits<float>::max();
+  constexpr float32_t min2 = -std::numeric_limits<float32_t>::max();
+  constexpr float32_t max2 = std::numeric_limits<float32_t>::max();
   // Overflow: x width
   tmp = min_point;
   tmp2 = max_point;
@@ -167,7 +170,7 @@ TEST_F(VoxelTest, bad_cases)
   tmp2.z = max2;
   EXPECT_THROW(Config(tmp, tmp2, voxel_size, capacity), std::domain_error);
   // Overflow 2
-  constexpr float min3 = std::numeric_limits<float>::min();
+  constexpr float32_t min3 = std::numeric_limits<float32_t>::min();
   // Overflow: x width
   tmp = min_point;
   tmp2 = max_point;
@@ -346,11 +349,11 @@ TYPED_TEST(TypedVoxelTest, voxel)
 {
   Voxel<TypeParam> v1;
   // Dispatches to calls to occupied() and count()
-  EXPECT_FALSE(static_cast<bool>(v1));
+  EXPECT_FALSE(static_cast<bool8_t>(v1));
   // We have no guarantees on how PointT might get default initialized
   const TypeParam p = this->make(1.0F, -1.0F, 1.5F);
   Voxel<TypeParam> v2{p};
-  EXPECT_TRUE(static_cast<bool>(v2));
+  EXPECT_TRUE(static_cast<bool8_t>(v2));
   EXPECT_EQ(v2.count(), 1U);
   // Dispatches to get()
   const TypeParam q{static_cast<TypeParam>(v2)};
@@ -358,7 +361,7 @@ TYPED_TEST(TypedVoxelTest, voxel)
   EXPECT_EQ(q.y, -1.0F);
   EXPECT_EQ(q.z, 1.5F);
   v2.clear();
-  EXPECT_FALSE(static_cast<bool>(v2));
+  EXPECT_FALSE(static_cast<bool8_t>(v2));
   EXPECT_EQ(v2.count(), 0U);
   EXPECT_THROW(v2.get(), std::out_of_range);
 }
@@ -369,11 +372,11 @@ TYPED_TEST(TypedVoxelTest, centroid_voxel)
   // simple xyz point
   CentroidVoxel<TypeParam> v1;
   // Exercise configure noop
-  EXPECT_FALSE(static_cast<bool>(v1));
+  EXPECT_FALSE(static_cast<bool8_t>(v1));
   v1.configure(*this->cfg_ptr, 0U);
-  EXPECT_FALSE(static_cast<bool>(v1));
+  EXPECT_FALSE(static_cast<bool8_t>(v1));
   TypeParam pt1;
-  const float TOL = 1.0E-6F;
+  const float32_t TOL = 1.0E-6F;
   // Previously checked that everything was 0, but we can't get from an empty voxel
   v1.add_observation(this->make(1.0F, 1.0F, 1.0F));
   pt1 = v1.get();
@@ -412,7 +415,7 @@ TYPED_TEST(TypedVoxelTest, centroid_voxel)
 /// approximate centroid
 TYPED_TEST(TypedVoxelTest, approximate_centroid)
 {
-  constexpr float TOL = 1.0E-6F;
+  constexpr float32_t TOL = 1.0E-6F;
   TypeParam pt;
   // Validate computation of centroids
   pt = this->cfg_ptr->template centroid<TypeParam>(0U);
@@ -473,7 +476,7 @@ TYPED_TEST(TypedVoxelTest, approximate_centroid)
 /// test weirdness: indices should not roll over
 TYPED_TEST(TypedVoxelTest, small_voxel)
 {
-  constexpr float sz = 0.03F;
+  constexpr float32_t sz = 0.03F;
   this->min_point.x = -130.0F;
   this->min_point.y = -130.0F;
   this->min_point.z = -3.0F;
@@ -532,17 +535,17 @@ public:
   }
 
 protected:
-  bool check(const PointT & pt, const PointT & ref)
+  bool8_t check(const PointT & pt, const PointT & ref)
   {
-    constexpr float TOL = 1.0E-6F;
+    constexpr float32_t TOL = 1.0E-6F;
     return (fabsf(pt.x - ref.x) <= TOL) &&
            (fabsf(pt.y - ref.y) <= TOL) &&
            (fabsf(pt.z - ref.z) <= TOL);
   }
   template<std::size_t N>
-  bool check(const PointT & pt, const std::array<PointT, N> & ref, const std::size_t max = N)
+  bool8_t check(const PointT & pt, const std::array<PointT, N> & ref, const std::size_t max = N)
   {
-    bool ret = false;
+    bool8_t ret = false;
     for (std::size_t idx = 0U; idx < max; ++idx) {
       const auto tmp = ref[idx];
       if (check(pt, tmp)) {

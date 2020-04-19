@@ -21,8 +21,11 @@
 
 #include <voxel_grid/config.hpp>
 #include <voxel_grid/voxels.hpp>
+#include <common/types.hpp>
 #include <forward_list>
 #include <unordered_map>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -176,7 +179,7 @@ public:
   }
   /// \brief Whether the voxel grid is empty
   /// \return True or false
-  bool empty() const
+  bool8_t empty() const
   {
     return m_map.empty();
   }
@@ -187,7 +190,7 @@ private:
   // Mechanisms to support output queueing in static memory
   OutputQueue m_output_pool;
   OutputQueue m_output;
-  bool m_new_voxels_called;
+  bool8_t m_new_voxels_called;
   typename OutputQueue::iterator m_last_output_begin;
 };  // class VoxelGrid
 

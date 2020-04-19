@@ -153,8 +153,8 @@ The input to the voxel grid data structure is an arbitrary point type that the v
 templated on.
 
 This voxel must have the following properties for successful compilation:
-- public float members x, y, and z
-- If using `CentroidVoxel`, `operator+` and `operator*(float)` must be defined
+- public float32_t members x, y, and z
+- If using `CentroidVoxel`, `operator+` and `operator*(float32_t)` must be defined
 
 # Outputs
 
