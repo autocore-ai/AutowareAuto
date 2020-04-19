@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "gtest/gtest.h"
-#include "test_euclidean_cluster.h"
+#include "test_euclidean_cluster.hpp"
 // #include "test_euclidean_segmenter.hpp"
 
 int32_t main(int32_t argc, char ** argv)

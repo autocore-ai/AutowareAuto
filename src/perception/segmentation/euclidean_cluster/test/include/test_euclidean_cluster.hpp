@@ -20,7 +20,7 @@
 
 #include "euclidean_cluster/euclidean_cluster.hpp"
 
-#include "test_euclidean_cluster_aux.h"
+#include "test_euclidean_cluster_aux.hpp"
 
 using autoware::common::types::float32_t;
 

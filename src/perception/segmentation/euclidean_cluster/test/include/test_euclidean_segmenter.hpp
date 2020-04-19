@@ -15,7 +15,7 @@
 
 #include <geometry/bounding_box_2d.hpp>
 #include <common/types.hpp>
-#include <test_euclidean_cluster_aux.h>
+#include <test_euclidean_cluster_aux.hpp>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
