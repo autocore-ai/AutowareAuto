@@ -12,9 +12,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+#ifndef TEST_KALMAN_FILTER_HPP_
+#define TEST_KALMAN_FILTER_HPP_
+
 #include <common/types.hpp>
-#include <chrono>
 #include <Eigen/Cholesky>
+#include <chrono>
+#include <limits>
 #include "kalman_filter/srcf_core.hpp"
 #include "kalman_filter/esrcf.hpp"
 #include "motion_model/constant_velocity.hpp"
@@ -610,3 +615,4 @@ TEST(esrcf, imm_mix)
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::stop();
 }
+#endif  // TEST_KALMAN_FILTER_HPP_
