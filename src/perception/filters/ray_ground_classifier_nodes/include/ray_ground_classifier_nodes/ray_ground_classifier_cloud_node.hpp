@@ -107,7 +107,7 @@ private:
   const std::size_t m_pcl_size;
   const std::string m_frame_id;
   // Basic stateful stuff, will get refactored after we have a proper state machine implementation
-  bool m_has_failed;
+  bool8_t m_has_failed;
   // publishers and subscribers
   const std::chrono::nanoseconds m_timeout;
   const rclcpp::Subscription<PointCloud2>::SharedPtr m_raw_sub_ptr;

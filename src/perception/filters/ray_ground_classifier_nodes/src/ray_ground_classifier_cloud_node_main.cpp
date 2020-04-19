@@ -14,13 +14,16 @@
 // limitations under the License.
 #include <rcutils/cmdline_parser.h>
 #include <rclcpp/rclcpp.hpp>
+#include <common/types.hpp>
 
 #include <memory>
 #include <string>
 
 #include "ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp"
 
-constexpr const char * NODE_NAME = "ray_ground_classifier";
+using autoware::common::types::char8_t;
+
+constexpr const char8_t * NODE_NAME = "ray_ground_classifier";
 
 int32_t main(const int32_t argc, char * argv[])
 {
