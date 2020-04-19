@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
+#include <common/types.hpp>
 #include <signal.h>
 #include <rcutils/cmdline_parser.h>
 #include <rclcpp/rclcpp.hpp>

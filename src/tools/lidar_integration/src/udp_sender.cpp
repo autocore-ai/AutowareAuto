@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <lidar_integration/udp_sender.hpp>
+#include <common/types.hpp>
 
 #include <string.h>
 #include <arpa/inet.h>
@@ -20,10 +21,12 @@
 #include <stdexcept>
 #include <sstream>
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
 
 UdpSenderBase::UdpSenderBase(
-  const char * const ip, const uint16_t port,
-  const bool ipv6)
+  const char8_t * const ip, const uint16_t port,
+  const bool8_t ipv6)
 : m_socket(-1)
 {
   // Create socket

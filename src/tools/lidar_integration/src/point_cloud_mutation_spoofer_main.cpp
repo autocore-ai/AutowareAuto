@@ -81,7 +81,7 @@ int32_t main(const int32_t argc, char8_t ** const argv)
   help_msg << "--topic\tPublishing topic of input pointcloud 2 message.\t" <<
     "nonground_points" << std::endl;
   arg = rcutils_cli_get_option(argv, &argv[argc], "--topic");
-  const char * topic = "nonground_points";
+  const char8_t * topic = "nonground_points";
   if (nullptr != arg) {
     topic = arg;
   }

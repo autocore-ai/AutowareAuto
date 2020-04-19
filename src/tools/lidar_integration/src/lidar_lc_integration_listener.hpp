@@ -161,8 +161,8 @@ private:
     }
   }
 
-  static constexpr char const * node_get_state_topic = "/lidar_detector_managed/get_state";
-  static constexpr char const * node_change_state_topic = "/lidar_detector_managed/change_state";
+  static constexpr char8_t const * node_get_state_topic = "/lidar_detector_managed/get_state";
+  static constexpr char8_t const * node_change_state_topic = "/lidar_detector_managed/change_state";
 
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::GetState>> client_get_state_;
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;

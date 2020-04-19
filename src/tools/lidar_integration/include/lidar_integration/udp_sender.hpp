@@ -17,16 +17,20 @@
 #define LIDAR_INTEGRATION__UDP_SENDER_HPP_
 
 #include <lidar_integration/visibility_control.hpp>
+#include <common/types.hpp>
 
 #include <stdint.h>
 #include <netinet/in.h>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
 
 class LIDAR_INTEGRATION_PUBLIC UdpSenderBase
 {
 public:
   UdpSenderBase(
-    const char * const ip, const uint16_t port,
-    const bool ipv6 = false);
+    const char8_t * const ip, const uint16_t port,
+    const bool8_t ipv6 = false);
 
 protected:
   void send(const void * const data, const size_t length) const;

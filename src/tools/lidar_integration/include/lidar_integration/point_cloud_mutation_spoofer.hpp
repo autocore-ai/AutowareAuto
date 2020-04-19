@@ -36,7 +36,7 @@ class LIDAR_INTEGRATION_PUBLIC PointCloudMutationSpooferNode : public rclcpp::No
 {
 public:
   PointCloudMutationSpooferNode(
-    const char * topic,
+    const char8_t * topic,
     const uint32_t step_mean,
     const uint32_t step_std,
     const uint32_t width_mean,

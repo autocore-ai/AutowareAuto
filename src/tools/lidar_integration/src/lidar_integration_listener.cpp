@@ -13,12 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 #include <cmath>
 #include <string>
 #include "lidar_integration/lidar_integration_listener.hpp"
 
 namespace lidar_integration
 {
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 void LidarIntegrationListener::init_statistics(Statistics & stats)
 {
@@ -54,10 +60,10 @@ void LidarIntegrationListener::callback(const uint32_t size)
 
 LidarIntegrationListener::LidarIntegrationListener(
   const std::string & name,
-  const float expected_period_ms,
+  const float32_t expected_period_ms,
   const uint32_t expected_size,
-  const float relative_tolerance_period,
-  const float relative_tolerance_size)
+  const float32_t relative_tolerance_period,
+  const float32_t relative_tolerance_size)
 : Node(name),
   m_expected_period_us(expected_period_ms * 1000.0F),
   m_relative_tolerance(relative_tolerance_period),
@@ -71,9 +77,9 @@ LidarIntegrationListener::LidarIntegrationListener(
   RCLCPP_INFO(get_logger(), "\texpected_size: %u", expected_size);
 
   RCLCPP_INFO(get_logger(), "\trelative_tolerance_period: %f",
-    static_cast<double>(relative_tolerance_period));
+    static_cast<float64_t>(relative_tolerance_period));
   RCLCPP_INFO(get_logger(), "\trelative_tolerance_size: %f",
-    static_cast<double>(relative_tolerance_size));
+    static_cast<float64_t>(relative_tolerance_size));
 
   RCLCPP_INFO(get_logger(), "LidarIntegrationListener initialized. ");
 }
@@ -82,69 +88,69 @@ LidarIntegrationListener::~LidarIntegrationListener()
 {
 }
 
-bool LidarIntegrationListener::has_valid_period(const Statistics & stats) const
+bool8_t LidarIntegrationListener::has_valid_period(const Statistics & stats) const
 {
-  const float sample_duration_us =
-    std::chrono::duration_cast<std::chrono::duration<float, std::micro>>(
+  const float32_t sample_duration_us =
+    std::chrono::duration_cast<std::chrono::duration<float32_t, std::micro>>(
     stats.last_pub_time - stats.first_pub_time).count();
-  bool ret = false;
+  bool8_t ret = false;
   if (stats.count > 1U) {
-    const float sample_period_us =
-      sample_duration_us / (static_cast<float>(stats.count) - 1.0F);
+    const float32_t sample_period_us =
+      sample_duration_us / (static_cast<float32_t>(stats.count) - 1.0F);
     ret = std::abs(sample_period_us - m_expected_period_us) <
       m_relative_tolerance * m_expected_period_us;
 
-    RCLCPP_INFO(get_logger(), "Period: %0.2f", static_cast<double>(sample_period_us));
+    RCLCPP_INFO(get_logger(), "Period: %0.2f", static_cast<float64_t>(sample_period_us));
     RCLCPP_INFO(get_logger(), "Count: %u", stats.count);
     RCLCPP_INFO(get_logger(), "Period difference abs: %0.2f",
-      static_cast<double>(std::abs(sample_period_us - m_expected_period_us)));
+      static_cast<float64_t>(std::abs(sample_period_us - m_expected_period_us)));
     RCLCPP_INFO(get_logger(), "Period difference tolerance: %0.2f",
-      static_cast<double>(m_relative_tolerance * m_expected_period_us));
+      static_cast<float64_t>(m_relative_tolerance * m_expected_period_us));
 
-    printf("Sample Duration: %0.0f\n", static_cast<double>(sample_duration_us));
-    printf("Period: %0.1f\n", static_cast<double>(sample_period_us));
-    printf("Count: %0.0f\n", static_cast<double>(stats.count));
+    printf("Sample Duration: %0.0f\n", static_cast<float64_t>(sample_duration_us));
+    printf("Period: %0.1f\n", static_cast<float64_t>(sample_period_us));
+    printf("Count: %0.0f\n", static_cast<float64_t>(stats.count));
     printf("Period difference abs:       %0.1f\n",
-      static_cast<double>(std::abs(sample_period_us - m_expected_period_us)));
+      static_cast<float64_t>(std::abs(sample_period_us - m_expected_period_us)));
     printf("Period difference tolerance: %0.1f\n",
-      static_cast<double>(m_relative_tolerance * m_expected_period_us));
+      static_cast<float64_t>(m_relative_tolerance * m_expected_period_us));
   }
 
   return ret;
 }
 
-bool LidarIntegrationListener::has_valid_size(
+bool8_t LidarIntegrationListener::has_valid_size(
   const Statistics & stats, const uint32_t expected_size) const
 {
-  bool ret = false;
+  bool8_t ret = false;
   if (stats.count > 1U) {
-    const float mean_size =
-      static_cast<float>(stats.total_size) / (static_cast<float>(stats.count) - 1.0F);
+    const float32_t mean_size =
+      static_cast<float32_t>(stats.total_size) / (static_cast<float32_t>(stats.count) - 1.0F);
 
-    RCLCPP_INFO(get_logger(), "Mean size: %0.2f", static_cast<double>(mean_size));
+    RCLCPP_INFO(get_logger(), "Mean size: %0.2f", static_cast<float64_t>(mean_size));
     RCLCPP_INFO(get_logger(), "Error: %0.2f",
-      static_cast<double>(std::abs(mean_size - static_cast<float>(expected_size))));
+      static_cast<float64_t>(std::abs(mean_size - static_cast<float32_t>(expected_size))));
     RCLCPP_INFO(get_logger(), "Size difference tolerance: %0.2f",
-      static_cast<double>(m_relative_size_tolerance * static_cast<float>(expected_size)));
-    RCLCPP_INFO(get_logger(), "Actual size difference: %0.2f", static_cast<double>(std::abs(
-        mean_size - static_cast<float>(expected_size))));
+      static_cast<float64_t>(m_relative_size_tolerance * static_cast<float32_t>(expected_size)));
+    RCLCPP_INFO(get_logger(), "Actual size difference: %0.2f", static_cast<float64_t>(std::abs(
+        mean_size - static_cast<float32_t>(expected_size))));
 
-    printf("Mean size: %0.2f\n", static_cast<double>(mean_size));
+    printf("Mean size: %0.2f\n", static_cast<float64_t>(mean_size));
     printf("Size difference tolerance: %0.2f\n",
-      static_cast<double>(m_relative_size_tolerance * static_cast<float>(expected_size)));
+      static_cast<float64_t>(m_relative_size_tolerance * static_cast<float32_t>(expected_size)));
     printf("Actual size difference:    %0.2f\n",
-      static_cast<double>(std::abs(mean_size - static_cast<float>(expected_size))));
+      static_cast<float64_t>(std::abs(mean_size - static_cast<float32_t>(expected_size))));
 
-    ret = std::abs(mean_size - static_cast<float>(expected_size)) <
-      m_relative_size_tolerance * static_cast<float>(expected_size);
+    ret = std::abs(mean_size - static_cast<float32_t>(expected_size)) <
+      m_relative_size_tolerance * static_cast<float32_t>(expected_size);
   }
 
   return ret;
 }
 
-bool LidarIntegrationListener::is_success(
+bool8_t LidarIntegrationListener::is_success(
   const rclcpp::SubscriptionBase * const sub_ptr,
-  const char * const src) const
+  const char8_t * const src) const
 {
   if (sub_ptr != nullptr) {
     console_statistics(m_stats, src);
@@ -156,7 +162,7 @@ bool LidarIntegrationListener::is_success(
          has_valid_size(m_stats, m_expected_size));
 }
 
-void LidarIntegrationListener::console_statistics(const Statistics & stat, const char * src) const
+void LidarIntegrationListener::console_statistics(const Statistics & stat, const char8_t * src) const
 {
   RCLCPP_INFO(get_logger(), ("Statistics of " + std::string(src)).c_str());
   RCLCPP_INFO(get_logger(), "\tsuccess: %s", stat.success ? "true" : "false");
@@ -171,10 +177,10 @@ void LidarIntegrationListener::console_statistics(const Statistics & stat, const
 ////////////////////////////////////////////////////////////////////////////////
 LidarIntegrationPclListener::LidarIntegrationPclListener(
   const std::string & topic,
-  const float expected_period_ms,
+  const float32_t expected_period_ms,
   const uint32_t expected_size,
-  const float relative_tolerance_period,
-  const float relative_tolerance_size,
+  const float32_t relative_tolerance_period,
+  const float32_t relative_tolerance_size,
   const std::string & name)
 : LidarIntegrationListener{
     name,
@@ -190,17 +196,17 @@ LidarIntegrationPclListener::LidarIntegrationPclListener(
 {
   RCLCPP_INFO(get_logger(), ("\tpcl_topic1: " + topic).c_str());
 }
-bool LidarIntegrationPclListener::is_success() const
+bool8_t LidarIntegrationPclListener::is_success() const
 {
   return LidarIntegrationListener::is_success(m_sub_ptr.get(), "pcl1");
 }
 ////////////////////////////////////////////////////////////////////////////////
 LidarIntegrationBoxListener::LidarIntegrationBoxListener(
   const std::string & topic,
-  const float expected_period_ms,
+  const float32_t expected_period_ms,
   const uint32_t expected_size,
-  const float relative_tolerance_period,
-  const float relative_tolerance_size,
+  const float32_t relative_tolerance_period,
+  const float32_t relative_tolerance_size,
   const std::string & name)
 : LidarIntegrationListener{
     name,
@@ -215,7 +221,7 @@ LidarIntegrationBoxListener::LidarIntegrationBoxListener(
 {
   RCLCPP_INFO(get_logger(), ("\tbox_topic: " + topic).c_str());
 }
-bool LidarIntegrationBoxListener::is_success() const
+bool8_t LidarIntegrationBoxListener::is_success() const
 {
   return LidarIntegrationListener::is_success(m_sub_ptr.get(), "box");
 }

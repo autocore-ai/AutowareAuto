@@ -33,9 +33,9 @@ class LIDAR_INTEGRATION_PUBLIC Vlp16IntegrationSpoofer
 {
 public:
   Vlp16IntegrationSpoofer(
-    const char * const ip,
+    const char8_t * const ip,
     const uint16_t port,
-    const float rpm);
+    const float32_t rpm);
   ~Vlp16IntegrationSpoofer();
 
   void start();
@@ -45,18 +45,18 @@ public:
   const uint32_t & send_count() const {return m_spoofer.send_count();}
 
   /// rpm min speed
-  static constexpr float MIN_RPM = 300.0F;
+  static constexpr float32_t MIN_RPM = 300.0F;
   /// rpm max speed
-  static constexpr float MAX_RPM = 1200.0F;
+  static constexpr float32_t MAX_RPM = 1200.0F;
 
 private:
   class SpoofTask
   {
 public:
     SpoofTask(
-      const char * const ip,
+      const char8_t * const ip,
       const uint16_t port,
-      const float rpm,
+      const float32_t rpm,
       const std::atomic_bool & running);
 
     const uint32_t & send_count() const {return m_send_count;}
@@ -82,8 +82,8 @@ private:
     /// resolution of azimuth angle: number of points in a full rotation
     static constexpr uint16_t AZIMUTH_ROTATION_RESOLUTION = 36000U;
     /// conversion from a degree (vlp) to idx
-    static constexpr float DEG2IDX =
-      static_cast<float>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F;
+    static constexpr float32_t DEG2IDX =
+      static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F;
     /// how intensity is quantized: 1 byte = 256 possible values
     static constexpr uint32_t NUM_INTENSITY_VALUES = 256U;
 
@@ -94,9 +94,9 @@ private:
     static constexpr uint16_t NUM_POINTS_PER_BLOCK = 32U;
 
     /// full (16 point) fire sequence takes this long to cycle
-    static constexpr float FIRE_SEQ_OFFSET_US = 55.296F;
+    static constexpr float32_t FIRE_SEQ_OFFSET_US = 55.296F;
     /// one laser fires for this long
-    static constexpr float FIRE_DURATION_US = 2.304F;
+    static constexpr float32_t FIRE_DURATION_US = 2.304F;
 
     /// \brief corresponds to an individual laser's firing and return
     /// First two bytes are distance, last byte is intensity
@@ -129,10 +129,10 @@ private:
 
     void init_packet(
       Packet & pkt,
-      const float rpm,
+      const float32_t rpm,
       const uint16_t (& distances)[RAY_SIZE]) const;
 
-    void initialize_packets(const float rpm);
+    void initialize_packets(const float32_t rpm);
 
     // make sure packet sizes are correct
     static_assert(sizeof(DataChannel) == 3U, "Error VLP16 data channel size is incorrect");

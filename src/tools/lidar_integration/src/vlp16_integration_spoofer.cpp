@@ -13,15 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
+
 #include "lidar_integration/vlp16_integration_spoofer.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
 
 namespace lidar_integration
 {
 
 Vlp16IntegrationSpoofer::Vlp16IntegrationSpoofer(
-  const char * const ip,
+  const char8_t * const ip,
   const uint16_t port,
-  const float rpm)
+  const float32_t rpm)
 : m_running(false),
   m_spoofer(ip, port, rpm, m_running)
 {

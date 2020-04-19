@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
 
 #include <string>
 #include <thread>
@@ -20,10 +21,13 @@
 #include "lidar_integration/point_cloud_mutation_spoofer.hpp"
 #include "lidar_integration/lidar_integration_common.hpp"
 
+using autoware::common::types::char8_t;
+using autoware::common::types::float32_t;
+
 namespace lidar_integration
 {
 PointCloudMutationSpooferNode::PointCloudMutationSpooferNode(
-  const char * topic,
+  const char8_t * topic,
   const uint32_t step_mean,
   const uint32_t step_std,
   const uint32_t width_mean,
