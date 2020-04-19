@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common/types.hpp>
+
 #include <vector>
 #include <utility>
 
 #include "euclidean_cluster/euclidean_cluster.hpp"
 
 #include "test_euclidean_cluster_aux.h"
+
+using autoware::common::types::float32_t;
 
 /////////////////////////////////////////////
 /// test for minimal functionality
@@ -29,7 +33,7 @@ TEST(euclidean_cluster, simple_bar)
   Config cfg{"foo", 10U, 100U};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float, float>> output;
+  std::vector<std::pair<float32_t, float32_t>> output;
   // insert points
   insert_line(output, cls, -10.0F, -15.0F, -10.0F, 5.0F, 0.9F);
   // check clusters
@@ -55,8 +59,8 @@ TEST(euclidean_cluster, noisy_L)
   Config cfg{"foo", 10U, 100U};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float, float>> output;
-  std::vector<std::pair<float, float>> empty;
+  std::vector<std::pair<float32_t, float32_t>> output;
+  std::vector<std::pair<float32_t, float32_t>> empty;
   // insert points
   insert_line(output, cls, 10.0F, 15.0F, 15.0F, 20.0F, 0.9F);
   insert_line(output, cls, 5.0F, 20.0F, 10.0F, 15.0F, 0.9F);
@@ -85,11 +89,11 @@ TEST(euclidean_cluster, multi_object)
   Config cfg{"bar", 10U, 100U};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float, float>> output1;
-  std::vector<std::pair<float, float>> output2;
-  std::vector<std::pair<float, float>> output3;
-  std::vector<std::pair<float, float>> output4;
-  std::vector<std::pair<float, float>> empty;
+  std::vector<std::pair<float32_t, float32_t>> output1;
+  std::vector<std::pair<float32_t, float32_t>> output2;
+  std::vector<std::pair<float32_t, float32_t>> output3;
+  std::vector<std::pair<float32_t, float32_t>> output4;
+  std::vector<std::pair<float32_t, float32_t>> empty;
   // L
   insert_line(output1, cls, 11.0F, 16.0F, 16.0F, 21.0F, 0.9F);
   insert_ring(cls, 70.0F, 30U);  // noise ring
@@ -115,7 +119,7 @@ TEST(euclidean_cluster, multi_object)
   // check clusters
   EXPECT_EQ(res1.clusters.size(), 4);
 
-  std::vector<std::vector<std::pair<float, float>> *> outputs =
+  std::vector<std::vector<std::pair<float32_t, float32_t>> *> outputs =
   {&output1, &output2, &output3, &output4};
   check_clusters(res1, outputs, "bar");
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
@@ -135,7 +139,7 @@ TEST(euclidean_cluster, no_cluster)
   Config cfg{"bar", 10U, 100U};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float, float>> output;
+  std::vector<std::pair<float32_t, float32_t>> output;
   // insert points
   insert_line(output, cls, 0.0F, 0.0F, 8.0F, 0.0F, 0.9F);
   insert_line(output, cls, 16.0F, 1.1F, 8.0F, 1.1F, 0.9F);

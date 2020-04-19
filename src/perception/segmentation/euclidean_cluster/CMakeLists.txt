@@ -23,6 +23,9 @@ find_package(ament_cmake REQUIRED)
 find_package(autoware_auto_geometry REQUIRED)
 find_package(lidar_utils REQUIRED)
 find_package(autoware_auto_msgs REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 add_library(${PROJECT_NAME} SHARED

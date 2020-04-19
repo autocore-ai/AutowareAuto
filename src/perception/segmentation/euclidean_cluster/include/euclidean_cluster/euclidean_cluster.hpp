@@ -21,6 +21,7 @@
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <geometry/spatial_hash.hpp>
 #include <euclidean_cluster/visibility_control.hpp>
+#include <common/types.hpp>
 #include <string>
 #include <vector>
 #include <utility>
@@ -34,8 +35,8 @@ namespace segmentation
 /// \brief Supporting classes for euclidean clustering, an object detection algorithm
 namespace euclidean_cluster
 {
-using float32_t = float;
-using bool8_t = bool;
+using autoware::common::types::float32_t;
+using autoware::common::types::bool8_t;
 /// \brief Simple point struct for memory mapping to and from PointCloud2 type
 struct PointXYZI
 {
