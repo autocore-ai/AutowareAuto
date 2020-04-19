@@ -111,12 +111,12 @@ public:
     // compute centroid of voxel
     PointT pt;
 
-    common::geometry::point_adapter::xr_(pt) = ((static_cast<float32_t>(xdx) + 0.5F) * m_voxel_size.x) +
-      m_min_point.x;
-    common::geometry::point_adapter::yr_(pt) = ((static_cast<float32_t>(ydx) + 0.5F) * m_voxel_size.y) +
-      m_min_point.y;
-    common::geometry::point_adapter::zr_(pt) = ((static_cast<float32_t>(zdx) + 0.5F) * m_voxel_size.z) +
-      m_min_point.z;
+    common::geometry::point_adapter::xr_(pt) =
+      ((static_cast<float32_t>(xdx) + 0.5F) * m_voxel_size.x) + m_min_point.x;
+    common::geometry::point_adapter::yr_(pt) =
+      ((static_cast<float32_t>(ydx) + 0.5F) * m_voxel_size.y) + m_min_point.y;
+    common::geometry::point_adapter::zr_(pt) =
+      ((static_cast<float32_t>(zdx) + 0.5F) * m_voxel_size.z) + m_min_point.z;
     return pt;
   }
 
