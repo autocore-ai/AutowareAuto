@@ -22,7 +22,10 @@
 #include <voxel_grid/visibility_control.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry/common_2d.hpp>
+#include <common/types.hpp>
 #include <cmath>
+
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -48,7 +51,7 @@ using PointXYZ = geometry_msgs::msg::Point32;
 class VOXEL_GRID_PUBLIC Config
 {
 public:
-  static constexpr float MIN_VOXEL_SIZE_M = 0.01F;
+  static constexpr float32_t MIN_VOXEL_SIZE_M = 0.01F;
   /// \brief Constructor
   /// \param[in] min_point The minimum corner of the receptive field (box) for the voxel grid
   /// \param[in] max_point The maximum corner of the receptive field (box) for the voxel grid
@@ -74,7 +77,7 @@ public:
   /// \brief Computes index for a given point given the voxelgrid configuration parameters
   /// \param[in] pt The point for which the voxel index will be computed
   /// \return The index of the voxel for which this point will fall into
-  /// \tparam PointT The point type taken. Assumed to have public float members x, y, and z.
+  /// \tparam PointT The point type taken. Assumed to have public float32_t members x, y, and z.
   ///                Also assumed to have a default constructor.
   template<typename PointT>
   uint64_t index(const PointT & pt) const
@@ -94,7 +97,7 @@ public:
   /// \brief Computes the centroid for a given voxel index
   /// \param[in] index The index for a given voxel
   /// \return A point for whom the x, y and z fields are filled out
-  /// \tparam PointT The point type returned. Assumed to have public float members x, y, and z.
+  /// \tparam PointT The point type returned. Assumed to have public float32_t members x, y, and z.
   ///                Also assumed to have a default constructor.
   ///                Only the x, y, and z fields will be filled out.
   template<typename PointT>
@@ -108,11 +111,11 @@ public:
     // compute centroid of voxel
     PointT pt;
 
-    common::geometry::point_adapter::xr_(pt) = ((static_cast<float>(xdx) + 0.5F) * m_voxel_size.x) +
+    common::geometry::point_adapter::xr_(pt) = ((static_cast<float32_t>(xdx) + 0.5F) * m_voxel_size.x) +
       m_min_point.x;
-    common::geometry::point_adapter::yr_(pt) = ((static_cast<float>(ydx) + 0.5F) * m_voxel_size.y) +
+    common::geometry::point_adapter::yr_(pt) = ((static_cast<float32_t>(ydx) + 0.5F) * m_voxel_size.y) +
       m_min_point.y;
-    common::geometry::point_adapter::zr_(pt) = ((static_cast<float>(zdx) + 0.5F) * m_voxel_size.z) +
+    common::geometry::point_adapter::zr_(pt) = ((static_cast<float32_t>(zdx) + 0.5F) * m_voxel_size.z) +
       m_min_point.z;
     return pt;
   }
@@ -124,9 +127,9 @@ private:
   /// \param[in] max The upper bound in the specified basis direction
   /// \param[in] size The voxel size in the specified basis direction
   uint64_t check_basis_direction(
-    const float min,
-    const float max,
-    const float size) const;
+    const float32_t min,
+    const float32_t max,
+    const float32_t size) const;
 
   PointXYZ m_min_point;
   PointXYZ m_max_point;

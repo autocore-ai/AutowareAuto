@@ -36,7 +36,7 @@ namespace voxel_grid
 ///
 /// The VoxelGrid data structure assumes the voxel type subclasses from this class, and
 /// adds one additional function with the signature void add_observation(const PointT & pt);
-/// \tparam PointT The point type, must have float members x, y, and z
+/// \tparam PointT The point type, must have float32_t members x, y, and z
 template<typename PointT>
 class VOXEL_GRID_PUBLIC Voxel
 {
