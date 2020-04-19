@@ -25,6 +25,7 @@
 #include <euclidean_cluster_nodes/details/common.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
+#include <common/types.hpp>
 #include <memory>
 #include <string>
 
@@ -37,8 +38,7 @@ namespace segmentation
 /// \brief Main instantiation of algorithms in object detection stack
 namespace euclidean_cluster_nodes
 {
-using float32_t = float;
-using bool8_t = bool;
+using autoware::common::types::bool8_t;
 using Clusters = euclidean_cluster::Clusters;
 /// \brief Combined object detection node, primarily does clustering, can also do in-place
 ///        downsampling and bounding box formation

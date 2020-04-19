@@ -20,6 +20,8 @@
     <depend>sensor_msgs</depend>
     <depend>voxel_grid_nodes</depend>
 
+    <build_depend>autoware_auto_common</build_depend>
+
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
 

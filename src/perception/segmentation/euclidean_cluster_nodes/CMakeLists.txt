@@ -26,6 +26,9 @@ find_package(euclidean_cluster REQUIRED)
 find_package(autoware_auto_geometry REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(voxel_grid_nodes REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+ament_auto_find_build_dependencies()
 
 # Library
 set(CLUSTER_NODE_LIB euclidean_cluster_node)

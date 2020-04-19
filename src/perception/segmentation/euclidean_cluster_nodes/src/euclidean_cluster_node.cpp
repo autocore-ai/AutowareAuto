@@ -16,12 +16,17 @@
 /// \brief This file implements a clustering node that published colored point clouds and convex
 ///        hulls
 
+#include <common/types.hpp>
+
 #include <memory>
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -64,12 +69,12 @@ m_cluster_alg{
 m_clusters{},
 m_boxes{},
 m_voxel_ptr{nullptr},  // Because voxel config's Point types don't accept positional arguments
-m_use_lfit{declare_parameter("use_lfit").get<bool>()},
-m_use_z{declare_parameter("use_z").get<bool>()}
+m_use_lfit{declare_parameter("use_lfit").get<bool8_t>()},
+m_use_z{declare_parameter("use_z").get<bool8_t>()}
 {
   init(m_cluster_alg.get_config());
   // Initialize voxel grid
-  if (declare_parameter("downsample").get<bool>()) {
+  if (declare_parameter("downsample").get<bool8_t>()) {
     filters::voxel_grid::PointXYZ min_point;
     filters::voxel_grid::PointXYZ max_point;
     filters::voxel_grid::PointXYZ voxel_size;
