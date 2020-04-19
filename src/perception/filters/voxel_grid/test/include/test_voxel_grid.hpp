@@ -13,7 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_VOXEL_GRID_HPP_
+#define TEST_VOXEL_GRID_HPP_
+
 #include <common/types.hpp>
+#include <memory>
+#include <limits>
 #include "voxel_grid/voxel_grid.hpp"
 namespace test_voxel_grid
 {
@@ -96,9 +101,12 @@ TEST_F(VoxelTest, basic)
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().y, min_point.y);
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().z, min_point.z);
   // Max point
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x, max_point.x - std::numeric_limits<float32_t>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y, max_point.y - std::numeric_limits<float32_t>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z, max_point.z - std::numeric_limits<float32_t>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x,
+                  max_point.x - std::numeric_limits<float32_t>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y,
+                  max_point.y - std::numeric_limits<float32_t>::epsilon());
+  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z,
+                  max_point.z - std::numeric_limits<float32_t>::epsilon());
   // Voxel Size
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().x, voxel_size.x);
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().y, voxel_size.y);
@@ -751,3 +759,4 @@ TYPED_TEST(TypedVoxelGridTest, approximate_voxel_grid)
   EXPECT_THROW(grid.insert(*(this->obs_points1.end() - 2)), std::length_error);
 }
 }  // namespace test_voxel_grid
+#endif  // TEST_VOXEL_GRID_HPP_
