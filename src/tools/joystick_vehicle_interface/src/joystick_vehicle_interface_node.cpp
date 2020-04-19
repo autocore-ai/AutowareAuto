@@ -14,10 +14,10 @@
 // limitations under the License.
 #include <common/types.hpp>
 
-#include "joystick_vehicle_interface/joystick_vehicle_interface_node.hpp"
-
 #include <string>
 #include <type_traits>
+
+#include "joystick_vehicle_interface/joystick_vehicle_interface_node.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
