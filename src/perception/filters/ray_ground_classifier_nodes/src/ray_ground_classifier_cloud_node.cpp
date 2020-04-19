@@ -44,11 +44,14 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
     node_namespace.c_str()),
   m_classifier(ray_ground_classifier::Config{
           static_cast<float32_t>(declare_parameter("classifier.sensor_height_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.max_local_slope_deg").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.max_global_slope_deg").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter(
+            "classifier.max_local_slope_deg").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter(
+            "classifier.max_global_slope_deg").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
             "classifier.nonground_retro_thresh_deg").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.min_height_thresh_m").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter(
+            "classifier.min_height_thresh_m").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
             "classifier.max_global_height_thresh_m").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
@@ -59,8 +62,10 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
           static_cast<float32_t>(declare_parameter("classifier.max_height_m").get<float32_t>())
         }),
   m_aggregator(ray_ground_classifier::RayAggregator::Config{
-          static_cast<float32_t>(declare_parameter("aggregator.min_ray_angle_rad").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("aggregator.max_ray_angle_rad").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter(
+            "aggregator.min_ray_angle_rad").get<float32_t>()),
+          static_cast<float32_t>(declare_parameter(
+            "aggregator.max_ray_angle_rad").get<float32_t>()),
           static_cast<float32_t>(declare_parameter("aggregator.ray_width_rad").get<float32_t>()),
           static_cast<std::size_t>(
             declare_parameter("aggregator.max_ray_points").get<std::size_t>())

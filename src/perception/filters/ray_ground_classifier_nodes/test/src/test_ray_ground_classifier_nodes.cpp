@@ -14,17 +14,16 @@
 // limitations under the License.
 #include <gtest/gtest.h>
 
-#include <string>
-
 #include <rclcpp/rclcpp.hpp>
 
 #include <ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <string>
+#include <vector>
+#include <memory>
 
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
-
-#include "rclcpp/rclcpp.hpp"
 
 using autoware::common::types::float32_t;
 using autoware::common::lidar_utils::create_custom_pcl;
