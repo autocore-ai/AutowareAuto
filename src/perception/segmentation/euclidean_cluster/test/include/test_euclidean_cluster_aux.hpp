@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_EUCLIDEAN_CLUSTER_AUX_H_
-#define TEST_EUCLIDEAN_CLUSTER_AUX_H_
+#ifndef TEST_EUCLIDEAN_CLUSTER_AUX_HPP_
+#define TEST_EUCLIDEAN_CLUSTER_AUX_HPP_
 
 #include <common/types.hpp>
 
@@ -22,6 +22,8 @@
 #include <chrono>
 #include <vector>
 #include <utility>
+#include <algorithm>
+#include <string>
 
 #include "euclidean_cluster/euclidean_cluster.hpp"
 
@@ -96,7 +98,8 @@ void insert_mesh(
 }
 
 ///
-bool8_t check_point(const std::vector<std::pair<float32_t, float32_t>> & expected, const PointXYZI & pt)
+bool8_t check_point(
+  const std::vector<std::pair<float32_t, float32_t>> & expected, const PointXYZI & pt)
 {
   bool8_t found = false;
   const float32_t TOL = 0.00001F;
@@ -110,7 +113,8 @@ bool8_t check_point(const std::vector<std::pair<float32_t, float32_t>> & expecte
 }
 
 ///
-bool8_t check_cluster(const Cluster & cls, const std::vector<std::pair<float32_t, float32_t>> & expected)
+bool8_t check_cluster(
+  const Cluster & cls, const std::vector<std::pair<float32_t, float32_t>> & expected)
 {
   bool8_t found = true;
 
@@ -128,7 +132,8 @@ bool8_t check_cluster(const Cluster & cls, const std::vector<std::pair<float32_t
 ///
 void check_clusters(
   const Clusters & cls,
-  const std::vector<std::vector<std::pair<float32_t, float32_t>> *> & expected, const std::string & frame)
+  const std::vector<std::vector<std::pair<float32_t, float32_t>> *> & expected,
+  const std::string & frame)
 {
   for (uint32_t idx = 0U; idx < cls.clusters.size(); ++idx) {
     bool8_t found = false;
@@ -143,4 +148,4 @@ void check_clusters(
   }
 }
 
-#endif  // TEST_EUCLIDEAN_CLUSTER_AUX_H_
+#endif  // TEST_EUCLIDEAN_CLUSTER_AUX_HPP_

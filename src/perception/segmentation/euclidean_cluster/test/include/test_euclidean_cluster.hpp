@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_EUCLIDEAN_CLUSTER_HPP_
+#define TEST_EUCLIDEAN_CLUSTER_HPP_
+
 #include <common/types.hpp>
 
 #include <vector>
@@ -149,3 +152,4 @@ TEST(euclidean_cluster, no_cluster)
   EXPECT_EQ(res.clusters.size(), 0);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
+#endif  // TEST_EUCLIDEAN_CLUSTER_HPP_

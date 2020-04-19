@@ -13,9 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_EUCLIDEAN_SEGMENTER_HPP_
+#define TEST_EUCLIDEAN_SEGMENTER_HPP_
+
 #include <geometry/bounding_box_2d.hpp>
 #include <common/types.hpp>
 #include <test_euclidean_cluster_aux.hpp>
+
+#include <vector>
+#include <utility>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -45,7 +51,7 @@ void check_box(
       }
       close &= found;
     }
-    // TODO
+    // TODO(c.ho)
     // close &= fabsf(box.orientation.x = 1.0F;
     if (close) {
       found = true;
@@ -206,3 +212,4 @@ TEST(euclidean_segmenter, combined)
   }
   EXPECT_NO_THROW(cls.cleanup(res));
 }
+#endif  // TEST_EUCLIDEAN_SEGMENTER_HPP_
