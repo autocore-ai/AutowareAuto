@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <common/types.hpp>
 #include <chrono>
 #include <Eigen/Cholesky>
 #include "kalman_filter/srcf_core.hpp"
@@ -24,7 +25,8 @@ using autoware::prediction::kalman_filter::Esrcf;
 using autoware::motion::motion_model::ConstantVelocity;
 using autoware::motion::motion_model::ParameterEstimator;
 using Eigen::Matrix;
-const float TOL = 1.0E-6F;
+using autoware::common::types::float32_t;
+const float32_t TOL = 1.0E-6F;
 
 template<typename T, uint64_t H, uint64_t W>
 void print(const Matrix<T, H, W> & A)
@@ -41,10 +43,10 @@ void print(const Matrix<T, H, W> & A)
 // example 5.4, in Kalman Filtering Theory and Practice using Matlab, pg 193-194
 TEST(srcf_core, univariate)
 {
-  Matrix<float, 1, 1> F, H, Q, R, x, z, P, B, G;
+  Matrix<float32_t, 1, 1> F, H, Q, R, x, z, P, B, G;
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
-  const float log2pi = 1.83787706641F;
+  const float32_t log2pi = 1.83787706641F;
   EXPECT_FLOAT_EQ(log2pi, logf(3.14159265359F * 2.0F));
   F << 1;
   H << 1;
@@ -62,9 +64,9 @@ TEST(srcf_core, univariate)
   EXPECT_LT(fabsf(P(0) - sqrtf(11.0F)), TOL);
   // observation update 1
   z(0) = 2;
-  float S = (H(0) * (P(0) * P(0)) * H(0)) + R(0);
-  float err = z(0) - (H(0) * x(0));
-  float pdf = -0.5F * (log2pi + logf(S) + (err * err) / S);
+  float32_t S = (H(0) * (P(0) * P(0)) * H(0)) + R(0);
+  float32_t err = z(0) - (H(0) * x(0));
+  float32_t pdf = -0.5F * (log2pi + logf(S) + (err * err) / S);
   EXPECT_LT(fabsf(core.scalar_update(z(0), R(0), H, P, x) - pdf), TOL) << pdf;
   EXPECT_LT(fabsf(x(0) - 24.0F / 13.0F), TOL);
   EXPECT_LT(fabsf(P(0) - sqrtf(22.0 / 13.0)), TOL);
@@ -91,17 +93,17 @@ TEST(srcf_core, univariate)
 // example 5.5 in Kalman Filtering Theory and Pracice using Matlab, pg 195-196
 TEST(srcf_core, multivariate)
 {
-  Matrix<float, 2, 1> x({1, 2}), z({3, 4});
-  Matrix<float, 2, 2> H, C, R;
+  Matrix<float32_t, 2, 1> x({1, 2}), z({3, 4});
+  Matrix<float32_t, 2, 2> H, C, R;
   H << 0, 2, 3, 0;
   C << 4, 1, 1, 9;
   R << 1, 0, 0, 4;
-  Matrix<float, 2, 1> h_row = H.row(0);
+  Matrix<float32_t, 2, 1> h_row = H.row(0);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   int info = 1;
   // higher TOL to match matlab precision
-  const float TOL2 = 1.0E-4F;
+  const float32_t TOL2 = 1.0E-4F;
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
 
   C(0U, 1U) = 0.0F;
@@ -112,7 +114,7 @@ TEST(srcf_core, multivariate)
   // do vector update
   SrcfCore<2, 2> core;
   // observation update 1a
-  float likelihood = core.scalar_update(z(0), R(0, 0), H.row(0), C, x);
+  float32_t likelihood = core.scalar_update(z(0), R(0, 0), H.row(0), C, x);
   //// check intermediate values
   // These values are from the worked example in the book
   EXPECT_LT(fabsf(x(0) - (35.0 / 37.0)), TOL2);
@@ -199,13 +201,13 @@ for the second update
 // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/92
 TEST(srcf_core, DISABLED_degenerate)
 {
-  const float eps = 1.0E-6F;
+  const float32_t eps = 1.0E-6F;
   EXPECT_LT(fabsf((1.0F + (eps * eps)) - 1), TOL);
-  const float sigma = 1.0F / eps;
-  Matrix<float, 2, 2> H, C;
+  const float32_t sigma = 1.0F / eps;
+  Matrix<float32_t, 2, 2> H, C;
   H << 1, eps, 1, 1;
   C << sigma * sigma, 0, 0, sigma * sigma;
-  Matrix<float, 2, 1> R({1, 1}), x;
+  Matrix<float32_t, 2, 1> R({1, 1}), x;
   // cholesky on C
   int info = 1;
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
@@ -215,7 +217,7 @@ TEST(srcf_core, DISABLED_degenerate)
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   // update
-  float ll = core.scalar_update(0, R(0), H.row(0), C, x);
+  float32_t ll = core.scalar_update(0, R(0), H.row(0), C, x);
   EXPECT_LT(fabsf(C(0, 0) - sqrtf(2)), TOL);
   EXPECT_LT(fabsf(C(1, 0) - (-sqrtf(2) * sigma / 2)), TOL);
   EXPECT_LT(fabsf(C(1, 1) - sqrtf(2) * sigma / 2), TOL);
@@ -236,12 +238,12 @@ TEST(srcf_core, DISABLED_degenerate)
 // test covariance temporal update
 TEST(srcf_core, propagation)
 {
-  Matrix<float, 2, 1> GQ({0, 1});  // B = [0; 1], Q = 1
-  const float eps = 1.0E-5F;
-  const float sigma = 1.0F / eps;
+  Matrix<float32_t, 2, 1> GQ({0, 1});  // B = [0; 1], Q = 1
+  const float32_t eps = 1.0E-5F;
+  const float32_t sigma = 1.0F / eps;
   // sigma ^2 + 1 ~= sigma ^2
   EXPECT_LT(fabsf((sigma * sigma + 1) - (sigma * sigma)), TOL);
-  Matrix<float, 2, 2> C;
+  Matrix<float32_t, 2, 2> C;
   C << sigma, 0, sigma, 1;
   SrcfCore<2, 1> core;
   // TODO(ltbj): implement memory_test after the completion of #39
@@ -261,13 +263,13 @@ TEST(srcf_core, propagation)
 TEST(srcf_core, triangularization)
 {
   SrcfCore<3, 1> core;
-  Matrix<float, 3, 3> A;
+  Matrix<float32_t, 3, 3> A;
   A <<
     1, 1, 1,
     1, -1, 1,
     1, 1, 0;
-  Matrix<float, 3, 3> C(A), D(A), E(A);
-  Matrix<float, 3, 1> B;  // zero
+  Matrix<float32_t, 3, 3> C(A), D(A), E(A);
+  Matrix<float32_t, 3, 1> B;  // zero
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   core.right_lower_triangularize_matrices(A, B);
@@ -353,30 +355,30 @@ TEST(srcf_core, triangularization)
 TEST(esrcf, convergence)
 {
   ConstantVelocity model;
-  Matrix<float, 4, 1> R({1, 1, 1, 1});
+  Matrix<float32_t, 4, 1> R({1, 1, 1, 1});
   // identity
-  Matrix<float, 4, 4> GQ;
+  Matrix<float32_t, 4, 4> GQ;
   GQ <<
     0.1F, 0.0F, 0.0F, 0.0F,
     0.0F, 0.1F, 0.0F, 0.0F,
     0.0F, 0.0F, 0.1F, 0.0F,
     0.0F, 0.0F, 0.0F, 0.1F;
 
-  Matrix<float, 4, 1> x({0, 0, 1, -1});  // all 0's
+  Matrix<float32_t, 4, 1> x({0, 0, 1, -1});  // all 0's
   // cholesky of: (so there is some covariance wrt hidden state
   // 1   0   0.5 0
   // 0   1   0   0.5
   // 0.5 0   1   0
   // 0   0.5 0   1
-  Matrix<float, 4, 4> P;
+  Matrix<float32_t, 4, 4> P;
   P <<
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1;
   // prefit and postfit covariance matrices
-  Matrix<float, 4, 4> P_m(P), P_p(P), P_last;
-  const Matrix<float, 4, 4> H((Matrix<float, 4, 4>() <<
+  Matrix<float32_t, 4, 4> P_m(P), P_p(P), P_last;
+  const Matrix<float32_t, 4, 4> H((Matrix<float32_t, 4, 4>() <<
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
@@ -386,7 +388,7 @@ TEST(esrcf, convergence)
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   kf.reset(x, P);
-  float last_ll = -std::numeric_limits<float>::max();
+  float32_t last_ll = -std::numeric_limits<float32_t>::max();
   // microseconds_100 = 0.1s
   std::chrono::nanoseconds microseconds_100(100000000LL);
   for (uint32_t idx = 0; idx < 30; ++idx) {
@@ -412,7 +414,7 @@ TEST(esrcf, convergence)
     EXPECT_LT(fabsf(model[2] - x(2)), TOL);
     EXPECT_LT(fabsf(model[3] - x(3)), TOL);
     //// exact observation
-    const float ll = kf.observation_update(x, H, R);
+    const float32_t ll = kf.observation_update(x, H, R);
     // likelihood should improve
     EXPECT_GT(ll, last_ll);
     last_ll = ll;
@@ -435,7 +437,7 @@ TEST(esrcf, convergence)
     EXPECT_LT(fabsf(model[3] - x(3)), TOL);
   }
   P_last -= P_p;
-  float norm = 0.0F;
+  float32_t norm = 0.0F;
   for (int i = 0; i < P_last.rows(); ++i) {
     for (int j = 0; j < P_last.cols(); ++j) {
       norm += P_last(i, j) * P_last(i, j);
@@ -451,23 +453,23 @@ TEST(esrcf, convergence)
 TEST(esrcf, hidden_state)
 {
   ConstantVelocity model;
-  Matrix<float, 2, 1> R({0.001F, 0.001F});
+  Matrix<float32_t, 2, 1> R({0.001F, 0.001F});
   // identity
-  Matrix<float, 4, 4> GQ;
+  Matrix<float32_t, 4, 4> GQ;
   GQ <<
     0.125F, 0.0F, 0.0F, 0.0F,
     0.0F, 0.125F, 0.0F, 0.0F,
     0.5F, 0.0F, 0.1F, 0.0F,
     0.0F, 0.5F, 0.0F, 0.1F
   ;
-  const float vx = 1.0F, vy = 1.0F;
-  Matrix<float, 4, 1> x({0, 0, 0.0, 0.0});  // all 0's
+  const float32_t vx = 1.0F, vy = 1.0F;
+  Matrix<float32_t, 4, 1> x({0, 0, 0.0, 0.0});  // all 0's
   // cholesky of: (so there is some covariance wrt hidden state
   // 1   0   0.5 0
   // 0   1   0   0.5
   // 0.5 0   1   0
   // 0   0.5 0   1
-  Matrix<float, 4, 4> P;
+  Matrix<float32_t, 4, 4> P;
   P <<
     1.0F, 0.0F, 0.0F, 0.0F,
     0.0F, 1.0F, 0.0F, 0.0F,
@@ -475,13 +477,13 @@ TEST(esrcf, hidden_state)
     0.0F, 0.0F, 0.0F, 10.0F
   ;
   // prefit and postfit covariance matrices
-  Matrix<float, 4, 4> P_m(P), P_p(P);
-  const Matrix<float, 4, 4> P0(P);
-  const Matrix<float, 2, 4> H((Matrix<float, 2, 4>() <<
+  Matrix<float32_t, 4, 4> P_m(P), P_p(P);
+  const Matrix<float32_t, 4, 4> P0(P);
+  const Matrix<float32_t, 2, 4> H((Matrix<float32_t, 2, 4>() <<
     1, 0, 0, 0,
     0, 1, 0, 0).finished());
 
-  Matrix<float, 2, 1> z({0, 0});
+  Matrix<float32_t, 2, 1> z({0, 0});
   Esrcf<4, 4> kf(model, GQ, x, P);
   EXPECT_NE(model[ConstantVelocity::States::VELOCITY_X], vx);
   EXPECT_NE(model[ConstantVelocity::States::VELOCITY_Y], vy);
@@ -490,12 +492,12 @@ TEST(esrcf, hidden_state)
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   // velocity error should be shrinking
-  float err_u = std::numeric_limits<float>::max();
-  float err_v = std::numeric_limits<float>::max();
-  float last_ll = -std::numeric_limits<float>::max();
+  float32_t err_u = std::numeric_limits<float32_t>::max();
+  float32_t err_v = std::numeric_limits<float32_t>::max();
+  float32_t last_ll = -std::numeric_limits<float32_t>::max();
   for (uint32_t idx = 0; idx < 90; ++idx) {
-    z(0) += static_cast<float>(microseconds_100.count()) / 1000000000LL * vx;
-    z(1) += static_cast<float>(microseconds_100.count()) / 1000000000LL * vy;
+    z(0) += static_cast<float32_t>(microseconds_100.count()) / 1000000000LL * vx;
+    z(1) += static_cast<float32_t>(microseconds_100.count()) / 1000000000LL * vy;
     kf.temporal_update(microseconds_100);
     // covariance should grow wrt postfit
     EXPECT_GT(kf.get_covariance()(0, 0), P_p(0, 0)) << idx;
@@ -506,7 +508,7 @@ TEST(esrcf, hidden_state)
     // t^2 * (p_v + s^2), where t is the characteristic time step, and s is the characteristic
     // measurement noise. Since the time step is < 1, then variance shrinks
     // Hidden state error should shrink
-    float err = fabsf(model[2] - vx);
+    float32_t err = fabsf(model[2] - vx);
     EXPECT_LT(err, err_u) << idx;
     err_u = err;
     err = fabsf(model[3] - vy);
@@ -522,7 +524,7 @@ TEST(esrcf, hidden_state)
     }
     P_m = kf.get_covariance();
     //// exact observation
-    const float ll = kf.observation_update(z, H, R);
+    const float32_t ll = kf.observation_update(z, H, R);
     // likelihood should improve or converge
     EXPECT_GE(ll, last_ll) << idx;
     last_ll = ll;
@@ -549,16 +551,16 @@ TEST(esrcf, imm_mix)
 {
   static const uint32_t dim = 2U;
   int info;
-  Matrix<float, dim, dim> P1, P2, P, C, GQ;
-  Matrix<float, dim, 1> x1, x2, x_mix;
+  Matrix<float32_t, dim, dim> P1, P2, P, C, GQ;
+  Matrix<float32_t, dim, 1> x1, x2, x_mix;
   P1 << 2.0F, 2.0F, 2.0F, 4.0F;
   P2 << 2.0F, 1.0F, 1.0F, 2.0F;
   C = P1;
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
 
   C(0U, 1U) = 0.0F;
-  const float u1 = 0.75F;
-  const float u2 = 0.25F;
+  const float32_t u1 = 0.75F;
+  const float32_t u2 = 0.25F;
   x1 = {-3.0F, 5.0F};
   x2 = {5.0F, -3.0F};
   x_mix = {-1.0F, 3.0F};
@@ -572,7 +574,7 @@ TEST(esrcf, imm_mix)
   EXPECT_FLOAT_EQ(model.get_state()(1U), 3.0F);
   P = P1;
   // dx = {-2, 2} --> dx * dx' = {4, -4; -4, 4}
-  P += (Matrix<float, dim, dim>() << 4.0F, -4.0F, -4.0F, 4.0F).finished();
+  P += (Matrix<float32_t, dim, dim>() << 4.0F, -4.0F, -4.0F, 4.0F).finished();
   P *= u1;
   C = P;
   llt.compute(C);
@@ -597,7 +599,7 @@ TEST(esrcf, imm_mix)
   EXPECT_FLOAT_EQ(model.get_state()(1U), 3.0F);
   // Compute updated covariance
   // dx2 = {6, -6}
-  P2 += (Matrix<float, dim, dim>() << 36.0F, -36.0F, -36.0F, 36.0F).finished();
+  P2 += (Matrix<float32_t, dim, dim>() << 36.0F, -36.0F, -36.0F, 36.0F).finished();
   P2 *= u2;
   P += P2;
   C = P;

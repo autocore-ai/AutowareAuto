@@ -17,10 +17,14 @@
 #ifndef KALMAN_FILTER__SRCF_CORE_HPP_
 #define KALMAN_FILTER__SRCF_CORE_HPP_
 
+#include <common/types.hpp>
 #include <kalman_filter/visibility_control.hpp>
 #include <Eigen/Core>
 
 #include <cmath>
+
+using autoware::common::types::float32_t;
+using autoware::common::types::FEPS;
 
 namespace autoware
 {
@@ -34,9 +38,6 @@ namespace kalman_filter
 /// \brief Type for matrix indexing
 using index_t = Eigen::Index;
 
-/// arbitrary small constant: 1.0E-6F
-const float FEPS = 0.000001F;
-
 /// \brief This class is an implementation of the carlson-schmidt temporal and observation update
 ///        for the square root covariance filter.
 /// \tparam NumStates dimensionality of state space
@@ -45,8 +46,8 @@ template<int NumStates, int ProcessNoiseDim>
 class SrcfCore
 {
 public:
-  using state_vec_t = Eigen::Matrix<float, NumStates, 1>;
-  using square_mat_t = Eigen::Matrix<float, NumStates, NumStates>;
+  using state_vec_t = Eigen::Matrix<float32_t, NumStates, 1>;
+  using square_mat_t = Eigen::Matrix<float32_t, NumStates, NumStates>;
 
   /// \brief Applies the right triangularization operation on a single row, e.g.
   ///        implicitly applying the givens rotation on row vectors [f, g], where
@@ -66,8 +67,8 @@ public:
   /// \param[in] col_end The ending point in the given row of B to be zero'd
   template<int ColN1, int ColN2>
   static void zero_row(
-    Eigen::Matrix<float, NumStates, ColN1> & A,
-    Eigen::Matrix<float, NumStates, ColN2> & B,
+    Eigen::Matrix<float32_t, NumStates, ColN1> & A,
+    Eigen::Matrix<float32_t, NumStates, ColN2> & B,
     const index_t row,
     const index_t col_start,
     const index_t col_end)
@@ -75,7 +76,7 @@ public:
     // TODO(cvasfi): Use the proper Eigen API (eg. JacobiRotation) for matrix decompositions
 
     for (index_t j = col_start; j < col_end; ++j) {
-      const float g = B(row, j);
+      const float32_t g = B(row, j);
       // TODO(c.ho) benchmark branchi-ness
       if (fabsf(g) <= FEPS) {
         // c = 1, s = 0
@@ -83,19 +84,19 @@ public:
       } else if (fabsf(A(row, row)) <= FEPS) {
         // c = 0, s = sign(g)
         for (index_t k = row; k < NumStates; ++k) {
-          const float tau = std::copysign(A(k, row), g);
+          const float32_t tau = std::copysign(A(k, row), g);
           A(k, row) = std::copysign(B(k, j), g);
           B(k, j) = tau;
         }
       } else {
-        const float f = A(row, row);
-        const float ir = 1.0F / std::copysign(sqrtf((f * f) + (g * g)), f);
-        const float s = g * ir;
-        const float c = fabsf(f * ir);
+        const float32_t f = A(row, row);
+        const float32_t ir = 1.0F / std::copysign(sqrtf((f * f) + (g * g)), f);
+        const float32_t s = g * ir;
+        const float32_t c = fabsf(f * ir);
         // TODO(c.ho) benchmark BLAS
         // probably slightly more efficient to do it this way than ~6 ish BLAS ops
         for (index_t k = row; k < NumStates; ++k) {
-          const float tau = (c * B(k, j)) - (s * A(k, row));
+          const float32_t tau = (c * B(k, j)) - (s * A(k, row));
           A(k, row) = (s * B(k, j)) + (c * A(k, row));
           B(k, j) = tau;
         }
@@ -115,7 +116,7 @@ public:
   template<int NCols2>
   static void right_lower_triangularize_matrices(
     square_mat_t & A,
-    Eigen::Matrix<float, NumStates, NCols2> & B,
+    Eigen::Matrix<float32_t, NumStates, NCols2> & B,
     const index_t b_rank = NCols2)
   {
     // For each row in fat partitioned matrix, [A | B]
@@ -137,9 +138,9 @@ public:
   /// \return log-likelihood of this scalar observation
   /// \throw std::domain_error if r is not positive
   template<typename Derived>
-  float scalar_update(
-    const float z,
-    const float r,
+  float32_t scalar_update(
+    const float32_t z,
+    const float32_t r,
     const Eigen::MatrixBase<Derived> & h,
     square_mat_t & C,
     state_vec_t & x)
@@ -153,29 +154,29 @@ public:
     if (r <= 0.0F) {
       throw std::domain_error("ScrfCore: measurement noise variance must be positive");
     }
-    float alpha = r;
+    float32_t alpha = r;
     m_k.setZero();
     for (index_t idx = NumStates - 1; idx < NumStates && idx >= 0; --idx) {
       const index_t jdx = NumStates - idx;
       Eigen::Block<square_mat_t> col = C.block(idx, idx, jdx, 1);
       // f_j = C_j^T * h^T, C_j = j'th col of C
-      const float sigma =
+      const float32_t sigma =
         (h.block(0, idx, 1, jdx) * col)(0, 0);
       // beta = alpha_{j-1}
-      const float beta = alpha;
+      const float32_t beta = alpha;
       // alpha_j = alpha_{j-1} + (f_j^2)
       alpha += (sigma * sigma);
       m_tau.block(0, 0, jdx, 1) = col;
-      const float zetap = -sigma / beta;  // beta is positive if R is positive
+      const float32_t zetap = -sigma / beta;  // beta is positive if R is positive
       // Update covariance column C_j = -K_{j-1} * (f_j / beta) + C_j
       col += zetap * m_k.block(idx, 0, jdx, 1);
-      const float etap = sqrtf(beta / alpha);  // alpha positive if beta is
+      const float32_t etap = sqrtf(beta / alpha);  // alpha positive if beta is
       // scale by diagonal factor C_j = C_j * sqrt(beta / alpha)
       col *= etap;
       // accumulate unscaled kalman gain: K = K + f_j * C_{j, -}
       m_k.block(idx, 0, jdx, 1) += sigma * m_tau.block(0, 0, jdx, 1);
     }
-    const float del = z - (h * x)(0, 0);
+    const float32_t del = z - (h * x)(0, 0);
 
     // alpha established to be positive
     if (alpha <= 0.0F) {
@@ -183,11 +184,11 @@ public:
       throw std::runtime_error("ScrfCore: invariant broken, kalman gain must be positive");
     }
     // Update state vector by error * unscaled kalman_gain
-    const float del_alpha = del / alpha;
+    const float32_t del_alpha = del / alpha;
     x += del_alpha * m_k;
 
     // constant for computation (logf isn't constexpr due to errno)
-    constexpr float logf2pi = 1.83787706641F;
+    constexpr float32_t logf2pi = 1.83787706641F;
     // alpha = r + h^T * P * h = s = scalar component of innovation covariance (variance)
     // use gaussian likelihood
     return -0.5F * (logf2pi + logf(alpha) + (del * del_alpha));

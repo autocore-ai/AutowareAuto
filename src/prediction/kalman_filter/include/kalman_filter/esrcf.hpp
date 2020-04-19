@@ -20,9 +20,13 @@
 #ifndef KALMAN_FILTER__ESRCF_HPP_
 #define KALMAN_FILTER__ESRCF_HPP_
 
+#include <common/types.hpp>
 #include <chrono>
 #include "motion_model/motion_model.hpp"
 #include "kalman_filter/srcf_core.hpp"
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -50,7 +54,7 @@ public:
   /// \param[in] GQ_chol_prod reference to cholesky factor of process noise covariance
   Esrcf(
     motion::motion_model::MotionModel<NumStates> & model,
-    const Eigen::Matrix<float, NumStates, ProcessNoiseDim> & GQ_chol_prod)
+    const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> & GQ_chol_prod)
   : m_model_ptr(&model),
     m_is_mat1_covariance(false),
     m_B_mat(GQ_chol_prod),
@@ -65,7 +69,7 @@ public:
   /// \param[in] P0_chol cholesky factor of initial covariance matrix
   Esrcf(
     motion::motion_model::MotionModel<NumStates> & model,
-    const Eigen::Matrix<float, NumStates, ProcessNoiseDim> & GQ_chol_prod,
+    const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> & GQ_chol_prod,
     const state_vec_t & x0,
     const square_mat_t & P0_chol)
   : Esrcf(model, GQ_chol_prod)
@@ -109,7 +113,7 @@ public:
     m_model_ptr->compute_jacobian_and_predict(jac_mat, dt);
     //// update covariance matrix
     // scalar factor
-    constexpr float alpha = 1.0F;
+    constexpr float32_t alpha = 1.0F;
     // store jacobian old cov matrix, update F = alpha * F * C
     jac_mat = alpha * cov_mat * jac_mat;
     // Do temporal update on F, 0 out B
@@ -124,16 +128,16 @@ public:
   /// \param[in] H observation matrix: z = H * x
   /// \param[in] R_diag diagonal of measurement noise covariance matrix
   template<int NumObs>
-  float observation_update(
-    const Eigen::Matrix<float, NumObs, 1U> & z,
-    const Eigen::Matrix<float, NumObs, NumStates> & H,
-    const Eigen::Matrix<float, NumObs, 1U> & R_diag)
+  float32_t observation_update(
+    const Eigen::Matrix<float32_t, NumObs, 1U> & z,
+    const Eigen::Matrix<float32_t, NumObs, NumStates> & H,
+    const Eigen::Matrix<float32_t, NumObs, 1U> & R_diag)
   {
     square_mat_t & cov_mat = m_is_mat1_covariance ? m_square_mat1 : m_square_mat2;
     // This is ugly, but promotes encapsulation
     m_state_tmp = m_model_ptr->get_state();
     // do sequential update
-    float likelihood = 0.0F;
+    float32_t likelihood = 0.0F;
     for (index_t idx = index_t(); idx < NumObs; ++idx) {
       likelihood += m_srcf_core.scalar_update(
         z(idx, index_t()),
@@ -154,11 +158,11 @@ public:
   /// \param[in] self_transition_prob Probability an object following this model
   ///                                 continues to follow this motion model in the next time step
   /// \param[in] x_mix The mixed state vector for this model
-  void imm_self_mix(const float self_transition_prob, const state_vec_t & x_mix)
+  void imm_self_mix(const float32_t self_transition_prob, const state_vec_t & x_mix)
   {
     m_state_tmp = m_model_ptr->get_state();
     m_state_tmp -= x_mix;
-    const float sq_prob = sqrtf(self_transition_prob);
+    const float32_t sq_prob = sqrtf(self_transition_prob);
     square_mat_t & cov = m_is_mat1_covariance ? m_square_mat1 : m_square_mat2;
     cov *= sq_prob;
     m_state_tmp *= sq_prob;
@@ -178,7 +182,7 @@ public:
   ///                         and filter
   /// \param[in] rank_other Rank of cov_other, e.g. number of columns to zero out
   void imm_other_mix(
-    const float other_transition_prob,
+    const float32_t other_transition_prob,
     const state_vec_t & x_other,
     square_mat_t & cov_other,
     const index_t rank_other = NumStates)
@@ -187,7 +191,7 @@ public:
     m_state_tmp = x_other;
     m_state_tmp -= m_model_ptr->get_state();
     // compute sq(u), apply to dx, cov_other
-    const float sq_prob = sqrtf(other_transition_prob);
+    const float32_t sq_prob = sqrtf(other_transition_prob);
     m_state_tmp *= sq_prob;
     cov_other *= sq_prob;
     square_mat_t & cov = m_is_mat1_covariance ? m_square_mat1 : m_square_mat2;
@@ -207,9 +211,9 @@ private:
   state_vec_t m_state_tmp;
   square_mat_t m_square_mat1;
   square_mat_t m_square_mat2;
-  bool m_is_mat1_covariance;
-  Eigen::Matrix<float, NumStates, ProcessNoiseDim> m_B_mat;
-  const Eigen::Matrix<float, NumStates, ProcessNoiseDim> * m_GQ_chol_prod_ptr;
+  bool8_t m_is_mat1_covariance;
+  Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> m_B_mat;
+  const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> * m_GQ_chol_prod_ptr;
   static_assert(NumStates > 0U, "must have positive number of states");
   static_assert(ProcessNoiseDim > 0U, "must have positive number of process noise dimensions");
 };  // class Esrcf

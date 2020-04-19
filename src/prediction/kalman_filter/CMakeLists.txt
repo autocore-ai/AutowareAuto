@@ -5,9 +5,12 @@ project(kalman_filter)
 
 #dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(motion_model REQUIRED)
 find_package(Eigen3 REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)
@@ -21,7 +24,7 @@ add_library(
   src/kalman_filter.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-ament_target_dependencies(${PROJECT_NAME} "motion_model" "eigen3")
+ament_target_dependencies(${PROJECT_NAME} "motion_model" "eigen3" "autoware_auto_common")
 
 if(BUILD_TESTING)
   set(KALMAN_FILTER_GTEST kalman_filter_gtest)
@@ -32,7 +35,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${KALMAN_FILTER_GTEST} test/src/test_kalman_filter.cpp)
   target_include_directories(${KALMAN_FILTER_GTEST} PRIVATE "test/include")
   ament_target_dependencies(${KALMAN_FILTER_GTEST}
-    "motion_model")
+    "motion_model" "autoware_auto_common")
 endif()
 
 autoware_install(HAS_INCLUDE)

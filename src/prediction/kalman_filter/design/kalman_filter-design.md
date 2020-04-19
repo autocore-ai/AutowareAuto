@@ -80,10 +80,10 @@ P'j =& \sum\limits{i=1}^r \mu_{j|i} \big(P_i + (x_i-\hat{x}_j)(x_i-\hat{x}j)^{\t
 \sum\limits{i\neq j} \mu{j|i} \big(P_i + (x_i-\hat{x}_j)(x_i-\hat{x}_j)^{\top}\big) \
 \f}
 The first term then expresses itself as the method:
-void imm_self_mix(const float self_prob, const state_vec_t & x_mixed);
+void imm_self_mix(const float32_t self_prob, const state_vec_t & x_mixed);
 Which is assumed to be called first, as it updates the internal state vector.
 Each element in the summation of the second term can then be expressed by the method:
-void imm_other_mix(const float other_prob, const state_vec_t & x_other, cov_mat_t & cov_other);
+void imm_other_mix(const float32_t other_prob, const state_vec_t & x_other, cov_mat_t & cov_other);
 The update can be expressed in terms of cholesky factors:
 \f{aligned}{
 P' = L'L'^{\top} =& \sum\limits_{i=1}^r \mu_{j|i} \big(P_i + (x_i-\hat{x}j)(x_i-\hat{x}j)^{\top}\big) \
@@ -112,7 +112,7 @@ The configuration input to the kalman filter is as follows:
 ```cpp
 /// \brief Do prediction based on current state, store result somewhere else.
 ///        This is intended to be used with motion planning/collision avoidance
-void predict(Eigen::Array<float, NumStates> & x, const rclcpp::Duration & dt) = 0;
+void predict(Eigen::Array<float32_t, NumStates> & x, const rclcpp::Duration & dt) = 0;
 /// \brief Update current state with a given prediction. Note that this should be called
 ///        after compute_jacobian() as it will change the object's state. This is meant
 ///        to be called before doing assignment and observation updating. This is the
@@ -120,21 +120,21 @@ void predict(Eigen::Array<float, NumStates> & x, const rclcpp::Duration & dt) = 
 void predict(const rclcpp::Duration & dt) = 0;
 /// \brief Compute the jacobian based on the current state and store the result somewhere else
 void compute_jacobian(
-Eigen::Matrix<float, NumStates, NumStates> & F,
+Eigen::Matrix<float32_t, NumStates, NumStates> & F,
 const rclcpp::Duration & dt) = 0;
 /// \brief This is called by Esrcf. This should be first a computation of the jacobian, and
 ///        then a prediction to update the state. This is a distinct function because depending
 ///        on the motion model, there is some caching and optimization that can be done computing
 ///        both the prediction and jacobian together.
 void compute_jacobian_and_predict(
-Eigen::Matrix<float, NumStates, NumStates> & F,
+Eigen::Matrix<float32_t, NumStates, NumStates> & F,
 const rclcpp::Duration & dt) = 0;
 /// \brief Get elements of the model's state.
-float operator[](const uint64_t idx) const = 0;
+float32_t operator[](const uint64_t idx) const = 0;
 /// \brief Set the state
-void set_state(const Eigen::Array<float, NumStates> & x) = 0;
+void set_state(const Eigen::Array<float32_t, NumStates> & x) = 0;
 // TODO(c.ho) make this private for friends only?
-Eigen::Array<float, NumStates> & get_state();
+Eigen::Array<float32_t, NumStates> & get_state();
 ```
   For an EKF, this model describes the nonlinear prediction function and the
   jacobian as a proxy for the transition model
