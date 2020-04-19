@@ -18,11 +18,14 @@
 #include <lifecycle_msgs/msg/state.hpp>
 #include <lifecycle_msgs/msg/transition.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <common/types.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 
-constexpr const char * NODE_NAME = "voxel_grid_cloud_node";
+using autoware::common::types::char8_t;
+
+constexpr const char8_t * NODE_NAME = "voxel_grid_cloud_node";
 
 int32_t main(const int32_t argc, char * argv[])
 {

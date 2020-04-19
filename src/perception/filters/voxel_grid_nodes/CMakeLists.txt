@@ -20,12 +20,15 @@ project(voxel_grid_nodes)
 
 ## dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
 find_package(lidar_utils REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(voxel_grid REQUIRED)
+ament_auto_find_build_dependencies()
 
 # includes
 include_directories(include)

@@ -19,6 +19,7 @@
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <common/types.hpp>
 #include <memory>
 
 using autoware::perception::filters::voxel_grid::PointXYZ;
@@ -29,10 +30,13 @@ using autoware::perception::filters::voxel_grid_nodes::algorithm::VoxelCloudAppr
 using autoware::perception::filters::voxel_grid_nodes::algorithm::VoxelCloudCentroid;
 using autoware::perception::filters::voxel_grid::PointXYZIF;
 
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+
 class VoxelAlgorithm : public ::testing::Test
 {
 protected:
-  PointXYZIF make(const float x, const float y, const float z)
+  PointXYZIF make(const float32_t x, const float32_t y, const float32_t z)
   {
     PointXYZIF ret;
     ret.x = x;
@@ -98,9 +102,9 @@ protected:
       "y", 1, sensor_msgs::msg::PointField::FLOAT32,
       "z", 1, sensor_msgs::msg::PointField::FLOAT32,
       "intensity", 1, sensor_msgs::msg::PointField::FLOAT32);
-    sensor_msgs::PointCloud2Iterator<float> it_x{cloud, "x"};
-    sensor_msgs::PointCloud2Iterator<float> it_y{cloud, "y"};
-    sensor_msgs::PointCloud2Iterator<float> it_z{cloud, "z"};
+    sensor_msgs::PointCloud2Iterator<float32_t> it_x{cloud, "x"};
+    sensor_msgs::PointCloud2Iterator<float32_t> it_y{cloud, "y"};
+    sensor_msgs::PointCloud2Iterator<float32_t> it_z{cloud, "z"};
     for (std::size_t idx = 0U; idx < N; ++idx) {
       *it_x = obs_points1[idx].x;
       *it_y = obs_points1[idx].y;
@@ -110,15 +114,15 @@ protected:
       ++it_z;
     }
   }
-  bool check(sensor_msgs::msg::PointCloud2 cloud, std::size_t N)
+  bool8_t check(sensor_msgs::msg::PointCloud2 cloud, std::size_t N)
   {
-    bool ret = true;
-    constexpr float TOL = 1.0E-6F;
-    sensor_msgs::PointCloud2Iterator<float> it_x{cloud, "x"};
-    sensor_msgs::PointCloud2Iterator<float> it_y{cloud, "y"};
-    sensor_msgs::PointCloud2Iterator<float> it_z{cloud, "z"};
+    bool8_t ret = true;
+    constexpr float32_t TOL = 1.0E-6F;
+    sensor_msgs::PointCloud2Iterator<float32_t> it_x{cloud, "x"};
+    sensor_msgs::PointCloud2Iterator<float32_t> it_y{cloud, "y"};
+    sensor_msgs::PointCloud2Iterator<float32_t> it_z{cloud, "z"};
     for (std::size_t idx = 0U; idx < cloud.width; ++idx) {
-      bool found = false;
+      bool8_t found = false;
       for (std::size_t jdx = 0U; jdx < N; ++jdx) {
         const auto & ref = ref_points1[jdx];
         if ((fabsf(*it_x - ref.x) < TOL) &&

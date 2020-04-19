@@ -19,9 +19,14 @@
 #include <voxel_grid_nodes/voxel_cloud_node.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
+#include <common/types.hpp>
 #include <memory>
 #include <string>
 #include <algorithm>
+
+using autoware::common::types::bool8_t;
+using autoware::common::types::uchar8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -48,22 +53,22 @@ VoxelCloudNode::VoxelCloudNode(
 {
   // Build config manually (messages only have default constructors)
   voxel_grid::PointXYZ min_point;
-  min_point.x = static_cast<float>(declare_parameter("config.min_point.x").get<float>());
-  min_point.y = static_cast<float>(declare_parameter("config.min_point.y").get<float>());
-  min_point.z = static_cast<float>(declare_parameter("config.min_point.z").get<float>());
+  min_point.x = static_cast<float32_t>(declare_parameter("config.min_point.x").get<float32_t>());
+  min_point.y = static_cast<float32_t>(declare_parameter("config.min_point.y").get<float32_t>());
+  min_point.z = static_cast<float32_t>(declare_parameter("config.min_point.z").get<float32_t>());
   voxel_grid::PointXYZ max_point;
-  max_point.x = static_cast<float>(declare_parameter("config.max_point.x").get<float>());
-  max_point.y = static_cast<float>(declare_parameter("config.max_point.y").get<float>());
-  max_point.z = static_cast<float>(declare_parameter("config.max_point.z").get<float>());
+  max_point.x = static_cast<float32_t>(declare_parameter("config.max_point.x").get<float32_t>());
+  max_point.y = static_cast<float32_t>(declare_parameter("config.max_point.y").get<float32_t>());
+  max_point.z = static_cast<float32_t>(declare_parameter("config.max_point.z").get<float32_t>());
   voxel_grid::PointXYZ voxel_size;
-  voxel_size.x = static_cast<float>(declare_parameter("config.voxel_size.x").get<float>());
-  voxel_size.y = static_cast<float>(declare_parameter("config.voxel_size.y").get<float>());
-  voxel_size.z = static_cast<float>(declare_parameter("config.voxel_size.z").get<float>());
+  voxel_size.x = static_cast<float32_t>(declare_parameter("config.voxel_size.x").get<float32_t>());
+  voxel_size.y = static_cast<float32_t>(declare_parameter("config.voxel_size.y").get<float32_t>());
+  voxel_size.z = static_cast<float32_t>(declare_parameter("config.voxel_size.z").get<float32_t>());
   const std::size_t capacity =
     static_cast<std::size_t>(declare_parameter("config.capacity").get<std::size_t>());
   const voxel_grid::Config cfg{min_point, max_point, voxel_size, capacity};
   // Init
-  init(cfg, declare_parameter("is_approximate").get<bool>());
+  init(cfg, declare_parameter("is_approximate").get<bool8_t>());
 }
 ////////////////////////////////////////////////////////////////////////////////
 VoxelCloudNode::VoxelCloudNode(
@@ -71,7 +76,7 @@ VoxelCloudNode::VoxelCloudNode(
   const std::string & sub_topic,
   const std::string & pub_topic,
   const voxel_grid::Config & cfg,
-  const bool is_approximate,
+  const bool8_t is_approximate,
   const rclcpp::QoS sub_qos,
   const rclcpp::QoS pub_qos)
 : LifecycleNode(node_name.c_str()),
@@ -102,7 +107,7 @@ void VoxelCloudNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VoxelCloudNode::init(const voxel_grid::Config & cfg, const bool is_approximate)
+void VoxelCloudNode::init(const voxel_grid::Config & cfg, const bool8_t is_approximate)
 {
   // construct voxel grid
   if (is_approximate) {
@@ -155,7 +160,7 @@ rclcpp::QoS parse_qos(
   std::string durability = durability_param.get<std::string>();
 
   std::transform(durability.begin(), durability.end(), durability.begin(),
-    [](unsigned char c) {return std::tolower(c);}
+    [](uchar8_t c) {return std::tolower(c);}
   );
   auto qos = rclcpp::QoS(depth);
   if (durability == "transient_local") {

@@ -24,8 +24,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <lifecycle_msgs/msg/transition.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
+#include <common/types.hpp>
 #include <memory>
 #include <string>
+
+using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -64,7 +67,7 @@ public:
     const std::string & sub_topic,
     const std::string & pub_topic,
     const voxel_grid::Config & cfg,
-    const bool is_approximate,
+    const bool8_t is_approximate,
     const rclcpp::QoS sub_qos = rclcpp::QoS(10),
     const rclcpp::QoS pub_qos = rclcpp::QoS(10));
 
@@ -75,7 +78,7 @@ private:
   /// \brief Initialize state transition callbacks and voxel grid
   /// \param[in] cfg Configuration object for voxel grid
   /// \param[in] is_approximate whether to instantiate an approximate or centroid voxel grid
-  void VOXEL_GRID_NODES_LOCAL init(const voxel_grid::Config & cfg, const bool is_approximate);
+  void VOXEL_GRID_NODES_LOCAL init(const voxel_grid::Config & cfg, const bool8_t is_approximate);
 
   using Message = sensor_msgs::msg::PointCloud2;
 
@@ -84,7 +87,7 @@ private:
   const rclcpp::Subscription<Message>::SharedPtr m_sub_ptr;
   const std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<Message>> m_pub_ptr;
   std::unique_ptr<algorithm::VoxelCloudBase> m_voxelgrid_ptr;
-  bool m_has_failed;
+  bool8_t m_has_failed;
 };  // VoxelCloudNode
 }  // namespace voxel_grid_nodes
 }  // namespace filters
