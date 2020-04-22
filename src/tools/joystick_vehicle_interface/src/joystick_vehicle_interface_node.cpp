@@ -40,6 +40,9 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
     declare_parameter("basic_command_topic").get<std::string>();
   const auto state_command_topic =
     declare_parameter("state_command_topic").get<std::string>();
+  const bool recordreplay_command_enabled =
+    declare_parameter("recordreplay_command_enabled").get<bool>();
+
   // maps
   const auto check_set = [this](auto & map, auto key, const std::string & param_name) {
       const auto param = declare_parameter(param_name);
@@ -90,6 +93,9 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(button_map, Buttons::BLINKER_HAZARD, "buttons.blinker_hazard");
   check_set(button_map, Buttons::VELOCITY_UP, "buttons.velocity_up");
   check_set(button_map, Buttons::VELOCITY_DOWN, "buttons.velocity_down");
+  check_set(button_map, Buttons::RECORDREPLAY_START_RECORD, "buttons.recordreplay_start_record");
+  check_set(button_map, Buttons::RECORDREPLAY_START_REPLAY, "buttons.recordreplay_start_replay");
+  check_set(button_map, Buttons::RECORDREPLAY_STOP, "buttons.recordreplay_stop");
   // init
   init(
     high_level_command_topic,
@@ -97,6 +103,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
     basic_command_topic,
     state_command_topic,
     joy_topic,
+    recordreplay_command_enabled,
     axis_map,
     axis_scale_map,
     axis_offset_map,
@@ -112,6 +119,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   const std::string & basic_command_topic,
   const std::string & state_command_topic,
   const std::string & joy_topic,
+  const bool8_t & recordreplay_command_enabled,
   const AxisMap & axis_map,
   const AxisScaleMap & axis_scale_map,
   const AxisScaleMap & axis_offset_map,
@@ -124,6 +132,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
     basic_command_topic,
     state_command_topic,
     joy_topic,
+    recordreplay_command_enabled,
     axis_map,
     axis_scale_map,
     axis_offset_map,
@@ -137,6 +146,7 @@ void JoystickVehicleInterfaceNode::init(
   const std::string & basic_command_topic,
   const std::string & state_command_topic,
   const std::string & joy_topic,
+  const bool & recordreplay_command_enabled,
   const AxisMap & axis_map,
   const AxisScaleMap & axis_scale_map,
   const AxisScaleMap & axis_offset_map,
@@ -162,6 +172,12 @@ void JoystickVehicleInterfaceNode::init(
   }
   m_state_cmd_pub =
     create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>(state_command_topic, qos);
+
+  // Recordreplay command
+  if (recordreplay_command_enabled) {
+    m_recordreplay_cmd_pub = create_publisher<std_msgs::msg::UInt8>("recordreplay_cmd", 10);
+  }
+
   // Joystick
   if (joy_topic.empty()) {
     throw std::domain_error{"JoystickVehicleInterface must have a joystick topic specified"};
@@ -234,6 +250,12 @@ void JoystickVehicleInterfaceNode::on_joy(const sensor_msgs::msg::Joy::SharedPtr
       pub->publish(cmd);
     };
   std::visit(compute_publish_command, m_cmd_pub);
+
+  if (m_recordreplay_cmd_pub != nullptr && m_recordreplay_command.data > 0u) {
+    m_recordreplay_cmd_pub->publish(m_recordreplay_command);
+    m_recordreplay_command.data =
+      static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::NOOP);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,6 +335,18 @@ bool8_t JoystickVehicleInterfaceNode::handle_active_button(Buttons button)
       break;
     case Buttons::BLINKER_HAZARD:
       m_state_command.blinker = VSC::BLINKER_HAZARD;
+      break;
+    case Buttons::RECORDREPLAY_START_RECORD:
+      m_recordreplay_command.data =
+        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::START_RECORD);
+      break;
+    case Buttons::RECORDREPLAY_START_REPLAY:
+      m_recordreplay_command.data =
+        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::START_REPLAY);
+      break;
+    case Buttons::RECORDREPLAY_STOP:
+      m_recordreplay_command.data =
+        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::STOP);
       break;
     default:
       throw std::logic_error{"Impossible button was pressed"};

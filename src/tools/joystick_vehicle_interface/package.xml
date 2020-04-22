@@ -16,6 +16,7 @@
   <depend>autoware_auto_msgs</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
 
   <build_depend>ament_cmake_gtest</build_depend>
   <build_depend>autoware_auto_common</build_depend>

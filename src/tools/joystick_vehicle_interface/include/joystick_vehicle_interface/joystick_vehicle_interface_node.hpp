@@ -25,6 +25,7 @@
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <common/types.hpp>
 
 #include <variant>
@@ -64,7 +65,18 @@ enum class Buttons
   GEAR_LOW,
   BLINKER_LEFT,
   BLINKER_RIGHT,
-  BLINKER_HAZARD
+  BLINKER_HAZARD,
+  RECORDREPLAY_START_RECORD,
+  RECORDREPLAY_START_REPLAY,
+  RECORDREPLAY_STOP
+};
+
+enum class Recordreplay : uint8_t
+{
+  NOOP = 0u,
+  START_RECORD,
+  START_REPLAY,
+  STOP
 };
 
 /// A node which translates sensor_msgs/msg/Joy messages into messages compatible with the vehicle
@@ -90,6 +102,7 @@ public:
     const std::string & basic_command_topic,
     const std::string & state_command_topic,
     const std::string & joy_topic,
+    const bool8_t & recordreplay_command_enabled,
     const AxisMap & axis_map,
     const AxisScaleMap & axis_scale_map,
     const AxisScaleMap & axis_offset_map,
@@ -102,6 +115,7 @@ private:
     const std::string & basic_command_topic,
     const std::string & state_command_topic,
     const std::string & joy_topic,
+    const bool8_t & recordreplay_command_enabled,
     const AxisMap & axis_map,
     const AxisScaleMap & axis_scale_map,
     const AxisScaleMap & axis_offset_map,
@@ -148,6 +162,7 @@ private:
 
   ControlPub m_cmd_pub{};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_cmd_pub{};
+  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr m_recordreplay_cmd_pub{};
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr m_joy_sub{nullptr};
 
   AxisMap m_axis_map{};
@@ -162,6 +177,7 @@ private:
   decltype(HighLevelControl::velocity_mps) m_velocity{};
 
   autoware_auto_msgs::msg::VehicleStateCommand m_state_command{};
+  std_msgs::msg::UInt8 m_recordreplay_command{};
 };  // class JoystickVehicleInterfaceNode
 }  // namespace joystick_vehicle_interface
 

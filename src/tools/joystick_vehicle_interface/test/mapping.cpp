@@ -83,6 +83,8 @@ TEST_P(joy_vi_test, basic_mapping)
     (PubType::Basic == param.pub_type) ? "test_joystick_basic" : "null";
   constexpr auto state_command_topic = "test_state_command_topic";
   constexpr auto joy_topic = "test_joy_topic";
+  constexpr auto recordreplay_command_topic = "recordreplay_cmd";
+  const bool recordreplay_command_enabled = true;
 
   const auto test_nd = std::make_shared<rclcpp::Node>("test_joystick_vehicle_interface_talker");
   const auto qos = rclcpp::SensorDataQoS{};
@@ -92,6 +94,7 @@ TEST_P(joy_vi_test, basic_mapping)
   high_level{*test_nd, high_level_command_topic};
   SubAndMsg<autoware_auto_msgs::msg::VehicleControlCommand> basic{*test_nd, basic_command_topic};
   SubAndMsg<autoware_auto_msgs::msg::VehicleStateCommand> state{*test_nd, state_command_topic};
+  SubAndMsg<std_msgs::msg::UInt8> recordreplay{*test_nd, recordreplay_command_topic};
 
   ASSERT_NE(state.sub_, nullptr);
   switch (param.pub_type) {
@@ -114,6 +117,7 @@ TEST_P(joy_vi_test, basic_mapping)
     basic_command_topic,
     state_command_topic,
     joy_topic,
+    recordreplay_command_enabled,
     param.axis_map,
     param.axis_scale_map,
     param.axis_offset_map,
@@ -268,12 +272,22 @@ TEST_P(joy_vi_test, basic_mapping)
     EXPECT_EQ(button_check_fn(Buttons::BLINKER_RIGHT), state.msg_->blinker == VSC::BLINKER_RIGHT);
     EXPECT_EQ(button_check_fn(Buttons::BLINKER_HAZARD), state.msg_->blinker == VSC::BLINKER_HAZARD);
   }
+
+  //Record Replay
+  if (recordreplay.msg_) {
+    EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_RECORD), recordreplay.msg_->data == 1u);
+    EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_REPLAY), recordreplay.msg_->data == 2u);
+    EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_STOP), recordreplay.msg_->data == 3u);
+    EXPECT_EQ(!button_check_fn(Buttons::RECORDREPLAY_START_RECORD) &&
+      !button_check_fn(Buttons::RECORDREPLAY_START_REPLAY) &&
+      !button_check_fn(Buttons::RECORDREPLAY_STOP), recordreplay.msg_->data == 0u);
+  }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_CASE_P (
   test,
   joy_vi_test,
-  ::testing::Values(
+  ::testing::Values (
     // Raw control command
     JoyMapping{
   PubType::Raw,
@@ -306,5 +320,27 @@ INSTANTIATE_TEST_CASE_P(
   {{Axes::CURVATURE, 2.5F}},
   {{Axes::CURVATURE, 0.4F}},
   {{Buttons::VELOCITY_UP, 0U}, {Buttons::VELOCITY_DOWN, 1U}}
+},
+    // RecordReplay
+    JoyMapping{
+  PubType::Basic,
+  {},
+  {},
+  {},
+  {{Buttons::RECORDREPLAY_START_RECORD, 1U}}
+},
+    JoyMapping{
+  PubType::Basic,
+  {},
+  {},
+  {},
+  {{Buttons::RECORDREPLAY_START_REPLAY, 1U}}
+},
+    JoyMapping {
+  PubType::Basic,
+  {},
+  {},
+  {},
+  {{Buttons::RECORDREPLAY_STOP, 1U}}
 }
-));
+  ));
