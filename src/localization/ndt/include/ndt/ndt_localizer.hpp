@@ -49,6 +49,8 @@ public:
   using Transform = geometry_msgs::msg::TransformStamped;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using OptimizerOptions = typename ConfigT::OptimizerOptions;
+  using Base = localization_common::RelativeLocalizerBase<CloudT,
+      CloudT, localization_common::OptimizedRegistrationSummary>;
   /// Constructor
   /// \param config NDT localizer config
   /// \param scan Initial value of the ndt scan. This element is expected to be constructed in the
@@ -121,6 +123,13 @@ public:
     m_map.insert(msg);
   }
 
+  /// Insert the given message to the existing map.
+  /// \param msg Message containing the map addition.
+  void insert_to_map_impl(const CloudT & msg) override
+  {
+    m_map.insert(msg);
+  }
+
   /// Get the last used scan.
   const ScanT & scan() const noexcept
   {
@@ -190,6 +199,7 @@ protected:
               "the current map.");
     }
   }
+
   /// Check if the initial guess is valid. Following checks are made:
   /// * pose guess timestamp is within a tolerated range from the scan timestamp.
   /// \param msg Message to register
@@ -233,6 +243,7 @@ public:
   using CloudT = sensor_msgs::msg::PointCloud2;
   using ParentT = NDTLocalizerBase<P2DNDTScan, StaticNDTMap,
       P2DNDTOptimizationProblem, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>;
+  using Base = typename ParentT::Base;
   using Transform = typename ParentT::Transform;
   using PoseWithCovarianceStamped = typename ParentT::PoseWithCovarianceStamped;
   using ConfigT = P2DNDTLocalizerConfig<OptimizerOptionsT>;

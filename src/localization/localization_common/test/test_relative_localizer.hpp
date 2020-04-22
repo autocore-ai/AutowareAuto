@@ -77,6 +77,9 @@ public:
     m_map_frame = std::to_string(m_map_id);
   }
 
+  void insert_to_map_impl(const int &) override
+  {}
+
   int m_map_id{INVALID_ID};
   std::string m_map_frame{""};
 };

@@ -54,6 +54,8 @@ public:
 
   void set_map_impl(const TestMap & msg) override;
 
+  void insert_to_map_impl(const TestMap & msg) override;
+
   const std::string & map_frame_id() const noexcept override;
 
   std::chrono::system_clock::time_point map_stamp() const noexcept override;

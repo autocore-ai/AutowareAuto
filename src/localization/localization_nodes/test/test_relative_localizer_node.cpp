@@ -290,6 +290,8 @@ void MockRelativeLocalizer::set_map_impl(const TestMap & msg)
   }
 }
 
+void MockRelativeLocalizer::insert_to_map_impl(const TestMap &) {}
+
 const std::string & MockRelativeLocalizer::map_frame_id() const noexcept
 {
   return m_map.header.frame_id;
