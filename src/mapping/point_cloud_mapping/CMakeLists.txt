@@ -1,0 +1,78 @@
+# Copyright 2020 Apex.AI, Inc.
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cmake_minimum_required(VERSION 3.5)
+project(point_cloud_mapping)
+
+#dependencies
+find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_auto_cmake REQUIRED)
+find_package(autoware_auto_common REQUIRED)
+ament_auto_find_build_dependencies()
+
+# includes
+include_directories(include)
+
+set(PC_MAPPING_SRC
+    src/map.cpp
+    src/point_cloud_mapper.cpp)
+
+set(PC_MAPPING_HEADERS
+    include/point_cloud_mapping/visibility_control.hpp
+    include/point_cloud_mapping/map.hpp
+    include/point_cloud_mapping/point_cloud_mapper.hpp)
+
+ament_auto_add_library(
+${PROJECT_NAME} SHARED
+        ${PC_MAPPING_HEADERS}
+        ${PC_MAPPING_SRC}
+)
+
+autoware_set_compile_options(${PROJECT_NAME})
+# turn off warnings to be able to successfully compile upstream ros packages
+set(ROS_NO_WARN_LIST
+        -Wno-sign-conversion
+        -Wno-conversion
+        -Wno-old-style-cast
+        -Wno-useless-cast
+        -Wno-double-promotion
+        -Wno-nonnull-compare
+        -Wuseless-cast)
+target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
+
+if(BUILD_TESTING)
+  # run linters
+  autoware_static_code_analysis()
+
+  # gtest
+  set(PC_MAPPING_TEST pcm_test)
+
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(${PC_MAPPING_TEST}
+    test/pc_map_test.hpp
+    test/pc_map_test.cpp
+  )
+
+  target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})
+
+  ament_target_dependencies(${PC_MAPPING_TEST} ${PROJECT_NAME})
+
+  autoware_set_compile_options(${PC_MAPPING_TEST})
+  # turn off warnings to be able to successfully compile upstream ros packages
+  target_compile_options(${PC_MAPPING_TEST} PRIVATE ${ROS_NO_WARN_LIST})
+endif()
+
+ament_auto_package()
