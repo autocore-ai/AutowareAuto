@@ -25,7 +25,7 @@ find_package(SPINNAKER)
 
 if(SPINNAKER_FOUND)
   ament_auto_find_build_dependencies()
-  ament_auto_add_library(${PROJECT_NAME}
+  ament_auto_add_library(${PROJECT_NAME} SHARED
     "include/spinnaker_camera_driver/visibility_control.hpp"
     "include/spinnaker_camera_driver/system_wrapper.hpp"
     "include/spinnaker_camera_driver/camera_settings.hpp"
