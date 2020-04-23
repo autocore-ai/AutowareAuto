@@ -43,15 +43,17 @@ if(BUILD_TESTING)
 
   # # Unit tests and single-process integration tests
   # TODO(esteve): disabled for now until the lidar_integration package is merged in
-  # find_package(ament_cmake_gtest REQUIRED)
-  # find_package(apex_test_tools REQUIRED)
-  # find_package(lidar_integration REQUIRED)
-  # set(FILTER_TRANSFORM_NODE_GTEST filter_transform_node_gtest)
-  # apex_test_tools_add_gtest(${FILTER_TRANSFORM_NODE_GTEST}
-  #     "test/test_point_cloud_filter_transform.cpp")
-  # target_include_directories(${FILTER_TRANSFORM_NODE_GTEST} PRIVATE include)
-  # target_link_libraries(${FILTER_TRANSFORM_NODE_GTEST} ${FILTER_NODE_LIB})
-  # ament_target_dependencies(${FILTER_TRANSFORM_NODE_GTEST} "lidar_integration" "velodyne_node")
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(lidar_integration REQUIRED)
+  find_package(apex_test_tools REQUIRED)
+  find_package(velodyne_node REQUIRED)
+  find_package(autoware_auto_common REQUIRED)
+  set(FILTER_TRANSFORM_NODE_GTEST filter_transform_node_gtest)
+  apex_test_tools_add_gtest(${FILTER_TRANSFORM_NODE_GTEST}
+      "test/test_point_cloud_filter_transform.cpp")
+  target_include_directories(${FILTER_TRANSFORM_NODE_GTEST} PRIVATE include)
+  target_link_libraries(${FILTER_TRANSFORM_NODE_GTEST} ${FILTER_NODE_LIB})
+  ament_target_dependencies(${FILTER_TRANSFORM_NODE_GTEST} "lidar_integration" "velodyne_node" "autoware_auto_common")
 
   # # integration test
   # TODO(esteve): disabled for now until the lidar_integration package is merged in

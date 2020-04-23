@@ -98,6 +98,7 @@ autoware_install(
   LIBRARIES  ${CLOUD_LIB}
   EXECUTABLES ${CLOUD_EXEC}
   HAS_PARAM
+  HAS_INCLUDE
 )
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator

@@ -25,7 +25,7 @@
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>apex_test_tools</test_depend>
     <test_depend>ros_testing</test_depend>
-    <!-- <test_depend>lidar_integration</test_depend> -->
+    <test_depend>lidar_integration</test_depend>
     <test_depend>velodyne_node</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>
