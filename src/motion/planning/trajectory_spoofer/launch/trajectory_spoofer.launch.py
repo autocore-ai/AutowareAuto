@@ -45,6 +45,9 @@ def generate_launch_description():
                 "radius": 21.0,  # only used for circle
             }
         ],
+        remappings=[
+            ("vehicle_kinematic_state", "/vehicle/vehicle_kinematic_state")
+        ],
         output='screen',
     )
 

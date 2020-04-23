@@ -32,7 +32,7 @@
     "name": "GPS",
     "params": {
       "Frequency": 12.5,
-      "Topic": "/gnss/nmea_raw",
+      "Topic": "/gnss/fix",
       "Frame": "gnss",
       "IgnoreMapOrigin": true
     },

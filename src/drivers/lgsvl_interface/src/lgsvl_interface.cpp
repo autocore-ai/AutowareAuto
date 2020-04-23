@@ -111,11 +111,11 @@ LgsvlInterface::LgsvlInterface(
 
     if (publish_pose) {
       m_pose_pub = node.create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-        "gnss/gnss_pose", rclcpp::QoS{10});
+        "/gnss/pose", rclcpp::QoS{10});
     }
 
     if (publish_tf) {
-      m_tf_pub = node.create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS{10});
+      m_tf_pub = node.create_publisher<tf2_msgs::msg::TFMessage>("/tf", rclcpp::QoS{10});
     }
   }
 

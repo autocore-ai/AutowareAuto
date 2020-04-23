@@ -44,6 +44,8 @@ def generate_launch_description():
     avp_demo_pkg_prefix = get_package_share_directory('autoware_auto_avp_demo')
     euclidean_cluster_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/euclidean_cluster.param.yaml')
+    lgsvl_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/lgsvl_interface.param.yaml')
     map_downsampler_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/map_downsampler.param.yaml')
     map_publisher_param_file = os.path.join(
@@ -55,9 +57,6 @@ def generate_launch_description():
     ray_ground_classifier_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
     rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms2.rviz')
-
-    lgsvl_pkg_prefix = get_package_share_directory('lgsvl_interface')
-    lgsvl_param_file = os.path.join(lgsvl_pkg_prefix, 'lgsvl.param.yaml')
 
     pc_filter_transform_pkg_prefix = get_package_share_directory(
         'point_cloud_filter_transform_nodes')
@@ -140,6 +139,7 @@ def generate_launch_description():
     lgsvl_interface = Node(
         package='lgsvl_interface',
         node_executable='lgsvl_interface_exe',
+        node_namespace='vehicle',
         output='screen',
         parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
     )
