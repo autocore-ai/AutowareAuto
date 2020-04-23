@@ -56,7 +56,9 @@ CameraWrapper::CameraWrapper(
 
 CameraWrapper::~CameraWrapper()
 {
-  m_camera->UnregisterEvent(*this);
+  if (m_on_image_callback) {
+    m_camera->UnregisterEvent(*this);
+  }
   if (m_camera->IsStreaming()) {
     m_camera->AcquisitionStop();
   }
@@ -87,18 +89,23 @@ void CameraWrapper::start_capturing()
   if (!m_is_camera_configured) {
     throw std::logic_error("Please configure the camera before capturing images.");
   }
-  m_camera->AcquisitionStart();
+  m_camera->BeginAcquisition();
   m_camera_is_capturing = true;
 }
 
 void CameraWrapper::stop_capturing()
 {
-  m_camera->AcquisitionStop();
+  m_camera->EndAcquisition();
   m_camera_is_capturing = false;
 }
 
 void CameraWrapper::set_on_image_callback(ImageCallbackFunction callback)
 {
+  if (!m_on_image_callback) {
+    // This is the first time we are setting a callback so we want to register
+    // event handling for this camera.
+    m_camera->RegisterEvent(*this);
+  }
   m_on_image_callback = callback;
 }
 
@@ -126,7 +133,7 @@ std::unique_ptr<sensor_msgs::msg::Image> CameraWrapper::convert_to_image_msg(
   msg->step = static_cast<std::uint32_t>(image->GetStride());
 
   const size_t image_size = image->GetImageSize();
-  msg->data.resize(image_size);
+  msg->data.resize(static_cast<std::uint32_t>(image_size));
   std::copy_n(static_cast<std::uint8_t *>(
       image->GetData()), image_size, msg->data.data());
   return msg;
@@ -227,8 +234,6 @@ void CameraWrapper::configure_camera(
   {
     m_camera->AcquisitionFrameRateEnable.SetValue(true);
     m_camera->AcquisitionFrameRate.SetValue(camera_settings.get_fps());
-  } else {
-    throw std::invalid_argument("Cannot set frame rate.");
   }
   if (IsAvailableAndWritable(m_camera->PixelFormat)) {
     m_camera->PixelFormat.SetValue(
@@ -242,6 +247,8 @@ void CameraWrapper::configure_camera(
   } else {
     throw std::invalid_argument("Cannot set continuous acquisition mode.");
   }
+
+  m_is_camera_configured = true;
 
   if (camera_should_capture) {
     start_capturing();

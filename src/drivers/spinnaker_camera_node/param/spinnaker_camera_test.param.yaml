@@ -1,0 +1,10 @@
+# config/spinnaker_camera_test.param.yaml
+---
+spinnaker_namespace:
+  spinnaker_camera_node:
+    ros__parameters:
+      camera_settings:
+        window_width: 800
+        window_height: 600
+        fps: 30.0
+        pixel_format: rgb8
