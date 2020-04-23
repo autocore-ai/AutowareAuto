@@ -51,7 +51,7 @@ public:
     common::types::float64_t fps,
     const std::string & pixel_format,
     const std::string & frame_id = "camera",
-    std::int64_t device_link_throughput_limit = 100000000UL);
+    std::int64_t device_link_throughput_limit = 100000000L);
 
   inline std::uint32_t get_window_width() const noexcept {return m_window_width;}
   inline std::uint32_t get_window_height() const noexcept {return m_window_height;}
