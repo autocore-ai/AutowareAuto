@@ -20,6 +20,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ndt/ndt_map.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
+#include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
 #include <string>
 #include <memory>
 #include "common/types.hpp"
@@ -67,6 +68,7 @@ class NDT_NODES_PUBLIC NDTMapPublisherNode : public rclcpp::Node
 {
 public:
   using MapConfig = perception::filters::voxel_grid::Config;
+  using VoxelGrid = perception::filters::voxel_grid_nodes::algorithm::VoxelCloudCentroid;
   /// Constructor.
   /// \param node_name Name of node.
   /// \param node_namespace Namespace of node.
@@ -138,6 +140,9 @@ private:
   /// the specs and the format of the point cloud message.
   void map_to_pc();
 
+  /// Use a Voxel Grid filter to downsample the loaded map prior to publishing.
+  void downsample_pc();
+
   /// Convenience function to clear the contents of a pointcloud message.
   /// Can be removed when #102 is merged in.
   void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg);
@@ -147,11 +152,14 @@ private:
   std::unique_ptr<ndt::DynamicNDTMap> m_ndt_map_ptr;
   sensor_msgs::msg::PointCloud2 m_map_pc;
   sensor_msgs::msg::PointCloud2 m_source_pc;
+  sensor_msgs::msg::PointCloud2 m_downsampled_pc;
   const std::string m_pcl_file_name;
   const std::string m_yaml_file_name;
   const bool8_t m_viz_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_viz_pub;
   std::unique_ptr<MapConfig> m_map_config_ptr;
+  std::unique_ptr<MapConfig> m_viz_map_config_ptr;
+  std::unique_ptr<VoxelGrid> m_voxelgrid_ptr;
   // Workaround. TODO(yunus.caliskan): Remove in #380
   rclcpp::TimerBase::SharedPtr m_visualization_timer{nullptr};
 };

@@ -46,8 +46,6 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/euclidean_cluster.param.yaml')
     lgsvl_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/lgsvl_interface.param.yaml')
-    map_downsampler_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/map_downsampler.param.yaml')
     map_publisher_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/map_publisher.param.yaml')
     map_state_estimator_param_file = os.path.join(
@@ -77,11 +75,6 @@ def generate_launch_description():
         'lgsvl_interface_param_file',
         default_value=lgsvl_param_file,
         description='Path to config file for LGSVL Interface'
-    )
-    map_downsampler_param = DeclareLaunchArgument(
-        'map_downsampler_param_file',
-        default_value=map_downsampler_param_file,
-        description='Path to config file for Map Downsampler'
     )
     map_publisher_param = DeclareLaunchArgument(
         'map_publisher_param_file',
@@ -143,12 +136,6 @@ def generate_launch_description():
         output='screen',
         parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
     )
-    map_downsampler = Node(
-        package='voxel_grid_nodes',
-        node_executable='voxel_grid_cloud_node_exe',
-        node_namespace='localization',
-        parameters=[LaunchConfiguration('map_downsampler_param_file')]
-    )
     map_publisher = Node(
         package='ndt_nodes',
         node_executable='ndt_map_publisher_exe',
@@ -190,7 +177,6 @@ def generate_launch_description():
     return LaunchDescription([
         euclidean_cluster_param,
         lgsvl_interface_param,
-        map_downsampler_param,
         map_publisher_param,
         map_state_estimator_param,
         odom_state_estimator_param,
@@ -202,7 +188,6 @@ def generate_launch_description():
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
         lgsvl_interface,
-        map_downsampler,
         map_publisher,
         map_state_estimator,
         odom_state_estimator,

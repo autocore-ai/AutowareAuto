@@ -191,7 +191,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /localization/viz_ndt_map_downsampled
+      Topic: /localization/viz_ndt_map
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
