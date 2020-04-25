@@ -22,9 +22,6 @@ int32_t main(const int32_t argc, char * argv[])
 
   int32_t ret = 0;
   try {
-    autoware::localization::ndt_nodes::NDTMapPublisherNode map_publisher(
-      "ndt_map_publisher_node", "");
-
     auto map_publisher_ptr = std::make_shared
       <autoware::localization::ndt_nodes::NDTMapPublisherNode>("ndt_map_publisher_node", "");
 
