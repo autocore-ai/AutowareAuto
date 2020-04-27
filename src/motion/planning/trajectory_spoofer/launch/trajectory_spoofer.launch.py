@@ -11,26 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import launch
 import launch.launch_description_sources
 import launch.substitutions
-
 import launch_ros.actions
-
-import ros2launch.api
-
-
-def get_param(package_name, param_file):
-    return ros2launch.api.get_share_file_path_from_package(
-        package_name=package_name,
-        file_name=param_file
-    )
 
 
 def generate_launch_description():
     """Launch trajectory_spoofer node."""
-
-    # trajectory_spoofer
     trajectory_spoofer_node = launch_ros.actions.Node(
         package="trajectory_spoofer",
         node_executable="trajectory_spoofer_exe",
@@ -52,5 +39,5 @@ def generate_launch_description():
     )
 
     return launch.LaunchDescription([
-      trajectory_spoofer_node
-      ])
+        trajectory_spoofer_node
+    ])

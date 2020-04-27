@@ -35,5 +35,8 @@ if(BUILD_TESTING)
   target_include_directories(recordreplay_planner_node_unit_tests PRIVATE "include")
 endif()
 
-ament_export_dependencies(rosidl_default_runtime)
+ament_export_dependencies(
+  "rosidl_default_runtime"
+  "recordreplay_planner_actions"
+)
 ament_auto_package(INSTALL_TO_SHARE param/ launch/)

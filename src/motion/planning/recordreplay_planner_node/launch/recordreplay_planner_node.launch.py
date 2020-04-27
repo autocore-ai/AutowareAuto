@@ -25,6 +25,7 @@ def generate_launch_description():
         package='recordreplay_planner_node',
         node_executable='recordreplay_planner_node_exe',
         node_name='recordreplay_planner',
+        node_namespace='planning',
         output='screen',
         parameters=[
             "{}/defaults.param.yaml".format(
@@ -35,7 +36,7 @@ def generate_launch_description():
         ],
         remappings=[
             ('vehicle_state', '/vehicle/vehicle_kinematic_state'),
-            ('planned_trajectory', '/trajectory'),
+            ('planned_trajectory', '/planning/trajectory'),
             ('obstacle_bounding_boxes', '/perception/lidar_bounding_boxes'),
         ]
     )

@@ -43,11 +43,7 @@ TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & options
     exit(0);
   }
 
-  if (speed_ramp_on_) {
-    spoofer_ = std::make_shared<TrajectorySpoofer>(target_speed_);
-  } else {
-    spoofer_ = std::make_shared<TrajectorySpoofer>();
-  }
+  spoofer_ = std::make_shared<TrajectorySpoofer>(target_speed_);
 
   trajectory_pub_ = this->create_publisher<Trajectory>("trajectory", 10);
   state_sub_ = this->create_subscription<VehicleKinematicState>(

@@ -111,7 +111,7 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
 }
 
 TEST(test_trajectory_spoofer, circular_trajectory) {
-  TrajectorySpoofer ts;
+  TrajectorySpoofer ts(10.0);
   VehicleKinematicState starting_point;
 
   // Points = size of circle + 1 to get back to

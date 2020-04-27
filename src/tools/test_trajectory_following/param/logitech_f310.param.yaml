@@ -1,11 +1,11 @@
 joystick_vehicle_interface:
   ros__parameters:
     joy_topic: "joy"
-    raw_command_topic: "raw_command"
+    raw_command_topic: "/vehicle/raw_command"
     high_level_command_topic: "null"  # Same as "", but ROS2 param doesn't support in yaml
     basic_command_topic: "null"
-    state_command_topic: "state_command"
-    recordreplay_command_enabled: false
+    state_command_topic: "/vehicle/state_command"
+    recordreplay_command_enabled: true
     # Which index in the joy message corresponds to which axis
     axes:
       # In our version of the joystick driver, axes typically go from -1.0 to 1.0

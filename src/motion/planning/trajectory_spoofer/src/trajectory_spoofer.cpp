@@ -24,7 +24,7 @@ namespace autoware
 namespace trajectory_spoofer
 {
 TrajectorySpoofer::TrajectorySpoofer()
-: target_speed_(10.0)
+: target_speed_(0.0)
 {
 }
 

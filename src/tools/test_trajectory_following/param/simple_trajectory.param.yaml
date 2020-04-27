@@ -1,0 +1,11 @@
+planning:
+    simple_trajectory:
+        ros__parameters:
+            length_m: 30.0
+            min_speed_mps: 1.0  # 1.0 mps = 2.23 Mph
+            max_speed_mps: 10.0 
+            discretization_m: 1.0
+            speed_increments: 0.5 
+            offset_distnace_m: 0.0
+            one_time: False
+            timer_period_sec: 5.0
