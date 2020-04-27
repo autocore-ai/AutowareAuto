@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SPINNAKER_CAMERA_DRIVER_SYSTEM_WRAPPER_HPP_
-#define SPINNAKER_CAMERA_DRIVER_SYSTEM_WRAPPER_HPP_
+#ifndef SPINNAKER_CAMERA_DRIVER__SYSTEM_WRAPPER_HPP_
+#define SPINNAKER_CAMERA_DRIVER__SYSTEM_WRAPPER_HPP_
 
 #ifndef DOXYGEN_SKIP
 #include <spinnaker/Spinnaker.h>
 #endif
 
-#include <memory>
-#include <vector>
-
 #include <spinnaker_camera_driver/camera_list_wrapper.hpp>
 #include <spinnaker_camera_driver/visibility_control.hpp>
+
+#include <memory>
+#include <vector>
 
 namespace autoware
 {
@@ -65,4 +65,4 @@ private:
 }  //  namespace drivers
 }  //  namespace autoware
 
-#endif  // SPINNAKER_CAMERA_DRIVER_SYSTEM_WRAPPER_HPP_
+#endif  // SPINNAKER_CAMERA_DRIVER__SYSTEM_WRAPPER_HPP_

@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POINTGREY_CAMERA_DRIVER_CAMERA_SETTINGS_HPP_
-#define POINTGREY_CAMERA_DRIVER_CAMERA_SETTINGS_HPP_
-
-#include <string>
-#include <set>
-#include <stdexcept>
+#ifndef SPINNAKER_CAMERA_DRIVER__CAMERA_SETTINGS_HPP_
+#define SPINNAKER_CAMERA_DRIVER__CAMERA_SETTINGS_HPP_
 
 #include <common/types.hpp>
 #include <spinnaker_camera_driver/visibility_control.hpp>
 
+#include <string>
+#include <set>
+#include <stdexcept>
 
 namespace autoware
 {
@@ -92,4 +91,4 @@ private:
 }  //  namespace autoware
 
 
-#endif  // POINTGREY_CAMERA_DRIVER_CAMERA_SETTINGS_HPP_
+#endif  // SPINNAKER_CAMERA_DRIVER__CAMERA_SETTINGS_HPP_

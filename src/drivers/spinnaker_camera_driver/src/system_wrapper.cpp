@@ -14,6 +14,9 @@
 
 #include <spinnaker_camera_driver/system_wrapper.hpp>
 
+#include <vector>
+#include <memory>
+
 namespace autoware
 {
 namespace drivers

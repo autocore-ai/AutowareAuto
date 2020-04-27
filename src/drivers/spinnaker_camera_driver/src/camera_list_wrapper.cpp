@@ -14,16 +14,15 @@
 
 #include <spinnaker_camera_driver/camera_list_wrapper.hpp>
 
-#include <cstdint>
-#include <memory>
-#include <array>
-#include <functional>
-#include <iostream>
-#include <utility>
-
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
 
+#include <cstdint>
+#include <memory>
+#include <vector>
+#include <functional>
+#include <iostream>
+#include <utility>
 
 namespace autoware
 {

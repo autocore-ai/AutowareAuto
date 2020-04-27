@@ -18,7 +18,6 @@
 #include <set>
 #include <stdexcept>
 
-
 namespace autoware
 {
 namespace drivers

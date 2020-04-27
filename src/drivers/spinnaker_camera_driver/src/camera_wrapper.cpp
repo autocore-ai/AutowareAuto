@@ -91,7 +91,8 @@ void CameraWrapper::start_capturing()
   m_camera_is_capturing = true;
 }
 
-void CameraWrapper::stop_capturing() {
+void CameraWrapper::stop_capturing()
+{
   m_camera->AcquisitionStop();
   m_camera_is_capturing = false;
 }

@@ -21,9 +21,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(Spinnaker)
+find_package(SPINNAKER)
 
-if(Spinnaker_FOUND)
+if(SPINNAKER_FOUND)
   ament_auto_find_build_dependencies()
   ament_auto_add_library(${PROJECT_NAME}
     "include/spinnaker_camera_driver/visibility_control.hpp"
@@ -36,9 +36,9 @@ if(Spinnaker_FOUND)
     "src/camera_wrapper.cpp"
     "src/camera_list_wrapper.cpp")
   autoware_set_compile_options(${PROJECT_NAME})
-  ## Spinnaker is not handled by ament, so we need the manual steps below.
-  target_include_directories(${PROJECT_NAME} PUBLIC ${Spinnaker_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} ${Spinnaker_LIBRARIES})
+  ## SPINNAKER is not handled by ament, so we need the manual steps below.
+  target_include_directories(${PROJECT_NAME} PUBLIC ${SPINNAKER_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} ${SPINNAKER_LIBRARIES})
 
   ## Testing
   if(BUILD_TESTING)
@@ -46,9 +46,9 @@ if(Spinnaker_FOUND)
     autoware_static_code_analysis()
     include_directories(include)
   endif()
-  ament_export_include_directories(${Spinnaker_INCLUDE_DIRS})
-  ament_export_libraries(${Spinnaker_LIBRARIES})
+  ament_export_include_directories(${SPINNAKER_INCLUDE_DIRS})
+  ament_export_libraries(${SPINNAKER_LIBRARIES})
   ament_auto_package()
 else()
-  message(WARNING "Spinnaker SDK not found, so ${PROJECT_NAME} could not be built.")
+  message(WARNING "SPINNAKER SDK not found, so ${PROJECT_NAME} could not be built.")
 endif()

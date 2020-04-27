@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SPINNAKER_CAMERA__VISIBILITY_CONTROL_HPP_
-#define SPINNAKER_CAMERA__VISIBILITY_CONTROL_HPP_
+#ifndef SPINNAKER_CAMERA_DRIVER__VISIBILITY_CONTROL_HPP_
+#define SPINNAKER_CAMERA_DRIVER__VISIBILITY_CONTROL_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32)
@@ -34,4 +34,4 @@
   #error "Unsupported Build Configuration"
 #endif  // defined(_WINDOWS)
 
-#endif  // SPINNAKER_CAMERA__VISIBILITY_CONTROL_HPP_
+#endif  // SPINNAKER_CAMERA_DRIVER__VISIBILITY_CONTROL_HPP_
