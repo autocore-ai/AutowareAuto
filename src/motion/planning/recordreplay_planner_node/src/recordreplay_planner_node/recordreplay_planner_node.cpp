@@ -108,7 +108,7 @@ void RecordReplayPlannerNode::init(
 
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
   m_boundingbox_sub = create_subscription<BoundingBoxArray>(bounding_boxes_topic,
-      QoS{10}.transient_local(),
+      QoS{10},
       [this](const BoundingBoxArray::SharedPtr msg) {on_bounding_box(msg);}, SubAllocT{});
 
   // Set up publishers
