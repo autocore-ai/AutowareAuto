@@ -6,17 +6,27 @@ Installation and development setup {#installation-and-development}
 # Goals {#installation-and-development-goals}
 
 
-This article demonstrates how to use the Agile Development Environment (ADE) to develop
-Autoware.Auto applications.
+This article demonstrates how to use the Agile Development Environment (ADE) to develop Autoware.Auto applications.
 
 
 # Install ADE {#installation-and-development-install-ade}
 
 [ADE](https://ade-cli.readthedocs.io/en/latest/) is a modular Docker-based tool to ensure that all developers in a project have a common, consistent development environment.
-Please confirm [the requirements](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) for installing the tool.
 
-ADE is published as [Gitlab releases](https://gitlab.com/ApexAI/ade-cli/-/releases), Follow the
-[install](https://ade-cli.readthedocs.io/en/latest/install.html) instructions.
+Follow the [install](https://ade-cli.readthedocs.io/en/latest/install.html) instructions, which are reproduced here for convenience:
+
+1. Verify that the requirements [listed here](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) are fulfilled
+1. Download the statically-linked binary from the [Releases](https://gitlab.com/ApexAI/ade-cli/-/releases) page of the `ade-cli` project
+1. Name the binary `ade` and install it in your `PATH` (on Ubuntu, `/usr/local/bin` is recommended)
+1. Make the binary executable: `chmod +x ade`
+1. Check that it is installed:
+
+```bash
+$ which ade
+/path/to/ade
+$ ade --version
+<version>
+```
 
 # Setup ADE home and project checkout {#installation-and-development-setup-ade-home-and-project-checkout}
 
