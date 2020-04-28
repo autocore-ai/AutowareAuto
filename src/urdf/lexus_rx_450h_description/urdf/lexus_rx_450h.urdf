@@ -46,6 +46,22 @@
     <origin xyz="1.5618 0 0" rpy="0 0 0"/>
   </joint>
 
+  <link name="imu"/>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="gnss"/>
+
+  <joint name="gnss_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gnss"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
   <link name="lidar_front">
     <visual>
       <geometry>
