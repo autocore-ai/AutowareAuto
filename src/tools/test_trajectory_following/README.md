@@ -29,9 +29,10 @@ ros2 launch test_trajectory_following simple_trajectory_following.launch.py
 ros2 launch test_trajectory_following trajectory_recording.launch.py
 ```
 * on Joystick press `start` button to `record`
-* drive vechile manully in simulator/real world (not using joystick)
+* drive vehicle manually in simulator/real world (not using the joystick)
 * press `back` button to `stop recording`
-* press `logo/home` bnutton to start `replay`
+* reset position of vehicle manually before replaying (may restart simulation)
+* press `logo/home` button to start `replay`
 * press `back` button to `stop replaying`
 
 ## 4. Trajectory spoofer 
