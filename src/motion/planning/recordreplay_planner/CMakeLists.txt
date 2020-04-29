@@ -4,9 +4,6 @@ project(recordreplay_planner)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_common REQUIRED)
-find_package(autoware_auto_geometry REQUIRED)
-
 ament_auto_find_build_dependencies()
 
 ### Compile options
@@ -30,4 +27,4 @@ if(BUILD_TESTING)
   target_include_directories(recordreplay_planner_unit_tests PRIVATE "include")
 endif()
 
-ament_auto_package()
+ament_auto_package(INSTALL_TO_PATH)

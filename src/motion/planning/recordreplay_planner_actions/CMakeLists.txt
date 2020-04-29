@@ -19,9 +19,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 ### Build
-rosidl_generate_interfaces(${PROJECT_NAME}_action
-    "action/RecordTrajectory.action"
-    "action/ReplayTrajectory.action"
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/RecordTrajectory.action"
+  "action/ReplayTrajectory.action"
 )
 
 ament_export_dependencies(rosidl_default_runtime)
