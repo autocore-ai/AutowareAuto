@@ -185,7 +185,7 @@ TEST_F(TestPCF, test_basic_fusion) {
   auto max_test_dur = std::chrono::seconds(1);
   auto timed_out = false;
 
-  while (rclcpp::ok && !test_completed) {
+  while (rclcpp::ok() && !test_completed) {
     rclcpp::spin_some(pcf_node);
     rclcpp::sleep_for(std::chrono::milliseconds(50));
     if (std::chrono::system_clock::now() - start_time > max_test_dur) {
@@ -261,7 +261,7 @@ TEST_F(TestPCF, test_transformed_fusion) {
   auto max_test_dur = std::chrono::seconds(1);
   auto timed_out = false;
 
-  while (rclcpp::ok && !test_completed) {
+  while (rclcpp::ok() && !test_completed) {
     rclcpp::spin_some(pcf_node);
     rclcpp::sleep_for(std::chrono::milliseconds(50));
     if (std::chrono::system_clock::now() - start_time > max_test_dur) {

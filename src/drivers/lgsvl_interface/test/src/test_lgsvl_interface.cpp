@@ -49,7 +49,7 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
       expected_result.gear = expected_gear;
       auto start_time = std::chrono::system_clock::now();
 
-      while (rclcpp::ok && !test_completed) {
+      while (rclcpp::ok() && !test_completed) {
         auto state_command_status = lgsvl_interface_->send_state_command(vsc_msg);
         EXPECT_TRUE(state_command_status);
         executor.spin_some();
