@@ -46,6 +46,7 @@ ros-dashing-rclcpp-action
 ros-dashing-rclcpp-lifecycle # 0.7.6
 ros-dashing-rcutils
 ros-dashing-rmw
+ros-dashing-rmw-cyclonedds-cpp
 ros-dashing-rmw-implementation-cmake
 ros-dashing-robot-localization
 ros-dashing-ros-testing
