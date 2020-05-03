@@ -20,7 +20,7 @@ latex/
 .coverage*
 .msg.md
 /docs/_build
-coverage/
+/coverage
 lcov.base
 lcov.test
 lcov.total

@@ -207,7 +207,7 @@ coverage:
   stage: build
   image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
   script:
-    - './tools/coverage/coverage.sh'
+    - './tools/coverage/coverage.sh -u'
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
