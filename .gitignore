@@ -20,6 +20,11 @@ latex/
 .coverage*
 .msg.md
 /docs/_build
+coverage/
+lcov.base
+lcov.test
+lcov.total
+lcov.total.filtered
 
 ## XCode Artifacts
 .DS_Store
