@@ -45,7 +45,7 @@ template<typename ... Types>
 using P2DNDTConfig = ndt::P2DNDTLocalizerConfig<Types...>;
 
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
-using Optimizer_ = common::optimization::NewtonsMethod<common::optimization::FixedLineSearch>;
+using Optimizer_ = common::optimization::NewtonsMethod<common::optimization::MoreThuenteLineSearch>;
 using OptimizerOptions_ = common::optimization::NewtonOptimizationOptions;
 using PoseInitializer_ = localization_common::BestEffortInitializer;
 
@@ -129,9 +129,12 @@ public:
 
     // Construct and set the localizer.
     LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
-      localizer_config, OptimizerT{common::optimization::FixedLineSearch{
-          static_cast<float>(this->declare_parameter("localizer.optimizer.line_search.step_size").
-          template get<float>())}});
+      localizer_config, OptimizerT{common::optimization::MoreThuenteLineSearch{
+          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_max")
+          .template get<float32_t>()),
+          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_min")
+          .template get<float32_t>())
+        }});
     this->set_localizer(std::move(localizer_ptr));
   }
 

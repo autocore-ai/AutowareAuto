@@ -105,7 +105,7 @@ public:
       pose_out.pose.pose);
 
     pose_out.header.stamp = msg.header.stamp;
-    pose_out.header.frame_id = msg.header.frame_id;
+    pose_out.header.frame_id = map_frame_id();
 
     // Populate covariance information. It is implementation defined.
     set_covariance(problem, eig_pose_initial, eig_pose_result, pose_out);

@@ -100,7 +100,7 @@ public:
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
       pose_pub_config.qos)) {
     if (publish_tf == LocalizerPublishMode::PUBLISH_TF) {
-      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("tf", pose_pub_config.qos);
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf", pose_pub_config.qos);
     }
   }
 
@@ -133,7 +133,7 @@ public:
               "pose_pub.history_depth").template get<size_t>())}}))
   {
     if (declare_parameter("publish_tf").template get<bool>()) {
-      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("tf",
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf",
           rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
     }
   }

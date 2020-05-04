@@ -132,18 +132,16 @@ public:
         termination_type = TerminationType::FAILURE;
         break;
       }
-
       // Calculate and apply step length
-      const auto normalized_direction = opt_direction.normalized();
       // TODO(zozen): with guarnteed sufficient decrease as in [More, Thuente 1994]
       // would need partial results passed to optimization_problem before call, as in:
       // computeStepLengthMT (x0, x_delta, x_delta_norm, transformation_epsilon_/2, ...
       // and would pre-compute score/jacobian/hessian as during init in evaluate!
       // also needs the sign to know the direction of optimization?
-      const auto step = m_line_searcher.compute_step_length(optimization_problem);
-      const DomainValueT x_delta = normalized_direction * step;  // TODO(zozen): fabs(step)?
+      const auto step = m_line_searcher.compute_step_length(x_out, opt_direction,
+          optimization_problem);
       const auto prev_x_norm = x_out.norm();
-      x_out += x_delta;
+      x_out += step;
 
       // Check change in parameter relative to the parameter value
       // tolerance added to the norm for stability when the norm is close to 0
@@ -151,7 +149,7 @@ public:
       // c80d1f26764becd0/include/ceres/tiny_solver.h#L244)
       const auto parameter_tolerance =
         options.parameter_tolerance() * (prev_x_norm + options.parameter_tolerance());
-      if (step <= parameter_tolerance) {
+      if (step.norm() <= parameter_tolerance) {
         termination_type = TerminationType::CONVERGENCE;
         break;
       }
@@ -175,7 +173,6 @@ public:
         termination_type = TerminationType::CONVERGENCE;
         break;
       }
-
       score_previous = score;
     }
 

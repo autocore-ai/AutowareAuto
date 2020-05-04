@@ -199,11 +199,13 @@ TEST(TestFixedLineSearch, fixed_line_search_validation) {
   constexpr auto step = 0.01F;
   Polynomial1DOptimizationProblem dummy_optimization_problem{-2.0, 16, 10.0};
 
+
   // test derived class
   FixedLineSearch fls;
   EXPECT_FLOAT_EQ(fls.get_step_max(), std::numeric_limits<float_t>::min());
   fls.set_step_max(step);
-  EXPECT_FLOAT_EQ(fls.compute_step_length(dummy_optimization_problem), step);
+  // TODO(yunus.caliskan): enable in #308
+  //  EXPECT_FLOAT_EQ(fls.compute_step_length(dummy_optimization_problem), step);
 }
 
 }  // namespace optimization
