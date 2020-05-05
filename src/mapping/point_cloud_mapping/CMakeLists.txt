@@ -32,6 +32,7 @@ set(PC_MAPPING_SRC
 
 set(PC_MAPPING_HEADERS
     include/point_cloud_mapping/visibility_control.hpp
+    include/point_cloud_mapping/policies.hpp
     include/point_cloud_mapping/map.hpp
     include/point_cloud_mapping/point_cloud_mapper.hpp)
 
@@ -64,6 +65,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${PC_MAPPING_TEST}
+          test/test_pc_mapper.hpp
+          test/test_pc_mapper.cpp
           test/test_map.hpp
           test/test_map.cpp
   )
