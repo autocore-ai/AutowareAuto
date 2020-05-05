@@ -33,7 +33,6 @@ colcon build \
 	--ament-cmake-args \
 	  -DCMAKE_CXX_FLAGS="${COVERAGE_FLAGS}" \
 	  -DCMAKE_C_FLAGS="${COVERAGE_FLAGS}"
-exit 1
 lcov --config-file .lcovrc --base-directory ${PWD} --capture --directory build -o lcov.base --initial
 colcon test \
 	--return-code-on-test-failure
