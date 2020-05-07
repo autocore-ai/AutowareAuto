@@ -29,9 +29,6 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
-RUN echo deb http://packages.ros.org/ros/ubuntu ${CODENAME} main | tee /etc/apt/sources.list.d/ros-latest.list
-RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key 5523BAEEB01FA116
-
 RUN echo deb https://deb.nodesource.com/node_10.x ${CODENAME} main | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key 1655A0AB68576280
 

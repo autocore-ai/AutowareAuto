@@ -50,7 +50,6 @@ ros-dashing-rmw-cyclonedds-cpp
 ros-dashing-rmw-implementation-cmake
 ros-dashing-robot-localization
 ros-dashing-ros-testing
-ros-dashing-ros1-bridge
 ros-dashing-ros2bag
 ros-dashing-rosbag2
 ros-dashing-rosbag2-storage
@@ -83,9 +82,6 @@ libasound2
 libgtk-3.0
 libxkbfile1
 libxss1
-
-# ROS Melodic
-ros-melodic-desktop
 
 # Bloom
 # Use the Python 2.x version of Bloom because of conflicts with catkin_pkg
