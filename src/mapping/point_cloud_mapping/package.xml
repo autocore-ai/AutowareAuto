@@ -9,6 +9,7 @@
 
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+    <build_depend>libpcl-all-dev</build_depend>
     <build_depend>eigen</build_depend>
 
     <depend>localization_common</depend>

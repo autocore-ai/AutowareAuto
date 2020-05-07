@@ -20,10 +20,11 @@ project(point_cloud_mapping)
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)
 find_package(autoware_auto_common REQUIRED)
+find_package(PCL 1.8 REQUIRED COMPONENTS io)
 ament_auto_find_build_dependencies()
 
 # includes
-include_directories(include)
+include_directories(include ${PCL_INCLUDE_DIRS})
 
 set(PC_MAPPING_SRC
     src/map.cpp
@@ -51,6 +52,7 @@ set(ROS_NO_WARN_LIST
         -Wno-nonnull-compare
         -Wuseless-cast)
 target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
   # run linters
@@ -62,8 +64,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${PC_MAPPING_TEST}
-    test/pc_map_test.hpp
-    test/pc_map_test.cpp
+          test/test_map.hpp
+          test/test_map.cpp
   )
 
   target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})

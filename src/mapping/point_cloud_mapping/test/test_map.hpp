@@ -26,6 +26,8 @@ namespace mapping
 {
 namespace point_cloud_mapping
 {
+using PclCloud = pcl::PointCloud<pcl::PointXYZI>;
+
 /// Initialize a pc, insert points in the vector and return it.
 sensor_msgs::msg::PointCloud2 make_pc(
   const std::vector<common::types::PointXYZIF> & pts,
@@ -38,6 +40,37 @@ sensor_msgs::msg::PointCloud2 make_pc(
   std::size_t size, std::size_t offset = 0,
   const std::string & frame = "map");
 
+void check_pc(PclCloud & pc, std::size_t size);
+
+void add_cell(
+  sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
+  const std::array<float_t, 4U> & center, float_t fixed_deviation);
+
+class VoxelMapContext
+{
+public:
+  using PointXYZ = geometry_msgs::msg::Point32;
+  static constexpr std::size_t NUM_PTS_PER_CELL{7U};
+  static constexpr float32_t FIXED_DEVIATION{0.3};
+  VoxelMapContext();
+
+protected:
+  PointXYZ m_min_point;
+  PointXYZ m_max_point;
+  PointXYZ m_voxel_size;
+  uint64_t m_capacity{10U};
+};
+
+// This functions similar to `make_pc(size, offset, frame)` but instead of inserting one
+// point at each step, 1 point and 6 surrrounding equally distanced points are added to
+// emulate a dense map getting 7:1 ratio.
+sensor_msgs::msg::PointCloud2 make_pc_deviated(
+  std::size_t size, std::size_t offset,
+  const std::string & frame, float_t deviation);
+
+std::vector<common::types::PointXYZIF> get_cells(
+  const std::array<float_t, 4U> & center,
+  float_t fixed_deviation);
 
 }  // namespace point_cloud_mapping
 }  // namespace mapping
