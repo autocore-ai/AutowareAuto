@@ -17,7 +17,7 @@
 #ifndef NDT__NDT_MAP_HPP_
 #define NDT__NDT_MAP_HPP_
 
-#include <ndt/ndt_representations.hpp>
+#include <ndt/ndt_common.hpp>
 #include <ndt/ndt_voxel.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <time_utils/time_utils.hpp>
@@ -112,7 +112,7 @@ public:
     return m_config.get_voxel_size();
   }
 
-  /// \brief Returns an iterator to the first element of the map
+  /// \brief Returns an const iterator to the first element of the map
   /// \return Iterator
   typename Grid::const_iterator begin() const noexcept
   {
@@ -120,17 +120,29 @@ public:
   }
   /// \brief Returns an iterator to the first element of the map
   /// \return Iterator
+  typename Grid::iterator begin() noexcept
+  {
+    return m_map.begin();
+  }
+  /// \brief Returns a const iterator to the first element of the map
+  /// \return Iterator
   typename Grid::const_iterator cbegin() const noexcept
   {
     return m_map.cbegin();
   }
-  /// \brief Returns an iterator to one past the last element of the map
+  /// \brief Returns a const iterator to one past the last element of the map
   /// \return Iterator
   typename Grid::const_iterator end() const noexcept
   {
     return cend();
   }
   /// \brief Returns an iterator to one past the last element of the map
+  /// \return Iterator
+  typename Grid::iterator end() noexcept
+  {
+    return m_map.end();
+  }
+  /// \brief Returns a const iterator to one past the last element of the map
   /// \return Iterator
   typename Grid::const_iterator cend() const noexcept
   {
@@ -223,6 +235,11 @@ public:
       ++y_it;
       ++z_it;
     }
+    // try to stabilizie the covariance after inserting all the points
+    for (auto & vx_it : *this) {
+      auto & vx = vx_it.second;
+      (void) vx.try_stabilize();
+    }
   }
 };
 
@@ -256,23 +273,23 @@ public:
     sensor_msgs::PointCloud2ConstIterator<Real> x_it(msg, "x");
     sensor_msgs::PointCloud2ConstIterator<Real> y_it(msg, "y");
     sensor_msgs::PointCloud2ConstIterator<Real> z_it(msg, "z");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_xx_it(msg, "cov_xx");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_xy_it(msg, "cov_xy");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_xz_it(msg, "cov_xz");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_yy_it(msg, "cov_yy");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_yz_it(msg, "cov_yz");
-    sensor_msgs::PointCloud2ConstIterator<Real> cov_zz_it(msg, "cov_zz");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_xx_it(msg, "icov_xx");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_xy_it(msg, "icov_xy");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_xz_it(msg, "icov_xz");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_yy_it(msg, "icov_yy");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_yz_it(msg, "icov_yz");
+    sensor_msgs::PointCloud2ConstIterator<Real> icov_zz_it(msg, "icov_zz");
     sensor_msgs::PointCloud2ConstIterator<uint32_t> cell_id_it(msg, "cell_id");
 
     while (x_it != x_it.end() &&
       y_it != y_it.end() &&
       z_it != z_it.end() &&
-      cov_xx_it != cov_xx_it.end() &&
-      cov_xy_it != cov_xy_it.end() &&
-      cov_xz_it != cov_xz_it.end() &&
-      cov_yy_it != cov_yy_it.end() &&
-      cov_yz_it != cov_yz_it.end() &&
-      cov_zz_it != cov_zz_it.end() &&
+      icov_xx_it != icov_xx_it.end() &&
+      icov_xy_it != icov_xy_it.end() &&
+      icov_xz_it != icov_xz_it.end() &&
+      icov_yy_it != icov_yy_it.end() &&
+      icov_yz_it != icov_yz_it.end() &&
+      icov_zz_it != icov_zz_it.end() &&
       cell_id_it != cell_id_it.end())
     {
       const Point centroid{*x_it, *y_it, *z_it};
@@ -292,13 +309,13 @@ public:
                 "the map representation it is being inserted to. The cell IDs do not matchb");
       }
 
-      Eigen::Matrix3d covariance;
-      covariance << *cov_xx_it, *cov_xy_it, *cov_xz_it,
-        *cov_xy_it, *cov_yy_it, *cov_yz_it,
-        *cov_xz_it, *cov_yz_it, *cov_zz_it;
-      const Voxel vx{centroid, covariance};
+      Eigen::Matrix3d inv_covariance;
+      inv_covariance << *icov_xx_it, *icov_xy_it, *icov_xz_it,
+        *icov_xy_it, *icov_yy_it, *icov_yz_it,
+        *icov_xz_it, *icov_yz_it, *icov_zz_it;
+      const Voxel vx{centroid, inv_covariance};
 
-      const auto insert_res = emplace(voxel_idx, Voxel{centroid, covariance});
+      const auto insert_res = emplace(voxel_idx, Voxel{centroid, inv_covariance});
       if (!insert_res.second) {
         // if a voxel already exist at this point, replace.
         insert_res.first->second = vx;
@@ -307,12 +324,12 @@ public:
       ++x_it;
       ++y_it;
       ++z_it;
-      ++cov_xx_it;
-      ++cov_xy_it;
-      ++cov_xz_it;
-      ++cov_yy_it;
-      ++cov_yz_it;
-      ++cov_zz_it;
+      ++icov_xx_it;
+      ++icov_xy_it;
+      ++icov_xz_it;
+      ++icov_yy_it;
+      ++icov_yz_it;
+      ++icov_zz_it;
       ++cell_id_it;
     }
   }

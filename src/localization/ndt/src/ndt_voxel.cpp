@@ -54,6 +54,22 @@ void DynamicNDTVoxel::add_observation(const Point & pt)
     // http://www.diva-portal.org/smash/get/diva2:276162/FULLTEXT02.pdf, pg 60
     m_covariance = m_M2 / last_count;
   }
+
+  // set invertibility to unknown since the covariance has changed
+  m_invertible = Invertibility::UNKNOWN;
+}
+
+
+bool8_t DynamicNDTVoxel::try_stabilize()
+{
+  bool8_t invertible = try_stabilize_covariance(m_covariance);
+  if (invertible) {
+    m_invertible = Invertibility::INVERTIBLE;
+  } else {
+    m_invertible = Invertibility::NOT_INVERTIBLE;
+  }
+
+  return invertible;
 }
 
 bool8_t DynamicNDTVoxel::usable() const noexcept
@@ -61,7 +77,7 @@ bool8_t DynamicNDTVoxel::usable() const noexcept
   return m_num_points >= NUM_POINT_THRESHOLD;
 }
 
-const Eigen::Matrix3d & DynamicNDTVoxel::covariance_() const
+const Eigen::Matrix3d & DynamicNDTVoxel::covariance() const
 {
   if (!usable()) {
     throw std::out_of_range("DynamicNDTVoxel: Cannot get covariance from a "
@@ -70,7 +86,29 @@ const Eigen::Matrix3d & DynamicNDTVoxel::covariance_() const
   return m_covariance;
 }
 
-const Eigen::Vector3d & DynamicNDTVoxel::centroid_() const
+std::experimental::optional<Eigen::Matrix3d> DynamicNDTVoxel::inverse_covariance() const
+{
+  if (!usable()) {
+    throw std::out_of_range("DynamicNDTVoxel: Cannot get covariance from a "
+            "voxel without sufficient number of points");
+  }
+
+  if (m_invertible == Invertibility::NOT_INVERTIBLE) {
+    // if stabilization has been performed and covariance is not invertible
+    return {};
+  }
+
+  Eigen::Matrix3d inv_covariance;
+  bool8_t invertible;
+  m_covariance.computeInverseWithCheck(inv_covariance, invertible);
+  if (invertible) {
+    return inv_covariance;
+  } else {
+    return {};
+  }
+}
+
+const Eigen::Vector3d & DynamicNDTVoxel::centroid() const
 {
   // Using the overloaded function as the parent function will use the hidden occupancy check
   if (!usable()) {
@@ -88,35 +126,30 @@ uint64_t DynamicNDTVoxel::count() const noexcept
 
 StaticNDTVoxel::StaticNDTVoxel()
 {
-  m_covariance.setZero();
   m_centroid.setZero();
   m_inv_covariance.setZero();
 }
 
-StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & covariance)
-: m_centroid{centroid}, m_covariance{covariance}, m_occupied{true}
+StaticNDTVoxel::StaticNDTVoxel(const Point & centroid, const Cov & inv_covariance)
+: m_centroid{centroid}, m_inv_covariance{inv_covariance}, m_occupied{true}
+{}
+
+Eigen::Matrix3d StaticNDTVoxel::covariance() const
 {
-  if (try_stabilize_covariance(m_covariance)) {
+  Eigen::Matrix3d covariance;
+  if (m_occupied) {
     bool8_t invertible{false};
-    m_covariance.computeInverseWithCheck(m_inv_covariance, invertible);
+    m_inv_covariance.computeInverseWithCheck(covariance, invertible);
     if (!invertible) {
-      m_occupied = false;
-      // TODO(yunus.caliskan): Move this to the dynamic voxel in #216
+      throw std::out_of_range("StaticNDTVoxel: Inverse covariance is not invertible");
     }
   } else {
-    m_occupied = false;
-  }
-}
-
-const Eigen::Matrix3d & StaticNDTVoxel::covariance_() const
-{
-  if (!m_occupied) {
     throw std::out_of_range("StaticNDTVoxel: Cannot get covariance from an unoccupied voxel");
   }
-  return m_covariance;
+  return covariance;
 }
 
-const Eigen::Vector3d & StaticNDTVoxel::centroid_() const
+const Eigen::Vector3d & StaticNDTVoxel::centroid() const
 {
   if (!m_occupied) {
     throw std::out_of_range("StaticNDTVoxel: Cannot get centroid from an unoccupied voxel");
@@ -127,8 +160,8 @@ const Eigen::Vector3d & StaticNDTVoxel::centroid_() const
 const Eigen::Matrix3d & StaticNDTVoxel::inverse_covariance() const
 {
   if (!m_occupied) {
-    throw std::out_of_range("StaticNDTVoxel: Cannot get inverse covariance. "
-            "The voxel is either empty or has singular covariance.");
+    throw std::out_of_range("StaticNDTVoxel: Cannot get inverse covariance "
+            "from an unoccupied voxel");
   }
   return m_inv_covariance;
 }
@@ -137,7 +170,6 @@ bool8_t StaticNDTVoxel::usable() const noexcept
 {
   return m_occupied;
 }
-
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

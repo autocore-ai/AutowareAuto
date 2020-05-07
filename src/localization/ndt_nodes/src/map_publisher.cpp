@@ -165,12 +165,12 @@ void NDTMapPublisherNode::init(
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xx", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_yy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xx", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xy", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_yy", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
 
   m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(map_topic,
@@ -287,12 +287,12 @@ void NDTMapPublisherNode::map_to_pc()
   sensor_msgs::PointCloud2Iterator<ndt::Real> x_it(m_map_pc, "x");
   sensor_msgs::PointCloud2Iterator<ndt::Real> y_it(m_map_pc, "y");
   sensor_msgs::PointCloud2Iterator<ndt::Real> z_it(m_map_pc, "z");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xx_it(m_map_pc, "cov_xx");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xy_it(m_map_pc, "cov_xy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xz_it(m_map_pc, "cov_xz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_yy_it(m_map_pc, "cov_yy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_yz_it(m_map_pc, "cov_yz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_zz_it(m_map_pc, "cov_zz");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xx_it(m_map_pc, "icov_xx");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xy_it(m_map_pc, "icov_xy");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xz_it(m_map_pc, "icov_xz");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_yy_it(m_map_pc, "icov_yy");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_yz_it(m_map_pc, "icov_yz");
+  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_zz_it(m_map_pc, "icov_zz");
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(m_map_pc, "cell_id");
 
   auto num_used_cells = 0U;
@@ -300,12 +300,12 @@ void NDTMapPublisherNode::map_to_pc()
     if (!  // No `==` operator defined for PointCloud2Iterators
       (y_it != y_it.end() &&
       z_it != z_it.end() &&
-      cov_xx_it != cov_xx_it.end() &&
-      cov_xy_it != cov_xy_it.end() &&
-      cov_xz_it != cov_xz_it.end() &&
-      cov_yy_it != cov_yy_it.end() &&
-      cov_yz_it != cov_yz_it.end() &&
-      cov_zz_it != cov_zz_it.end() &&
+      icov_xx_it != icov_xx_it.end() &&
+      icov_xy_it != icov_xy_it.end() &&
+      icov_xz_it != icov_xz_it.end() &&
+      icov_yy_it != icov_yy_it.end() &&
+      icov_yz_it != icov_yz_it.end() &&
+      icov_zz_it != icov_zz_it.end() &&
       cell_id_it != cell_id_it.end()))
     {
       // This should not occur as the cloud is resized to the map's size.
@@ -316,17 +316,24 @@ void NDTMapPublisherNode::map_to_pc()
       // Voxel doesn't have enough points to be used in NDT
       continue;
     }
+
+    const auto inv_covariance_opt = vx.inverse_covariance();
+    if (!inv_covariance_opt) {
+      // Voxel covariance is not invertible
+      continue;
+    }
+
     const auto & centroid = vx.centroid();
-    const auto & covariance = vx.covariance();
+    const auto & inv_covariance = inv_covariance_opt.value();
     *(x_it) = centroid(0U);
     *(y_it) = centroid(1U);
     *(z_it) = centroid(2U);
-    *(cov_xx_it) = covariance(0U, 0U);
-    *(cov_xy_it) = covariance(0U, 1U);
-    *(cov_xz_it) = covariance(0U, 2U);
-    *(cov_yy_it) = covariance(1U, 1U);
-    *(cov_yz_it) = covariance(1U, 2U);
-    *(cov_zz_it) = covariance(2U, 2U);
+    *(icov_xx_it) = inv_covariance(0U, 0U);
+    *(icov_xy_it) = inv_covariance(0U, 1U);
+    *(icov_xz_it) = inv_covariance(0U, 2U);
+    *(icov_yy_it) = inv_covariance(1U, 1U);
+    *(icov_yz_it) = inv_covariance(1U, 2U);
+    *(icov_zz_it) = inv_covariance(2U, 2U);
 
     // There are cases where the centroid of a voxel does get indexed to another voxel. To prevent
     // ID mismatches while transferring the map. The index from the voxel grid config is used.
@@ -336,12 +343,12 @@ void NDTMapPublisherNode::map_to_pc()
     ++x_it;
     ++y_it;
     ++z_it;
-    ++cov_xx_it;
-    ++cov_xy_it;
-    ++cov_xz_it;
-    ++cov_yy_it;
-    ++cov_yz_it;
-    ++cov_zz_it;
+    ++icov_xx_it;
+    ++icov_xy_it;
+    ++icov_xz_it;
+    ++icov_yy_it;
+    ++icov_yz_it;
+    ++icov_zz_it;
     ++cell_id_it;
     ++num_used_cells;
   }

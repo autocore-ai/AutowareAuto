@@ -136,7 +136,7 @@ public:
         const Point pt_trans_norm = pt_trans - cell.centroid();
         // Cell iteration used for compatibility with maps with multi-cell lookup
         if (cell.usable()) {
-          const StaticNDTMap::Voxel::Covariance & inv_cov = cell.inverse_covariance();
+          const StaticNDTMap::Voxel::Cov & inv_cov = cell.inverse_covariance();
           // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
           Real e_x_cov_x = std::exp(-m_gauss_d2 * pt_trans_norm.dot(
                 inv_cov * pt_trans_norm) / 2.0);

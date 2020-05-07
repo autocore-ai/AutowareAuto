@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef NDT__NDT_REPRESENTATIONS_HPP_
-#define NDT__NDT_REPRESENTATIONS_HPP_
+#ifndef NDT__NDT_COMMON_HPP_
+#define NDT__NDT_COMMON_HPP_
 
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <ndt/visibility_control.hpp>
@@ -37,31 +37,8 @@ namespace localization
 namespace ndt
 {
 using Real = float64_t;
-/// Class Representing a base NDT grid cell. Functionality is implemented by CRTP derived classes.
-/// \tparam Derived Implementation class
-template<typename Derived>
-class NDTNormal : public common::helper_functions::crtp<Derived>
-{
-public:
-  using Point = Eigen::Vector3d;
-  using Covariance = Eigen::Matrix3d;
-
-  /// Function returning the mean value of the normal distribution
-  /// \return Centroid of the unit.
-  const Point & centroid() const
-  {
-    return this->impl().centroid_();
-  }
-
-  /// Function returning the covariance of the normal distribution
-  /// \return Covariance of the unit
-  const Covariance & covariance() const
-  {
-    return this->impl().covariance_();
-  }
-};
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware
 
-#endif  // NDT__NDT_REPRESENTATIONS_HPP_
+#endif  // NDT__NDT_COMMON_HPP_

@@ -195,8 +195,9 @@ TEST_F(MapPublisherTest, core_functionality)
     const auto & reference_cell = dynamic_validation_map.cell(expected_centroid)[0U];
     EXPECT_TRUE(received_cell.centroid().isApprox(reference_cell.centroid(),
       std::numeric_limits<Real>::epsilon()));
-    EXPECT_TRUE(received_cell.covariance().isApprox(reference_cell.covariance(),
-      std::numeric_limits<Real>::epsilon() * 1e2));
+    EXPECT_TRUE(received_cell.inverse_covariance().isApprox(
+        reference_cell.inverse_covariance().value(),
+        std::numeric_limits<Real>::epsilon() * 1e2));
   }
   remove(pcl_file_name);
   remove(yaml_file_name.c_str());

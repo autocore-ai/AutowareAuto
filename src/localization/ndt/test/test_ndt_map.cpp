@@ -270,37 +270,28 @@ TEST_F(DenseNDTMapTest, map_lookup) {
 TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
   StaticNDTVoxel vx;
   Eigen::Vector3d pt{5.0, 5.0, 5.0};
-  Eigen::Matrix3d cov;
-  cov.setIdentity();
-  cov(0, 0) = 7.0;
-  cov(1, 1) = 17.0;
-  cov(2, 2) = 3.0;
+  Eigen::Matrix3d icov;
+  icov.setIdentity();
+  icov(0, 0) = 7.0;
+  icov(1, 1) = 17.0;
+  icov(2, 2) = 3.0;
   // default constructor zero-initializes and doesn't set the voxel as occupied
   EXPECT_FALSE(vx.usable());
   EXPECT_THROW(vx.centroid(), std::out_of_range);
   EXPECT_THROW(vx.covariance(), std::out_of_range);
 
-  StaticNDTVoxel vx2{pt, cov};
+  StaticNDTVoxel vx2{pt, icov};
   EXPECT_TRUE(vx2.usable());
   EXPECT_TRUE(vx2.centroid().isApprox(pt, std::numeric_limits<Real>::epsilon()));
-  EXPECT_TRUE(vx2.covariance().isApprox(cov, std::numeric_limits<Real>::epsilon()));
+  EXPECT_TRUE(vx2.inverse_covariance().isApprox(icov, std::numeric_limits<Real>::epsilon()));
 
   // Copying is legal as we replace the voxels in the map via copy constructors.
   vx = vx2;
   EXPECT_TRUE(vx.usable());
   EXPECT_TRUE(vx.centroid().isApprox(pt, std::numeric_limits<Real>::epsilon()));
-  EXPECT_TRUE(vx.covariance().isApprox(cov, std::numeric_limits<Real>::epsilon()));
+  EXPECT_TRUE(vx.inverse_covariance().isApprox(icov, std::numeric_limits<Real>::epsilon()));
 }
 
-TEST(StaticNDTVoxelTest, ndt_map_voxel_bad_covariance) {
-  StaticNDTVoxel::Covariance bad_covariance = StaticNDTVoxel::Covariance{}.setOnes();
-  StaticNDTVoxel::Covariance bad_covariance_inv{};
-  bool8_t invertible{false};
-  bad_covariance.computeInverseWithCheck(bad_covariance_inv, invertible);
-  ASSERT_FALSE(invertible);
-  StaticNDTVoxel voxel{Eigen::Vector3d{1.0, 1.0, 1.0}, bad_covariance};
-  EXPECT_FALSE(voxel.usable());
-}
 TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
   // Use a DynamicNDTVoxel to compute a valid covariance
   DynamicNDTVoxel generator_voxel;
@@ -309,15 +300,24 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
   generator_voxel.add_observation(Eigen::Vector3d{0.0, 3.0, 5.0});
   generator_voxel.add_observation(Eigen::Vector3d{4.0, 5.0, 8.0});
   const auto & centroid = generator_voxel.centroid();
-  DynamicNDTVoxel::Cov covariance = generator_voxel.covariance();
-  StaticNDTVoxel voxel(centroid, covariance);
-
-  ASSERT_TRUE(try_stabilize_covariance(covariance));
-  StaticNDTVoxel::Covariance inv_covariance{};
   bool8_t invertible{false};
-  covariance.computeInverseWithCheck(inv_covariance, invertible);
+  Eigen::Matrix3d covariance{};
+
+  // test inverse_covariance() without stabilization
+  auto inv_covariance_before_stabilization = generator_voxel.inverse_covariance();
+  ASSERT_TRUE(inv_covariance_before_stabilization);  // optional should contain valid value
+  inv_covariance_before_stabilization.value().computeInverseWithCheck(covariance, invertible);
+  EXPECT_TRUE(generator_voxel.covariance().isApprox(covariance));
+
+  // test inverse_covariance() with stabilization
+  (void) generator_voxel.try_stabilize();
+  auto inv_covariance_after_stabilizatoin = generator_voxel.inverse_covariance();
+  ASSERT_TRUE(inv_covariance_after_stabilizatoin);  // optional should contain valid value
+  StaticNDTVoxel voxel(centroid, inv_covariance_after_stabilizatoin.value());
+  ASSERT_TRUE(try_stabilize_covariance(inv_covariance_after_stabilizatoin.value()));
+  inv_covariance_after_stabilizatoin.value().computeInverseWithCheck(covariance, invertible);
   ASSERT_TRUE(invertible);
-  EXPECT_TRUE(inv_covariance.isApprox(voxel.inverse_covariance()));
+  EXPECT_TRUE(covariance.isApprox(voxel.covariance()));
   EXPECT_TRUE(voxel.usable());
 }
 
@@ -379,9 +379,9 @@ TEST_F(NDTMapTest, map_representation_basics) {
   };
   // Only using diagonal elements to not get accidental singularity.
   std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_cov_its{
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_xx"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_yy"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "cov_zz")
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_xx"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_yy"),
+    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_zz")
   };
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
 
@@ -537,12 +537,12 @@ MapValidationContext::MapValidationContext()
 : pf1{make_pf("x", 0U, PointField::FLOAT64, 1U)},
   pf2{make_pf("y", 1U * sizeof(float64_t), PointField::FLOAT64, 1U)},
   pf3{make_pf("z", 2U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf4{make_pf("cov_xx", 3U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf5{make_pf("cov_xy", 4U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf6{make_pf("cov_xz", 5U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf7{make_pf("cov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf8{make_pf("cov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf9{make_pf("cov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf4{make_pf("icov_xx", 3U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf5{make_pf("icov_xy", 4U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf6{make_pf("icov_xz", 5U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf7{make_pf("icov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf8{make_pf("icov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
+  pf9{make_pf("icov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)},
   pf10{make_pf("cell_id", 9U * sizeof(float64_t), PointField::UINT32, 2U)} {}
 
 DenseNDTMapContext::DenseNDTMapContext()
@@ -576,42 +576,41 @@ void DenseNDTMapContext::build_pc(const Config & cfg)
     }
   }
 }
-sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
-  const DynamicNDTMap & dynamic_map)
+sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(const DynamicNDTMap & dynamic_map)
 {
   sensor_msgs::msg::PointCloud2 static_msg;
   autoware::common::lidar_utils::init_pcl_msg(static_msg, "map", dynamic_map.size(), 10U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xx", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_xz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_yy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xx", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xy", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_xz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_yy", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
+    "icov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
 
   sensor_msgs::PointCloud2Iterator<Real> x_it(static_msg, "x");
   sensor_msgs::PointCloud2Iterator<Real> y_it(static_msg, "y");
   sensor_msgs::PointCloud2Iterator<Real> z_it(static_msg, "z");
-  sensor_msgs::PointCloud2Iterator<Real> cov_xx_it(static_msg, "cov_xx");
-  sensor_msgs::PointCloud2Iterator<Real> cov_xy_it(static_msg, "cov_xy");
-  sensor_msgs::PointCloud2Iterator<Real> cov_xz_it(static_msg, "cov_xz");
-  sensor_msgs::PointCloud2Iterator<Real> cov_yy_it(static_msg, "cov_yy");
-  sensor_msgs::PointCloud2Iterator<Real> cov_yz_it(static_msg, "cov_yz");
-  sensor_msgs::PointCloud2Iterator<Real> cov_zz_it(static_msg, "cov_zz");
+  sensor_msgs::PointCloud2Iterator<Real> icov_xx_it(static_msg, "icov_xx");
+  sensor_msgs::PointCloud2Iterator<Real> icov_xy_it(static_msg, "icov_xy");
+  sensor_msgs::PointCloud2Iterator<Real> icov_xz_it(static_msg, "icov_xz");
+  sensor_msgs::PointCloud2Iterator<Real> icov_yy_it(static_msg, "icov_yy");
+  sensor_msgs::PointCloud2Iterator<Real> icov_yz_it(static_msg, "icov_yz");
+  sensor_msgs::PointCloud2Iterator<Real> icov_zz_it(static_msg, "icov_zz");
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(static_msg, "cell_id");
   for (const auto & vx_it : dynamic_map) {
     if (!  // No `==` operator defined for PointCloud2Iterators
       (y_it != y_it.end() &&
       z_it != z_it.end() &&
-      cov_xx_it != cov_xx_it.end() &&
-      cov_xy_it != cov_xy_it.end() &&
-      cov_xz_it != cov_xz_it.end() &&
-      cov_yy_it != cov_yy_it.end() &&
-      cov_yz_it != cov_yz_it.end() &&
-      cov_zz_it != cov_zz_it.end() &&
+      icov_xx_it != icov_xx_it.end() &&
+      icov_xy_it != icov_xy_it.end() &&
+      icov_xz_it != icov_xz_it.end() &&
+      icov_yy_it != icov_yy_it.end() &&
+      icov_yz_it != icov_yz_it.end() &&
+      icov_zz_it != icov_zz_it.end() &&
       cell_id_it != cell_id_it.end()))
     {
       // This should not occur as the cloud is resized to the map's size.
@@ -624,27 +623,34 @@ sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
       // Voxel doesn't have enough points to be used in NDT
       continue;
     }
+
+    const auto inv_covariance_opt = vx.inverse_covariance();
+    if (!inv_covariance_opt) {
+      // Voxel covariance is not invertible
+      continue;
+    }
+
     const auto & centroid = vx.centroid();
-    const auto & covariance = vx.covariance();
+    const auto & inv_covariance = inv_covariance_opt.value();
     *(x_it) = centroid(0U);
     *(y_it) = centroid(1U);
     *(z_it) = centroid(2U);
-    *(cov_xx_it) = covariance(0U, 0U);
-    *(cov_xy_it) = covariance(0U, 1U);
-    *(cov_xz_it) = covariance(0U, 2U);
-    *(cov_yy_it) = covariance(1U, 1U);
-    *(cov_yz_it) = covariance(1U, 2U);
-    *(cov_zz_it) = covariance(2U, 2U);
+    *(icov_xx_it) = inv_covariance(0U, 0U);
+    *(icov_xy_it) = inv_covariance(0U, 1U);
+    *(icov_xz_it) = inv_covariance(0U, 2U);
+    *(icov_yy_it) = inv_covariance(1U, 1U);
+    *(icov_yz_it) = inv_covariance(1U, 2U);
+    *(icov_zz_it) = inv_covariance(2U, 2U);
     std::memcpy(&cell_id_it[0U], &(vx_it.first), sizeof(vx_it.first));
     ++x_it;
     ++y_it;
     ++z_it;
-    ++cov_xx_it;
-    ++cov_xy_it;
-    ++cov_xz_it;
-    ++cov_yy_it;
-    ++cov_yz_it;
-    ++cov_zz_it;
+    ++icov_xx_it;
+    ++icov_xy_it;
+    ++icov_xz_it;
+    ++icov_yy_it;
+    ++icov_yz_it;
+    ++icov_zz_it;
     ++cell_id_it;
   }
   return static_msg;

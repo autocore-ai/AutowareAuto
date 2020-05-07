@@ -17,7 +17,8 @@
 #ifndef NDT__NDT_VOXEL_HPP_
 #define NDT__NDT_VOXEL_HPP_
 
-#include <ndt/ndt_representations.hpp>
+#include <ndt/ndt_common.hpp>
+#include <experimental/optional>
 #include <voxel_grid/voxels.hpp>
 #include "common/types.hpp"
 
@@ -30,10 +31,17 @@ namespace localization
 namespace ndt
 {
 
+enum class Invertibility
+{
+  INVERTIBLE,
+  NOT_INVERTIBLE,
+  UNKNOWN
+};
+
 /// Dynamic Voxel implementation for the NDT map. A dynamic voxel updates its state with each added
 /// observation and hence it is to be only used when a raw point cloud is being
 /// transformed into the ndt map representation.
-class NDT_PUBLIC DynamicNDTVoxel : public NDTNormal<DynamicNDTVoxel>
+class NDT_PUBLIC DynamicNDTVoxel
 {
 public:
   using Point = Eigen::Vector3d;
@@ -50,6 +58,10 @@ public:
   /// \param pt Point to add to the voxel.
   void add_observation(const Point & pt);
 
+  /// Try to stabilize the covariance
+  /// \return True if stabilization succeeds and covariance is invertible
+  bool8_t try_stabilize();
+
   /// Check if the cell contains enough points to be used in ndt matching
   /// \return True if cell has more points than NUM_POINT_THRESHOLD
   bool8_t usable() const noexcept;
@@ -58,11 +70,16 @@ public:
   /// covariance or the cell does not have enough points for covariance calculation,
   /// throws an error.
   /// \return covariance of the cell
-  const Cov & covariance_() const;
+  const Cov & covariance() const;
+
+  /// Returns the inverse covariance calculated from the covariance. If the covariance is not
+  /// invertible, throws an error
+  /// \return inverse covariance of the cell
+  std::experimental::optional<Cov> inverse_covariance() const;
 
   /// Returns the mean of the points in the cell. Throw if the cell does not have enough points.
   /// \return centroid of the cell
-  const Point & centroid_() const;
+  const Point & centroid() const;
 
   /// Get number of points residing in the voxel.
   /// \return Number of points.
@@ -72,13 +89,13 @@ private:
   Point m_centroid;
   Cov m_M2;  // Used in covariance computation.
   Cov m_covariance;
-  Cov m_inv_covariance;
+  Invertibility m_invertible{Invertibility::UNKNOWN};
   uint64_t m_num_points{0U};
 };
 
 /// Static Voxel implementation for the NDT map. A static voxel is used to represent a pre-computed
 /// ndt cell, hence it doesn't contain any logic for updating its states.
-class NDT_PUBLIC StaticNDTVoxel : public NDTNormal<StaticNDTVoxel>
+class NDT_PUBLIC StaticNDTVoxel
 {
 public:
   using Point = Eigen::Vector3d;
@@ -88,25 +105,26 @@ public:
 
   /// Initialize a voxel given the centroid and the covariance.
   /// \param centroid Centroid of the voxel.
-  /// \param covariance Covariance of the voxel.
-  StaticNDTVoxel(const Point & centroid, const Cov & covariance);
+  /// \param inv_covariance Covariance of the voxel.
+  StaticNDTVoxel(const Point & centroid, const Cov & inv_covariance);
 
-  /// Returns the covariance of the points in the voxel. Throw if voxel is empty.
+  /// Calculates and returns the covariance of the points in the voxel. Throw if voxel is empty.
   /// \return covariance of the cell
-  const Cov & covariance_() const;
+  Cov covariance() const;
   /// Returns the mean of the points in the cell. Throw if voxel is empty.
   /// \return centroid of the cell
-  const Point & centroid_() const;
+  const Point & centroid() const;
 
+  /// Returns the inverse covariance of the points in the voxel. Throw if voxel is empty.
+  /// \return inverse covariance of the cell
   const Cov & inverse_covariance() const;
 
-  /// Check if the voxel is usable.
-  /// \return true if the voxel is not empty
+  /// Check if the cell is occupied and can be used in ndt matching
+  /// \return True if cell is occupied
   bool8_t usable() const noexcept;
 
 private:
   Point m_centroid;
-  Cov m_covariance;
   Cov m_inv_covariance;
   bool8_t m_occupied{false};
 };

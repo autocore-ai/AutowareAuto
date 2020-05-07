@@ -17,7 +17,7 @@
 #ifndef NDT__NDT_CONFIG_HPP_
 #define NDT__NDT_CONFIG_HPP_
 
-#include <ndt/ndt_representations.hpp>
+#include <ndt/ndt_common.hpp>
 #include <voxel_grid/config.hpp>
 #include <utility>
 

@@ -20,7 +20,7 @@
 #include <localization_common/localizer_base.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>
-#include <ndt/ndt_representations.hpp>
+#include <ndt/ndt_common.hpp>
 #include <ndt/ndt_optimization_problem.hpp>
 #include <optimization/optimizer_options.hpp>
 #include <utility>

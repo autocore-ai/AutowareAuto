@@ -67,12 +67,12 @@ uint32_t validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg)
   if ((msg.fields[0U].name != "x") ||
     (msg.fields[1U].name != "y") ||
     (msg.fields[2U].name != "z") ||
-    (msg.fields[3U].name != "cov_xx") ||
-    (msg.fields[4U].name != "cov_xy") ||
-    (msg.fields[5U].name != "cov_xz") ||
-    (msg.fields[6U].name != "cov_yy") ||
-    (msg.fields[7U].name != "cov_yz") ||
-    (msg.fields[8U].name != "cov_zz") ||
+    (msg.fields[3U].name != "icov_xx") ||
+    (msg.fields[4U].name != "icov_xy") ||
+    (msg.fields[5U].name != "icov_xz") ||
+    (msg.fields[6U].name != "icov_yy") ||
+    (msg.fields[7U].name != "icov_yz") ||
+    (msg.fields[8U].name != "icov_zz") ||
     (msg.fields[9U].name != "cell_id"))
   {
     return 0U;

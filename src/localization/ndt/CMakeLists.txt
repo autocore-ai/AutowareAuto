@@ -28,6 +28,17 @@ set(NDT_NODES_LIB_SRC
     src/ndt_config.cpp
 )
 
+set(NDT_NODES_LIB_HEADERS
+    include/ndt/visibility_control.hpp
+    include/ndt/ndt_config.hpp
+    include/ndt/ndt_common.hpp
+    include/ndt/ndt_optimization_problem.hpp
+    include/ndt/ndt_voxel.hpp
+    include/ndt/ndt_map.hpp
+    include/ndt/ndt_scan.hpp
+    include/ndt/ndt_localizer.hpp
+    include/ndt/utils.hpp)
+
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${NDT_NODES_LIB_SRC}
