@@ -90,7 +90,7 @@ public:
   virtual const Eigen::Matrix<float32_t, NumStates, 1U> & get_state() const = 0;
   /// \brief get dimensionality of this model
   /// \return number of dimensions in this model
-  constexpr index_t get_num_states() {return NumStates;}
+  constexpr index_t get_num_states() const noexcept {return NumStates;}
 
   /// Destructor
   virtual ~MotionModel() = default;
