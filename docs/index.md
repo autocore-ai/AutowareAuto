@@ -30,7 +30,7 @@ Autoware.Auto initially targets the following 2 use cases:
 1. Autonomous Valet Parking
 2. Autonomous Depot Maneuvering
 
-After the initial set of [milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/milestones)
+After the initial set of [milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones)
 are completed, Autoware.Auto will allow you to easily map a parking lot, create
 a map for autonomous driving, and drive over this parking lot entirely autonomously; all in less
 than 2 weeks.
@@ -63,7 +63,7 @@ https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/.
 
 Functional features in Autoware.Auto are developed according to the roadmap below. More granular
 feature planning is being handled via
-[GitLab milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/milestones).
+[GitLab milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones).
 
 ![Functional feature roadmap](images/aa_roadmap.png)
 
