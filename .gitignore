@@ -5,7 +5,7 @@
 /build_isolated
 /install_isolated
 /devel
-/*cmake-build*
+*cmake-build*
 
 ## Python Artifacts
 __pycache__/
