@@ -103,6 +103,7 @@ private:
 
   std::deque<State> m_record_buffer;
   BoundingBoxArray m_latest_bounding_boxes{};
+  BoundingBoxArray m_cache_traj_bbox_arr{};
   Trajectory m_trajectory{};
   RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
 };  // class RecordReplayPlanner

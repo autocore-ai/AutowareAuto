@@ -89,6 +89,7 @@ void RecordReplayPlanner::stop_replaying() noexcept
 void RecordReplayPlanner::clear_record() noexcept
 {
   m_record_buffer.clear();
+  m_cache_traj_bbox_arr.boxes.clear();
 }
 
 std::size_t RecordReplayPlanner::get_record_length() const noexcept
@@ -126,6 +127,8 @@ float64_t RecordReplayPlanner::get_min_record_distance() const
 
 void RecordReplayPlanner::record_state(const State & state_to_record)
 {
+  m_cache_traj_bbox_arr.boxes.clear();
+
   if (m_record_buffer.empty()) {
     m_record_buffer.push_back(state_to_record);
     return;
@@ -173,58 +176,66 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
 const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
   // Find out where on the recorded buffer we should start replaying
-  auto minimum_idx = get_closest_state(current_state);
+  const auto traj_start_idx = get_closest_state(current_state);
 
   // Determine how long the published trajectory will be
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
-  const auto publication_length =
-    std::min(record_length - minimum_idx, trajectory.points.max_size());
+  auto traj_end_idx =
+    std::min(record_length - traj_start_idx, trajectory.points.max_size()) + traj_start_idx;
 
-  // Assemble the trajectory as desired
-  trajectory.points.resize(publication_length);
-  trajectory.header = current_state.header;
-  const auto t0 = time_utils::from_message(m_record_buffer[minimum_idx].header.stamp);
-  for (std::size_t i = {}; i < publication_length; ++i) {
-    // Make the time spacing of the points match the recorded timing
-    trajectory.points[i] = m_record_buffer[minimum_idx + i].state;
-    trajectory.points[i].time_from_start = time_utils::to_message(
-      time_utils::from_message(m_record_buffer[minimum_idx + i].header.stamp) - t0);
+
+  // Build bounding box cache
+  if (m_cache_traj_bbox_arr.boxes.empty() ||
+    m_cache_traj_bbox_arr.boxes.size() != get_record_length())
+  {
+    m_cache_traj_bbox_arr.boxes.clear();
+    m_cache_traj_bbox_arr.header = current_state.header;
+    for (std::size_t i = {}; i < get_record_length(); ++i) {
+      const auto boundingbox = compute_boundingbox_from_trajectorypoint(
+        m_record_buffer[traj_start_idx + i].state,
+        m_vehicle_param);
+      m_cache_traj_bbox_arr.boxes.push_back(boundingbox);
+    }
   }
 
-  // Create a function to obtain a polytope from our current state
-  auto collision = false;
-  for (std::size_t i = 0; i < trajectory.points.size(); ++i) {
-    // Obtain a bounding box for that step along the trajectory. (TODO(s.me) these boxes
-    // could already be computed on recording and then cached so they don't have to be
-    // recomputed every time a trajectory is published)
-    const auto boundingbox = compute_boundingbox_from_trajectorypoint(trajectory.points[i],
-        m_vehicle_param);
+  // Collision detection
+  for (std::size_t i = traj_start_idx; i < traj_end_idx; ++i) {
+    const auto & boundingbox = m_cache_traj_bbox_arr.boxes[i];
 
     // Check for collisions with all perceived obstacles
     for (const auto & obstaclebox : m_latest_bounding_boxes.boxes) {
       if (intersect(boundingbox.corners.begin(), boundingbox.corners.end(),
         obstaclebox.corners.begin(), obstaclebox.corners.end()) )
       {
-        // Collision detected, drop everything larger than index i-1
-        collision = true;
-        trajectory.points.resize(i);
-
-        // Mark the last point along the trajectory as "stopping" by setting all rates,
-        // accelerations and velocities to zero. TODO(s.me) this is by no means
-        // guaranteed to be dynamically feasible. One could implement a proper velocity
-        // profile here in the future.
-        trajectory.points[i - 1].longitudinal_velocity_mps = 0.0;
-        trajectory.points[i - 1].lateral_velocity_mps = 0.0;
-        trajectory.points[i - 1].acceleration_mps2 = 0.0;
-        trajectory.points[i - 1].heading_rate_rps = 0.0;
-        break;  // this only breaks the inner for loop
+        // Collision detected, set end index (non-inclusive)
+        traj_end_idx = i;  // This also ends the outer loop
+        break;
       }
     }
-    if (collision) {
-      break;
-    }
   }
+
+  // Assemble the trajectory as desired
+  trajectory.header = current_state.header;
+  const auto publication_len = traj_end_idx - traj_start_idx;
+  trajectory.points.resize(publication_len);
+
+  const auto t0 = time_utils::from_message(m_record_buffer[traj_start_idx].header.stamp);
+  for (std::size_t i = {}; i < publication_len; ++i) {
+    // Make the time spacing of the points match the recorded timing
+    trajectory.points[i] = m_record_buffer[traj_start_idx + i].state;
+    trajectory.points[i].time_from_start = time_utils::to_message(
+      time_utils::from_message(m_record_buffer[traj_start_idx + i].header.stamp) - t0);
+  }
+  // Mark the last point along the trajectory as "stopping" by setting all rates,
+  // accelerations and velocities to zero. TODO(s.me) this is by no means
+  // guaranteed to be dynamically feasible. One could implement a proper velocity
+  // profile here in the future.
+  const auto traj_last_idx = traj_start_idx - 1U;
+  trajectory.points[traj_last_idx].longitudinal_velocity_mps = 0.0;
+  trajectory.points[traj_last_idx].lateral_velocity_mps = 0.0;
+  trajectory.points[traj_last_idx].acceleration_mps2 = 0.0;
+  trajectory.points[traj_last_idx].heading_rate_rps = 0.0;
 
   return trajectory;
 }

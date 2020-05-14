@@ -18,8 +18,9 @@ The replay will find the closest state in terms of location and heading along th
 deliver trajectories starting from that state. The trajectory length is at most 100 as specified by the
 `Trajectory` message, and at least 1 if there is any recorded data present.
 
-A list of obstacles can also be specified via a method. Every trajectory is checked for collisions with the
-currently stored list of obstacles. If any state is found to collide, the trajectory is cut to end at one
+A list of obstacles can also be specified via a method. Every trajectory point is checked for collisions with the
+currently stored list of obstacles. Trajectory points are converted cached as ego bounding boxes with ego vehicles 
+dimensions for collision checking. If any trajectory box is found to collide, the trajectory is cut to end at one
 state before the colliding state, and the desired velocity for the end of the trajectory is set to 0.  No
 effort is currently made to create a dynamically feasible velocity profile.
 
