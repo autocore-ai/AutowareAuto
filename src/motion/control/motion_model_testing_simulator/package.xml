@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<package format="3">
+  <name>motion_model_testing_simulator</name>
+  <version>0.0.1</version>
+  <description>Allows for closed-loop testing of motion models.</description>
+  <maintainer email="josh.whitley@autoware.org">Josh Whitley</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="merkli@embotech.com">Sandro Merkli</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>ament_cmake_python</build_depend>
+
+  <depend>ament_index_python</depend>
+
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python-scipy</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

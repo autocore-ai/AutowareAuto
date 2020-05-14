@@ -1,0 +1,8 @@
+/**:
+    ros__parameters:
+      state_frame: 'odom'
+      trajectory_frame: 'odom'
+      sim_time_step_s: 0.1  # Note: This should equal the MPC output sampling time
+      vehicle:
+        cog_to_front_axle: 1.228
+        cog_to_rear_axle: 1.5618

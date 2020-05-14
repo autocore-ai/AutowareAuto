@@ -16,6 +16,8 @@ libpcap-dev
 man
 openssh-client
 python3-lxml
+python3-matplotlib
+python3-scipy
 ros-dashing-ament-cmake
 ros-dashing-ament-cmake-core
 ros-dashing-ament-cmake-gtest
