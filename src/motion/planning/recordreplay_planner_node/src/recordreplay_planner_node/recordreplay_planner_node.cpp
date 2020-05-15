@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <common/types.hpp>
 
+
+#include <common/types.hpp>
+#include <recordreplay_planner_node/recordreplay_planner_node.hpp>
+#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <memory>
 #include <string>
 #include <utility>
-
-#include "recordreplay_planner_node/recordreplay_planner_node.hpp"
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
@@ -80,6 +81,11 @@ void RecordReplayPlannerNode::init(
 {
   using rclcpp::QoS;
 
+  // Setup Tf Buffer with listener
+  rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(clock);
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
   // Set up action for control of recording and replaying
   m_recordserver = rclcpp_action::create_server<RecordTrajectory>(
     this->get_node_base_interface(),
@@ -125,6 +131,10 @@ void RecordReplayPlannerNode::init(
 
 void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
 {
+  if (m_odom_frame_id.empty()) {
+    m_odom_frame_id = msg->header.frame_id;
+  }
+
   if (m_planner->is_recording()) {
     RCLCPP_INFO_ONCE(this->get_logger(), "Recording ego position");
     m_planner->record_state(*msg);
@@ -150,7 +160,21 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
 void RecordReplayPlannerNode::on_bounding_box(const BoundingBoxArray::SharedPtr & msg)
 {
   // Update most recent bounding box internally
-  m_planner->update_bounding_boxes(*msg);
+  if (msg->header.frame_id == m_odom_frame_id) {
+    m_planner->update_bounding_boxes(*msg);
+  } else {
+    tf2::Duration timeout = tf2::durationFromSec(0.2);
+    if (tf_buffer_->canTransform(m_odom_frame_id, msg->header.frame_id,
+      tf2_ros::fromMsg(msg->header.stamp), timeout) )
+    {
+      auto msg_tansformed = tf_buffer_->transform(*msg, m_odom_frame_id, timeout);
+      m_planner->update_bounding_boxes(msg_tansformed);
+    } else {
+      RCLCPP_WARN(
+        this->get_logger(), "on_bounding_box cannot transform %s to %s",
+        msg->header.frame_id.c_str(), m_odom_frame_id.c_str());
+    }
+  }
 }
 
 rclcpp_action::GoalResponse RecordReplayPlannerNode::record_handle_goal(

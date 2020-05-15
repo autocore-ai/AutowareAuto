@@ -14,6 +14,8 @@
 #ifndef RECORDREPLAY_PLANNER_NODE__RECORDREPLAY_PLANNER_NODE_HPP_
 #define RECORDREPLAY_PLANNER_NODE__RECORDREPLAY_PLANNER_NODE_HPP_
 
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 #include <recordreplay_planner_node/visibility_control.hpp>
 #include <recordreplay_planner/recordreplay_planner.hpp>
 #include <recordreplay_planner_actions/action/record_trajectory.hpp>
@@ -112,6 +114,10 @@ private:
     const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle);
   RECORDREPLAY_PLANNER_NODE_LOCAL void replay_handle_accepted(
     const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle);
+
+  std::string m_odom_frame_id{};
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

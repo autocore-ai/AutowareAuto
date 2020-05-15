@@ -231,11 +231,13 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   // accelerations and velocities to zero. TODO(s.me) this is by no means
   // guaranteed to be dynamically feasible. One could implement a proper velocity
   // profile here in the future.
-  const auto traj_last_idx = traj_start_idx - 1U;
-  trajectory.points[traj_last_idx].longitudinal_velocity_mps = 0.0;
-  trajectory.points[traj_last_idx].lateral_velocity_mps = 0.0;
-  trajectory.points[traj_last_idx].acceleration_mps2 = 0.0;
-  trajectory.points[traj_last_idx].heading_rate_rps = 0.0;
+  if (traj_end_idx > traj_start_idx) {
+    const auto traj_last_idx = traj_end_idx - 1U;
+    trajectory.points[traj_last_idx].longitudinal_velocity_mps = 0.0;
+    trajectory.points[traj_last_idx].lateral_velocity_mps = 0.0;
+    trajectory.points[traj_last_idx].acceleration_mps2 = 0.0;
+    trajectory.points[traj_last_idx].heading_rate_rps = 0.0;
+  }
 
   return trajectory;
 }

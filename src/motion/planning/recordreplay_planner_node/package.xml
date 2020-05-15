@@ -11,12 +11,15 @@
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
   <depend>autoware_auto_msgs</depend>
+  <depend>autoware_auto_tf2</depend>  
   <depend>recordreplay_planner</depend>
   <depend>recordreplay_planner_actions</depend>
   <depend>motion_common</depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
 
   <build_depend>motion_testing</build_depend>
   <build_depend>autoware_auto_common</build_depend>
