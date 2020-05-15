@@ -87,8 +87,7 @@ public:
     const TopicQoS & map_sub_config,
     const TopicQoS & pose_pub_config,
     const PoseInitializerT & pose_initializer,
-    LocalizerPublishMode publish_tf = LocalizerPublishMode::NO_PUBLISH_TF
-  )
+    LocalizerPublishMode publish_tf = LocalizerPublishMode::NO_PUBLISH_TF)
   : Node(node_name, name_space),
     m_pose_initializer(pose_initializer),
     m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
@@ -136,6 +135,23 @@ public:
       m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf",
           rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
     }
+
+    /////////////////////////////////////////////////
+    // TODO(yunus.caliskan): Remove in #425
+    // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
+    auto & tf = m_init_hack_transform.transform;
+    tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
+    tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
+    tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
+    tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
+    tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
+    tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
+    tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
+    m_init_hack_transform.header.frame_id = "map";
+    m_init_hack_transform.child_frame_id = "odom";
+    m_use_hack = true;  // On this constructor that is used by the executable,
+    // we currently need the hack for the AVP demo MS2.
+    ////////////////////////////////////////////////////
   }
 
   /// Get a const pointer of the output publisher. Can be used for matching against subscriptions.
@@ -221,13 +237,22 @@ private:
         const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
         const auto & observation_frame = get_frame_id(*msg_ptr);
         const auto & map_frame = m_localizer_ptr->map_frame_id();
+
+        ////////////////////////////////////////////////////////
+        // TODO(yunus.caliskan): remove in #425
+        if (m_use_hack && !m_hack_initialized) {
+          check_and_execute_hack(get_stamp(*msg_ptr));
+        }
+        /////////////////////////////////////////////////////////
+
         const auto initial_guess =
           m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
+
+        m_hack_initialized = true;  // Only after a successful lookup, disable the hack.
 
         PoseWithCovarianceStamped pose_out;
         const auto summary =
           m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, pose_out);
-
         if (validate_output(summary, pose_out, initial_guess)) {
           m_pose_publisher->publish(pose_out);
           // This is to be used when no state estimator or alternative source of
@@ -259,18 +284,35 @@ private:
   }
 
   /// Publish the pose message as a transform.
-  void publish_tf(const PoseWithCovarianceStamped & pose)
+  void publish_tf(const PoseWithCovarianceStamped & pose_msg)
   {
+    const auto & pose = pose_msg.pose.pose;
+    tf2::Quaternion rotation{pose.orientation.x, pose.orientation.y, pose.orientation.z,
+      pose.orientation.w};
+    tf2::Vector3 translation{pose.position.x, pose.position.y, pose.position.z};
+    const tf2::Transform map_base_link_transform{rotation, translation};
+
+    const auto odom_tf = m_tf_buffer.lookupTransform("odom", "base_link",
+        time_utils::from_message(pose_msg.header.stamp));
+    tf2::Quaternion odom_rotation{odom_tf.transform.rotation.x,
+      odom_tf.transform.rotation.y, odom_tf.transform.rotation.z, odom_tf.transform.rotation.w};
+    tf2::Vector3 odom_translation{odom_tf.transform.translation.x, odom_tf.transform.translation.y,
+      odom_tf.transform.translation.z};
+    const tf2::Transform odom_base_link_transform{odom_rotation, odom_translation};
+
+    const auto map_odom_tf = map_base_link_transform * odom_base_link_transform.inverse();
+
     tf2_msgs::msg::TFMessage tf_message;
     geometry_msgs::msg::TransformStamped tf_stamped;
-    tf_stamped.header = pose.header;
+    tf_stamped.header.stamp = pose_msg.header.stamp;
     tf_stamped.header.frame_id = m_localizer_ptr->map_frame_id();
-    tf_stamped.child_frame_id = pose.header.frame_id;
-    const auto & pose_trans = pose.pose.pose.position;
-    const auto & pose_rot = pose.pose.pose.orientation;
-    tf_stamped.transform.translation.set__x(pose_trans.x).set__y(pose_trans.y).set__z(pose_trans.z);
-    tf_stamped.transform.rotation.set__x(pose_rot.x).set__y(pose_rot.y).set__z(pose_rot.z).set__w(
-      pose_rot.w);
+    tf_stamped.child_frame_id = "odom";
+    const auto & tf_trans = map_odom_tf.getOrigin();
+    const auto & tf_rot = map_odom_tf.getRotation();
+    tf_stamped.transform.translation.set__x(tf_trans.x()).set__y(tf_trans.y()).
+    set__z(tf_trans.z());
+    tf_stamped.transform.rotation.set__x(tf_rot.x()).set__y(tf_rot.y()).set__z(tf_rot.z()).
+    set__w(tf_rot.w());
     tf_message.transforms.push_back(tf_stamped);
     m_tf_publisher->publish(tf_message);
   }
@@ -284,6 +326,16 @@ private:
     }
   }
 
+  // TODO(yunus.caliskan): Remove this method in #425
+  void check_and_execute_hack(builtin_interfaces::msg::Time stamp)
+  {
+    const auto tp = time_utils::from_message(stamp);
+    if (!m_tf_buffer.canTransform("map", "odom", tp)) {
+      m_init_hack_transform.header.stamp = stamp;
+      m_tf_buffer.setTransform(m_init_hack_transform, "initialization");
+    }
+  }
+
   LocalizerBasePtr m_localizer_ptr;
   PoseInitializerT m_pose_initializer;
   tf2::BufferCore m_tf_buffer;
@@ -292,6 +344,10 @@ private:
   typename rclcpp::Subscription<MapMsgT>::SharedPtr m_map_sub;
   typename rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr m_pose_publisher;
   typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher{nullptr};
+  // TODO(yunus.caliskan): Remove hack variables below in #425
+  bool m_use_hack{false};
+  bool m_hack_initialized{false};
+  geometry_msgs::msg::TransformStamped m_init_hack_transform;
 };
 }  // namespace localization_nodes
 }  // namespace localization

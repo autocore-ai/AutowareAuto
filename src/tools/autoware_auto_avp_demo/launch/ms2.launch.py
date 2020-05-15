@@ -48,13 +48,15 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/lgsvl_interface.param.yaml')
     map_publisher_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/map_publisher.param.yaml')
-    map_state_estimator_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/map_state_estimator.param.yaml')
     odom_state_estimator_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/odom_state_estimator.param.yaml')
     ray_ground_classifier_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
     rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms2.rviz')
+    scan_downsampler_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/scan_downsampler.param.yaml')
+    ndt_localizer_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/ndt_localizer.param.yaml')
 
     pc_filter_transform_pkg_prefix = get_package_share_directory(
         'point_cloud_filter_transform_nodes')
@@ -81,11 +83,6 @@ def generate_launch_description():
         default_value=map_publisher_param_file,
         description='Path to config file for Map Publisher'
     )
-    map_state_estimator_param = DeclareLaunchArgument(
-        'map_state_estimator_param_file',
-        default_value=map_state_estimator_param_file,
-        description='Path to config file for Map State Estimator'
-    )
     odom_state_estimator_param = DeclareLaunchArgument(
         'odom_state_estimator_param_file',
         default_value=odom_state_estimator_param_file,
@@ -105,6 +102,16 @@ def generate_launch_description():
         'with_rviz',
         default_value='True',
         description='Launch RVIZ2 in addition to other nodes'
+    )
+    ndt_localizer_param = DeclareLaunchArgument(
+        'ndt_localizer_param_file',
+        default_value=ndt_localizer_param_file,
+        description='Path to config file for ndt localizer'
+    )
+    scan_downsampler_param = DeclareLaunchArgument(
+        'scan_downsampler_param_file',
+        default_value=scan_downsampler_param_file,
+        description='Path to config file for lidar scan downsampler'
     )
 
     # Nodes
@@ -142,12 +149,6 @@ def generate_launch_description():
         node_namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
-    map_state_estimator = Node(
-        package='robot_localization',
-        node_executable='ekf_node',
-        node_namespace='localization/map',
-        parameters=[LaunchConfiguration('map_state_estimator_param_file')]
-    )
     odom_state_estimator = Node(
         package='robot_localization',
         node_executable='ekf_node',
@@ -174,14 +175,29 @@ def generate_launch_description():
         arguments=[str(urdf_path)]
     )
 
+    scan_downsampler = Node(
+        package='voxel_grid_nodes',
+        node_executable='voxel_grid_cloud_node_exe',
+        node_namespace='lidar_front',
+        node_name='voxel_grid_cloud_node',
+        parameters=[LaunchConfiguration('scan_downsampler_param_file')]
+    )
+    ndt_localizer = Node(
+        package='ndt_nodes',
+        node_executable='p2d_ndt_localizer_exe',
+        node_namespace='localization',
+        node_name='p2d_ndt_localizer_node',
+        parameters=[LaunchConfiguration('ndt_localizer_param_file')])
+
     return LaunchDescription([
         euclidean_cluster_param,
         lgsvl_interface_param,
         map_publisher_param,
-        map_state_estimator_param,
         odom_state_estimator_param,
         pc_filter_transform_param,
         ray_ground_classifier_param,
+        scan_downsampler_param,
+        ndt_localizer_param,
         with_rviz_param,
         urdf_publisher,
         euclidean_clustering,
@@ -189,8 +205,9 @@ def generate_launch_description():
         filter_transform_vlp16_rear,
         lgsvl_interface,
         map_publisher,
-        map_state_estimator,
         odom_state_estimator,
         ray_ground_classifier,
+        scan_downsampler,
+        ndt_localizer,
         rviz2
     ])
