@@ -66,43 +66,11 @@ class VEHICLE_INTERFACE_PUBLIC VehicleInterfaceNode : public ::rclcpp::Node
 {
 public:
   /// ROS 2 parameter constructor
-  /// \param[in] node_name The name of the node
-  /// \param[in] node_namespace Namespace of the node
+  /// \param[in] node_name The name for the node
+  /// \param[in] options An rclcpp::NodeOptions object
   VehicleInterfaceNode(
     const std::string & node_name,
-    const std::string & node_namespace = "");
-
-  /// Explicit parameter constructor
-  /// \param[in] node_name The name of the node
-  /// \param[in] node_namespace Namespace of the node
-  /// \param[in] cycle_time Duration to exchange data with vehicle platform
-  /// \param[in] raw_command Topic name and expected number of matches for raw control command
-  /// \param[in] basic_command Topic name and expected number of matches for basic control command
-  /// \param[in] high_level_command Topic name and expected number of matches for high level control
-  ///                               command
-  /// \param[in] state_command Topic name and expected number of matches for state command
-  /// \param[in] odometry Topic name and expected number of matches for odometry
-  /// \param[in] state_report Topic name and expected number of matches for state report command
-  /// \param[in] state_machine_config Configuration class for safety state machine
-  /// \param[in] longitudinal_filter Filter for acceleration/velocity for all commands
-  /// \param[in] curvature_filter Filter for curvature component of high level control commands
-  /// \param[in] front_steer_filter Filter for front steer component in raw or basic commands
-  /// \param[in] rear_steer_filter Filter for rear steer component in raw or basic commands
-  VehicleInterfaceNode(
-    const std::string & node_name,
-    const std::string & node_namespace,
-    const std::chrono::nanoseconds cycle_time,
-    const TopicNumMatches & raw_command,
-    const TopicNumMatches & basic_command,
-    const TopicNumMatches & high_level_command,
-    const TopicNumMatches & state_command,
-    const TopicNumMatches & odometry,
-    const TopicNumMatches & state_report,
-    const std::optional<StateMachineConfig> & state_machine_config,
-    const FilterConfig & longitudinal_filter,
-    const FilterConfig & curvature_filter,
-    const FilterConfig & front_steer_filter,
-    const FilterConfig & rear_steer_filter);
+    const rclcpp::NodeOptions & options);
 
 protected:
   using ControllerBasePtr =

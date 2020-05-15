@@ -39,8 +39,8 @@ namespace vehicle_interface
 ////////////////////////////////////////////////////////////////////////////////
 VehicleInterfaceNode::VehicleInterfaceNode(
   const std::string & node_name,
-  const std::string & node_namespace)
-: Node{node_name, node_namespace, rclcpp::NodeOptions{}}
+  const rclcpp::NodeOptions & options)
+: Node{node_name, options}
 {
   // Helper functions
   const auto topic_num_matches_from_param = [this](const auto prefix, bool8_t optional = false) {
@@ -113,39 +113,6 @@ VehicleInterfaceNode::VehicleInterfaceNode(
     filter("rear_steer"),
     time("cycle_time_ms")
   );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-VehicleInterfaceNode::VehicleInterfaceNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
-  const std::chrono::nanoseconds cycle_time,
-  const TopicNumMatches & raw_command,
-  const TopicNumMatches & basic_command,
-  const TopicNumMatches & high_level_command,
-  const TopicNumMatches & state_command,
-  const TopicNumMatches & odometry,
-  const TopicNumMatches & state_report,
-  const std::optional<StateMachineConfig> & state_machine_config,
-  const FilterConfig & longitudinal_filter,
-  const FilterConfig & curvature_filter,
-  const FilterConfig & front_steer_filter,
-  const FilterConfig & rear_steer_filter)
-: Node{node_name, node_namespace}
-{
-  init(
-    raw_command,
-    basic_command,
-    high_level_command,
-    state_command,
-    odometry,
-    state_report,
-    state_machine_config,
-    longitudinal_filter,
-    curvature_filter,
-    front_steer_filter,
-    rear_steer_filter,
-    cycle_time);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -29,21 +29,28 @@
 TEST_F(sanity_checks, filtering)
 {
   const auto cmd_topic = "vi_filter_basic_cmd";
+
   // Construct
+  rclcpp::NodeOptions options{};
+  options
+    .append_parameter_override("raw_command.name", "null")
+    .append_parameter_override("basic_command.name", cmd_topic)
+    .append_parameter_override("high_level_command.name", "null")
+    .append_parameter_override("state_command.name", "vi_state_machine_state_command")
+    .append_parameter_override("odometry.name", "vi_state_machine_odom")
+    .append_parameter_override("state_report.name", "vi_state_machine_state_report")
+    .append_parameter_override("filter.longitudinal.type", "low_pass_filter")
+    .append_parameter_override("filter.longitudinal.cutoff_frequency_hz", 30.0F)
+    .append_parameter_override("filter.curvature.type", "low_pass_filter")
+    .append_parameter_override("filter.curvature.cutoff_frequency_hz", 30.0F)
+    .append_parameter_override("filter.front_steer.type", "low_pass_filter")
+    .append_parameter_override("filter.front_steer.cutoff_frequency_hz", 30.0F)
+    .append_parameter_override("filter.rear_steer.type", "low_pass_filter")
+    .append_parameter_override("filter.rear_steer.cutoff_frequency_hz", 30.0F);
+
   const auto vi_node = std::make_shared<TestVINode>(
-    "filter_vi_node",
-    "",
-    TopicNumMatches{"null"},
-    TopicNumMatches{cmd_topic},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"vi_filter_state_command"},
-    TopicNumMatches{"vi_filter_odom"},
-    TopicNumMatches{"vi_filter_state_report"},
-    FilterConfig{"low_pass_filter", 30.0F},
-    FilterConfig{"low_pass_filter", 30.0F},
-    FilterConfig{"low_pass_filter", 30.0F},
-    FilterConfig{"low_pass_filter", 30.0F},
-    false);  // no failure
+    "filter_vi_node", options, false);  // no failure
+
   // Test publisher
   const auto pub_node = std::make_shared<rclcpp::Node>("filter_vi_pub_node");
   const auto test_pub =

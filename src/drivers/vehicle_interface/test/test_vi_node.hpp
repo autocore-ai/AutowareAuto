@@ -116,41 +116,24 @@ class TestVINode : public VehicleInterfaceNode
 public:
   TestVINode(
     const std::string & node_name,
-    const std::string & node_namespace,
-    const TopicNumMatches & raw_command,
-    const TopicNumMatches & basic_command,
-    const TopicNumMatches & high_level_command,
-    const TopicNumMatches & state_command,
-    const TopicNumMatches & odometry,
-    const TopicNumMatches & state_report,
-    const FilterConfig & longitudinal_filter,
-    const FilterConfig & curvature_filter,
-    const FilterConfig & front_steer_filter,
-    const FilterConfig & rear_steer_filter,
+    const rclcpp::NodeOptions & options,
     bool8_t fail = false)
   : VehicleInterfaceNode{
       node_name,
-      node_namespace,
-      std::chrono::milliseconds{30LL},
-      raw_command,
-      basic_command,
-      high_level_command,
-      state_command,
-      odometry,
-      state_report,
-      autoware::drivers::vehicle_interface::StateMachineConfig{
-      0.5F,  // gear shift velocity threshold
-      Limits<float32_t>{-3.0F, 3.0F, 1.0F},  // accel limits
-      Limits<float32_t>{-0.331F, 0.331F, 0.3F},  // front steer limits
-      std::chrono::milliseconds{100LL},  // time_step
-      3.0F,  // timeout acceleration
-      std::chrono::seconds{3LL},  // state transition timeout
-      0.5F,  // gear shift accel deadzone
-    },
-      longitudinal_filter,
-      curvature_filter,
-      front_steer_filter,
-      rear_steer_filter}
+      rclcpp::NodeOptions(options)
+        .append_parameter_override("cycle_time_ms", static_cast<int64_t>(30LL))
+        .append_parameter_override("state_machine.gear_shift_velocity_threshold_mps", 0.5F)
+        .append_parameter_override("state_machine.acceleration_limits.min", -3.0F)
+        .append_parameter_override("state_machine.acceleration_limits.max", 3.0F)
+        .append_parameter_override("state_machine.acceleration_limits.threshold", 1.0F)
+        .append_parameter_override("state_machine.front_steer_limits.min", -0.331F)
+        .append_parameter_override("state_machine.front_steer_limits.max", 0.331F)
+        .append_parameter_override("state_machine.front_steer_limits.threshold", 0.3F)
+        .append_parameter_override("state_machine.time_step_ms", static_cast<int64_t>(100LL))
+        .append_parameter_override("state_machine.timeout_acceleration_mps2", 3.0F)
+        .append_parameter_override("state_machine.state_transition_timeout_ms", static_cast<int64_t>(3000LL))
+        .append_parameter_override("state_machine.gear_shift_accel_deadzone_mps2", 0.5F)
+  }
   {
     // sketchy, but this is because the PlatformInterface generally shouldn't be exposed
     auto interface = std::make_unique<FakeInterface>(fail);

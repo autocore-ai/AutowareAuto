@@ -29,20 +29,19 @@ TEST_F(sanity_checks, raw_translation)
 {
   const auto raw_topic = "vi_sanity_check_raw";
   // Construct
+
+  rclcpp::NodeOptions options{};
+  options
+    .append_parameter_override("raw_command.name", raw_topic)
+    .append_parameter_override("basic_command.name", "null")
+    .append_parameter_override("high_level_command.name", "null")
+    .append_parameter_override("state_command.name", "vi_sanity_check_state_command")
+    .append_parameter_override("odometry.name", "vi_sanity_check_odom")
+    .append_parameter_override("state_report.name", "vi_sanity_check_state_report");
+
   const auto vi_node = std::make_shared<TestVINode>(
-    "sanity_check_vi_node",
-    "",
-    TopicNumMatches{raw_topic},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"vi_sanity_check_state_command"},
-    TopicNumMatches{"vi_sanity_check_odom"},
-    TopicNumMatches{"vi_sanity_check_state_report"},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    false);  // no failure
+    "sanity_check_vi_node", options, false);  // no failure
+
   // Test publisher
   const auto pub_node = std::make_shared<rclcpp::Node>("sanity_check_vi_pub_node");
   const auto test_pub = pub_node->create_publisher<RawControlCommand>(raw_topic, rclcpp::QoS{10});

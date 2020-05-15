@@ -24,7 +24,8 @@ int main(int argc, char ** argv)
   int32_t ret = 0;
   try {
     rclcpp::init(argc, argv);
-    const auto nd = std::make_shared<lgsvl_interface::LgsvlInterfaceNode>("lgsvl_interface");
+    rclcpp::NodeOptions options{};
+    const auto nd = std::make_shared<lgsvl_interface::LgsvlInterfaceNode>(options);
 
     rclcpp::spin(nd);
 

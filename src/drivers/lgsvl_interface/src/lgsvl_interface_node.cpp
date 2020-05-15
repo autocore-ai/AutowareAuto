@@ -28,9 +28,8 @@ namespace lgsvl_interface
 {
 
 LgsvlInterfaceNode::LgsvlInterfaceNode(
-  const std::string & node_name,
-  const std::string & node_namespace)
-: VehicleInterfaceNode{node_name, node_namespace}
+  const rclcpp::NodeOptions & options)
+: VehicleInterfaceNode{"lgsvl_interface", options}
 {
   const auto sim_ctrl_cmd_topic =
     declare_parameter("lgsvl.control_command_topic").get<std::string>();
@@ -82,3 +81,6 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
 }
 
 }  // namespace lgsvl_interface
+
+#include "rclcpp_components/register_node_macro.hpp"  // NOLINT
+RCLCPP_COMPONENTS_REGISTER_NODE(lgsvl_interface::LgsvlInterfaceNode)

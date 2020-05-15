@@ -34,11 +34,8 @@ class LGSVL_INTERFACE_PUBLIC LgsvlInterfaceNode
 {
 public:
   /// ROS 2 parameter constructor
-  /// \param[in] node_name The name of the node
-  /// \param[in] node_namespace Namespace of the node
-  LgsvlInterfaceNode(
-    const std::string & node_name,
-    const std::string & node_namespace = "");
+  /// \param[in] options An rclcpp::NodeOptions object
+  explicit LgsvlInterfaceNode(const rclcpp::NodeOptions & options);
 };  // class LgsvlInterfaceNode
 }  // namespace lgsvl_interface
 

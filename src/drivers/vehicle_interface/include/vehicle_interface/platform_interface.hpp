@@ -45,7 +45,7 @@ namespace vehicle_interface
 /// Interface class for specific vehicle implementations. Child classes which implement this
 /// interface are expected to have wrap their own communication mechanism, and create a subclass
 /// from the VehicleInterfaceNode
-class PlatformInterface
+class VEHICLE_INTERFACE_PUBLIC PlatformInterface
 {
 public:
   /// Constructor

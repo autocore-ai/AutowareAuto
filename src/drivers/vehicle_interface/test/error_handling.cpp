@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -26,21 +27,20 @@
 TEST_F(sanity_checks, error_callbacks)
 {
   const auto raw_topic = "vi_error_callback_raw";
+
   // Construct
+  rclcpp::NodeOptions options{};
+  options
+    .append_parameter_override("raw_command.name", raw_topic)
+    .append_parameter_override("basic_command.name", "null")
+    .append_parameter_override("high_level_command.name", "null")
+    .append_parameter_override("state_command.name", "vi_error_callback_state_command")
+    .append_parameter_override("odometry.name", "vi_error_callback_odom")
+    .append_parameter_override("state_report.name", "vi_error_callback_state_report");
+
   const auto vi_node = std::make_shared<TestVINode>(
-    "vi_error_callback_node",
-    "",
-    TopicNumMatches{raw_topic},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"vi_error_callback_state_command"},
-    TopicNumMatches{"vi_error_callback_odom"},
-    TopicNumMatches{"vi_error_callback_state_report"},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    true);  // fail
+    "vi_error_callback_node", options, true);  // fail
+
   // Test publisher
   const auto pub_node = std::make_shared<rclcpp::Node>("vi_error_callback_pub_node");
   const auto test_pub = pub_node->create_publisher<RawControlCommand>(raw_topic, rclcpp::QoS{10});

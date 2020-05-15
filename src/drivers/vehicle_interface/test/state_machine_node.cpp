@@ -27,21 +27,20 @@
 TEST_F(sanity_checks, state_machine)
 {
   const auto control_topic = "vi_state_machine_control";
+
   // Construct
+  rclcpp::NodeOptions options{};
+  options
+    .append_parameter_override("raw_command.name", "null")
+    .append_parameter_override("basic_command.name", control_topic)
+    .append_parameter_override("high_level_command.name", "null")
+    .append_parameter_override("state_command.name", "vi_state_machine_state_command")
+    .append_parameter_override("odometry.name", "vi_state_machine_odom")
+    .append_parameter_override("state_report.name", "vi_state_machine_state_report");
+
   const auto vi_node = std::make_shared<TestVINode>(
-    "state_machine_vi_node",
-    "",
-    TopicNumMatches{"null"},
-    TopicNumMatches{control_topic},
-    TopicNumMatches{"null"},
-    TopicNumMatches{"vi_state_machine_state_command"},
-    TopicNumMatches{"vi_state_machine_odom"},
-    TopicNumMatches{"vi_state_machine_state_report"},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    FilterConfig{"", 0.0F},
-    false);  // no failure
+    "state_machine_vi_node", options, false);  // no failure
+
   // Test publisher
   const auto pub_node = std::make_shared<rclcpp::Node>("state_machine_vi_pub_node");
   const auto test_pub =
