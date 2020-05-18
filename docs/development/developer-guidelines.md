@@ -264,7 +264,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_auto_package(INSTALL_TO_PATH)
+ament_auto_package()
 ```
 
 - Must depend on the `rclcpp_components` package.

@@ -28,4 +28,4 @@ if(BUILD_TESTING)
     autoware_static_code_analysis()
 endif()
 
-ament_auto_package(INSTALL_TO_PATH)
+ament_auto_package()

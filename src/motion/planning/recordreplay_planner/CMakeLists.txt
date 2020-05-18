@@ -27,4 +27,4 @@ if(BUILD_TESTING)
   target_include_directories(recordreplay_planner_unit_tests PRIVATE "include")
 endif()
 
-ament_auto_package(INSTALL_TO_PATH)
+ament_auto_package()
