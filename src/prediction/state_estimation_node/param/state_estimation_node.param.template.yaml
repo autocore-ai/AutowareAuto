@@ -1,0 +1,53 @@
+# config/state_estimator_test.param.yaml
+---
+
+/**:
+  ros__parameters:
+    # The default output topic is "filtered_state". If this needs to be modified, use topic
+    # remapping as states here:
+    # https://index.ros.org/doc/ros2/Tutorials/Node-arguments/#name-remapping
+    # Topics that we subscribe to.
+    topics:
+      # Topics in input_odom are used to subscribe to nav_msgs/msg/Odometry messages.
+      # There can be any number of topic in each input category.
+      input_odom:
+        - /odom_topic_1
+        - /odom_topic_2
+      # Topics in input_odom subscribe to geometry_msgs/msg/PoseWithCovariance messages.
+      input_pose:
+        - /pose_topic_1
+        - /pose_topic_2
+      # Topics in input_twist subscribe to geometry_msgs/msg/TwistWithCovariance messages.
+      input_twist:
+        - /twist_topic_1
+        - /twist_topic_2
+
+    # Specify variances for the process noise. The values are optional, but at least one for
+    # acceleration has to be provided. These will influence the form of the process noise matrix G *
+    # Q * G.T used in the EKF. The number of values represent the dimentionality of the state. For
+    # example, if your state concerns 2D motion (along x and y) then there should be two values in
+    # each provided array.
+    process_noise_variances:
+      position: [2.0, 2.0]
+      velocity: [2.0, 2.0]
+      acceleration: [2.0, 2.0]
+
+    # Specify the variances for the state noise. Note that these are not sigma squared, but just
+    # sigma values.
+    state_variances: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+    # Set the mahalanobis threshold for rejecting outlier measurements. [optional]
+    mahalanobis_threshold: 10.0
+
+    # There are two options for setting how the node publishes.
+    # Pick ONLY ONE of the following methods:
+    # - Either provide a number here. The node will publish this number of times per second.
+    output_frequency: 30.0
+    # - Or put "data_driven: true" here. The node will publish when new data arrives.
+    data_driven: true
+
+    # Frame <frame_id> in which the pose is estimated. For a point in the ego-frame p_ego holds:
+    # p_<frame_id> = T_<frame_id>_ego * p_ego,
+    # where T_<frame_id>_ego is a transformation matrix constructed from the rotation and
+    # translation of the ego frame with respect to the <frame_id> frame.
+    frame_id: "map"
