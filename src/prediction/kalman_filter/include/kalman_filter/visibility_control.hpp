@@ -1,5 +1,4 @@
 // Copyright 2017-2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // All rights reserved.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef KALMAN_FILTER__VISIBILITY_CONTROL_HPP_
 #define KALMAN_FILTER__VISIBILITY_CONTROL_HPP_

@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_KALMAN_FILTER_HPP_
 #define TEST_KALMAN_FILTER_HPP_
@@ -103,7 +104,6 @@ TEST(srcf_core, multivariate)
   H << 0, 2, 3, 0;
   C << 4, 1, 1, 9;
   R << 1, 0, 0, 4;
-  Matrix<float32_t, 2, 1> h_row = H.row(0);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   // higher TOL to match matlab precision
