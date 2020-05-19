@@ -6,6 +6,7 @@ control:
       state_topic: "/vehicle/vehicle_kinematic_state"
       trajectory_topic: "/planning/trajectory"
       tf_topic: "/tf"
+      static_tf_topic: "/tf_static" 
       diagnostic_topic: "control_diagnostic"
       debug_trajectory_publish_period_ms: 100  # if 0 or missing, no publishing happens
       controller:
