@@ -20,9 +20,10 @@ project(spinnaker_camera_node)
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 
-ament_auto_find_build_dependencies()
+
 
 if(spinnaker_camera_driver_FOUND)
+  ament_auto_find_build_dependencies()
   ament_auto_add_library(${PROJECT_NAME}
       "include/spinnaker_camera_node/spinnaker_camera_node.hpp"
       "src/spinnaker_camera_node.cpp")
@@ -33,10 +34,6 @@ if(spinnaker_camera_driver_FOUND)
     "src/spinnaker_camera_node_main.cpp")
   autoware_set_compile_options(${CAMERA_EXECUTABLE})
 
-  autoware_install(
-    EXECUTABLES ${CAMERA_EXECUTABLE} HAS_PARAM
-  )
-  ament_auto_package()
 
   ## Testing
   if(BUILD_TESTING)
@@ -54,3 +51,4 @@ if(spinnaker_camera_driver_FOUND)
 else()
   message(WARNING "Skipping build as spinnaker_camera_driver was not built.")
 endif()
+ament_auto_package()
