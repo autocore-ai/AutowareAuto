@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <localization_common/initialization.hpp>
 #include <time_utils/time_utils.hpp>
 #include "test_initialization.hpp"
 
-namespace autoware
-{
-namespace localization
-{
-namespace localization_common
-{
+using autoware::localization::localization_common::BestEffortInitializer;
 
 class BestEffortInitializationTest : public
-::testing::TestWithParam<BestEffortInitializerTestParams>
+  ::testing::TestWithParam<BestEffortInitializerTestParams>
 {
 };
 
@@ -106,29 +102,29 @@ TEST_P(BestEffortInitializationTest, basic) {
 INSTANTIATE_TEST_CASE_P(sanity_test, BestEffortInitializationTest,
   ::testing::Values(
     BestEffortInitializerTestParams{
-        make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
-        make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
-        std::chrono::milliseconds{100},
-        std::chrono::milliseconds{25}
-      },
+  make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
+  make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
+  std::chrono::milliseconds{100},
+  std::chrono::milliseconds{25}
+},
     BestEffortInitializerTestParams{
-        make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
-        make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
-        std::chrono::milliseconds{100},
-        std::chrono::milliseconds{1}
-      },
+  make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
+  make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
+  std::chrono::milliseconds{100},
+  std::chrono::milliseconds{1}
+},
     BestEffortInitializerTestParams{
-        make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
-        make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
-        std::chrono::milliseconds{100},
-        std::chrono::milliseconds{99}
-      },
+  make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
+  make_transform(100.0F, -100.0F, 100.0F, 10.0F, 10.0F, 10.0F),
+  std::chrono::milliseconds{100},
+  std::chrono::milliseconds{99}
+},
     BestEffortInitializerTestParams{
-        make_transform(0.0F, -180.0F, 5.0F, -54.51F, 120.8754F, 0.0F),
-        make_transform(0.0F, -180.0F, 95.0F, 65.12F, 10.65F, 0.0018955F),
-        std::chrono::milliseconds{100},
-        std::chrono::milliseconds{50}
-      }
+  make_transform(0.0F, -180.0F, 5.0F, -54.51F, 120.8754F, 0.0F),
+  make_transform(0.0F, -180.0F, 95.0F, 65.12F, 10.65F, 0.0018955F),
+  std::chrono::milliseconds{100},
+  std::chrono::milliseconds{50}
+}
 ));
 
 /////////// Helper function implementations:
@@ -192,7 +188,3 @@ geometry_msgs::msg::Transform get_interpolation(
   ret.rotation.set__x(rot_quat.x()).set__y(rot_quat.y()).set__z(rot_quat.z()).set__w(rot_quat.w());
   return ret;
 }
-
-}  // namespace localization_common
-}  // namespace localization
-}  // namespace autoware

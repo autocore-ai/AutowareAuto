@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <localization_common/localizer_base.hpp>
 #include "test_relative_localizer.hpp"
-
-namespace autoware
-{
-namespace localization
-{
-namespace localization_common
-{
 
 class TestRelativeLocalizerBase : public ::testing::Test
 {
@@ -91,7 +85,3 @@ TEST_F(TestRelativeLocalizerBase, bad_map) {
   EXPECT_FALSE(localizer.map_valid());
   EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose), std::logic_error);
 }
-
-}          // namespace autoware
-}      // namespace localization
-}  // namespace localization_common

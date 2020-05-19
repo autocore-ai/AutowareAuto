@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +11,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+
+#ifndef TEST_RELATIVE_LOCALIZER_HPP_
+#define TEST_RELATIVE_LOCALIZER_HPP_
 
 #include <gtest/gtest.h>
 #include <localization_common/localizer_base.hpp>
 
-namespace autoware
-{
-namespace localization
-{
-namespace localization_common
-{
+#include <string>
+
 constexpr int ERR_CODE = -99;
 constexpr int INVALID_ID = -1;
 
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 using Transform = geometry_msgs::msg::TransformStamped;
+using autoware::localization::localization_common::RelativeLocalizerBase;
 
 std::string merge_ids(int pose, int init, int map)
 {
@@ -80,7 +81,4 @@ public:
   std::string m_map_frame{""};
 };
 
-
-}          // namespace autoware
-}      // namespace localization
-}  // namespace localization_common
+#endif  // TEST_RELATIVE_LOCALIZER_HPP_

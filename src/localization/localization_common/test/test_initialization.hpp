@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_INITIALIZATION_HPP_
 #define TEST_INITIALIZATION_HPP_
@@ -22,12 +23,6 @@
 
 using autoware::common::types::float32_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace localization_common
-{
 geometry_msgs::msg::TransformStamped make_transform(
   float32_t ang_x, float32_t ang_y, float32_t ang_z,
   float32_t x, float32_t y, float32_t z);
@@ -47,9 +42,5 @@ struct BestEffortInitializerTestParams
   std::chrono::milliseconds dt;    // time diff between two set transforms
   std::chrono::milliseconds dt_small;    // time diff less than dt (for interpolation)
 };
-
-}  // namespace localization_common
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_INITIALIZATION_HPP_
