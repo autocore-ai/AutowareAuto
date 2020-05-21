@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <ndt/utils.hpp>
-#include "test_ndt_utils.hpp"
-#include <random>
-
 #include <Eigen/Core>
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
-using namespace transform_adapters;
+#include <random>
+#include <vector>
+#include <algorithm>
+#include "test_ndt_utils.hpp"
+
+using autoware::localization::ndt::try_stabilize_covariance;
+using autoware::localization::ndt::transform_adapters::pose_to_transform;
+using autoware::localization::ndt::transform_adapters::transform_to_pose;
 
 PoseParams::PoseParams(
   double x, double y, double z, double ang_x, double ang_y, double ang_z)
@@ -170,7 +169,3 @@ INSTANTIATE_TEST_CASE_P(basic, CovarianceStabilityTest,
     Cov3x3Param(1e-2, 1e-3, 65, true),
     Cov3x3Param(1e-2, 1e-3, 1e-15, true)
   ), );
-
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware

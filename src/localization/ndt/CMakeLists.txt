@@ -4,15 +4,21 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 #dependencies
 find_package(Eigen3 REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 # includes
-include_directories(include)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 set(NDT_NODES_LIB_SRC
@@ -22,21 +28,9 @@ set(NDT_NODES_LIB_SRC
     src/ndt_config.cpp
 )
 
-set(NDT_NODES_LIB_HEADERS
-    include/ndt/visibility_control.hpp
-    include/ndt/ndt_config.hpp
-    include/ndt/ndt_representations.hpp
-    include/ndt/ndt_optimization_problem.hpp
-    include/ndt/ndt_voxel.hpp
-    include/ndt/ndt_map.hpp
-    include/ndt/ndt_scan.hpp
-    include/ndt/ndt_localizer.hpp
-    include/ndt/utils.hpp)
-
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${NDT_NODES_LIB_SRC}
-        ${NDT_NODES_LIB_HEADERS}
 )
 
 autoware_set_compile_options(${PROJECT_NAME})
@@ -52,8 +46,9 @@ set(ROS_NO_WARN_LIST
 target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
 
 if(BUILD_TESTING)
-  # run linters
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
   find_package(PCL 1.8 REQUIRED COMPONENTS registration)
   include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 

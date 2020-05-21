@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_NDT_SCAN_HPP_
 #define TEST_NDT_SCAN_HPP_
@@ -22,13 +23,6 @@
 #include "common/types.hpp"
 
 using autoware::common::types::float64_t;
-
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
 
 class NDTScanTest : public ::testing::Test
 {
@@ -50,8 +44,5 @@ protected:
   std::vector<Point> m_points;
   sensor_msgs::msg::PointCloud2 m_pc;
 };
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_NDT_SCAN_HPP_

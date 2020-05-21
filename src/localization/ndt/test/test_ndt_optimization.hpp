@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_NDT_OPTIMIZATION_HPP_
 #define TEST_NDT_OPTIMIZATION_HPP_
@@ -29,12 +30,9 @@
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
+using autoware::localization::ndt::Real;
+using autoware::localization::ndt::EigenPose;
+
 pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointCloud2 & msg);
 
 class OptimizationTestContext : public DenseNDTMapContext
@@ -69,10 +67,10 @@ public:
     // Pass the dynamic map to a static one:
     m_static_map.insert(dynamic_map_to_cloud(m_dynamic_map));
   }
-  perception::filters::voxel_grid::Config m_grid_config;
+  autoware::perception::filters::voxel_grid::Config m_grid_config;
   sensor_msgs::msg::PointCloud2 m_downsampled_cloud;
   DynamicNDTMap m_dynamic_map;
-  StaticNDTMap m_static_map;
+  autoware::localization::ndt::StaticNDTMap m_static_map;
 };
 
 template<typename Problem, typename DomainValueT>
@@ -147,9 +145,5 @@ void is_pose_approx(
   // two unit quaternions are similar if their dot products are close to '1.0' or '-1.0'
   EXPECT_NEAR(std::fabs(r_dot_prod), 1.0, rot_tol);
 }
-
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_NDT_OPTIMIZATION_HPP_

@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_NDT_UTILS_HPP_
 #define TEST_NDT_UTILS_HPP_
 #include <gtest/gtest.h>
-#include "test_ndt_map.hpp"
-#include <Eigen/Core>
-#include "test_ndt_optimization.hpp"
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Transform.h>
+#include <Eigen/Core>
+#include "test_ndt_map.hpp"
+#include "test_ndt_optimization.hpp"
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
 template<typename PoseT, typename TransformT>
 void compare_pose_transform(PoseT & pose, TransformT & transform);
 
@@ -38,6 +33,8 @@ template<typename T>
 using EigenTransform = Eigen::Transform<T, 3, Eigen::Affine, Eigen::ColMajor>;
 using RosTransform = geometry_msgs::msg::Transform;
 using RosPose = geometry_msgs::msg::Pose;
+
+using autoware::localization::ndt::Real;
 
 struct PoseParams
 {
@@ -297,10 +294,5 @@ void make_transform(const EigenPose<T> & pose, RosPose & ros_pose)
   set_RPY_XYZ(tf2_rot, pose(3), pose(4), pose(5));
   set_vector4d(tf2_rot, ros_pose.orientation);
 }
-
-
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_NDT_UTILS_HPP_

@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_NDT_MAP_HPP_
 #define TEST_NDT_MAP_HPP_
@@ -31,12 +32,7 @@
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
+using autoware::localization::ndt::DynamicNDTMap;
 
 sensor_msgs::msg::PointCloud2 make_pcl(
   const std::vector<sensor_msgs::msg::PointField> & fields,
@@ -57,7 +53,7 @@ void populate_pc(
   sensor_msgs::msg::PointCloud2 & pc,
   size_t num_points);
 
-common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v);
+autoware::common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v);
 
 // add the point `center` and 4 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance
@@ -106,7 +102,7 @@ protected:
 
   DenseNDTMapContext();
 
-  void build_pc(const perception::filters::voxel_grid::Config & cfg);
+  void build_pc(const autoware::perception::filters::voxel_grid::Config & cfg);
 
   uint32_t m_pc_idx{0U};
   sensor_msgs::msg::PointCloud2 m_pc;
@@ -119,8 +115,5 @@ protected:
 
 
 class NDTMapContext : protected DenseNDTMapContext, protected MapValidationContext {};
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_NDT_MAP_HPP_

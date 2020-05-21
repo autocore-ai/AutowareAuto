@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -25,15 +26,16 @@
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
-using NewtonOptimizer = common::optimization::NewtonsMethod<common::optimization::FixedLineSearch>;
-using NewtonOptimizerOptions = common::optimization::NewtonOptimizationOptions;
-using FixedLineSearch = common::optimization::FixedLineSearch;
+using autoware::localization::ndt::P2DNDTLocalizer;
+using autoware::localization::ndt::P2DNDTLocalizerConfig;
+using autoware::localization::ndt::P2DNDTOptimizationConfig;
+using autoware::localization::ndt::transform_adapters::pose_to_transform;
+using autoware::localization::ndt::transform_adapters::transform_to_pose;
+
+using autoware::common::optimization::FixedLineSearch;
+using NewtonOptimizer = autoware::common::optimization::NewtonsMethod<FixedLineSearch>;
+using NewtonOptimizerOptions = autoware::common::optimization::NewtonOptimizationOptions;
+using FixedLineSearch = autoware::common::optimization::FixedLineSearch;
 using P2DTestLocalizer = P2DNDTLocalizer<NewtonOptimizer, NewtonOptimizerOptions>;
 
 class P2DLocalizerTest : public OptimizationTestContext, public ::testing::Test
@@ -94,7 +96,7 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   transform_initial.transform.rotation.w = 1.0;
 
   // Convert eigen pose to ros transform
-  transform_adapters::pose_to_transform(diff, diff_tf2.transform);
+  pose_to_transform(diff, diff_tf2.transform);
   diff_tf2.header.frame_id = "custom";
 
   // Ensure the scan won't be translated out of its voxel
@@ -118,7 +120,7 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   localizer.register_measurement(translated_cloud, transform_initial,
     ros_pose_out);
 
-  transform_adapters::transform_to_pose(ros_pose_out.pose.pose, pose_out);
+  transform_to_pose(ros_pose_out.pose.pose, pose_out);
 
   EigenPose<Real> neg_diff = -diff;
   is_pose_approx(pose_out, neg_diff, translation_tol, rotation_tol);
@@ -213,7 +215,3 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
     localizer.register_measurement(m_downsampled_cloud, set_and_get(guess_time_early), dummy_pose),
     std::domain_error);
 }
-
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware

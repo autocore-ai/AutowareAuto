@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "test_ndt_optimization.hpp"
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
@@ -23,12 +24,11 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
+using autoware::localization::ndt::P2DNDTScan;
+using autoware::localization::ndt::P2DNDTOptimizationProblem;
+using autoware::localization::ndt::P2DNDTOptimizationConfig;
+using autoware::localization::ndt::transform_adapters::pose_to_transform;
+
 OptTestParams::OptTestParams(
   float64_t x, float64_t y, float64_t z, float64_t ang_x, float64_t ang_y, float64_t ang_z,
   bool8_t large, bool8_t check_pcl)
@@ -71,7 +71,7 @@ TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
     P2DNDTOptimizationProblem problem{matching_scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
 
     EigenPose<Real> pose = GetParam().diff;
-    problem.evaluate(pose, common::optimization::ComputeMode{true, true, true});
+    problem.evaluate(pose, autoware::common::optimization::ComputeMode{true, true, true});
     P2DNDTOptimizationProblem::Jacobian jacobian;
     P2DNDTOptimizationProblem::Hessian hessian;
     problem.jacobian(pose, jacobian);
@@ -106,7 +106,7 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
 
   geometry_msgs::msg::TransformStamped diff_tf2;
   diff_tf2.header.frame_id = "custom";
-  transform_adapters::pose_to_transform(diff, diff_tf2.transform);
+  pose_to_transform(diff, diff_tf2.transform);
 
   // Ensure the scan won't be translated out of its voxel
   ASSERT_LT(diff(0), m_voxel_size.x);
@@ -130,7 +130,7 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     // Solve the problem in 50 iterations:
     for (auto i = 0U; i < num_iters; ++i) {
       problem.evaluate(guess,
-        common::optimization::ComputeMode{}.set_score().set_jacobian().set_hessian());
+        autoware::common::optimization::ComputeMode{}.set_score().set_jacobian().set_hessian());
       P2DNDTOptimizationProblem::Jacobian jacobian;
       P2DNDTOptimizationProblem::Hessian hessian;
       problem.jacobian(guess, jacobian);
@@ -221,7 +221,3 @@ pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointClo
   }
   return res;
 }
-
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware

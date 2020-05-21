@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
-#include <gtest/gtest.h>
-#include "test_ndt_map.hpp"
 #include <ndt/utils.hpp>
 #include <Eigen/LU>
 #include <vector>
@@ -28,12 +27,15 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt
-{
+using autoware::localization::ndt::validate_pcl_map;
+using autoware::localization::ndt::DynamicNDTVoxel;
+using autoware::localization::ndt::StaticNDTVoxel;
+using autoware::localization::ndt::Real;
+using autoware::localization::ndt::try_stabilize_covariance;
+using autoware::localization::ndt::StaticNDTMap;
+using autoware::perception::filters::voxel_grid::Config;
+using autoware::common::lidar_utils::add_point_to_cloud;
+
 constexpr uint32_t MapValidationContext::point_step;
 constexpr uint32_t MapValidationContext::num_points;
 constexpr uint32_t MapValidationContext::data_size;
@@ -180,7 +182,7 @@ TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
   for (auto i = 0U; i < num_points; i++) {
     auto point =
       Eigen::Vector3d{static_cast<float64_t>(i),
-              static_cast<float64_t>(i), static_cast<float64_t>(i)};
+      static_cast<float64_t>(i), static_cast<float64_t>(i)};
     points.push_back(point);
     voxel.add_observation(point);
   }
@@ -204,8 +206,7 @@ TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
 TEST_F(DenseNDTMapTest, map_lookup) {
   constexpr auto eps = 1e-5;
   // The idea is to have a 5x5x5 grid with cell edge length of 1
-  auto grid_config = perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size,
-      m_capacity);
+  auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   DynamicNDTMap ndt_map(grid_config);
 
@@ -323,8 +324,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
 TEST_F(NDTMapTest, map_representation_bad_input) {
   const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
 
-  auto grid_config =
-    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+  auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   StaticNDTMap map_grid(grid_config);
 
@@ -346,7 +346,6 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
 }
 
 TEST_F(NDTMapTest, map_representation_basics) {
-
   auto add_pt = [](
     std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
     std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
@@ -364,8 +363,7 @@ TEST_F(NDTMapTest, map_representation_basics) {
   const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
   auto msg = make_pcl(field_set, 1U, data_size, row_step, width, point_step);
 
-  auto grid_config =
-    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+  auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   // This grid will be used to generate
   DynamicNDTMap generator_grid(grid_config);
@@ -397,7 +395,7 @@ TEST_F(NDTMapTest, map_representation_basics) {
     // Turn the point into a pointcloud to insert. The point should be inserted enough to make
     // the voxel usable. (equal to NUM_POINT_THRESHOLD)
     generator_grid.insert(make_pcl(std::vector<Eigen::Vector3d>{
-            DynamicNDTVoxel::NUM_POINT_THRESHOLD, added_pt}));
+      DynamicNDTVoxel::NUM_POINT_THRESHOLD, added_pt}));
 
     // For simplicity,
     // the inserted points already correspond to the centroids and there's point per voxel.
@@ -469,14 +467,14 @@ sensor_msgs::msg::PointCloud2 make_pcl(
 sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
 {
   sensor_msgs::msg::PointCloud2 cloud;
-  common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
+  autoware::common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
   auto idx = 0U;
   for (const auto & pt : pts) {
     autoware::common::types::PointXYZIF ptF{};
     ptF.x = static_cast<float>(pt(0U));
     ptF.y = static_cast<float>(pt(1U));
     ptF.z = static_cast<float>(pt(2U));
-    common::lidar_utils::add_point_to_cloud(cloud, ptF, idx);
+    add_point_to_cloud(cloud, ptF, idx);
   }
   return cloud;
 }
@@ -503,9 +501,9 @@ void populate_pc(
   }
 }
 
-common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
+autoware::common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  common::types::PointXYZIF ptF{};
+  autoware::common::types::PointXYZIF ptF{};
   ptF.x = static_cast<float32_t>(v(0));
   ptF.y = static_cast<float32_t>(v(1));
   ptF.z = static_cast<float32_t>(v(2));
@@ -518,7 +516,7 @@ void add_cell(
   sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
   const Eigen::Vector3d & center, float64_t fixed_deviation)
 {
-  common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
+  add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
 
   std::vector<Eigen::Vector3d> points;
   for (auto idx = 0U; idx < 3U; idx++) {
@@ -530,8 +528,7 @@ void add_cell(
         deviated_pt(idx) -= fixed_deviation;
       }
       points.push_back(deviated_pt);
-      EXPECT_TRUE(common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(deviated_pt),
-        pc_idx));
+      EXPECT_TRUE(add_point_to_cloud(msg, get_point_from_vector(deviated_pt), pc_idx));
     }
   }
 }
@@ -552,7 +549,7 @@ DenseNDTMapContext::DenseNDTMapContext()
 {
   // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
   // init with a size to account for all the points in the map
-  common::lidar_utils::init_pcl_msg(m_pc, "map",
+  autoware::common::lidar_utils::init_pcl_msg(m_pc, "map",
     POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
   // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
   // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1
@@ -566,7 +563,7 @@ DenseNDTMapContext::DenseNDTMapContext()
   m_voxel_size.y = 1.0F;
   m_voxel_size.z = 1.0F;
 }
-void DenseNDTMapContext::build_pc(const perception::filters::voxel_grid::Config & cfg)
+void DenseNDTMapContext::build_pc(const Config & cfg)
 {
   for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
     for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
@@ -583,7 +580,7 @@ sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
   const DynamicNDTMap & dynamic_map)
 {
   sensor_msgs::msg::PointCloud2 static_msg;
-  common::lidar_utils::init_pcl_msg(static_msg, "map", dynamic_map.size(), 10U,
+  autoware::common::lidar_utils::init_pcl_msg(static_msg, "map", dynamic_map.size(), 10U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
@@ -595,15 +592,15 @@ sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
     "cov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
 
-  sensor_msgs::PointCloud2Iterator<ndt::Real> x_it(static_msg, "x");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> y_it(static_msg, "y");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> z_it(static_msg, "z");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xx_it(static_msg, "cov_xx");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xy_it(static_msg, "cov_xy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_xz_it(static_msg, "cov_xz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_yy_it(static_msg, "cov_yy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_yz_it(static_msg, "cov_yz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> cov_zz_it(static_msg, "cov_zz");
+  sensor_msgs::PointCloud2Iterator<Real> x_it(static_msg, "x");
+  sensor_msgs::PointCloud2Iterator<Real> y_it(static_msg, "y");
+  sensor_msgs::PointCloud2Iterator<Real> z_it(static_msg, "z");
+  sensor_msgs::PointCloud2Iterator<Real> cov_xx_it(static_msg, "cov_xx");
+  sensor_msgs::PointCloud2Iterator<Real> cov_xy_it(static_msg, "cov_xy");
+  sensor_msgs::PointCloud2Iterator<Real> cov_xz_it(static_msg, "cov_xz");
+  sensor_msgs::PointCloud2Iterator<Real> cov_yy_it(static_msg, "cov_yy");
+  sensor_msgs::PointCloud2Iterator<Real> cov_yz_it(static_msg, "cov_yz");
+  sensor_msgs::PointCloud2Iterator<Real> cov_zz_it(static_msg, "cov_zz");
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(static_msg, "cell_id");
   for (const auto & vx_it : dynamic_map) {
     if (!  // No `==` operator defined for PointCloud2Iterators
@@ -652,6 +649,3 @@ sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(
   }
   return static_msg;
 }
-}  // namespace ndt
-}  // namespace localization
-}  // namespace autoware
