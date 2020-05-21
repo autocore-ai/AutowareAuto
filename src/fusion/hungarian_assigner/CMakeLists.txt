@@ -16,37 +16,38 @@ cmake_minimum_required(VERSION 3.5)
 
 project(hungarian_assigner)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
-find_package(ament_cmake REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-include_directories(include)
+ament_auto_find_build_dependencies()
 # Disable warnings due to external dependencies (Eigen)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
 # build library
-add_library(${PROJECT_NAME} SHARED
-  include/hungarian_assigner/visibility_control.hpp
-  include/hungarian_assigner/hungarian_assigner.hpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/hungarian_assigner.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-ament_target_dependencies(hungarian_assigner "autoware_auto_common")
 
 if(BUILD_TESTING)
-  # Linting
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
-  # gtest
   set(HUNGARIAN_ASSIGN_GTEST hungarian_assigner_gtest)
-  find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(${HUNGARIAN_ASSIGN_GTEST} test/src/test_hungarian_assigner.cpp)
   target_include_directories(${HUNGARIAN_ASSIGN_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${HUNGARIAN_ASSIGN_GTEST} ${PROJECT_NAME})
-  ament_target_dependencies(${HUNGARIAN_ASSIGN_GTEST})
 endif()
 
 # Ament Exporting
-autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
-ament_package()
+ament_auto_package()

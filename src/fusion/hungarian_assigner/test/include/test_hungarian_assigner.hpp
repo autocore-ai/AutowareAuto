@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_HUNGARIAN_ASSIGNER_HPP_
 #define TEST_HUNGARIAN_ASSIGNER_HPP_
@@ -34,7 +35,7 @@ TEST(hungarian_assigner, assumptions)
   ASSERT_FALSE(bval);
   uint64_t uval = 99U;
   memset(&uval, 0, sizeof(uval));
-  ASSERT_EQ(uval, 0);
+  ASSERT_EQ(uval, 0U);
 }
 
 // absolutely minimal example
@@ -106,10 +107,10 @@ TEST(hungarian_assigner, unbalanced1)
   assign.set_size(4U, 5U);
   const std::vector<std::vector<int>> weights =
   {
-    {5,  7, 11, 6, 7},
-    {8,  5,  5, 6, 5},
-    {6,  7, 10, 7, 3},
-    {10, 4,  8, 2, 4}
+    {5, 7, 11, 6, 7},
+    {8, 5, 5, 6, 5},
+    {6, 7, 10, 7, 3},
+    {10, 4, 8, 2, 4}
   };
   for (uint64_t idx = 0U; idx < weights.size(); ++idx) {
     const std::vector<int> & w = weights[idx];
@@ -135,10 +136,10 @@ TEST(hungarian_assigner, unbalanced2)
   assign.set_size(4U, 5U);
   const std::vector<std::vector<int>> weights =
   {
-    {4,   3,  6,  2,  7},
+    {4, 3, 6, 2, 7},
     {10, 12, 11, 14, 16},
-    {4,   3,  2,  1,  5},
-    {8,   7,  6,  9,  6}
+    {4, 3, 2, 1, 5},
+    {8, 7, 6, 9, 6}
   };
   for (uint64_t idx = 0U; idx < weights.size(); ++idx) {
     const std::vector<int> & w = weights[idx];
@@ -201,12 +202,12 @@ TEST(hungarian_assigner, parallel)
   const uint64_t SZ = 256U;
   hungarian_assigner_c<SZ> assign;
   ASSERT_NO_THROW(assign.set_size(SZ, SZ));
-  auto fn = [=, &assign](const uint64_t row) {
-    for (uint64_t idx = 0U; idx < SZ; ++idx) {
-      const float32_t val = (idx == row) ? 0.0F : 10.0F;
-      assign.set_weight(val, row, idx);
-    }
-  };
+  auto fn = [ =, &assign](const uint64_t row) {
+      for (uint64_t idx = 0U; idx < SZ; ++idx) {
+        const float32_t val = (idx == row) ? 0.0F : 10.0F;
+        assign.set_weight(val, row, idx);
+      }
+    };
   std::vector<std::thread> threads(SZ);
   for (uint64_t idx = 0U; idx < SZ; ++idx) {
     threads[idx] = std::thread(fn, idx);
@@ -216,7 +217,7 @@ TEST(hungarian_assigner, parallel)
   }
   ASSERT_TRUE(assign.assign());
   for (uint64_t idx = 0U; idx < SZ; ++idx) {
-    ASSERT_EQ(assign.get_assignment(idx), idx);
+    ASSERT_EQ(assign.get_assignment(idx), static_cast<int64_t>(idx));
   }
 }
 
