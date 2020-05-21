@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #
 # Copyright 2018 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 import argparse
 import os
 import shutil
 import sys
+
+from ament_index_python import get_package_share_directory
 
 
 def copy(src, dest):
@@ -35,9 +38,15 @@ def find_and_replace(filename, pkg_name, email, description=None, maintainer=Non
     with open(filename, 'r') as f:
         filedata = f.read()
 
+    camelcase_pkg_name = ''.join([
+      word.capitalize()
+      for word in pkg_name.split('_')
+    ])
+
     # Replace the target string
     filedata = filedata.replace('hello_world', pkg_name)
     filedata = filedata.replace('HELLO_WORLD', pkg_name.upper())
+    filedata = filedata.replace('HelloWorld', camelcase_pkg_name)
     filedata = filedata.replace('MAINTAINER_EMAIL', email)
     filedata = filedata.replace('USERNAME', username)
 
@@ -75,10 +84,11 @@ def main():
     dest = os.path.join(args.destination, args.pkg_name)
 
     # Copy the template package to the desired location
-    template_pkg_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'template')
+    template_pkg_dir = os.path.join(
+      get_package_share_directory('autoware_auto_create_pkg'), 'template')
     copy(template_pkg_dir, dest)
 
-    # Remove COLCON_IGNORE and this script
+    # Remove COLCON_IGNORE
     try:
         os.remove(os.path.join(dest, 'COLCON_IGNORE'))
     except FileNotFoundError:

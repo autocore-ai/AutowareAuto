@@ -108,7 +108,7 @@ stages:
 
     # Test package
     - source /opt/AutowareAuto/setup.bash
-    - 'autoware_auto_create_pkg
+    - 'ros2 run autoware_auto_create_pkg main.py
           --pkg-name my_cool_pkg
           --destination /tmp/tmp_ws/src
           --description "My cool package does cool stuff"

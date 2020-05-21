@@ -1,5 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+// Copyright 2020 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2018 Apex.AI, Inc.
+/// \copyright Copyright 2020 The Autoware Foundation
 /// \file
 /// \brief This file defines the hello_world_node class.
 
@@ -31,18 +30,15 @@ namespace autoware
 namespace hello_world
 {
 
-/// \class hello_world_c
+/// \class HelloWorldNode
 /// \brief ROS 2 Node for hello world.
-class HELLO_WORLD_PUBLIC hello_world_c : public rclcpp::Node
+class HELLO_WORLD_PUBLIC HelloWorldNode : public rclcpp::Node
 {
 public:
   /// \brief default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals
   /// \throw runtime error if failed to start threads or configure driver
-  explicit hello_world_c(const std::string & node_name);
-
-  /// \brief default destructor
-  virtual ~hello_world_c();
+  explicit HelloWorldNode(const rclcpp::NodeOptions & options);
 
   /// \brief print hello
   /// return 0 if successful.

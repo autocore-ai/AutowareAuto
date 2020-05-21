@@ -1,5 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+// Copyright 2020 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2018 Apex.AI, Inc.
+/// \copyright Copyright 2020 The Autoware Foundation
 /// \file
 /// \brief main function for hello_world
 
@@ -24,7 +23,8 @@ int32_t main(const int32_t argc, char ** const argv)
   int32_t ret;
   try {
     rclcpp::init(argc, argv);
-    autoware::hello_world::hello_world_c hello("hello_world_node");
+    rclcpp::NodeOptions options;
+    autoware::hello_world::HelloWorldNode hello(options);
     (void)hello.print_hello();
     ret = 0;
   } catch (const std::exception & e) {

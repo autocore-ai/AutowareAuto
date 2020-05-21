@@ -1,5 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+// Copyright 2020 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,17 +22,13 @@ namespace autoware
 namespace hello_world
 {
 
-hello_world_c::hello_world_c(const std::string & node_name)
-:  Node(node_name.c_str()),
+HelloWorldNode::HelloWorldNode(const rclcpp::NodeOptions & options)
+:  Node("hello_wolrd", options),
   verbose(true)
 {
 }
 
-hello_world_c::~hello_world_c()
-{
-}
-
-int32_t hello_world_c::print_hello() const
+int32_t HelloWorldNode::print_hello() const
 {
   return hello_world::print_hello();
 }
