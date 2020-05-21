@@ -1,5 +1,4 @@
 # Copyright 2020 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 """Launch P2D NDT localizer and map publisher nodes."""
 
@@ -29,7 +30,7 @@ def generate_launch_description():
         get_package_share_directory('ndt_nodes'),
         'param',
         'p2d_ndt_node.default.param.yaml')
-    p2d_ndt_localizer_param_file=launch.substitutions.LaunchConfiguration(
+    p2d_ndt_localizer_param_file = launch.substitutions.LaunchConfiguration(
         'params', default=[p2d_ndt_localizer_file_path])
 
     # P2D NDT localizer node execution definition.

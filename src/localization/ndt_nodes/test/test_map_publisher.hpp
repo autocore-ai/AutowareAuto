@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_MAP_PUBLISHER_HPP_
 #define TEST_MAP_PUBLISHER_HPP_
@@ -31,17 +32,13 @@
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
+using autoware::common::types::PointXYZIF;
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt_nodes
-{
+using autoware::common::lidar_utils::add_point_to_cloud;
 
-common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
+PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
 {
-  return common::types::PointXYZIF{
+  return PointXYZIF{
     static_cast<float32_t>(v(0)),
     static_cast<float32_t>(v(1)),
     static_cast<float32_t>(v(2))};
@@ -61,7 +58,7 @@ protected:
     sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
     const Eigen::Vector3d & center, float64_t fixed_deviation)
   {
-    common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
+    add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
 
     std::vector<Eigen::Vector3d> points;
     for (auto idx = 0U; idx < 3U; idx++) {
@@ -73,8 +70,7 @@ protected:
           deviated_pt(idx) -= fixed_deviation;
         }
         points.push_back(deviated_pt);
-        EXPECT_TRUE(common::lidar_utils::add_point_to_cloud(msg, get_point_from_vector(deviated_pt),
-          pc_idx));
+        EXPECT_TRUE(add_point_to_cloud(msg, get_point_from_vector(deviated_pt), pc_idx));
       }
     }
   }
@@ -83,7 +79,7 @@ protected:
   {
     // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
     // init with a size to account for all the points in the map
-    common::lidar_utils::init_pcl_msg(m_pc, "map",
+    autoware::common::lidar_utils::init_pcl_msg(m_pc, "map",
       POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
     // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
     // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1
@@ -98,9 +94,8 @@ protected:
     m_voxel_size.z = 1.0F;
   }
 
-  void build_pc(const perception::filters::voxel_grid::Config & cfg)
+  void build_pc(const autoware::perception::filters::voxel_grid::Config & cfg)
   {
-    uint32_t pc_idx = 0U;
     for (auto x = 1U; x <= POINTS_PER_DIM; ++x) {
       for (auto y = 1U; y <= POINTS_PER_DIM; ++y) {
         for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
@@ -158,10 +153,5 @@ pcl::PointCloud<pcl::PointXYZI> from_pointcloud2(const sensor_msgs::msg::PointCl
   }
   return res;
 }
-
-
-}  // namespace ndt_nodes
-}  // namespace localization
-}  // namespace autoware
 
 #endif  // TEST_MAP_PUBLISHER_HPP_

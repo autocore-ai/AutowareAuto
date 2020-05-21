@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "test_map_publisher.hpp"
 #include <pcl/io/pcd_io.h>
@@ -23,12 +24,14 @@
 #include <limits>
 #include <memory>
 
-namespace autoware
-{
-namespace localization
-{
-namespace ndt_nodes
-{
+using autoware::localization::ndt_nodes::read_from_pcd;
+using autoware::localization::ndt_nodes::geocentric_pose_t;
+using autoware::localization::ndt_nodes::NDTMapPublisherNode;
+using autoware::localization::ndt::DynamicNDTMap;
+using autoware::localization::ndt::StaticNDTMap;
+using autoware::localization::ndt::validate_pcl_map;
+using autoware::localization::ndt::Real;
+using autoware::perception::filters::voxel_grid::Config;
 
 std::string build_yaml_string()
 {
@@ -50,7 +53,7 @@ TEST(PCDLoadTest, basics) {
   constexpr auto num_points = 5U;
   pcl::PointCloud<pcl::PointXYZI> dummy_cloud{};
   sensor_msgs::msg::PointCloud2 msg;
-  common::lidar_utils::init_pcl_msg(msg, "base_link", num_points);
+  autoware::common::lidar_utils::init_pcl_msg(msg, "base_link", num_points);
   const std::string test_fname = "PCDLoadTest_test_pcd_file.pcd";
   const std::string non_existing_fname = "NON_EXISTING_FILE_PCDLoadTest.XYZ";
 
@@ -123,8 +126,7 @@ TEST(YamlLoadTest, basics) {
 TEST_F(MapPublisherTest, core_functionality)
 {
   using Cloud = sensor_msgs::msg::PointCloud2;
-  const auto grid_config =
-    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+  const auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   std::string yaml_file_name = "MapPublisherTest_test.yaml";
   const auto pcl_file_name = "MapPublisherTest_test.pcd";
@@ -138,8 +140,8 @@ TEST_F(MapPublisherTest, core_functionality)
 
   // have a validation map to transform the source cloud. The publisher's output
   // should match the cells in this map.
-  ndt::DynamicNDTMap dynamic_validation_map(grid_config);
-  ndt::StaticNDTMap static_received_map(grid_config);
+  DynamicNDTMap dynamic_validation_map(grid_config);
+  StaticNDTMap static_received_map(grid_config);
   const auto map_topic = "publisher_test_map_topic";
   const auto map_frame = "map";
   auto callback_counter = 0U;
@@ -156,7 +158,7 @@ TEST_F(MapPublisherTest, core_functionality)
   // Create map publisher. It is given 5 seconds to discover the test subscription.
 
   NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-      grid_config, pcl_file_name, yaml_file_name);
+    grid_config, pcl_file_name, yaml_file_name);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
@@ -180,7 +182,7 @@ TEST_F(MapPublisherTest, core_functionality)
 
   EXPECT_EQ(callback_counter, 1U);
   // Check that received pointcloud is a valid ndt map in terms of meta information.
-  EXPECT_EQ(ndt::validate_pcl_map(received_cloud_map), dynamic_validation_map.size());
+  EXPECT_EQ(validate_pcl_map(received_cloud_map), dynamic_validation_map.size());
   // Insert to static map for easier iteration and access.
   static_received_map.insert(received_cloud_map);
   EXPECT_EQ(static_received_map.size(), dynamic_validation_map.size());
@@ -192,9 +194,9 @@ TEST_F(MapPublisherTest, core_functionality)
     const auto & received_cell = static_received_map.cell(expected_centroid)[0U];
     const auto & reference_cell = dynamic_validation_map.cell(expected_centroid)[0U];
     EXPECT_TRUE(received_cell.centroid().isApprox(reference_cell.centroid(),
-      std::numeric_limits<ndt::Real>::epsilon()));
+      std::numeric_limits<Real>::epsilon()));
     EXPECT_TRUE(received_cell.covariance().isApprox(reference_cell.covariance(),
-      std::numeric_limits<ndt::Real>::epsilon() * 1e2));
+      std::numeric_limits<Real>::epsilon() * 1e2));
   }
   remove(pcl_file_name);
   remove(yaml_file_name.c_str());
@@ -203,8 +205,7 @@ TEST_F(MapPublisherTest, core_functionality)
 TEST_F(MapPublisherTest, viz_functionality)
 {
   using Cloud = sensor_msgs::msg::PointCloud2;
-  const auto grid_config =
-    perception::filters::voxel_grid::Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
+  const auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   std::string yaml_file_name = "MapPublisherTest_test.yaml";
   const auto pcl_file_name = "MapPublisherTest_test.pcd";
@@ -270,7 +271,3 @@ TEST_F(MapPublisherTest, viz_functionality)
   remove(pcl_file_name);
   remove(yaml_file_name.c_str());
 }
-
-}  // namespace ndt_nodes
-}  // namespace localization
-}  // namespace autoware

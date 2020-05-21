@@ -4,6 +4,15 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt_nodes)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(GEOGRAPHICLIB REQUIRED)
@@ -11,8 +20,6 @@ find_package(yaml-cpp REQUIRED)
 
 find_package(ament_cmake_auto REQUIRED)
 
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io)
 
 ament_auto_find_build_dependencies()
@@ -22,15 +29,9 @@ set(NDT_NODES_LIB_SRC
     src/map_publisher.cpp
 )
 
-set(NDT_NODES_LIB_HEADERS
-    include/ndt_nodes/visibility_control.hpp
-    include/ndt_nodes/map_publisher.hpp
-    include/ndt_nodes/ndt_localizer_nodes.hpp)
-
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${NDT_NODES_LIB_SRC}
-        ${NDT_NODES_LIB_HEADERS}
 )
 
 autoware_set_compile_options(${PROJECT_NAME})
@@ -49,13 +50,11 @@ ament_auto_add_executable(${P2D_NDT_NODE} src/p2d_ndt_localizer_main.cpp)
 autoware_set_compile_options(${P2D_NDT_NODE})
 
 if(BUILD_TESTING)
-  # run linters
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
   set(NDT_NODES_TEST ndt_nodes_gtest)
-
-  find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${NDT_NODES_TEST}
           test/test_map_publisher.cpp)
@@ -63,8 +62,6 @@ if(BUILD_TESTING)
     ${PROJECT_NAME}
     ${GeographicLib_LIBRARIES}
     ${YAML_CPP_LIBRARIES})
-
-  ament_target_dependencies(${NDT_NODES_TEST} ${PROJECT_NAME})
 endif()
 
 # required for tf2
@@ -76,11 +73,5 @@ target_compile_options(${MAP_PUBLISHER_EXE} PRIVATE -Wno-sign-conversion -Wno-co
 
 target_compile_options(${P2D_NDT_NODE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
-
-install(DIRECTORY
-  launch
-  param
-  DESTINATION share/${PROJECT_NAME}/
-)
 
 ament_auto_package()
