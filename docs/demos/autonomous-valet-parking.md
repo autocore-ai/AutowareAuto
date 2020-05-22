@@ -50,3 +50,8 @@ If using your own carpark, you will need to provide a simulated world for it as 
 # Setup and launching (hardware)
 
 The AVP demo does not currently support running on hardware.
+
+
+# Related packages
+
+- @subpage avp-demo-package-design

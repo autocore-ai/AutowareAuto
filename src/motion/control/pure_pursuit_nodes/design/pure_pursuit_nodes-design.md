@@ -1,4 +1,4 @@
-pure_pursuit_nodes
+Pure pursuit nodes {#pure-pursuit-nodes}
 =======================
 
 

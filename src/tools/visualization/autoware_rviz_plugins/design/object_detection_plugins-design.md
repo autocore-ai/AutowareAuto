@@ -1,4 +1,4 @@
-autoware_rviz_plugins
+Autoware rviz plugins {#autoware-rviz-plugins}
 =============
 
 # Purpose / Use cases

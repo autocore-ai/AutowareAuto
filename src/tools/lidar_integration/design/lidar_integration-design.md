@@ -1,4 +1,4 @@
-lidar_integration {#lidar_integration-design}
+Lidar integration {#lidar-integration-design}
 =============================
 
 This is the design document for the `lidar_integration` package.

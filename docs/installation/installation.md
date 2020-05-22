@@ -1,4 +1,4 @@
-Installation and development setup {#installation-and-development}
+Installation {#installation}
 ============
 
 [TOC]

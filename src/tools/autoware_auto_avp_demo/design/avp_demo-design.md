@@ -1,4 +1,4 @@
-avp_demo {#avp_demo-package-design}
+AVP demonstration package {#avp-demo-package-design}
 ===========
 
 This is the design document for the `avp_demo` package.

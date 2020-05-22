@@ -1,4 +1,4 @@
-Spinnaker camera driver
+Spinnaker camera driver {#spinnaker-camera-driver}
 =======================
 
 # Why we implemented this feature

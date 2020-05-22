@@ -1,4 +1,4 @@
-trajectory_spoofer {#trajectory_spoofer-package-design}
+Trajectory spoofer {#trajectory-spoofer-design}
 ===========
 
 This is the design document for the `trajectory_spoofer` package.

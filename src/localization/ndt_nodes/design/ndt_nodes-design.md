@@ -1,4 +1,4 @@
-ndt_nodes
+NDT nodes {#ndt-nodes}
 =============
 
 # Purpose / Use cases

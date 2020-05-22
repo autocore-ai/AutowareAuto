@@ -1,4 +1,5 @@
-# localization_nodes
+Localization nodes {#localization-nodes}
+=============
 
 # Purpose / Use cases
 

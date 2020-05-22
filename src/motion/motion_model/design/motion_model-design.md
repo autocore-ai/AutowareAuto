@@ -1,4 +1,4 @@
-motion_model
+Motion model {#motion-model}
 ========
 
 # Purpose / Use cases

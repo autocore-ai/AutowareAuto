@@ -1,4 +1,4 @@
-pure_pursuit
+Pure pursuit {#pure-pursuit}
 =============
 
 

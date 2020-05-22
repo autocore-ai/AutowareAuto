@@ -1,7 +1,7 @@
 Autoware.Auto {#index}
 ======================
 
-# Introduction {#index-introduction}
+# Introduction
 
 [Autoware](https://www.autoware.org/) is the world's first "all-in-one" open-source
 software for self-driving vehicles hosted under the Autoware Foundation. Autoware first began with
@@ -23,7 +23,7 @@ machines and development machines
 ![Autoware.Auto testing vehicle](images/lexus.jpg)
 
 
-# Use Cases  {#index-use-cases}
+# Use Cases
 
 Autoware.Auto initially targets the following 2 use cases:
 
@@ -38,7 +38,7 @@ than 2 weeks.
 ![Autonomous valet parking](images/valet_parking.jpeg)
 
 
-# Supported Hardware {#index-supported-hardware}
+# Supported Hardware
 
 1. **Vehicle**: Lexus 450 LH with the
 [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/) DBW interface
@@ -53,13 +53,7 @@ than 2 weeks.
     2. [Nuvo](https://autonomoustuff.com/product/astuff-spectra/) rugged x86-64 desktop computer
 
 
-# Documentation {#index-documentation}
-
-The latest documentation corresponding to the `master` branch of `AutowareAuto` is located here:
-https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/.
-
-
-# Roadmap  {#index-roadmap}
+# Roadmap
 
 Functional features in Autoware.Auto are developed according to the roadmap below. More granular
 feature planning is being handled via
@@ -68,23 +62,19 @@ feature planning is being handled via
 ![Functional feature roadmap](images/aa_roadmap.png)
 
 
-# Installation and development {#index-installation-and-development}
+# Documentation
 
-Install Autoware.Auto and learn how to develop applications.
+Below is the table of contents for the Autoware.Auto documentation.
 
-- @subpage installation-and-development
+If you are new to Autoware.Auto, begin at the installation documentation, then move on to the tutorials.
 
-# Development process guide {#index-cpp-development-process}
-
-Guidelines for contributing to Autoware.Auto.
-
-- @subpage developer-guidelines
-- @subpage develop-in-a-fork
-
-# Links to other resources {#index-links-to-other-resources}
-
-- @subpage howto
+- @subpage installation
 - @subpage tutorials
-- @subpage design "Design documents"
-- @subpage coverage "Coverage reports"
-- @subpage demos "Demonstrations"
+- @subpage demonstrations
+- @subpage contributors-guide
+- @subpage design
+
+
+# Coverage report
+
+An automatically-generated code coverage report for the Autoware.Auto codebase is [available here](coverage/index.html).

@@ -1,12 +1,12 @@
 Tutorials {#tutorials}
 =========
 
-# Introduction {#tutorials-introduction}
+Each tutoral is a standalone resource to introduce and inform developers about usage of Autoware.Auto for autonomous vehicle application development.
 
-Tutorials provide a deep dive into the technical reasoning and how-to behind application
-implementation.
+Some tutorials provide broad overviews of a particular topic.
+Others are much more in-depth, diving deep into the technical reasoning and know-how behind using Autoware for a particular type of application, or how a particular feature works.
+Choose tutorials that are appropriate to your skill level and your particular needs from Autoware.Auto.
+Tutorials that are suitable for a beginner are marked as such.
 
-The tutorials are highly technical, and are useful for beginner and advanced Autoware.Auto
-developers.
-
-- @subpage example-tutorial
+- @subpage perception-stack
+- @subpage lgsvl

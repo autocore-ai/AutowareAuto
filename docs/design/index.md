@@ -1,12 +1,13 @@
 Design {#design}
 ======
 
-This section outlines the Autoware.Auto design principles, and links to relevant design documents
-for each Autoware.Auto feature.
+This section of the Autoware.Auto documentation describes how the software is designed.
 
 - @subpage autoware-common-design
 - @subpage autoware-drivers-design
-- @subpage autoware-fusion-design
-- @subpage autoware-motion-design
 - @subpage autoware-perception-design
+- @subpage autoware-fusion-design
 - @subpage autoware-prediction-design
+- @subpage autoware-localization-design
+- @subpage autoware-motion-design
+- @subpage autoware-vehicle-interfaces-design

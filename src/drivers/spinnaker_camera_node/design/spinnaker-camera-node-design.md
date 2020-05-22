@@ -1,4 +1,4 @@
-Spinnaker camera node
+Spinnaker camera node {#spinnaker-camera-node}
 =====================
 
 # Purpose / Use cases

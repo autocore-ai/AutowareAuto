@@ -1,4 +1,4 @@
-recordreplay_planner
+RecordReplay planner {#recordreplay-planner}
 ====================
 
 # Purpose / Use cases

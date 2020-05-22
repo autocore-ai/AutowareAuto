@@ -1,4 +1,4 @@
-Controller Reference Implementation
+Controller Reference Implementation {#controller-reference-implementation}
 ===================================
 
 [TOC]

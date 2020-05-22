@@ -1,4 +1,4 @@
-NDT Map Map Provider Node - Usage and Configuration
+NDT Map Provider Node - Usage and Configuration {#ndt-map-provider-node}
 =============
 
 # Usage

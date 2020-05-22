@@ -1,4 +1,4 @@
-Demonstrations {#demos}
+Demonstrations {#demonstrations}
 =========
 
 Autoware.Auto includes a growing number of demonstrations.
@@ -8,6 +8,6 @@ Each article below contains instructions on how to set up, launch and control on
 For demonstrations that work on a real car, the hardware requirements are also described.
 
 The demonstration documentation assumes a working knowledge of how to use Autoware.Auto.
-For articles on how to achieve specific tasks with Autoware.Auto, see our [HowTo]{@ref howto} and [tutorials]{@ref tutorials} categories.
+For articles on how to achieve specific tasks with Autoware.Auto, see our [tutorials]{@ref tutorials}.
 
 - @subpage avpdemo

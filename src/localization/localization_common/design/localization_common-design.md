@@ -1,4 +1,4 @@
-localization_common
+Localization common {#localization-common}
 =============
 
 # Pose Initializer
