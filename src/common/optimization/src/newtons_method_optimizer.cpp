@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "optimization/optimizer.hpp"
+#include "optimization/newtons_method_optimizer.hpp"
+#include "optimization/line_search/fixed_line_search.hpp"
 
 namespace autoware
 {
@@ -21,11 +22,8 @@ namespace common
 {
 namespace optimization
 {
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Instantiation of common types
-template class NewtonsMethod<FixedLineSearch>;
+// Instantiation of the optimizer with concrete types.
+template class NewtonsMethodOptimizer<FixedLineSearch>;
 }  // namespace optimization
 }  // namespace common
 }  // namespace autoware

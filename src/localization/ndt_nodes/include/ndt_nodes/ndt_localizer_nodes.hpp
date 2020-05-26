@@ -22,7 +22,8 @@
 #include <ndt/ndt_localizer.hpp>
 #include <localization_nodes/localization_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <optimization/optimizer.hpp>
+#include <optimization/newtons_method_optimizer.hpp>
+#include <optimization/line_search/more_thuente_line_search.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <utility>
 #include <string>
@@ -46,7 +47,8 @@ template<typename ... Types>
 using P2DNDTConfig = ndt::P2DNDTLocalizerConfig<Types...>;
 
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
-using Optimizer_ = common::optimization::NewtonsMethod<common::optimization::MoreThuenteLineSearch>;
+using Optimizer_ =
+  common::optimization::NewtonsMethodOptimizer<common::optimization::MoreThuenteLineSearch>;
 using OptimizerOptions_ = common::optimization::NewtonOptimizationOptions;
 using PoseInitializer_ = localization_common::BestEffortInitializer;
 

@@ -17,7 +17,7 @@
 #define TEST_NEWTON_OPTIMIZATION_HPP_
 
 #include <common/types.hpp>
-#include <optimization/optimizer.hpp>
+#include <optimization/newtons_method_optimizer.hpp>
 
 using autoware::common::types::float64_t;
 
@@ -69,11 +69,11 @@ public:
     out(0, 0) = static_cast<float64_t>(N) * (std::pow(x(0, 0) + A, N - 2));
   }
 
-  bool convex;
   float64_t A;
   float64_t B;
   int32_t N;
   float64_t solution;
+  bool convex;
 };
 
 class Polynomial1DOptimizationProblem : public

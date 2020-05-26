@@ -13,10 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "test_newton_optimization.hpp"
+
+#include <optimization/line_search/fixed_line_search.hpp>
+
 #include <common/types.hpp>
 #include <gtest/gtest.h>
 #include <limits>
-#include "test_newton_optimization.hpp"
 
 using autoware::common::types::float64_t;
 
@@ -40,7 +43,7 @@ TEST_P(NewtonOptimizationParamTest, newton_optimization_validation) {
   const auto solution = objective.solution;
   const auto is_convex = objective.convex;
 
-  NewtonsMethod<FixedLineSearch> optimizer(line_search);
+  NewtonsMethodOptimizer<FixedLineSearch> optimizer(line_search);
 
   decltype(problem)::DomainValue x_out;
   const auto summary = optimizer.solve(problem, x0, x_out, options);
@@ -56,27 +59,27 @@ INSTANTIATE_TEST_CASE_P(
   NewtonOptimizationParamTest,
   ::testing::Values(
     NewtonPolynomialTestParam1D{
-        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
-        Vector1D{3.0}, // x0 = 3
-        NewtonOptimizationOptions(30, 4e-2, 0.0, 0.0), // Square of the step size used as threshold.
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
+        Vector1D{3.0},  // x0 = 3
+        NewtonOptimizationOptions(30, 4e-2, 0.0, 0.0),  // Square of the step size threshold.
         FixedLineSearch(0.2),
         TerminationType::CONVERGENCE
       },
     NewtonPolynomialTestParam1D{
-        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
-        Vector1D{3.0}, // x0 = 3
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
+        Vector1D{3.0},  // x0 = 3
         NewtonOptimizationOptions(30, 0.0, 1e-5, 0.0),
         FixedLineSearch(0.2),
-        TerminationType::NO_CONVERGENCE // Can't converge because 0.2 > 1e-5
+        TerminationType::NO_CONVERGENCE  // Can't converge because 0.2 > 1e-5
       },
     NewtonPolynomialTestParam1D{
-        Polynomial1DOptimizationProblem{1.0, 2, 1.0}, // (x+1)^2+1
-        Vector1D{3.0}, // x0 = 3
+        Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
+        Vector1D{3.0},  // x0 = 3
         NewtonOptimizationOptions(30, 0.0, 0.0, 1e-4),
         FixedLineSearch(0.2),
         TerminationType::CONVERGENCE
       }
-  )
+  ),
 );
 
 // since the convex polynomial objective will have a zero gradient solution,
@@ -120,7 +123,7 @@ INSTANTIATE_TEST_CASE_P(
         Polynomial1DOptimizationProblem{1.0, 2, 1.0},
         Vector1D{2.0},
         NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
-        FixedLineSearch(0.0001), // won't converge because step size is too small
+        FixedLineSearch(0.0001),  // won't converge because step size is too small
         TerminationType::NO_CONVERGENCE
       },
     // Higher order N
@@ -138,7 +141,7 @@ INSTANTIATE_TEST_CASE_P(
         FixedLineSearch(0.5),
         TerminationType::CONVERGENCE
       }
-  )
+  ),
 );
 
 constexpr auto inf = std::numeric_limits<float64_t>::infinity();
@@ -191,7 +194,7 @@ INSTANTIATE_TEST_CASE_P(
         FixedLineSearch(max),
         TerminationType::FAILURE
       }
-  )
+  ),
 );
 
 TEST(TestFixedLineSearch, fixed_line_search_validation) {

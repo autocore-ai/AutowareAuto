@@ -17,7 +17,7 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 
 set(OPTIMIZATION_LIB_SRC
-        src/optimization.cpp
+        src/newtons_method_optimizer.cpp
         src/optimizer_options.cpp
         src/utils.cpp)
 
@@ -26,8 +26,11 @@ set(OPTIMIZATION_LIB_HEADERS
         include/optimization/utils.hpp
         include/optimization/optimization_problem.hpp
         include/optimization/optimizer_options.hpp
-        include/optimization/line_search.hpp
-        include/optimization/optimizer.hpp)
+        include/optimization/optimizer.hpp
+        include/optimization/newtons_method_optimizer.hpp
+        include/optimization/line_search/line_search.hpp
+        include/optimization/line_search/fixed_line_search.hpp
+        include/optimization/line_search/more_thuente_line_search.hpp)
 
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED

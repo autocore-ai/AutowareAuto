@@ -1,4 +1,4 @@
-// Copyright 2019 Apex.AI, Inc.
+// Copyright 2020 Apex.AI, Inc.
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OPTIMIZATION__LINE_SEARCH_HPP_
-#define OPTIMIZATION__LINE_SEARCH_HPP_
+#ifndef OPTIMIZATION__LINE_SEARCH__MORE_THUENTE_LINE_SEARCH_HPP_
+#define OPTIMIZATION__LINE_SEARCH__MORE_THUENTE_LINE_SEARCH_HPP_
 
-#include <helper_functions/crtp.hpp>
-#include <optimization/visibility_control.hpp>
+#include <optimization/line_search/line_search.hpp>
+#include <optimization/utils.hpp>
+
 #include <limits>
-#include <cmath>
 #include <algorithm>
 
 namespace autoware
@@ -28,80 +28,12 @@ namespace common
 {
 namespace optimization
 {
-/// Base class (CRTP) to mange the step length during optimization.
-template<typename Derived>
-class OPTIMIZATION_PUBLIC LineSearch : public common::helper_functions::crtp<Derived>
-{
-public:
-  // TODO(zozen): should this be forced to be positive?
-  using StepT = float_t;
-
-  /// Constructor.
-  /// \param step_max Maximum step length. By default initialized to the minimum value.
-  explicit LineSearch(const StepT step_max = std::numeric_limits<StepT>::min())
-  {
-    m_step_max = step_max;
-  }
-
-  /// Computes the optimal step for the optimization optimization_problem
-  /// \tparam DomainValueT Parameter type.
-  /// \tparam OptimizationProblemT Optimization optimization_problem type. Must be an
-  /// implementation of `common::optimization::OptimizationProblem`.
-  /// \param x0 Initial x value to do the line searching for.
-  /// \param step_direction Step direction to search for the optimal step.
-  /// \param optimization_problem optimization problem.
-  /// \return Optimal step.
-  template<typename DomainValueT, typename OptimizationProblemT>
-  DomainValueT compute_step_length(
-    const DomainValueT & x0, const DomainValueT & step_direction,
-    OptimizationProblemT & optimization_problem)
-  {
-    return this->impl().compute_step_length_(x0, step_direction, optimization_problem);
-  }
-
-  /// Getter for the maximum step length
-  /// \return The maximum step length.
-  StepT get_step_max() const noexcept
-  {
-    return m_step_max;
-  }
-
-  /// Setter for the maximum step length
-  /// \param step_max the new maximal step length
-  void set_step_max(const StepT step_max) noexcept
-  {
-    m_step_max = step_max;
-  }
-
-private:
-  StepT m_step_max;
-};
-
-/// Class to use a fixed step length during optimization.
-class OPTIMIZATION_PUBLIC FixedLineSearch : public LineSearch<FixedLineSearch>
-{
-public:
-  /// Constructor.
-  /// \param step Fixed step to be used.
-  explicit FixedLineSearch(const StepT step = std::numeric_limits<StepT>::min())
-  : LineSearch(step) {}
-  /// Returns directly the pre-set (maximum) step length
-  /// \return The fixed step length.
-  template<typename DomainValueT, typename OptimizationProblemT>
-  DomainValueT compute_step_length(
-    const DomainValueT &, DomainValueT & step_direction,
-    OptimizationProblemT &) const noexcept
-  {
-    return get_step_max() * step_direction.normalized();
-  }
-};
-
 
 class OPTIMIZATION_PUBLIC MoreThuenteLineSearch : public LineSearch<MoreThuenteLineSearch>
 {
 public:
   explicit MoreThuenteLineSearch(const StepT max_step, const StepT min_step)
-  : LineSearch(max_step), m_step_min{min_step} {}
+  : LineSearch{max_step}, m_step_min{min_step} {}
 
   template<typename DomainValueT, typename OptimizationProblemT>
   DomainValueT compute_step_length_(
@@ -326,8 +258,10 @@ private:
 private:
   StepT m_step_min;
 };
+
 }  // namespace optimization
 }  // namespace common
 }  // namespace autoware
 
-#endif  // OPTIMIZATION__LINE_SEARCH_HPP_
+
+#endif  // OPTIMIZATION__LINE_SEARCH__MORE_THUENTE_LINE_SEARCH_HPP_

@@ -17,7 +17,8 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <ndt/ndt_localizer.hpp>
-#include <optimization/optimizer.hpp>
+#include <optimization/newtons_method_optimizer.hpp>
+#include <optimization/line_search/fixed_line_search.hpp>
 #include <limits>
 #include "test_ndt_optimization.hpp"
 #include "test_ndt_utils.hpp"
@@ -33,7 +34,7 @@ using autoware::localization::ndt::transform_adapters::pose_to_transform;
 using autoware::localization::ndt::transform_adapters::transform_to_pose;
 
 using autoware::common::optimization::FixedLineSearch;
-using NewtonOptimizer = autoware::common::optimization::NewtonsMethod<FixedLineSearch>;
+using NewtonOptimizer = autoware::common::optimization::NewtonsMethodOptimizer<FixedLineSearch>;
 using NewtonOptimizerOptions = autoware::common::optimization::NewtonOptimizationOptions;
 using FixedLineSearch = autoware::common::optimization::FixedLineSearch;
 using P2DTestLocalizer = P2DNDTLocalizer<NewtonOptimizer, NewtonOptimizerOptions>;
