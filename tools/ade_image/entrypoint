@@ -38,7 +38,7 @@ gpasswd -a "${USER}" video
 # Create dialout group. On Debian-based systems, the dialout group is always 20
 # Needed for obtaining access to the Xsens serial port-based sensor
 groupdel dialout &> /dev/null || true
-groupadd -og 20 dialout
+groupadd -og 20 dialout || true  # Gracefully skip to allow starting on OSX
 gpasswd -a "${USER}" dialout
 
 
