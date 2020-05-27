@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 /// \copyright Copyright 2017-2019 Apex.AI, Inc.
 
@@ -22,6 +23,7 @@
 #include "gtest/gtest.h"
 
 using autoware::drivers::xsens_driver::MID;
+using MID_underlying_type = std::underlying_type_t<MID>;
 
 template<typename TranslatorT, typename MessageT>
 class xsens_driver_common : public ::testing::Test
@@ -42,13 +44,13 @@ protected:
     ASSERT_FALSE(driver.convert(pkt, out));
     pkt.data = 0xFF;
     ASSERT_FALSE(driver.convert(pkt, out));
-    pkt.data = static_cast<std::underlying_type_t<MID>>(MID::MT_DATA2);
+    pkt.data = static_cast<MID_underlying_type>(MID::MT_DATA2);
     ASSERT_FALSE(driver.convert(pkt, out));
     uint8_t length = data.size() - 1;
     pkt.data = length;
     ASSERT_FALSE(driver.convert(pkt, out));
 
-    for(uint8_t i = 0; i < length; ++i) {
+    for (uint8_t i = 0; i < length; ++i) {
       pkt.data = data[i];
       ASSERT_FALSE(driver.convert(pkt, out));
     }

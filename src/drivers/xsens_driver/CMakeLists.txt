@@ -17,23 +17,20 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(xsens_driver)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(ament_cmake_ros REQUIRED)
+ament_auto_find_build_dependencies()
 
-ament_auto_find_build_dependencies(REQUIRED ${requirement_dependencies})
-
-include_directories(include)
-
-### Build driver library
-set(required_dependencies
-  "autoware_auto_common"
-  "lidar_utils"
-  "sensor_msgs"
-)
-
-ament_auto_add_library(${PROJECT_NAME}
+ament_auto_add_library(${PROJECT_NAME} SHARED
         "include/xsens_driver/xsens_common.hpp"
         "include/xsens_driver/xsens_base_translator.hpp"
         "include/xsens_driver/xsens_imu_translator.hpp"
@@ -43,18 +40,14 @@ ament_auto_add_library(${PROJECT_NAME}
         "src/xsens_gps_translator.cpp"
         "src/xsens_imu_config.cpp"
         "src/xsens_imu_translator.cpp")
-target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
-ament_target_dependencies(${PROJECT_NAME}
-  ${required_dependencies})
 autoware_set_compile_options(${PROJECT_NAME})
 
 ## Testing
 if(BUILD_TESTING)
-    # Static checking only if built via ament
-    autoware_static_code_analysis()
-    include_directories(include)
+    find_package(ament_lint_auto REQUIRED)
+    ament_lint_auto_find_test_dependencies()
+
     # gtest
-    find_package(ament_cmake_gtest REQUIRED)
     set(XSENS_IMU_GTEST xsens_imu_gtest)
     ament_add_gtest(${XSENS_IMU_GTEST}
       "test/src/test_xsens_imu.cpp")
@@ -68,5 +61,4 @@ if(BUILD_TESTING)
     target_link_libraries(${XSENS_GPS_GTEST} ${PROJECT_NAME})
 endif()
 
-autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
 ament_auto_package()
