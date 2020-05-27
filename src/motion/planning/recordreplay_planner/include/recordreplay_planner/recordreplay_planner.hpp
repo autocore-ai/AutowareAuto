@@ -34,7 +34,8 @@ namespace planning
 {
 namespace recordreplay_planner
 {
-using autoware_auto_msgs::msg::BoundingBoxArray;
+using BoundingBox = autoware_auto_msgs::msg::BoundingBox;
+using BoundingBoxArray = autoware_auto_msgs::msg::BoundingBoxArray;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware_auto_msgs::msg::Trajectory;
 using Heading = decltype(decltype(State::state)::heading);
@@ -91,6 +92,10 @@ public:
 
   std::size_t get_number_of_bounding_boxes() const noexcept;
 
+  // Debug data
+  const BoundingBoxArray & get_collision_boxes();
+  const BoundingBoxArray & get_traj_boxes();
+
 private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
@@ -101,11 +106,17 @@ private:
   float64_t m_min_record_distance = 0.0;
   VehicleConfig m_vehicle_param;
 
+  std::size_t m_traj_start_idx{};
+  std::size_t m_traj_end_idx{};
   std::deque<State> m_record_buffer;
   BoundingBoxArray m_latest_bounding_boxes{};
   BoundingBoxArray m_cache_traj_bbox_arr{};
   Trajectory m_trajectory{};
   RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
+
+  // Debug msgs
+  BoundingBoxArray m_latest_collison_boxes{};
+  BoundingBoxArray m_current_traj_bboxes{};
 };  // class RecordReplayPlanner
 }  // namespace recordreplay_planner
 }  // namespace planning

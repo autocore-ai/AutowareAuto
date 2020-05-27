@@ -28,11 +28,14 @@ ros2 launch test_trajectory_following simple_trajectory_following.launch.py
 ```
 ros2 launch test_trajectory_following trajectory_recording.launch.py
 ```
+
 * on Joystick press `start` button to `record`
 * drive vehicle manually in simulator/real world (not using the joystick)
 * press `back` button to `stop recording`
 * reset position of vehicle manually before replaying (may restart simulation)
 * press `logo/home` button to start `replay`
+  * If `with_mpc:=True` Let MPC drive or else `with_mpc:=False` drive vehicle manually in LGSVL
+  * If `with_obstacle:=True` trajectory replay should handle obstacles from simulation (perception stack also launched).
 * press `back` button to `stop replaying`
 
 ## 4. Trajectory spoofer

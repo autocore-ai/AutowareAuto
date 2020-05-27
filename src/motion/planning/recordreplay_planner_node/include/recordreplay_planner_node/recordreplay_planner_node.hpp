@@ -81,6 +81,9 @@ protected:
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Subscription<BoundingBoxArray>::SharedPtr m_boundingbox_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
+  rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_trajectory_boundingbox_pub{};
+  rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_collison_boundingbox_pub{};
+  rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_transformed_boundingbox_pub{};
   PlannerPtr m_planner{nullptr};
 
 private:

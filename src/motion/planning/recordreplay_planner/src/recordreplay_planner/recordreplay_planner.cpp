@@ -173,16 +173,35 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
   return minimum_idx;
 }
 
+const BoundingBoxArray & RecordReplayPlanner::get_traj_boxes()
+{
+  m_current_traj_bboxes.boxes.resize((m_traj_end_idx - m_traj_start_idx));
+  for (std::size_t i = {}; i < (m_traj_end_idx - m_traj_start_idx); ++i) {
+    m_current_traj_bboxes.boxes[i] = m_cache_traj_bbox_arr.boxes[i + m_traj_start_idx];
+    // workaround to color Green
+    m_current_traj_bboxes.boxes[i].vehicle_label = BoundingBox::MOTORCYCLE;
+  }
+  return m_current_traj_bboxes;
+}
+const BoundingBoxArray & RecordReplayPlanner::get_collision_boxes()
+{
+  if (!m_latest_collison_boxes.boxes.empty()) {
+    // workaround to color Orange
+    m_latest_collison_boxes.boxes[0].vehicle_label = BoundingBox::CYCLIST;
+  }
+  return m_latest_collison_boxes;
+}
+
 const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
   // Find out where on the recorded buffer we should start replaying
-  const auto traj_start_idx = get_closest_state(current_state);
+  m_traj_start_idx = get_closest_state(current_state);
 
   // Determine how long the published trajectory will be
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
-  auto traj_end_idx =
-    std::min(record_length - traj_start_idx, trajectory.points.max_size()) + traj_start_idx;
+  m_traj_end_idx =
+    std::min(record_length - m_traj_start_idx, trajectory.points.max_size()) + m_traj_start_idx;
 
 
   // Build bounding box cache
@@ -193,14 +212,21 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
     m_cache_traj_bbox_arr.header = current_state.header;
     for (std::size_t i = {}; i < get_record_length(); ++i) {
       const auto boundingbox = compute_boundingbox_from_trajectorypoint(
-        m_record_buffer[traj_start_idx + i].state,
+        m_record_buffer[m_traj_start_idx + i].state,
         m_vehicle_param);
       m_cache_traj_bbox_arr.boxes.push_back(boundingbox);
     }
   }
 
+  // Reset and setup debug msg
+  m_latest_collison_boxes.boxes.clear();
+  m_latest_collison_boxes.header = m_latest_bounding_boxes.header;
+  m_current_traj_bboxes.boxes.clear();
+  m_current_traj_bboxes.header = current_state.header;
+
+
   // Collision detection
-  for (std::size_t i = traj_start_idx; i < traj_end_idx; ++i) {
+  for (std::size_t i = m_traj_start_idx; i < m_traj_end_idx; ++i) {
     const auto & boundingbox = m_cache_traj_bbox_arr.boxes[i];
 
     // Check for collisions with all perceived obstacles
@@ -209,7 +235,12 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
         obstaclebox.corners.begin(), obstaclebox.corners.end()) )
       {
         // Collision detected, set end index (non-inclusive)
-        traj_end_idx = i;  // This also ends the outer loop
+        m_traj_end_idx = i;  // This also ends the outer loop
+
+        // Visual Debug msg
+        auto collison_box = obstaclebox;
+        m_latest_collison_boxes.boxes.push_back(collison_box);
+
         break;
       }
     }
@@ -217,22 +248,24 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 
   // Assemble the trajectory as desired
   trajectory.header = current_state.header;
-  const auto publication_len = traj_end_idx - traj_start_idx;
+  const auto publication_len = m_traj_end_idx - m_traj_start_idx;
   trajectory.points.resize(publication_len);
 
-  const auto t0 = time_utils::from_message(m_record_buffer[traj_start_idx].header.stamp);
+
+  const auto t0 = time_utils::from_message(m_record_buffer[m_traj_start_idx].header.stamp);
   for (std::size_t i = {}; i < publication_len; ++i) {
     // Make the time spacing of the points match the recorded timing
-    trajectory.points[i] = m_record_buffer[traj_start_idx + i].state;
+    trajectory.points[i] = m_record_buffer[m_traj_start_idx + i].state;
     trajectory.points[i].time_from_start = time_utils::to_message(
-      time_utils::from_message(m_record_buffer[traj_start_idx + i].header.stamp) - t0);
+      time_utils::from_message(m_record_buffer[m_traj_start_idx + i].header.stamp) - t0);
   }
+
   // Mark the last point along the trajectory as "stopping" by setting all rates,
   // accelerations and velocities to zero. TODO(s.me) this is by no means
   // guaranteed to be dynamically feasible. One could implement a proper velocity
   // profile here in the future.
-  if (traj_end_idx > traj_start_idx) {
-    const auto traj_last_idx = traj_end_idx - 1U;
+  if (m_traj_end_idx > m_traj_start_idx) {
+    const auto traj_last_idx = m_traj_end_idx - 1U;
     trajectory.points[traj_last_idx].longitudinal_velocity_mps = 0.0;
     trajectory.points[traj_last_idx].lateral_velocity_mps = 0.0;
     trajectory.points[traj_last_idx].acceleration_mps2 = 0.0;
