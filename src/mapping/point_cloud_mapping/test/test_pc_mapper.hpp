@@ -14,6 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+/// \copyright Copyright 2020 Apex.AI, Inc.
+/// All rights reserved.
+
 #ifndef TEST_PC_MAPPER_HPP_
 #define TEST_PC_MAPPER_HPP_
 

@@ -14,6 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+/// \copyright Copyright 2020 Apex.AI, Inc.
+/// All rights reserved.
+
 #ifndef TEST_MAP_HPP_
 #define TEST_MAP_HPP_
 
@@ -37,8 +40,7 @@ sensor_msgs::msg::PointCloud2 make_pc(
   const std::string & frame = "map");
 
 /// Create a point cloud with with a size of `size`. The magnitudes of fields ranges as follows:
-/// (offset, offset, offset, offset) ...
-/// (offset + size, offset + size, offset + size, offset + size)
+/// (offset, offset, offset, offset)...(offset + size, offset + size, offset + size, offset + size)
 /// where the fields correspond to: (x, y, z, intensity)
 sensor_msgs::msg::PointCloud2 make_pc(
   std::size_t size, std::size_t offset = 0,
@@ -55,7 +57,7 @@ class VoxelMapContext
 public:
   using PointXYZ = geometry_msgs::msg::Point32;
   static constexpr std::size_t NUM_PTS_PER_CELL{7U};
-  static constexpr float32_t FIXED_DEVIATION{0.3};
+  static constexpr float32_t FIXED_DEVIATION{0.3F};
   VoxelMapContext();
 
 protected:

@@ -66,9 +66,6 @@ private:
   std::shared_ptr<TestObservation> m_observation_tracking_ptr;
 };
 
-class MockRelativeLocalizerConfig {};
-
-
 class MockInitializer
 {
 public:
@@ -78,7 +75,7 @@ public:
 };
 
 class TestRelativeLocalizerNode : public RelativeLocalizerNode<TestObservation, TestMap,
-    MockRelativeLocalizer, MockRelativeLocalizerConfig, MockInitializer>
+    MockRelativeLocalizer, MockInitializer>
 {
 public:
   using RelativeLocalizerNode::RelativeLocalizerNode;

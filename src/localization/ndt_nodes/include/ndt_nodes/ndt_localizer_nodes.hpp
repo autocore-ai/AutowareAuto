@@ -63,7 +63,6 @@ template<typename OptimizerT = Optimizer_,
 class NDT_NODES_PUBLIC P2DNDTLocalizerNode
   : public localization_nodes::RelativeLocalizerNode<CloudMsg, CloudMsg,
     P2DNDTLocalizer<OptimizerT, OptimizerOptionsT>,
-    P2DNDTConfig<OptimizerOptionsT>,
     PoseInitializerT>
 {
 public:
@@ -72,7 +71,7 @@ public:
   using LocalizerBasePtr = std::unique_ptr<localization_common::RelativeLocalizerBase<CloudMsg,
       CloudMsg, RegistrationSummary>>;
   using ParentT = localization_nodes::RelativeLocalizerNode<CloudMsg, CloudMsg,
-      Localizer, P2DNDTConfig<OptimizerOptionsT>, PoseInitializerT>;
+      Localizer, PoseInitializerT>;
   using PoseWithCovarianceStamped = typename Localizer::PoseWithCovarianceStamped;
   using Transform = typename Localizer::Transform;
 

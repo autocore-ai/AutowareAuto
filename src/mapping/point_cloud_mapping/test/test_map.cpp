@@ -14,7 +14,11 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+/// \copyright Copyright 2020 Apex.AI, Inc.
+/// All rights reserved.
+
 #include "test_map.hpp"
+
 #include <point_cloud_mapping/map.hpp>
 #include <gtest/gtest.h>
 #include <lidar_utils/point_cloud_utils.hpp>

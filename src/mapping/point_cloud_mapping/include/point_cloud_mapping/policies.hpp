@@ -51,7 +51,7 @@ public:
 };
 
 /// Trigger map writing when map reaches its capacity.
-class CapacityTrigger : public TriggerPolicyBase<CapacityTrigger>
+class POINT_CLOUD_MAPPING_PUBLIC CapacityTrigger : public TriggerPolicyBase<CapacityTrigger>
 {
 public:
   template<typename MapRepresentationT>
@@ -79,7 +79,8 @@ public:
 };
 
 /// Prefix generator that adds the current time stamp to the end of the base prefix.
-class TimeStampPrefixGenerator : public PrefixGeneratorBase<TimeStampPrefixGenerator>
+class POINT_CLOUD_MAPPING_PUBLIC TimeStampPrefixGenerator
+  : public PrefixGeneratorBase<TimeStampPrefixGenerator>
 {
 public:
   std::string get_(const std::string & base_prefix) const noexcept;

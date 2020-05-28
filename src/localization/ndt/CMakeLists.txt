@@ -90,4 +90,5 @@ if(BUILD_TESTING)
   target_compile_options(${NDT_TEST} PRIVATE ${ROS_NO_WARN_LIST})
 endif()
 
+ament_export_include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
 ament_auto_package()

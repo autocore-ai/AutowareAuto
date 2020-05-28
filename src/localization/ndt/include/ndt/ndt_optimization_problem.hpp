@@ -443,7 +443,7 @@ public:
     // 10.0 seems to be a magic number. For details on the gaussian
     // approximation of the mixture probability in see [Biber et al, 2004] and [Magnusson 2009].
     const auto gauss_c1 = 10.0 * (1.0 - outlier_ratio);
-    const auto gauss_c2 = outlier_ratio / (c_size.x * c_size.y * c_size.z);
+    const auto gauss_c2 = outlier_ratio / static_cast<Real>(c_size.x * c_size.y * c_size.z);
     const auto gauss_d3 = -std::log(gauss_c2);
     m_gauss_d1 = -std::log(gauss_c1 + gauss_c2) - gauss_d3;
     m_gauss_d2 = -2 *

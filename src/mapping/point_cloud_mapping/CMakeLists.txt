@@ -85,5 +85,6 @@ if(BUILD_TESTING)
   # turn off warnings to be able to successfully compile upstream ros packages
   target_compile_options(${PC_MAPPING_TEST} PRIVATE ${ROS_NO_WARN_LIST})
 endif()
-
+ament_export_include_directories(${PCL_INCLUDE_DIRS})
+ament_export_libraries(${PCL_LIBRARIES})
 ament_auto_package()

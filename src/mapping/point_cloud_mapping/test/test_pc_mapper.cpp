@@ -14,6 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+/// \copyright Copyright 2020 Apex.AI, Inc.
+/// All rights reserved.
+
 #include "test_pc_mapper.hpp"
 #include <point_cloud_mapping/point_cloud_mapper.hpp>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
@@ -57,13 +60,13 @@ TEST_F(PCMapperTest, core) {
       EXPECT_EQ(sum.map_update_summary.update_type, update);
       EXPECT_EQ(sum.map_update_summary.num_added_pts, pc.width);
       EXPECT_EQ(sum.map_increment->width, pc.width);
-      EXPECT_FLOAT_EQ(tf.transform.translation.x, pose_out.pose.pose.position.x);
-      EXPECT_FLOAT_EQ(tf.transform.translation.y, pose_out.pose.pose.position.y);
-      EXPECT_FLOAT_EQ(tf.transform.translation.z, pose_out.pose.pose.position.z);
-      EXPECT_FLOAT_EQ(tf.transform.rotation.x, pose_out.pose.pose.orientation.x);
-      EXPECT_FLOAT_EQ(tf.transform.rotation.y, pose_out.pose.pose.orientation.y);
-      EXPECT_FLOAT_EQ(tf.transform.rotation.z, pose_out.pose.pose.orientation.z);
-      EXPECT_FLOAT_EQ(tf.transform.rotation.w, pose_out.pose.pose.orientation.w);
+      EXPECT_DOUBLE_EQ(tf.transform.translation.x, pose_out.pose.pose.position.x);
+      EXPECT_DOUBLE_EQ(tf.transform.translation.y, pose_out.pose.pose.position.y);
+      EXPECT_DOUBLE_EQ(tf.transform.translation.z, pose_out.pose.pose.position.z);
+      EXPECT_DOUBLE_EQ(tf.transform.rotation.x, pose_out.pose.pose.orientation.x);
+      EXPECT_DOUBLE_EQ(tf.transform.rotation.y, pose_out.pose.pose.orientation.y);
+      EXPECT_DOUBLE_EQ(tf.transform.rotation.z, pose_out.pose.pose.orientation.z);
+      EXPECT_DOUBLE_EQ(tf.transform.rotation.w, pose_out.pose.pose.orientation.w);
     };
   {
     auto localizer = std::make_unique<MockLocalizer>(m_tf1, m_tf2);
@@ -163,7 +166,7 @@ PCMapperTestContext::PCMapperTestContext()
       auto make_base_pts = [](std::size_t num_pts, float_t diff) {
           std::vector<Point> pts;
           for (auto i = 1U; i < num_pts + 1U; ++i) {
-            pts.push_back({0.0, i * diff, 0.0, 0.0});
+            pts.push_back({0.0, static_cast<float_t>(i) * diff, 0.0, 0.0});
           }
           return pts;
         };
@@ -175,9 +178,9 @@ PCMapperTestContext::PCMapperTestContext()
       }
     };
 
-  make_pc(m_pc0, frame0, 2, 4.2F);
-  make_pc(m_pc1, frame1, 3, 2.0F);
-  make_pc(m_pc2, frame2, 7, 1.5F);
+  make_pc(m_pc0, frame0, 2U, 4.2F);
+  make_pc(m_pc1, frame1, 3U, 2.0F);
+  make_pc(m_pc2, frame2, 7U, 1.5F);
 
   m_tf1 = make_tf(1, 2, 3, 0.1, 1.4, -0.7, frame1);
   m_tf2 = make_tf(5, 8, 10, -1.1, 0.0, 0.4, frame2);

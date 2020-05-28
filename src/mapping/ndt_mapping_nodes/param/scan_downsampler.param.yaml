@@ -1,0 +1,19 @@
+# param/scan_downsampler.param.yaml
+---
+/**:
+  ros__parameters:
+    is_approximate: false
+    config:
+      capacity: 55000
+      min_point:
+        x: -130.0
+        y: -130.0
+        z: -3.0
+      max_point:
+        x: 130.0
+        y: 130.0
+        z: 3.0
+      voxel_size:
+        x: 1.0
+        y: 1.0
+        z: 1.0

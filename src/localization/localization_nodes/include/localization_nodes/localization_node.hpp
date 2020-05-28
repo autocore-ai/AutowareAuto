@@ -58,9 +58,8 @@ enum class LocalizerPublishMode
 /// \tparam ObservationMsgT Message type to register against a map.
 /// \tparam MapMsgT Map type
 /// \tparam LocalizerT Localizer type.
-/// \tparam LocalizerConfigT Localizer configuration type.
 /// \tparam PoseInitializerT Pose initializer type.
-template<typename ObservationMsgT, typename MapMsgT, typename LocalizerT, typename LocalizerConfigT,
+template<typename ObservationMsgT, typename MapMsgT, typename LocalizerT,
   typename PoseInitializerT>
 class LOCALIZATION_NODES_PUBLIC RelativeLocalizerNode : public rclcpp::Node
 {
@@ -104,6 +103,36 @@ public:
     }
   }
 
+  // Constructor for ros2 components
+  // TODO(yunus.caliskan): refactor constructors together reduce the repeated code.
+  RelativeLocalizerNode(
+    const std::string & node_name,
+    const rclcpp::NodeOptions & options,
+    const PoseInitializerT & pose_initializer)
+  : Node(node_name, options),
+    m_pose_initializer(pose_initializer),
+    m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+    m_observation_sub(create_subscription<ObservationMsgT>(
+        "points_in",
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter("observation_sub.history_depth").template
+            get<size_t>())}},
+        [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
+    m_map_sub(create_subscription<MapMsgT>(
+        "ndt_map",
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter("map_sub.history_depth").
+            template get<size_t>())}}.transient_local(),
+        [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
+    m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
+        "ndt_pose",
+        rclcpp::QoS{rclcpp::KeepLast{
+            static_cast<size_t>(declare_parameter(
+              "pose_pub.history_depth").template get<size_t>())}}))
+  {
+    init();
+  }
+
   /// Constructor using ros parameters
   /// \param node_name Node name
   /// \param name_space Node namespace
@@ -132,27 +161,7 @@ public:
             static_cast<size_t>(declare_parameter(
               "pose_pub.history_depth").template get<size_t>())}}))
   {
-    if (declare_parameter("publish_tf").template get<bool>()) {
-      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf",
-          rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
-    }
-
-    /////////////////////////////////////////////////
-    // TODO(yunus.caliskan): Remove in #425
-    // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
-    auto & tf = m_init_hack_transform.transform;
-    tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
-    tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
-    tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
-    tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
-    tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
-    tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
-    tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
-    m_init_hack_transform.header.frame_id = "map";
-    m_init_hack_transform.child_frame_id = "odom";
-    m_use_hack = true;  // On this constructor that is used by the executable,
-    // we currently need the hack for the AVP demo MS2.
-    ////////////////////////////////////////////////////
+    init();
   }
 
   /// Get a const pointer of the output publisher. Can be used for matching against subscriptions.
@@ -228,6 +237,34 @@ protected:
   }
 
 private:
+  void init()
+  {
+    if (declare_parameter("publish_tf").template get<bool>()) {
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf",
+          rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
+    }
+
+    /////////////////////////////////////////////////
+    // TODO(yunus.caliskan): Remove in #425
+    // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
+    auto & tf = m_init_hack_transform.transform;
+    tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
+    tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
+    tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
+    tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
+    tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
+    tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
+    tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
+    m_init_hack_transform.header.frame_id = "map";
+    m_init_hack_transform.child_frame_id = "odom";
+    m_use_hack = true;  // On this constructor that is used by the executable,
+    // we currently need the hack for the AVP demo MS2.
+    ////////////////////////////////////////////////////
+  }
+
+  /// Process the registration summary. By default does nothing.
+  virtual void handle_registration_summary(const RegistrationSummary &) {}
+
   /// Callback that registers each received observation and outputs the result.
   /// \param msg_ptr Pointer to the observation message.
   void observation_callback(typename ObservationMsgT::ConstSharedPtr msg_ptr)
@@ -261,6 +298,7 @@ private:
           if (m_tf_publisher) {
             publish_tf(pose_out);
           }
+          handle_registration_summary(summary);
         } else {
           on_invalid_output(pose_out);
         }

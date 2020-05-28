@@ -100,6 +100,7 @@ public:
       LocalizerT::Base::RegistrationSummary>;
   using MapIncrementPtrT = std::shared_ptr<MapIncrementT>;
   using ConstMapIncrementPtrT = std::shared_ptr<const MapIncrementT>;
+  using RegistrationSummary = RegistrationSummaryT;
   using LocalizerBase = localization::localization_common::
     RelativeLocalizerBase<ObservationMsgT, MapIncrementT, typename LocalizerT::RegistrationSummary>;
   using LocalizerBasePtr = std::unique_ptr<LocalizerBase>;
