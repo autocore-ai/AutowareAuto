@@ -37,9 +37,9 @@ def generate_launch_description():
     """
     # --------------------------------- Params -------------------------------
     joy_translator_param_file = get_share_file(
-        package_name='test_trajectory_following', file_name='logitech_f310.param.yaml')
+        package_name='test_trajectory_following', file_name='param/logitech_f310.param.yaml')
     lgsvl_interface_param_file = get_share_file(
-        package_name='test_trajectory_following', file_name='lgsvl_interface.param.yaml')
+        package_name='test_trajectory_following', file_name='param/lgsvl_interface.param.yaml')
     pc_filter_transform_param_file = get_share_file(
         package_name='point_cloud_filter_transform_nodes',
         file_name='param/vlp16_sim_lexus_filter_transform.param.yaml')
@@ -48,9 +48,9 @@ def generate_launch_description():
     euclidean_cluster_param_file = get_share_file(
         package_name='autoware_auto_avp_demo', file_name='param/euclidean_cluster.param.yaml')
     mpc_controller_param_file = get_share_file(
-        package_name='test_trajectory_following', file_name='mpc_controller.param.yaml')
+        package_name='test_trajectory_following', file_name='param/mpc_controller.param.yaml')
     rviz_cfg_path = get_share_file(
-        package_name='test_trajectory_following', file_name='mpc_cotrols.rviz')
+        package_name='test_trajectory_following', file_name='config/mpc_cotrols.rviz')
     urdf_path = get_share_file(
         package_name='lexus_rx_450h_description', file_name='urdf/lexus_rx_450h.urdf')
 
@@ -101,7 +101,7 @@ def generate_launch_description():
 
     joystick_launch_file_path = get_share_file(
         package_name='joystick_vehicle_interface',
-        file_name='joystick_vehicle_interface.launch.py')
+        file_name='launch/joystick_vehicle_interface.launch.py')
     joystick = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(joystick_launch_file_path),
         launch_arguments=[
@@ -116,7 +116,7 @@ def generate_launch_description():
     )
     recordreplay_planner_path = get_share_file(
         package_name='recordreplay_planner_node',
-        file_name='recordreplay_planner_node.launch.py')
+        file_name='launch/recordreplay_planner_node.launch.py')
     recordreplay_planner_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(recordreplay_planner_path)
     )

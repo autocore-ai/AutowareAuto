@@ -28,4 +28,4 @@ if(BUILD_TESTING)
     "rclcpp" "autoware_auto_msgs" "sensor_msgs")
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE param/ launch/)
+ament_auto_package(INSTALL_TO_SHARE param launch)

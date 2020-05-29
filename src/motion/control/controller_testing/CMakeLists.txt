@@ -20,6 +20,7 @@ install(PROGRAMS ${PROJECT_NAME}/${PY_EXECUTEABLE} DESTINATION lib/${PROJECT_NAM
 
 ament_auto_package(
   INSTALL_TO_SHARE
-  launch/
-  param/
+  config
+  launch
+  param
 )

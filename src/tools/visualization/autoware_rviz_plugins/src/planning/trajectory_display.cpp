@@ -31,7 +31,31 @@ namespace rviz_plugins
 TrajectoryDisplay::TrajectoryDisplay()
 : rviz_common::RosTopicDisplay<autoware_auto_msgs::msg::Trajectory>(),
   m_marker_common(std::make_unique<MarkerCommon>(this))
-{}
+{
+  color_property_ = new rviz_common::properties::ColorProperty(
+    "Color", QColor(0, 255, 0), "Color to draw the arrow.",
+    this, SLOT(updateProperty()));
+
+  alpha_property_ = new rviz_common::properties::FloatProperty(
+    "Alpha", 1.0, "Amount of transparency to apply to the arrow.",
+    this, SLOT(updateProperty()));
+  alpha_property_->setMin(0);
+  alpha_property_->setMax(1);
+
+  scale_property_ = new rviz_common::properties::FloatProperty(
+    "Scale", 1, "Scale of the arrow.",
+    this, SLOT(updateProperty()));
+
+  text_scale_property_ = new rviz_common::properties::FloatProperty(
+    "Text Scale", 1, "Scale of the text showing velocity.",
+    this, SLOT(updateProperty()));
+
+  text_alpha_property_ = new rviz_common::properties::FloatProperty(
+    "Text Alpha", 1.0, "Amount of transparency to apply to the velocity text.",
+    this, SLOT(updateProperty()));
+  text_alpha_property_->setMin(0);
+  text_alpha_property_->setMax(1);
+}
 
 void TrajectoryDisplay::onInitialize()
 {
@@ -59,8 +83,16 @@ void TrajectoryDisplay::reset()
   m_marker_common->clearMarkers();
 }
 
+void TrajectoryDisplay::updateProperty()
+{
+  if (msg_cache != nullptr) {
+    processMessage(msg_cache);
+  }
+}
+
 void TrajectoryDisplay::processMessage(const Trajectory::ConstSharedPtr msg)
 {
+  msg_cache = msg;
   m_marker_common->clearMarkers();
   auto count = 0;
   const auto update = [&count, this, header = msg->header](auto marker) -> void {
@@ -84,6 +116,10 @@ void TrajectoryDisplay::processMessage(const Trajectory::ConstSharedPtr msg)
 visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_pose_marker(
   const TrajectoryPoint & point) const
 {
+  auto color = color_property_->getColor();
+  auto alpha = alpha_property_->getFloat();
+  auto scale = scale_property_->getFloat();
+
   auto marker = std::make_shared<Marker>();
   marker->type = visualization_msgs::msg::Marker::ARROW;
   marker->action = visualization_msgs::msg::Marker::ADD;
@@ -95,13 +131,13 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_pose_marker
   marker->pose.orientation.y = 0.0;
   marker->pose.orientation.z = point.heading.imag;
   marker->pose.orientation.w = point.heading.real;
-  marker->scale.x = 1;
-  marker->scale.y = 0.1;
-  marker->scale.z = 0.1;
-  marker->color.a = 1.0;  // Don't forget to set the alpha!
-  marker->color.r = 0.0;
-  marker->color.g = 1.0;
-  marker->color.b = 0.0;
+  marker->scale.x = 1 * scale;
+  marker->scale.y = 0.1 * scale;
+  marker->scale.z = 0.1 * scale;
+  marker->color.a = alpha;
+  marker->color.r = color.redF();
+  marker->color.g = color.greenF();
+  marker->color.b = color.blueF();
 
   return marker;
 }
@@ -109,6 +145,10 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_pose_marker
 visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_velocity_marker(
   const TrajectoryPoint & point) const
 {
+  auto color = color_property_->getColor();
+  auto text_alpha = text_alpha_property_->getFloat();
+  auto text_scale = text_scale_property_->getFloat();
+
   auto marker = std::make_shared<Marker>();
   marker->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   marker->action = visualization_msgs::msg::Marker::ADD;
@@ -116,11 +156,11 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_velocity_ma
   marker->pose.position.x = static_cast<float64_t>(point.x);
   marker->pose.position.y = static_cast<float64_t>(point.y);
   marker->pose.position.z = 0.1;
-  marker->scale.z = 0.2;
-  marker->color.a = 0.85F;  // Don't forget to set the alpha!
-  marker->color.r = 0.0F;
-  marker->color.g = 1.0F;
-  marker->color.b = 0.0F;
+  marker->scale.z = 0.2 * text_scale;
+  marker->color.a = text_alpha;
+  marker->color.r = color.redF();
+  marker->color.g = color.greenF();
+  marker->color.b = color.blueF();
   marker->text = std::to_string(point.longitudinal_velocity_mps) + "mps";
 
   return marker;

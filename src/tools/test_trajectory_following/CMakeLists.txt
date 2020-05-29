@@ -14,7 +14,8 @@ endif()
 install(PROGRAMS
   scripts/simple_trajectory.py
   scripts/joy_ctrl_record_replay_traj.py
+  scripts/vehicle_kinematics_sim.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_auto_package(INSTALL_TO_SHARE config/ launch/ param/)
+ament_auto_package(INSTALL_TO_SHARE config launch param)

@@ -56,7 +56,7 @@ def generate_launch_description():
     lgsvl_interface_param = DeclareLaunchArgument(
         'lgsvl_interface_param',
         default_value=[
-            get_share_file('lgsvl_interface', 'lgsvl.param.yaml')
+            get_share_file('lgsvl_interface', 'param/lgsvl.param.yaml')
         ],
         description='Path to config file for lgsvl interface')
 

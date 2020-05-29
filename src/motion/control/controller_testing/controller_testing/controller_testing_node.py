@@ -15,20 +15,25 @@
 # limitations under the License.
 
 from rclpy.node import Node
-from builtin_interfaces.msg import Duration
-from builtin_interfaces.msg import Time
+from rclpy.duration import Duration
+from rclpy.time import Time
 
 from autoware_auto_msgs.msg import Complex32
+from autoware_auto_msgs.msg import ControlDiagnostic
 from autoware_auto_msgs.msg import Trajectory
 from autoware_auto_msgs.msg import TrajectoryPoint
 from autoware_auto_msgs.msg import VehicleKinematicState
 from autoware_auto_msgs.msg import VehicleControlCommand
 
+from geometry_msgs.msg import TransformStamped
+from tf2_msgs.msg import TFMessage
+from nav_msgs.msg import Odometry
+
 import math
-import time
 import sys
 
 import matplotlib.pyplot as pp
+import matplotlib.cm as cm
 import numpy as np
 
 import motion_model_testing_simulator.minisim as minisim
@@ -68,39 +73,71 @@ class ControllerTestingNode(Node):
 
     def __init__(self):
         super().__init__("controller_testing_node")
-        self.declare_parameter("state_frame")
-        self.declare_parameter("trajectory_frame")
-        self.declare_parameter("sim_time_step_s")
-        self.declare_parameter("vehicle.cog_to_front_axle")
-        self.declare_parameter("vehicle.cog_to_rear_axle")
+
+        # Simulation and geometry parameters
+        self.param_state_frame = self.declare_parameter("state_frame").value
+        self.param_odom_child_frame = self.declare_parameter("odom_child_frame").value
+        self.param_sim_time_step = self.declare_parameter("sim_time_step_s").value
+        self.param_stop_n_report_time_s = self.declare_parameter("stop_and_report_time_s").value
+        self.param_real_time_sim = self.declare_parameter("real_time_sim", False).value
+        self.param_cog_to_front_axle = self.declare_parameter(
+            "vehicle.cog_to_front_axle"
+        ).value
+        self.param_cog_to_rear_axle = self.declare_parameter(
+            "vehicle.cog_to_rear_axle"
+        ).value
+        self.param_trajectory_generate = self.declare_parameter("trajectory.generate").value
+        self.param_trajectory_frame = self.declare_parameter("trajectory.frame").value
+        self.param_trajectory_length = self.declare_parameter("trajectory.length").value
+        self.param_trajectory_discretization_m = self.declare_parameter(
+            "trajectory.discretization_m"
+        ).value
+        self.param_trajectory_speed_start = self.declare_parameter("trajectory.speed_start").value
+        self.param_trajectory_speed_max = self.declare_parameter("trajectory.speed_max").value
+        self.param_trajectory_speed_increments = self.declare_parameter(
+            "trajectory.speed_increments"
+        ).value
+        self.param_trajectory_stopping_decel = self.declare_parameter(
+            "trajectory.stopping_decel"
+        ).value
+        self.param_heading_rate = self.declare_parameter("trajectory.heading_rate").value
+        self.param_heading_rate_max = self.declare_parameter("trajectory.heading_rate_max").value
+        self.param_heading_rate_increments = self.declare_parameter(
+            "trajectory.heading_rate_increments"
+        ).value
 
         # Publisher
         self._publisher_state = self.create_publisher(
             VehicleKinematicState, "vehicle_state", 0
         )
-        self._publisher_trajectory = self.create_publisher(
-            Trajectory, "planned_trajectory", 0
+        self._publisher_odometry = self.create_publisher(
+            Odometry, 'odom', 10
         )
+        self._publisher_tf = self.create_publisher(
+            TFMessage, '/tf', 10
+        )
+        if self.param_trajectory_generate:
+            self._publisher_trajectory = self.create_publisher(
+                Trajectory, "planned_trajectory", 10
+            )
 
         # Subscriber
         self._subscriber_controls = self.create_subscription(
             VehicleControlCommand, "control_command", self.control_callback, 0
         )
 
-        # Timer to send initial trigger as soon as spinning
-        self._timer_initial_trigger = self.create_timer(0.1, self._start_test)
+        if not self.param_trajectory_generate:
+            self._subscriber_trajectory = self.create_subscription(
+                Trajectory, "planned_trajectory", self.trajectory_callback, 0
+            )
 
-        # Simulation and geometry parameters
-        self.param_state_frame = self.get_parameter("state_frame")._value
-        self.param_trajectory_frame = self.get_parameter("trajectory_frame")._value
-        self.param_sim_time_step = self.get_parameter("sim_time_step_s")._value
-        self.param_cog_to_front_axle = self.get_parameter(
-            "vehicle.cog_to_front_axle"
-        )._value
-        self.param_cog_to_rear_axle = self.get_parameter(
-            "vehicle.cog_to_rear_axle"
-        )._value
-        self._current_state = None
+        self._subscriber_control_diag_ = self.create_subscription(
+            ControlDiagnostic, "control_diagnostic", self.control_diag_callback, 0
+        )
+        # Initializing
+        self._current_command = None
+        self._traj_cache = None
+        self._diag_msgs = []
 
         # Init simulator
         # TODO(s.merkli) pick width also from ros parameters, sync with controller
@@ -118,6 +155,128 @@ class ControllerTestingNode(Node):
             self.param_sim_time_step,
             listeners={"recorder": self._memory_recorder},
         )
+
+        self._current_state = bicycleModel.BicycleState(
+            x=self.param_cog_to_rear_axle,
+            y=0.0,
+            v=0.0,
+            phi=0.0,
+            delta=0.0
+        )
+        self._prev_state = None
+
+        # timer for sim_tick
+        self.timer = self.create_timer(self._simulator.step_time, self.sim_tick)
+        self.init_time = self.get_clock().now()
+
+    def sim_tick(self):
+        """Entrypoint to execute sim step on regular interval."""
+        # get current time, to be use for publishing
+        now = Time(seconds=self._simulator.simulation_time)  # Use simulated time
+        if self.param_real_time_sim:
+            now = self.get_clock().now()  # Use ROS time
+
+        # Trigger first output, to start controller
+        if self._current_command is None:
+            # initial publish
+            self.publish_state(now)
+            if self.param_trajectory_generate:
+                self.publish_trajectory(now)
+
+        elif self.param_real_time_sim:      # Realtime im update step
+            self.upadtes_vehicle_state()
+            self.publish_state(now)
+
+        # incase controller is stuck, check for timeout and plot report
+        if self.param_stop_n_report_time_s != 0 and not self.param_real_time_sim:
+            # assuming non-realtime is at least 10 times faster, and adding 1 sec buffer
+            assumed_timeout = (self.param_stop_n_report_time_s / 10.0) + 1.0
+            if (self.get_clock().now() - self.init_time) > Duration(seconds=assumed_timeout):
+                self.final_report()
+
+    def control_callback(self, current_command_msg):
+        """Store contol command and if faster than realtime, trigger simulator update."""
+        self._current_command = self.convert_to_bicycle_command(current_command_msg)
+        if not self.param_real_time_sim:
+            self.upadtes_vehicle_state()
+            # TODO(s.merkli) develop this further:
+            # Check if we have to send another trajectory or just the current state?
+            # Ignore the next callback if trajectory triggered?
+            # Or keep it but somehow flagged?
+
+            # Send mpc trigger again
+            self.publish_state(Time(seconds=self._simulator.simulation_time))
+
+    def trajectory_callback(self, current_trajectory_msg):
+        self._traj_cache = current_trajectory_msg
+
+    def control_diag_callback(self, diag_msg):
+        self._diag_msgs.append(diag_msg)
+
+    def upadtes_vehicle_state(self):
+        """Update simulator state and publish."""
+        # Check if we want to continue with the simulation
+        if self.param_stop_n_report_time_s != 0:
+            if self._simulator.simulation_time >= self.param_stop_n_report_time_s:
+                self.final_report()
+
+        # Trigger one simulation step and update current state. In externally
+        # controlled simulations, we need to update the simulation time
+        # ourselves as well.
+
+        self._prev_state = self._current_state
+        self._current_state = self._simulator.simulate_one_timestep(
+            self._current_state, self._current_command, self._simulator.simulation_time
+        )
+        self._simulator.simulation_time += self._simulator.step_time
+
+    def publish_state(self, now: Time):
+        kinematic_state = self.convert_bicycle_to_vehicle_kinematic_state(
+            self._current_state, now, self._prev_state, self._simulator.step_time
+        )
+        odom = self.convert_bicycle_to_odometry(
+            self._current_state, now
+        )
+        tf = self.convert_bicycle_to_transform(
+            self._current_state, now
+        )
+
+        self._publisher_state.publish(kinematic_state)
+        self._publisher_odometry.publish(odom)
+        self._publisher_tf.publish(tf)
+
+    def publish_trajectory(self, now: Time):
+        kinematic_state = self.convert_bicycle_to_vehicle_kinematic_state(
+            self._current_state, now, self._prev_state, self._simulator.step_time
+        )
+        # Initial trajectory, starting at the current state
+        # TODO(s.merkli): Potentially use a fancier spoofer later
+        init_trajectory_msg = self.create_curved_trajectory(
+            kinematic_state,
+            self.param_trajectory_length,
+            self.param_trajectory_discretization_m,
+            self.param_trajectory_speed_start,
+            self.param_trajectory_speed_max,
+            self.param_trajectory_speed_increments,
+            self.param_trajectory_stopping_decel,
+            self.param_heading_rate,
+            self.param_heading_rate_max,
+            self.param_heading_rate_increments,
+        )
+
+        # Use simulated time
+        init_trajectory_msg.header.stamp = now.to_msg()
+        # Use ROS time
+        # init_trajectory_msg.header.stamp = self.get_clock().now().to_msg()
+        init_trajectory_msg.header.frame_id = self.param_trajectory_frame
+
+        # Send first data to mpc
+        # Both publishes trigger a control calculation but for the first,
+        # there is missing information, so nothing happens
+        self._publisher_trajectory.publish(init_trajectory_msg)
+        # Make sure trajectory is sent first - TODO(s.merkli) can this be done
+        # more systematically?
+        self._traj_cache = init_trajectory_msg
 
     def final_report(self):
         # TODO(s.merkli) expand on this - maybe also write the data to a file and analyze
@@ -139,9 +298,9 @@ class ControllerTestingNode(Node):
 
         # Show an x-y plot of the CoG as well as a plot of velocity vs time
         pp.figure(0)
+        colors = cm.rainbow(np.linspace(0, 1, len(self._memory_recorder.history)))
         pp.title("x-y history")
-        pp.plot(x_history, y_history, "o")
-        pp.plot(x_history, y_history, "o")
+        pp.scatter(x_history, y_history, color=colors)
         pp.axis("equal")
 
         fig, ax = pp.subplots(2, 2, squeeze=True)
@@ -159,11 +318,84 @@ class ControllerTestingNode(Node):
         ax[1][0].set_title("time - velocity state")
         ax[1][0].set(xlabel="simulation time [s]", ylabel="v state [m/s]")
         ax[1][0].scatter(
-            time_history, velocity_history, marker="x", s=3.0, color="blue"
+            time_history, velocity_history, marker="x", s=3.0, color="blue", label='state'
         )
         ax[1][1].set_title("time - steering state")
         ax[1][1].set(xlabel="simulation time [s]", ylabel="wheel angle state [rad]")
         ax[1][1].scatter(time_history, steer_histroy, marker="x", s=3.0, color="blue")
+
+        # Add Trajectgory velocity to "time - velocity state" chart for comparison
+        if self._traj_cache is not None:
+            def get_from_traj_history(accessor):
+                return list(map(lambda x: accessor(x), self._traj_cache.points))
+            traj_time_history = get_from_traj_history(
+                lambda instant: Duration.from_msg(instant.time_from_start).nanoseconds / 1e9
+            )
+            traj_velocity_history = get_from_traj_history(
+                lambda instant: instant.longitudinal_velocity_mps
+            )
+            ax[1][0].scatter(
+                traj_time_history, traj_velocity_history, marker="o", s=3.0, c='r', label='traj'
+            )
+            ax[1][0].legend()
+            ax[1][0].set_title("time - velocity")
+            ax[1][0].set(xlabel="simulation time [s]", ylabel="v [m/s]")
+
+        # Controller Diagnostics
+        if len(self._diag_msgs) > 0:
+            diag_init_time = Time.from_msg(self._diag_msgs[0].header.data_stamp).nanoseconds / 1e9
+
+            def get_from_diag(accessor):
+                return list(map(lambda x: accessor(x), self._diag_msgs))
+
+            diag_time_history = get_from_diag(
+                lambda instant:
+                    (Time.from_msg(instant.header.data_stamp).nanoseconds / 1e9) - diag_init_time
+            )
+            lateral_error_m = get_from_diag(lambda instant: instant.lateral_error_m)
+            longitudinal_error_m = get_from_diag(lambda instant: instant.longitudinal_error_m)
+            velocity_error_mps = get_from_diag(lambda instant: instant.velocity_error_mps)
+            acceleration_error_mps2 = get_from_diag(
+                lambda instant: instant.acceleration_error_mps2
+            )
+            yaw_error_rad = get_from_diag(lambda instant: instant.yaw_error_rad)
+            yaw_rate_error_rps = get_from_diag(lambda instant: instant.yaw_rate_error_rps)
+
+            fig2, ax2 = pp.subplots(3, 2, squeeze=True)
+            fig2.subplots_adjust(hspace=0.55)
+            fig2.subplots_adjust(wspace=0.4)
+            fig2.set_size_inches(10, 7)
+            ax2[0][0].set_title("time - acceleration error")
+            ax2[0][0].set(xlabel="simulation time [s]", ylabel="a cmd [m/s^2]")
+            ax2[0][0].scatter(
+                diag_time_history, acceleration_error_mps2, marker="x", s=3.0, color="blue"
+            )
+            ax2[0][1].set_title("time - yaw rate error")
+            ax2[0][1].set(xlabel="simulation time [s]", ylabel="yaw_rate_error [rad/s]")
+            ax2[0][1].scatter(
+                diag_time_history, yaw_rate_error_rps, marker="x", s=3.0, color="blue"
+            )
+            ax2[1][0].set_title("time - velocity error")
+            ax2[1][0].set(xlabel="simulation time [s]", ylabel="v error [m/s]")
+            ax2[1][0].scatter(
+                diag_time_history, velocity_error_mps, marker="x", s=3.0,
+                color="blue", label='state'
+            )
+            ax2[1][1].set_title("time - yaw error")
+            ax2[1][1].set(xlabel="simulation time [s]", ylabel="yaw_error [rad]")
+            ax2[1][1].scatter(diag_time_history, yaw_error_rad, marker="x", s=3.0, color="blue")
+
+            ax2[2][0].set_title("time - lateral_error")
+            ax2[2][0].set(xlabel="simulation time [s]", ylabel="lateral error[m]")
+            ax2[2][0].scatter(
+                diag_time_history, lateral_error_m, marker="x", s=3.0,
+                color="blue", label='state'
+            )
+            ax2[2][1].set_title("time - longitudinal error")
+            ax2[2][1].set(xlabel="simulation time [s]", ylabel="longitudinal error [m]")
+            ax2[2][1].scatter(
+                diag_time_history, longitudinal_error_m, marker="x", s=3.0, color="blue"
+            )
 
         # Show all figures in a blocking manner, once they're closed, exit.
         pp.show()
@@ -173,40 +405,9 @@ class ControllerTestingNode(Node):
         # works, because this node is the only one running in spinner?
         self.destroy_node()
 
-    def control_callback(self, current_command_msg):
-        """Trigger simulator on reception of a new command from the controller."""
-        # Check if we want to continue with the simulation
-        if (
-            self._simulator.simulation_time >= 10
-        ):  # TODO(s.merkli) make stop time a parameter
-            self.final_report()
-
-        current_state = self.convert_vehicle_kinematic_to_bicycle_state(
-            self._current_state
-        )
-        current_command = self.convert_to_bicycle_command(current_command_msg)
-
-        # Trigger one simulation step and update current state. In externally
-        # controlled simulations, we need to update the simulation time
-        # ourselves as well.
-        forward_simulated_state = self._simulator.simulate_one_timestep(
-            current_state, current_command, self._simulator.simulation_time
-        )
-        self._simulator.simulation_time += self._simulator.step_time
-        self._current_state = self.convert_bicycle_to_vehicle_kinematic_state(
-            forward_simulated_state
-        )
-
-        # TODO(s.merkli) develop this further:
-        # Check if we have to send another trajectory or just the current state?
-        # Ignore the next callback if trajectory triggered?
-        # Or keep it but somehow flagged?
-
-        # Send mpc trigger again
-        self._publisher_state.publish(self._current_state)
-
     def convert_bicycle_to_vehicle_kinematic_state(
-        self, state: bicycleModel.BicycleState
+        self, state: bicycleModel.BicycleState, now: Time,
+        prev_state: bicycleModel.BicycleState, dt_sec: float
     ) -> VehicleKinematicState:
         state_msg = VehicleKinematicState()
         # Transform odom_H_cog to odom_H_base_link
@@ -222,34 +423,61 @@ class ControllerTestingNode(Node):
         state_msg.state.front_wheel_angle_rad = state.delta
         state_msg.state.rear_wheel_angle_rad = 0.0  # not modeled in this
 
-        # Use simulated time
-        state_msg.header.stamp = self.seconds_to_ros_time(
-            self._simulator.simulation_time
-        )
-        # Use ROS time
-        # state_msg.header.stamp = self.get_clock().now().to_msg()
+        state_msg.header.stamp = now.to_msg()
         state_msg.header.frame_id = self.param_state_frame
+
+        if prev_state is not None:
+            state_msg.state.heading_rate_rps = (state.delta - prev_state.delta) / dt_sec
+            state_msg.state.acceleration_mps2 = (state.v - prev_state.v) / dt_sec
+
         return state_msg
 
-    def convert_vehicle_kinematic_to_bicycle_state(
-        self, state_msg: VehicleKinematicState
-    ) -> bicycleModel.BicycleState:
-        phi = to_angle(state_msg.state.heading)
-        # Transform odom_H_base_link to odom_H_cog
-        # TODO(s.merkli): Double check
-        x_cog = float(state_msg.state.x + np.cos(phi) * self.param_cog_to_rear_axle)
-        y_cog = float(state_msg.state.y + np.sin(phi) * self.param_cog_to_rear_axle)
-        return bicycleModel.BicycleState(
-            x=x_cog,
-            y=y_cog,
-            v=state_msg.state.longitudinal_velocity_mps,
-            phi=phi,
-            # TODO(s.merkli) this is currently wrong with no easy fix: The vehicle state
-            # message provides the desired value of the angle, but reasonably
-            # realistic dynamics should take as input the rate of change of the
-            # angle instead.
-            delta=state_msg.state.front_wheel_angle_rad,
-        )
+    def convert_bicycle_to_odometry(
+        self, state: bicycleModel.BicycleState, now: Time
+    ) -> Odometry:
+        odom_msg = Odometry()
+        odom_msg.header.frame_id = self.param_state_frame
+        odom_msg.child_frame_id = self.param_odom_child_frame
+        odom_msg.header.stamp = now.to_msg()
+
+        odom_msg.pose.pose.position.x = state.x - np.cos(state.phi) * self.param_cog_to_rear_axle
+        odom_msg.pose.pose.position.y = state.y - np.sin(state.phi) * self.param_cog_to_rear_axle
+        odom_msg.pose.pose.position.z = 0.0
+
+        odom_msg.pose.pose.orientation.x = 0.0
+        odom_msg.pose.pose.orientation.y = 0.0
+        odom_msg.pose.pose.orientation.z = math.sin(state.phi / 2.0)
+        odom_msg.pose.pose.orientation.w = math.cos(state.phi / 2.0)
+
+        odom_msg.twist.twist.linear .x = state.v
+        odom_msg.twist.twist.linear .y = 0.0
+        odom_msg.twist.twist.linear .z = 0.0
+
+        odom_msg.twist.twist.angular.x = 0.0
+        odom_msg.twist.twist.angular.y = 0.0
+        odom_msg.twist.twist.angular.z = state.delta
+
+        return odom_msg
+
+    def convert_bicycle_to_transform(
+        self, state: bicycleModel.BicycleState, now: Time
+    ) -> TFMessage:
+        transform = TransformStamped()
+        transform.header.frame_id = self.param_state_frame
+        transform.header.stamp = now.to_msg()
+        transform.child_frame_id = self.param_odom_child_frame
+
+        transform.transform.translation.x = \
+            state.x - np.cos(state.phi) * self.param_cog_to_rear_axle
+        transform.transform.translation.y = \
+            state.y - np.sin(state.phi) * self.param_cog_to_rear_axle
+        transform.transform.translation.z = 0.0
+        transform.transform.rotation.x = 0.0
+        transform.transform.rotation.y = 0.0
+        transform.transform.rotation.z = math.sin(state.phi / 2.0)
+        transform.transform.rotation.w = math.cos(state.phi / 2.0)
+
+        return TFMessage(transforms=[transform])
 
     def convert_to_bicycle_command(
         self, command_msg: VehicleControlCommand
@@ -260,57 +488,10 @@ class ControllerTestingNode(Node):
             command_msg.long_accel_mps2, command_msg.front_wheel_angle_rad
         )
 
-    def _start_test(self):
-        # Only call this once - so destroy the calling timer
-        self.destroy_timer(self._timer_initial_trigger)
-        self._timer_initial_trigger = None
-
-        # Initial system state
-        init_state_msg = VehicleKinematicState()
-        # Use simulated time
-        init_state_msg.header.stamp = self.seconds_to_ros_time(
-            self._simulator.simulation_time
-        )
-        # Use ROS time
-        # init_state_msg.header.stamp = self.get_clock().now().to_msg()
-        init_state_msg.header.frame_id = self.param_state_frame
-        self._current_state = init_state_msg
-
-        # Initial trajectory, starting at the current state
-        # TODO(s.merkli): Potentially use a fancier spoofer later
-        init_trajectory_msg = self.create_straight_line_trajectory(
-            self._current_state, 10, 1.0, 0.1
-        )
-
-        # Use simulated time
-        init_trajectory_msg.header.stamp = self.seconds_to_ros_time(
-            self._simulator.simulation_time
-        )
-        # Use ROS time
-        # init_trajectory_msg.header.stamp = self.get_clock().now().to_msg()
-        init_trajectory_msg.header.frame_id = self.param_trajectory_frame
-
-        # Send first data to mpc
-        # Both publishes trigger a control calculation but for the first,
-        # there is missing information, so nothing happens
-        self._publisher_trajectory.publish(init_trajectory_msg)
-        # Make sure trajectory is sent first - TODO(s.merkli) can this be done
-        # more systematically?
-        time.sleep(0.1)
-        self._publisher_state.publish(self._current_state)
-
-    def seconds_to_ros_duration(self, seconds_in):
-        secs = int(seconds_in)
-        nsecs = int((seconds_in - secs) * math.pow(10, 9))
-        return Duration(sec=secs, nanosec=nsecs)
-
-    def seconds_to_ros_time(self, seconds_in):
-        secs = int(seconds_in)
-        nsecs = int((seconds_in - secs) * math.pow(10, 9))
-        return Time(sec=secs, nanosec=nsecs)
-
-    def create_straight_line_trajectory(
-        self, init_state, length, speed, discretization_m
+    def create_curved_trajectory(
+        self, init_state, length, discretization_m,
+        speed_start, speed_max, speed_increments, stopping_decel,
+        heading_rate, heading_rate_max, heading_rate_increments
     ):
         num_points = int(length / discretization_m)
         num_points_max = 100  # max. length in Trajectory.msg
@@ -321,28 +502,68 @@ class ControllerTestingNode(Node):
                 % float(length / num_points_max)
             )
         discretization_distance_m = float(length / num_points)
-        discretization_time_s = float(discretization_distance_m / speed)
-
         trajectory_msg = Trajectory()
 
         # start at base_link
         init_point = init_state.state
         trajectory_msg.points.append(init_point)
 
+        stopping = False
+        speed = speed_start
+        seconds = float(discretization_distance_m / speed)
+
+        cur_x = init_point.x
+        cur_y = init_point.y
         heading_angle = to_angle(init_point.heading)
-        self.get_logger().warn(f"heading angle is {heading_angle}")
+        prev_heading_angle = heading_angle
+        prev_speed = speed
 
         for i in range(1, num_points - 1):
-            trajectory_point = TrajectoryPoint()
-            trajectory_point.time_from_start = self.seconds_to_ros_duration(
-                discretization_time_s * i
-            )
+            # update speed profile
+            if not stopping:
+                speed += speed_increments
+                stopping_time = speed / stopping_decel
+                stopping_distance = \
+                    speed * stopping_time \
+                    - 0.5 * stopping_decel * stopping_time * stopping_time
+                if ((num_points - i) * discretization_distance_m) <= stopping_distance:
+                    stopping = True
 
-            trajectory_point.x = discretization_m * i * np.cos(heading_angle)
-            trajectory_point.y = discretization_m * i * np.sin(heading_angle)
-            trajectory_point.heading = init_point.heading
+            speed = min(speed, speed_max)
+
+            if i == (num_points - 2):
+                speed = 0.0
+
+            if speed > 0:
+                seconds_delta = float(discretization_distance_m / speed)
+                seconds += seconds_delta
+                if stopping:
+                    speed -= stopping_decel * seconds_delta
+                    speed = max(0.0, speed)
+
+            # update heading
+            heading_angle += heading_rate
+            heading_rate += heading_rate_increments
+            heading_rate = max(-heading_rate_max, min(heading_rate_max, heading_rate))
+
+            # fillup trajectory point
+            trajectory_point = TrajectoryPoint()
+            trajectory_point.time_from_start = Duration(
+                seconds=seconds
+            ).to_msg()
+
+            cur_x += discretization_m * np.cos(heading_angle)
+            cur_y += discretization_m * np.sin(heading_angle)
+
+            trajectory_point.x = cur_x
+            trajectory_point.y = cur_y
+            trajectory_point.heading = from_angle(heading_angle)
             trajectory_point.longitudinal_velocity_mps = float(speed)
+            trajectory_point.acceleration_mps2 = (speed - prev_speed) / seconds
+            trajectory_point.heading_rate_rps = (heading_angle - prev_heading_angle) / seconds
 
             trajectory_msg.points.append(trajectory_point)
+            prev_heading_angle = heading_angle
+            prev_speed = speed
 
         return trajectory_msg

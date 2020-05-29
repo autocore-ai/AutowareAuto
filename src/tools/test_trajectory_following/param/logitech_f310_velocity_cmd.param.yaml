@@ -1,10 +1,10 @@
 /**:
   ros__parameters:
     joy_topic: "joy"
-    raw_command_topic: "/vehicle/raw_command"
+    raw_command_topic: ""
     high_level_command_topic: "null"  # Same as "", but ROS2 param doesn't support in yaml
-    basic_command_topic: "null"
-    state_command_topic: "/vehicle/state_command"
+    basic_command_topic: "vehicle_command"
+    state_command_topic: "state_command"
     recordreplay_command_enabled: true
     # Which index in the joy message corresponds to which axis
     axes:
@@ -20,17 +20,17 @@
     axis_scale:
       brake: -50.0
       throttle: -50.0
-      front_steer: 100.0
+      front_steer: 0.33
       rear_steer: 100.0
       # curvature:
-      # acceleration:
+      acceleration: 3.0
     axis_offset:
       brake: 50.0
       throttle: 50.0
       front_steer: 0.0
       rear_steer: 0.0
       # curvature:
-      # acceleration:
+      acceleration: 0.0
     # Buttons are not yet implemented
     # Index for which button is which
     buttons:

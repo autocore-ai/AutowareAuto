@@ -28,7 +28,7 @@ def generate_launch_description():
         node_namespace='planning',
         output='screen',
         parameters=[
-            "{}/defaults.param.yaml".format(
+            "{}/param/defaults.param.yaml".format(
                 ament_index_python.get_package_share_directory(
                     "recordreplay_planner_node"
                 )

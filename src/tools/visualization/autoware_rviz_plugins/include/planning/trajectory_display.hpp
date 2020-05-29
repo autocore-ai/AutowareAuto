@@ -17,6 +17,8 @@
 #define PLANNING__TRAJECTORY_DISPLAY_HPP_
 
 #include <rviz_common/display.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
 #include <rviz_default_plugins/displays/marker/marker_common.hpp>
 #include <rviz_default_plugins/displays/marker_array/marker_array_display.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
@@ -34,12 +36,17 @@ namespace rviz_plugins
 class AUTOWARE_RVIZ_PLUGINS_PUBLIC TrajectoryDisplay
   : public rviz_common::RosTopicDisplay<autoware_auto_msgs::msg::Trajectory>
 {
+  Q_OBJECT
+
 public:
   TrajectoryDisplay();
   void onInitialize() override;
   void load(const rviz_common::Config & config) override;
   void update(float32_t wall_dt, float32_t ros_dt) override;
   void reset() override;
+
+private Q_SLOTS:
+  void updateProperty();
 
 private:
   using MarkerCommon = rviz_default_plugins::displays::MarkerCommon;
@@ -54,6 +61,12 @@ private:
   Marker::SharedPtr create_velocity_marker(const TrajectoryPoint & point) const;
 
   std::unique_ptr<MarkerCommon> m_marker_common;
+  Trajectory::ConstSharedPtr msg_cache{};
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::FloatProperty * scale_property_;
+  rviz_common::properties::FloatProperty * text_alpha_property_;
+  rviz_common::properties::FloatProperty * text_scale_property_;
 };
 }  // namespace rviz_plugins
 }  // namespace autoware

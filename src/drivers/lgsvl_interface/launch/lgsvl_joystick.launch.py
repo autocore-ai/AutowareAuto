@@ -26,7 +26,7 @@ def generate_launch_description():
     joy_translator_param = DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
-            get_share_file('joystick_vehicle_interface', 'logitech_f310.default.param.yaml')
+            get_share_file('joystick_vehicle_interface', 'param/logitech_f310.default.param.yaml')
         ],
         description='Path to config file for joystick translator')
 
@@ -34,7 +34,7 @@ def generate_launch_description():
     lgsvl_interface_param = DeclareLaunchArgument(
         'lgsvl_interface_param',
         default_value=[
-            get_share_file('lgsvl_interface', 'lgsvl.param.yaml')
+            get_share_file('lgsvl_interface', 'param/lgsvl.param.yaml')
         ],
         description='Path to config file for lgsvl interface')
 
@@ -42,7 +42,7 @@ def generate_launch_description():
 
     # Include Joystick launch
     joystick_launch_file_path = get_share_file('joystick_vehicle_interface',
-                                               'joystick_vehicle_interface.launch.py')
+                                               'launch/joystick_vehicle_interface.launch.py')
     joystick = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(joystick_launch_file_path),
         launch_arguments=[
@@ -55,7 +55,7 @@ def generate_launch_description():
 
     # Include LGSVL interface launch
     lgsvl_launch_file_path = get_share_file('lgsvl_interface',
-                                            'lgsvl.launch.py')
+                                            'launch/lgsvl.launch.py')
     lgsvl = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(lgsvl_launch_file_path),
         launch_arguments=[
