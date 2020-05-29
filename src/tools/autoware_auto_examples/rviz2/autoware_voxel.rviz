@@ -61,7 +61,7 @@ Visualization Manager:
       Max Intensity: 161.33334350585938
       Min Color: 255; 255; 255
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Downsampled Points
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true

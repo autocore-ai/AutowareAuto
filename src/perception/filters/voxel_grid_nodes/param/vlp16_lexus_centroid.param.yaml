@@ -3,7 +3,7 @@
 
 voxel_grid_cloud_node:
   ros__parameters:
-    input_topic: "lidar_front/points_transformed"
+    input_topic: "lidar_front/points_filtered"
     downsample_topic: "points_downsampled"
     is_approximate: false
     config:

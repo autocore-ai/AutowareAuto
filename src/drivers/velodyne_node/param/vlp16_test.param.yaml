@@ -8,6 +8,6 @@ lidar_front:
       port: 2368
       topic: "points_raw"
       cloud_size:  55000
-      frame_id: "base_link"
+      frame_id: "lidar_front"
       timeout_ms: 10
       rpm:        600

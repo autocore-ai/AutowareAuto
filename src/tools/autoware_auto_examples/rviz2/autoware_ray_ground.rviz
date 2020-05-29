@@ -62,14 +62,14 @@ Visualization Manager:
       Max Intensity: 218
       Min Color: 255; 255; 255
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Non-ground Points
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /nonground_points
+      Topic: /points_nonground
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
@@ -92,7 +92,7 @@ Visualization Manager:
       Max Intensity: 100
       Min Color: 0; 255; 0
       Min Intensity: 1
-      Name: PointCloud2
+      Name: Ground Points
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true

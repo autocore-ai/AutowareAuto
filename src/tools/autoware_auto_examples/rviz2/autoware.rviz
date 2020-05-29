@@ -61,14 +61,14 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Transformed Points
       Position Transformer: ""
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /lidar_front/points_raw
+      Topic: /lidar_front/points_filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

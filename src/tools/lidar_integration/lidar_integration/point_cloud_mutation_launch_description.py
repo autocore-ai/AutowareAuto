@@ -26,7 +26,7 @@ import launch_testing.event_handlers
 def get_point_cloud_mutation_launch_description(*,
                                                 test_nodes,
                                                 checkers,
-                                                topic="nonground_points",
+                                                topic="points_nonground",
                                                 other_actions=[],
                                                 spoofer=None):
 

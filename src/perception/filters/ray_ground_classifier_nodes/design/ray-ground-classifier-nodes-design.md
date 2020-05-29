@@ -56,8 +56,8 @@ Input:
 - raw_points (Message of PointBlock or PointCloud2 directly from driver nodes)
 
 Outputs:
-- ground_points (Message of PointBlock or PointCloud2)
-- nonground_points (Message of PointBlock or PointCloud2)
+- points_ground (Message of PointBlock or PointCloud2)
+- points_nonground (Message of PointBlock or PointCloud2)
 
 On top of this, the nodes can be configured either programmatically or via parameter file
 on construction.

@@ -109,7 +109,8 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
 {
   // Verify frame_id
   if (msg.header.frame_id != m_input_frame_id) {
-    throw std::runtime_error("Raw topic from unexpected frame");
+    throw std::runtime_error("Raw topic from unexpected frame. Expected: " +
+            m_input_frame_id + ", got: " + msg.header.frame_id);
   }
 
   sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
