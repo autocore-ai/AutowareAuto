@@ -51,7 +51,11 @@ def generate_launch_description():
     map_downsampler_node_runner = launch_ros.actions.Node(
         package='voxel_grid_nodes',
         node_executable='voxel_grid_cloud_node_exe',
-        parameters=[map_downsampler_param_file])
+        parameters=[map_downsampler_param_file],
+        remappings=[
+            ("points_in", "viz_ndt_map"),
+            ("points_downsampled", "viz_ndt_map_downsampled")
+        ])
 
     return launch.LaunchDescription([
         map_provider_node_runner,

@@ -181,7 +181,11 @@ def generate_launch_description():
         node_executable='voxel_grid_cloud_node_exe',
         node_namespace='lidar_front',
         node_name='voxel_grid_cloud_node',
-        parameters=[LaunchConfiguration('scan_downsampler_param_file')]
+        parameters=[LaunchConfiguration('scan_downsampler_param_file')],
+        remappings=[
+            ("points_in", "points_filtered"),
+            ("points_downsampled", "points_filtered_downsampled")
+        ]
     )
     ndt_localizer = Node(
         package='ndt_nodes',

@@ -42,11 +42,11 @@ VoxelCloudNode::VoxelCloudNode(
   const std::string & node_namespace)
 : LifecycleNode(
     node_name.c_str(), node_namespace.c_str()),
-  m_sub_ptr(create_subscription<Message>(declare_parameter("input_topic").get<std::string>(),
+  m_sub_ptr(create_subscription<Message>("points_in",
     parse_qos(declare_parameter("subscription.qos.durability"),
     declare_parameter("subscription.qos.history_depth")),
     std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>(declare_parameter("downsample_topic").get<std::string>(),
+  m_pub_ptr(create_publisher<Message>("points_downsampled",
     parse_qos(declare_parameter("publisher.qos.durability"),
     declare_parameter("publisher.qos.history_depth")))),
   m_has_failed(false)

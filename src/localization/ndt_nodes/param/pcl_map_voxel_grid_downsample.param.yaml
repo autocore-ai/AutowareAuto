@@ -3,8 +3,6 @@
 
 voxel_grid_cloud_node:
   ros__parameters:
-    input_topic: "viz_ndt_map"
-    downsample_topic: "viz_ndt_map_downsampled"
     is_approximate: false
     publisher:
       qos:

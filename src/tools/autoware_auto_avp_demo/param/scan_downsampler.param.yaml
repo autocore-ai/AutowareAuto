@@ -3,8 +3,6 @@
 lidar_front:
   voxel_grid_cloud_node:
     ros__parameters:
-      input_topic: "points_filtered"
-      downsample_topic: "points_filtered_downsampled"
       is_approximate: false
       config:
         capacity: 55000

@@ -31,10 +31,10 @@ def generate_test_description(ready_fn):
         parameters=[
             "{}/param/vlp16_lexus_centroid.param.yaml".format(
                 ament_index_python.get_package_share_directory(
-                    "voxel_grid_nodes")),
-            {
-                "input_topic": test_topic
-            }
+                    "voxel_grid_nodes")
+            )],
+        remappings=[
+            ("points_in", test_topic)
         ])
 
     ld, context = lidar_integration.get_point_cloud_mutation_launch_description(
