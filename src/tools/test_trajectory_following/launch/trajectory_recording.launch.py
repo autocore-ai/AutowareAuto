@@ -151,7 +151,8 @@ def generate_launch_description():
         node_executable='ray_ground_classifier_cloud_node_exe',
         node_namespace='perception',
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
-        condition=IfCondition(LaunchConfiguration('with_obstacle'))
+        condition=IfCondition(LaunchConfiguration('with_obstacle')),
+        remappings=[("points_in", "lidar_front/points_filtered")]
     )
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',

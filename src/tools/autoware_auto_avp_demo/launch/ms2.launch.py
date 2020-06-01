@@ -159,7 +159,8 @@ def generate_launch_description():
         package='ray_ground_classifier_nodes',
         node_executable='ray_ground_classifier_cloud_node_exe',
         node_namespace='perception',
-        parameters=[LaunchConfiguration('ray_ground_classifier_param_file')]
+        parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
+        remappings=[("points_in", "lidar_front/points_filtered")]
     )
     rviz2 = Node(
         package='rviz2',

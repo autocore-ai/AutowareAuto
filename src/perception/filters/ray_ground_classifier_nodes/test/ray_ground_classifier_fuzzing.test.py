@@ -31,10 +31,10 @@ def generate_test_description(ready_fn):
         parameters=[
             "{}/param/test.param.yaml".format(
                 ament_index_python.get_package_share_directory(
-                    "ray_ground_classifier_nodes")),
-            {
-                "raw_topic": test_topic
-            }
+                    "ray_ground_classifier_nodes")
+            )],
+        remappings=[
+            ("points_in", test_topic)
         ])
 
     ld, context = lidar_integration.get_point_cloud_mutation_launch_description(

@@ -51,7 +51,8 @@ def generate_launch_description():
         node_executable='ray_ground_classifier_cloud_node_exe',
         node_namespace='lidars',
         parameters=[get_param_file('ray_ground_classifier_nodes',
-            'vlp16_sim_lexus_ray_ground.param.yaml')])
+            'vlp16_sim_lexus_ray_ground.param.yaml')],
+        remappings=[("points_in", "lidar_front/points_filtered")])
 
     # point cloud filter transform param file
     filter_transform_param = get_param_file(

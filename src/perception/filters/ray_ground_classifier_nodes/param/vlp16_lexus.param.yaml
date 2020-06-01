@@ -5,9 +5,6 @@ ray_ground_classifier:
   ros__parameters:
     timeout_ms:       10
     cloud_timeout_ms: 110
-    raw_topic:       "lidar_front/points_filtered"
-    ground_topic:    "points_ground"
-    nonground_topic: "points_nonground"
     pcl_size:         55000
     frame_id:        "base_link"
     is_structured:    true

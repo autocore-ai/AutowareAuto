@@ -50,7 +50,8 @@ def generate_launch_description():
     ray_ground_runner = launch_ros.actions.Node(
         package='ray_ground_classifier_nodes',
         node_executable='ray_ground_classifier_cloud_node_exe',
-        parameters=[ray_ground_param_file])
+        parameters=[ray_ground_param_file],
+        remappings=[("points_in", "lidar_front/points_filtered")])
 
     return launch.LaunchDescription([
         euclidean_cluster_node_runner,
