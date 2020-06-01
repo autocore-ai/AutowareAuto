@@ -34,7 +34,7 @@
       "Frequency": 12.5,
       "Topic": "/gnss/fix",
       "Frame": "gnss",
-      "IgnoreMapOrigin": true
+      "IgnoreMapOrigin": false
     },
     "parent": "base_link",
     "transform": {
