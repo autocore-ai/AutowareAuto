@@ -17,43 +17,35 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(velodyne_node)
 
-## dependencies
-find_package(autoware_auto_cmake REQUIRED)
-find_package(ament_cmake REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(velodyne_driver REQUIRED)
-find_package(udp_driver REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(lidar_utils REQUIRED)
-find_package(autoware_auto_common REQUIRED)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-include_directories(include)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+## dependencies
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
 # The library that generates PointCloud2 is separate so that we don't have to lug around unused code
 set(CLOUD_LIB velodyne_cloud_node)
-add_library(${CLOUD_LIB} SHARED
+ament_auto_add_library(${CLOUD_LIB} SHARED
   include/velodyne_node/velodyne_cloud_node.hpp
   include/velodyne_node/visibility_control.hpp
   src/velodyne_cloud_node.cpp)
 autoware_set_compile_options(${CLOUD_LIB})
-ament_target_dependencies(${CLOUD_LIB}
-  "lidar_utils"
-  "rclcpp_lifecycle"
-  "velodyne_driver"
-  "udp_driver"
-  "sensor_msgs"
-  "autoware_auto_common")
 
 # generate executable for ros1-style standalone nodes
-file(COPY param/vlp16_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
 set(CLOUD_EXEC "velodyne_cloud_node_exe")
-add_executable(${CLOUD_EXEC} src/velodyne_cloud_node_main.cpp)
+ament_auto_add_executable(${CLOUD_EXEC} src/velodyne_cloud_node_main.cpp)
 autoware_set_compile_options(${CLOUD_EXEC})
-target_link_libraries(${CLOUD_EXEC} ${CLOUD_LIB})
 
 if(BUILD_TESTING)
-    # run common linters
-    autoware_static_code_analysis()
+    find_package(ament_lint_auto REQUIRED)
+    ament_lint_auto_find_test_dependencies()
 
     # Test Node
     set(TEST_NODE_NAME "test_listener_exe")
@@ -61,8 +53,6 @@ if(BUILD_TESTING)
     ament_target_dependencies(${TEST_NODE_NAME} "rclcpp" "sensor_msgs")
 
     # "Unit" test
-    find_package(ament_cmake_gtest REQUIRED)
-    find_package(lidar_integration REQUIRED)
     set(VELODYNE_NODE_GTEST velodyne_node_gtest)
 
     ament_add_gtest(${VELODYNE_NODE_GTEST}
@@ -74,7 +64,6 @@ if(BUILD_TESTING)
     target_link_libraries(${VELODYNE_NODE_GTEST} ${CLOUD_LIB} ${BLOCK_LIB})
     ament_target_dependencies(${VELODYNE_NODE_GTEST} "lidar_integration")
 
-    find_package(ros_testing REQUIRED)
     # FIXME(esteve): Reenable
     # https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/388
     # add_ros_test(
@@ -94,19 +83,9 @@ if(BUILD_TESTING)
 endif()
 
 ## install stuff
-autoware_install(
-  LIBRARIES  ${CLOUD_LIB}
-  EXECUTABLES ${CLOUD_EXEC}
-  HAS_PARAM
-  HAS_INCLUDE
-)
+ament_auto_package(INSTALL_TO_SHARE param)
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 # -Wno-ignored-qualifiers is temp fix for udp_driver bug
 target_compile_options(${CLOUD_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)
 target_compile_options(${CLOUD_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)
-
-# Ament Exporting
-ament_export_dependencies("sensor_msgs" "velodyne_driver" "udp_driver")
-ament_export_interfaces(${BLOCK_EXEC})
-ament_package()

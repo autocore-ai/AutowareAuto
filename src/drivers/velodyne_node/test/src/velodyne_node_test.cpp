@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <common/types.hpp>
 #include <gtest/gtest.h>
@@ -20,6 +21,7 @@
 #include <lidar_integration/udp_sender.hpp>
 #include <memory>
 #include <thread>
+#include <string>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -128,14 +130,14 @@ TEST_P(velodyne_node_integration, DISABLED_test)
 
   // ===== Run ====== //
   EXPECT_TRUE(lidar_integration::lidar_integration_test(
-    [&velodyne_node_thread, nd_ptr] {
-      // Create thread to
-      velodyne_node_thread = std::thread {[nd_ptr]{
-        nd_ptr->run();
-      }};
-    },
-    []{ /* UdpDriverNode does not allow us to stop it, we need to shutdown */ },
-    {spoofer_ptr}, {listen_ptr}));
+      [&velodyne_node_thread, nd_ptr] {
+        // Create thread to
+        velodyne_node_thread = std::thread {[nd_ptr] {
+            nd_ptr->run();
+          }};
+      },
+      [] { /* UdpDriverNode does not allow us to stop it, we need to shutdown */},
+      {spoofer_ptr}, {listen_ptr}));
 
   rclcpp::shutdown();
 
