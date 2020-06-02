@@ -402,7 +402,7 @@ TEST_F(NDTMapTest, map_representation_basics) {
     const auto & generating_voxel = generator_grid.cell(added_pt)[0U];
     ASSERT_TRUE(generating_voxel.centroid().isApprox(added_pt,
       std::numeric_limits<Real>::epsilon()));
-    ASSERT_EQ(generating_voxel.count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
+    ASSERT_EQ(generating_voxel.get().count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
     add_pt(pc_point_its, pc_cov_its, value);
 

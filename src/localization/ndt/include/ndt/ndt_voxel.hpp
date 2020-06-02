@@ -128,8 +128,6 @@ private:
   Cov m_inv_covariance;
   bool8_t m_occupied{false};
 };
-
-
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

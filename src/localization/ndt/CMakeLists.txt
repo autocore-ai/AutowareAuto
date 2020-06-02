@@ -25,6 +25,7 @@ set(NDT_NODES_LIB_SRC
     src/ndt.cpp
     src/ndt_map.cpp
     src/ndt_voxel.cpp
+    src/ndt_voxel_view.cpp
     src/ndt_config.cpp
 )
 
@@ -34,6 +35,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_common.hpp
     include/ndt/ndt_optimization_problem.hpp
     include/ndt/ndt_voxel.hpp
+    include/ndt/ndt_voxel_view.hpp
     include/ndt/ndt_map.hpp
     include/ndt/ndt_scan.hpp
     include/ndt/ndt_localizer.hpp

@@ -63,7 +63,7 @@ protected:
       ASSERT_TRUE(static_vx.centroid().isApprox(dynamic_vx.centroid(),
         std::numeric_limits<Real>::epsilon()));
       ASSERT_TRUE(static_vx.inverse_covariance().isApprox(
-          dynamic_vx.inverse_covariance().value(),
+          dynamic_vx.inverse_covariance(),
           std::numeric_limits<Real>::epsilon() * 1e2));
     }
   }

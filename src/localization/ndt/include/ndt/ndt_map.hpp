@@ -19,6 +19,7 @@
 
 #include <ndt/ndt_common.hpp>
 #include <ndt/ndt_voxel.hpp>
+#include <ndt/ndt_voxel_view.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <time_utils/time_utils.hpp>
 #include <vector>
@@ -55,11 +56,16 @@ public:
   using Point = Eigen::Vector3d;
   using Config = autoware::perception::filters::voxel_grid::Config;
   using TimePoint = std::chrono::system_clock::time_point;
+  using VoxelViewVector = std::vector<VoxelView<VoxelT>>;
+
 
   /// Constructor
   /// \param voxel_grid_config Voxel grid config to configure the underlying voxel grid.
   explicit NDTMapBase(const Config & voxel_grid_config)
-  : m_output_vector(1U), m_config(voxel_grid_config), m_map(m_config.get_capacity()) {}
+  : m_config(voxel_grid_config), m_map(m_config.get_capacity())
+  {
+    m_output_vector.reserve(1U);
+  }
 
   /// Lookup the cell at location.
   /// \param x x coordinate
@@ -67,7 +73,7 @@ public:
   /// \param z z coordinate
   /// \return A vector containing the cell at given coordinates. A vector is used to support
   /// near-neighbour cell queries in the future.
-  const std::vector<VoxelT> & cell(float32_t x, float32_t y, float32_t z) const
+  const VoxelViewVector & cell(float32_t x, float32_t y, float32_t z) const
   {
     return cell(Point({x, y, z}));
   }
@@ -76,14 +82,14 @@ public:
   /// \param pt point to lookup
   /// \return A vector containing the cell at given coordinates. A vector is used to support
   /// near-neighbour cell queries in the future.
-  const std::vector<VoxelT> & cell(const Point & pt) const
+  const VoxelViewVector & cell(const Point & pt) const
   {
     // TODO(yunus.caliskan): revisit after multi-cell lookup support.
     m_output_vector.clear();
     const auto vx_it = m_map.find(m_config.index(pt));
     // Only return a voxel if it's occupied (i.e. has enough points to compute covariance.)
     if (vx_it != m_map.end() && vx_it->second.usable()) {
-      m_output_vector.push_back(vx_it->second);
+      m_output_vector.emplace_back(vx_it->second);
     }
     return m_output_vector;
   }
@@ -193,7 +199,7 @@ protected:
   }
 
 private:
-  mutable std::vector<VoxelT> m_output_vector;
+  mutable VoxelViewVector m_output_vector;
   const Config m_config;
   Grid m_map;
   TimePoint m_stamp{};
