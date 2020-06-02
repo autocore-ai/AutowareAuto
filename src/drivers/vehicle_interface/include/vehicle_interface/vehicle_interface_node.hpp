@@ -110,9 +110,7 @@ protected:
 private:
   // Helper function called in constructors
   VEHICLE_INTERFACE_LOCAL void init(
-    const TopicNumMatches & raw_command,
-    const TopicNumMatches & basic_command,
-    const TopicNumMatches & high_level_command,
+    const TopicNumMatches & control_command,
     const TopicNumMatches & state_command,
     const TopicNumMatches & odometry,
     const TopicNumMatches & state_report,

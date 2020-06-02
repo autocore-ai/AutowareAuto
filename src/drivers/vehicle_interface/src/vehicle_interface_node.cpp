@@ -43,16 +43,9 @@ VehicleInterfaceNode::VehicleInterfaceNode(
 : Node{node_name, options}
 {
   // Helper functions
-  const auto topic_num_matches_from_param = [this](const auto prefix, bool8_t optional = false) {
-      const auto prefix_dot = prefix + std::string{"."};
-      const auto name_param = declare_parameter(prefix_dot + std::string{"name"});
-      if (optional) {
-        if (rclcpp::ParameterType::PARAMETER_NOT_SET == name_param.get_type()) {
-          return TopicNumMatches{""};
-        }
-      }
-      const auto name = name_param.template get<std::string>();
-      return TopicNumMatches{name};
+  const auto topic_num_matches_from_param = [this](const auto param) {
+      const auto name_param = declare_parameter(param);
+      return TopicNumMatches{name_param.template get<std::string>()};
     };
   const auto time = [this](const auto param_name) -> std::chrono::milliseconds {
       const auto count_ms = declare_parameter(param_name).template get<int64_t>();
@@ -100,12 +93,10 @@ VehicleInterfaceNode::VehicleInterfaceNode(
     };
   // Actually init
   init(
-    topic_num_matches_from_param("raw_command", true),
-    topic_num_matches_from_param("basic_command", true),
-    topic_num_matches_from_param("high_level_command", true),
-    topic_num_matches_from_param("state_command"),
-    topic_num_matches_from_param("odometry"),
-    topic_num_matches_from_param("state_report"),
+    topic_num_matches_from_param("control_command"),
+    TopicNumMatches{"state_command"},
+    TopicNumMatches{"odometry"},
+    TopicNumMatches{"state_report"},
     state_machine_config,
     filter("longitudinal"),
     filter("curvature"),
@@ -214,9 +205,7 @@ void VehicleInterfaceNode::on_command_message(
 
 ////////////////////////////////////////////////////////////////////////////////
 void VehicleInterfaceNode::init(
-  const TopicNumMatches & raw_command,
-  const TopicNumMatches & basic_command,
-  const TopicNumMatches & high_level_command,
+  const TopicNumMatches & control_command,
   const TopicNumMatches & state_command,
   const TopicNumMatches & odometry,
   const TopicNumMatches & state_report,
@@ -253,10 +242,6 @@ void VehicleInterfaceNode::init(
       }
       return std::make_unique<SafetyStateMachine>(state_machine_config.value());
     };
-  // Make command subscriber
-  const auto check_topic = [](const auto & topic_name) -> bool8_t {
-      return (!topic_name.empty()) && (topic_name != std::string{"null"});
-    };
   const auto cmd_callback = [this](auto t) -> auto {
       using Ptr = typename decltype(t)::SharedPtr;
       return [this](Ptr msg) -> void {
@@ -267,19 +252,19 @@ void VehicleInterfaceNode::init(
                }
              };
     };
-  if (check_topic(high_level_command.topic)) {
+  if (control_command.topic == "high_level") {
     using HCC = autoware_auto_msgs::msg::HighLevelControlCommand;
     m_command_sub =
-      create_subscription<HCC>(high_level_command.topic, rclcpp::QoS{10U}, cmd_callback(HCC{}));
+      create_subscription<HCC>("high_level_command", rclcpp::QoS{10U}, cmd_callback(HCC{}));
     m_state_machine = state_machine();
-  } else if (check_topic(basic_command.topic)) {
+  } else if (control_command.topic == "basic") {
     m_command_sub = create_subscription<BasicControlCommand>(
-      basic_command.topic, rclcpp::QoS{10U}, cmd_callback(BasicControlCommand{}));
+      "vehicle_command", rclcpp::QoS{10U}, cmd_callback(BasicControlCommand{}));
     m_state_machine = state_machine();
-  } else if (check_topic(raw_command.topic)) {
+  } else if (control_command.topic == "raw") {
     using RCC = autoware_auto_msgs::msg::RawControlCommand;
     m_command_sub =
-      create_subscription<RCC>(raw_command.topic, rclcpp::QoS{10U}, cmd_callback(RCC{}));
+      create_subscription<RCC>("raw_command", rclcpp::QoS{10U}, cmd_callback(RCC{}));
   } else {
     throw std::domain_error{"Vehicle interface must have exactly one command subscription"};
   }

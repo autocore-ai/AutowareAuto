@@ -26,17 +26,12 @@
 // Check that state machine is inline and does something
 TEST_F(sanity_checks, state_machine)
 {
-  const auto control_topic = "vi_state_machine_control";
+  const auto control_topic = "vehicle_command";
 
   // Construct
   rclcpp::NodeOptions options{};
   options
-    .append_parameter_override("raw_command.name", "null")
-    .append_parameter_override("basic_command.name", control_topic)
-    .append_parameter_override("high_level_command.name", "null")
-    .append_parameter_override("state_command.name", "vi_state_machine_state_command")
-    .append_parameter_override("odometry.name", "vi_state_machine_odom")
-    .append_parameter_override("state_report.name", "vi_state_machine_state_report");
+    .append_parameter_override("control_command", "basic");
 
   const auto vi_node = std::make_shared<TestVINode>(
     "state_machine_vi_node", options, false);  // no failure

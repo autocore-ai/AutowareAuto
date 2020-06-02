@@ -3,25 +3,9 @@
 vehicle_interface:
   ros__parameters:
     cycle_time_ms: 10
-    raw_command:
-      name: "raw_command"
-      match_count: 1
     # Only one of the three control command topics need be specified
-    # basic_command:
-    #   name: "vehicle_command"
-    #   match_count: 1
-    # high_level_command:
-    #   name: "high_level_command"
-    #   match_count: 1
-    state_command:
-      name: "state_command"
-      match_count: 0
-    odometry:
-      name: "odometry"
-      match_count: 1
-    state_report:
-      name: "state_report"
-      match_count: 1
+    # "raw", "basic" or "high_level"
+    control_command: "raw"
     state_machine:
       gear_shift_velocity_threshold_mps: 0.5
       acceleration_limits:

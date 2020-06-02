@@ -26,17 +26,12 @@
 // Just make sure error callbacks hit
 TEST_F(sanity_checks, error_callbacks)
 {
-  const auto raw_topic = "vi_error_callback_raw";
+  const auto raw_topic = "raw_command";
 
   // Construct
   rclcpp::NodeOptions options{};
   options
-    .append_parameter_override("raw_command.name", raw_topic)
-    .append_parameter_override("basic_command.name", "null")
-    .append_parameter_override("high_level_command.name", "null")
-    .append_parameter_override("state_command.name", "vi_error_callback_state_command")
-    .append_parameter_override("odometry.name", "vi_error_callback_odom")
-    .append_parameter_override("state_report.name", "vi_error_callback_state_report");
+    .append_parameter_override("control_command", "raw");
 
   const auto vi_node = std::make_shared<TestVINode>(
     "vi_error_callback_node", options, true);  // fail

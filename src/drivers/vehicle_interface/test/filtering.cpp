@@ -28,17 +28,12 @@
 // Send periodic basic control command, expect that *something* happened
 TEST_F(sanity_checks, filtering)
 {
-  const auto cmd_topic = "vi_filter_basic_cmd";
+  const auto cmd_topic = "vehicle_command";
 
   // Construct
   rclcpp::NodeOptions options{};
   options
-    .append_parameter_override("raw_command.name", "null")
-    .append_parameter_override("basic_command.name", cmd_topic)
-    .append_parameter_override("high_level_command.name", "null")
-    .append_parameter_override("state_command.name", "vi_state_machine_state_command")
-    .append_parameter_override("odometry.name", "vi_state_machine_odom")
-    .append_parameter_override("state_report.name", "vi_state_machine_state_report")
+    .append_parameter_override("control_command", "basic")
     .append_parameter_override("filter.longitudinal.type", "low_pass_filter")
     .append_parameter_override("filter.longitudinal.cutoff_frequency_hz", 30.0F)
     .append_parameter_override("filter.curvature.type", "low_pass_filter")
