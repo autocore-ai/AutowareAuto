@@ -235,27 +235,27 @@ private:
 /// This implementation specifies a covariance computation method for the P2D optimization problem.
 /// \tparam OptimizerT Optimizer type.
 /// \tparam OptimizerOptionsT Optimizer options type.
-template<typename OptimizerT, typename OptimizerOptionsT>
-class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTScan, StaticNDTMap,
-    P2DNDTOptimizationProblem, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>
+/// \tparam MapT Type of map to be used. By default it is StaticNDTMap.
+template<typename OptimizerT, typename OptimizerOptionsT, typename MapT = StaticNDTMap>
+class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTScan, MapT,
+    P2DNDTOptimizationProblem<MapT>, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>
 {
 public:
   using CloudT = sensor_msgs::msg::PointCloud2;
-  using ParentT = NDTLocalizerBase<P2DNDTScan, StaticNDTMap,
-      P2DNDTOptimizationProblem, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>;
+  using ParentT = NDTLocalizerBase<P2DNDTScan, MapT,
+      P2DNDTOptimizationProblem<MapT>, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>;
   using Base = typename ParentT::Base;
   using Transform = typename ParentT::Transform;
   using PoseWithCovarianceStamped = typename ParentT::PoseWithCovarianceStamped;
   using ConfigT = P2DNDTLocalizerConfig<OptimizerOptionsT>;
   using ScanT = P2DNDTScan;
-  using MapT = StaticNDTMap;
 
   explicit P2DNDTLocalizer(const ConfigT & config, const OptimizerT & optimizer)
   : ParentT(config, ScanT{config.scan_capacity()}, MapT{config.map_config()}, optimizer) {}
 
 protected:
   void set_covariance(
-    const P2DNDTOptimizationProblem &,
+    const P2DNDTOptimizationProblem<MapT> &,
     const EigenPose<Real> &,
     const EigenPose<Real> &,
     PoseWithCovarianceStamped &) const override

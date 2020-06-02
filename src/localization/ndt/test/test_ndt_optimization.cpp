@@ -29,6 +29,8 @@ using autoware::localization::ndt::P2DNDTOptimizationProblem;
 using autoware::localization::ndt::P2DNDTOptimizationConfig;
 using autoware::localization::ndt::transform_adapters::pose_to_transform;
 
+using P2DProblem = P2DNDTOptimizationProblem<autoware::localization::ndt::StaticNDTMap>;
+
 OptTestParams::OptTestParams(
   float64_t x, float64_t y, float64_t z, float64_t ang_x, float64_t ang_y, float64_t ang_z,
   bool8_t large, bool8_t check_pcl)
@@ -69,12 +71,12 @@ TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
   {
     // m_pc is also used as the map, so this scan perfectly aligns with the map
     P2DNDTScan matching_scan(m_downsampled_cloud, m_downsampled_cloud.width);
-    P2DNDTOptimizationProblem problem{matching_scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
+    P2DProblem problem{matching_scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
 
     EigenPose<Real> pose = GetParam().diff;
     problem.evaluate(pose, autoware::common::optimization::ComputeMode{true, true, true});
-    P2DNDTOptimizationProblem::Jacobian jacobian;
-    P2DNDTOptimizationProblem::Hessian hessian;
+    P2DProblem::Jacobian jacobian;
+    P2DProblem::Hessian hessian;
     problem.jacobian(pose, jacobian);
     problem.hessian(pose, hessian);
 
@@ -119,7 +121,7 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
   tf2::doTransform(m_downsampled_cloud, translated_cloud, diff_tf2);
   ////////////// Solve using ndt optimization problem
 
-  P2DNDTOptimizationProblem::DomainValue guess;
+  P2DProblem::DomainValue guess;
   decltype(guess) pcl_guess;
   guess.setZero();
   pcl_guess.setZero();
@@ -127,13 +129,13 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
   const auto num_iters = 5U;
   {
     P2DNDTScan scan(translated_cloud, translated_cloud.width);
-    P2DNDTOptimizationProblem problem{scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
+    P2DProblem problem{scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
     // Solve the problem in 50 iterations:
     for (auto i = 0U; i < num_iters; ++i) {
       problem.evaluate(guess,
         autoware::common::optimization::ComputeMode{}.set_score().set_jacobian().set_hessian());
-      P2DNDTOptimizationProblem::Jacobian jacobian;
-      P2DNDTOptimizationProblem::Hessian hessian;
+      P2DProblem::Jacobian jacobian;
+      P2DProblem::Hessian hessian;
       problem.jacobian(guess, jacobian);
       problem.hessian(guess, hessian);
       // Solve for decent direction using newton method

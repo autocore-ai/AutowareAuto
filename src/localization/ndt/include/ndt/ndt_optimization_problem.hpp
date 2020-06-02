@@ -51,20 +51,22 @@ bool8_t is_valid_probability(ScalarT p)
 
 /// P2D ndt objective. This class implements the P2D ndt score function, its analytical
 /// jacobian and hessian values.
-class P2DNDTObjective : public common::optimization::CachedExpression<P2DNDTObjective,
+/// \tparam MapT Type of map to be used.
+template<typename MapT>
+class P2DNDTObjective : public common::optimization::CachedExpression<P2DNDTObjective<MapT>,
     EigenPose<Real>, 1U, 6U, common::optimization::EigenComparator>
 {
 public:
   // getting aliases from the base class.
-  using ExpressionT = CachedExpression<P2DNDTObjective, EigenPose<Real>, 1U, 6U,
-      common::optimization::EigenComparator>;
+  using ExpressionT = common::optimization::CachedExpression<P2DNDTObjective<MapT>,
+      EigenPose<Real>, 1U, 6U, common::optimization::EigenComparator>;
   using DomainValue = typename ExpressionT::DomainValue;
   using Value = typename ExpressionT::Value;
   using Jacobian = typename ExpressionT::Jacobian;
   using Hessian = typename ExpressionT::Hessian;
-  using Map = StaticNDTMap;
+  using Map = MapT;
   using Scan = P2DNDTScan;
-  using Point = Map::Point;
+  using Point = typename Map::Point;
   using Comparator = common::optimization::EigenComparator;
   using ComputeMode = common::optimization::ComputeMode;
   using PointGrad = Eigen::Matrix<float64_t, 3, 6>;
@@ -77,7 +79,7 @@ public:
   /// \param map NDT map to be aligned.
   /// \param config Optimization config.
   P2DNDTObjective(
-    const P2DNDTScan & scan, const StaticNDTMap & map,
+    const P2DNDTScan & scan, const Map & map,
     const P2DNDTOptimizationConfig & config)
   : m_scan_ref(scan),
     m_map_ref(map)
@@ -136,7 +138,7 @@ public:
         const Point pt_trans_norm = pt_trans - cell.centroid();
         // Cell iteration used for compatibility with maps with multi-cell lookup
         if (cell.usable()) {
-          const StaticNDTMap::Voxel::Cov & inv_cov = cell.inverse_covariance();
+          const auto & inv_cov = cell.inverse_covariance();
           // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
           Real e_x_cov_x = std::exp(-m_gauss_d2 * pt_trans_norm.dot(
                 inv_cov * pt_trans_norm) / 2.0);
@@ -177,13 +179,13 @@ public:
       }
     }
     if (mode.score()) {
-      set_score(score);
+      this->set_score(score);
     }
     if (mode.jacobian()) {
-      set_jacobian(jacobian);
+      this->set_jacobian(jacobian);
     }
     if (mode.hessian()) {
-      set_hessian(hessian);
+      this->set_hessian(hessian);
     }
   }
 
@@ -417,8 +419,10 @@ public:
   Real m_gauss_d2{0.0};
 };
 
+template<typename MapT>
 using P2DNDTOptimizationProblem =
-  common::optimization::UnconstrainedOptimizationProblem<P2DNDTObjective, EigenPose<Real>, 6U>;
+  common::optimization::UnconstrainedOptimizationProblem<P2DNDTObjective<MapT>, EigenPose<Real>,
+    6U>;
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware
