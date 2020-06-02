@@ -16,7 +16,6 @@
 #include <tf2_ros/buffer_interface.h>  // TODO(esteve): Workaround for https://github.com/ros2/geometry2/pull/126
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
-#include <point_cloud_fusion/point_cloud_transform.hpp>
 #include <common/types.hpp>
 #include <memory>
 #include <vector>
@@ -41,7 +40,6 @@ PointCloudFusionNode::PointCloudFusionNode(
 : Node(node_name, node_namespace),
   m_cloud_publisher(create_publisher<PointCloudMsgT>(declare_parameter("output_topic")
     .get<std::string>(), rclcpp::QoS(10))),
-  m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
   m_input_topics(declare_parameter("input_topics").get<std::vector<std::string>>()),
   m_output_frame_id(declare_parameter("output_frame_id").get<std::string>()),
   m_cloud_capacity(declare_parameter("cloud_size").get<uint32_t>())
@@ -58,7 +56,6 @@ PointCloudFusionNode::PointCloudFusionNode(
   const uint32_t cloud_size)
 : Node(node_name, node_namespace),
   m_cloud_publisher(create_publisher<PointCloudMsgT>(output_topic, rclcpp::QoS(10))),
-  m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
   m_input_topics(input_topics),
   m_output_frame_id(output_frame_id),
   m_cloud_capacity(cloud_size)
@@ -152,35 +149,13 @@ uint32_t PointCloudFusionNode::fuse_pc_msgs(
   uint32_t pc_concat_idx = 0;
 
   for (size_t i = 0; i < m_input_topics.size(); ++i) {
-    try {
-      bool8_t concat_success;
-      auto tf_lookup_time = std::chrono::time_point<std::chrono::system_clock,
-          std::chrono::nanoseconds>(convert_msg_time(msgs[i]->header.stamp));
-
-      // Get the transform between the msg and the output frame.
-      auto transform = m_tf_buffer.lookupTransform(m_output_frame_id, msgs[i]->header.frame_id,
-          tf_lookup_time);
-
-      if (is_identity(transform)) {
-        // No need to transform points since they are in the same frame as the fused cloud
-        concat_success = concatenate_pointcloud(*msgs[i], m_cloud_concatenated, pc_concat_idx);
-      } else {
-        // Transform the points, then add them to the fused cloud
-        PointCloudT transformed_pc;
-        tf2::doTransform(*msgs[i], transformed_pc, transform);
-        concat_success = concatenate_pointcloud(transformed_pc, m_cloud_concatenated,
-            pc_concat_idx);
-      }
-      if (!concat_success) {
-        // Cloud could not be added to the m_cloud_concatenated since the size limit is reached.
-        // No point in trying the remaining clouds.
-        RCLCPP_WARN(get_logger(), "Reached the capacity of the fused cloud, ignoring the "
-          "remaining cloud messages and publishing.");
-        break;
-      }
-    } catch (tf2::TransformException & ex) {
-      // A tf2 lookup error must've occured. We can still try the next pointcloud.
-      RCLCPP_ERROR(this->get_logger(), ex.what());
+    bool8_t concat_success = concatenate_pointcloud(*msgs[i], m_cloud_concatenated, pc_concat_idx);
+    if (!concat_success) {
+      // Cloud could not be added to the m_cloud_concatenated since the size limit is reached.
+      // No point in trying the remaining clouds.
+      RCLCPP_WARN(get_logger(), "Reached the capacity of the fused cloud, ignoring the "
+        "remaining cloud messages and publishing.");
+      break;
     }
   }
   return pc_concat_idx;

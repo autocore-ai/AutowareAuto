@@ -99,8 +99,6 @@ private:
   std::unique_ptr<message_filters::Subscriber<PointCloudMsgT>> m_cloud_subscribers[8];
   std::unique_ptr<message_filters::Synchronizer<SyncPolicyT>> m_cloud_synchronizer;
   rclcpp::Publisher<PointCloudMsgT>::SharedPtr m_cloud_publisher;
-  tf2::BufferCore m_tf_buffer;
-  tf2_ros::TransformListener m_tf_listener;
 
   std::vector<std::string> m_input_topics;
   std::string m_output_frame_id;

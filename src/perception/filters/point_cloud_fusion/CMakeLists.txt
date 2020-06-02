@@ -44,7 +44,7 @@ set(PC_FUSION_LIB pointcloud_fusion_node)
 add_library(${PC_FUSION_LIB} SHARED
   include/point_cloud_fusion/point_cloud_fusion.hpp
   src/point_cloud_fusion.cpp
-  include/point_cloud_fusion/point_cloud_transform.hpp include/point_cloud_fusion/visibility_control.hpp)
+  include/point_cloud_fusion/visibility_control.hpp)
 
 autoware_set_compile_options(${PC_FUSION_LIB})
 ament_target_dependencies(${PC_FUSION_LIB}
