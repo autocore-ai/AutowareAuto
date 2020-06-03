@@ -16,6 +16,7 @@
 
     <depend>serial_driver</depend>
     <depend>autoware_auto_common</depend>
+    <depend>lidar_utils</depend>
 
     <exec_depend>rclcpp_lifecycle</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>

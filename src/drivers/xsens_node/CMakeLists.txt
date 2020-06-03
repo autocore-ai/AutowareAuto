@@ -17,74 +17,51 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(xsens_node)
 
-## dependencies
-find_package(autoware_auto_cmake REQUIRED)
-find_package(ament_cmake REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(xsens_driver REQUIRED)
-find_package(serial_driver REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(lidar_utils REQUIRED)
-find_package(autoware_auto_common REQUIRED)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-include_directories(include)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+## dependencies
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
 set(XSENS_IMU_NODE_LIB xsens_imu_node)
-add_library(${XSENS_IMU_NODE_LIB} SHARED
+ament_auto_add_library(${XSENS_IMU_NODE_LIB} SHARED
   include/xsens_node/xsens_common_node.hpp
   include/xsens_node/visibility_control.hpp
   src/xsens_imu_node.cpp)
 autoware_set_compile_options(${XSENS_IMU_NODE_LIB})
-ament_target_dependencies(${XSENS_IMU_NODE_LIB}
-  "lidar_utils"
-  "rclcpp_lifecycle"
-  "xsens_driver"
-  "serial_driver"
-  "sensor_msgs"
-  "autoware_auto_common")
 
 set(XSENS_GPS_NODE_LIB xsens_gps_node)
-add_library(${XSENS_GPS_NODE_LIB} SHARED
+ament_auto_add_library(${XSENS_GPS_NODE_LIB} SHARED
   include/xsens_node/xsens_common_node.hpp
   include/xsens_node/visibility_control.hpp
   src/xsens_gps_node.cpp)
 autoware_set_compile_options(${XSENS_GPS_NODE_LIB})
-ament_target_dependencies(${XSENS_GPS_NODE_LIB}
-  "lidar_utils"
-  "rclcpp_lifecycle"
-  "xsens_driver"
-  "serial_driver"
-  "sensor_msgs"
-  "autoware_auto_common")
 
 # generate executable for ros1-style standalone nodes
-file(COPY param/xsens_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
 set(XSENS_IMU_NODE_EXE "xsens_imu_node_exe")
-add_executable(${XSENS_IMU_NODE_EXE} src/xsens_imu_node_main.cpp)
+ament_auto_add_executable(${XSENS_IMU_NODE_EXE} src/xsens_imu_node_main.cpp)
 autoware_set_compile_options(${XSENS_IMU_NODE_EXE})
-target_link_libraries(${XSENS_IMU_NODE_EXE} ${XSENS_IMU_NODE_LIB})
 
-file(COPY param/xsens_test.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
 set(XSENS_GPS_NODE_EXE "xsens_gps_node_exe")
-add_executable(${XSENS_GPS_NODE_EXE} src/xsens_gps_node_main.cpp)
+ament_auto_add_executable(${XSENS_GPS_NODE_EXE} src/xsens_gps_node_main.cpp)
 autoware_set_compile_options(${XSENS_GPS_NODE_EXE})
-target_link_libraries(${XSENS_GPS_NODE_EXE} ${XSENS_IMU_NODE_LIB})
 
 if(BUILD_TESTING)
-    autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 ## install stuff
-autoware_install(
-  LIBRARIES  ${XSENS_IMU_NODE_LIB} ${XSENS_GPS_NODE_LIB}
-  EXECUTABLES ${XSENS_IMU_NODE_EXE} ${XSENS_GPS_NODE_EXE}
-)
+ament_auto_package(INSTALL_TO_SHARE param)
 
 target_compile_options(${XSENS_IMU_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
 target_compile_options(${XSENS_IMU_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)
 target_compile_options(${XSENS_GPS_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
 target_compile_options(${XSENS_GPS_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)
-
-# Ament Exporting
-ament_export_dependencies("sensor_msgs" "xsens_driver" "serial_driver")
-ament_package()
