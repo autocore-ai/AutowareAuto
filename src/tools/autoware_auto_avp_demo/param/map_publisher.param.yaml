@@ -1,7 +1,6 @@
 localization:
   ndt_map_publisher_node:
     ros__parameters:
-      map_topic: "ndt_map"
       map_pcd_file: "/opt/AutowareAuto/share/autoware_auto_avp_demo/data/autonomoustuff_parking_lot_lgsvl.pcd"
       map_yaml_file: "/opt/AutowareAuto/share/autoware_auto_avp_demo/data/autonomoustuff_parking_lot_lgsvl.yaml"
       map_frame: "map"
@@ -20,4 +19,3 @@ localization:
           y: 3.5
           z: 3.5
       viz_map: True
-      viz_map_topic: "viz_ndt_map"

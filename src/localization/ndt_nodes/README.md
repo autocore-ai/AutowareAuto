@@ -72,7 +72,6 @@ The configurable parameters passed by the parameter file `map_publisher.param.ya
 
 | Parameter Name | Usage |
 |---|---|
-|map_topic | topic name to which ndt map will be published |
 |map_pcd_file | file name of point cloud data file |
 |map_yaml_file | file name of map information file |
 |map_frame | frame for map point coordinates |
@@ -87,7 +86,6 @@ The configurable parameters passed by the parameter file `map_publisher.param.ya
 |map_config.voxel_size.y | voxel y size for ndt map data |
 |map_config.voxel_size.z | voxel z size for ndt map data |
 |viz_map | flag for whether to publish map for visualization |
-|viz_map_topic | topic name to which visualizable point cloud map will be published |
 
 A voxel_grid_node is used to down sample the point cloud for visualization. An example parameter file for the voxel grid is given at
 

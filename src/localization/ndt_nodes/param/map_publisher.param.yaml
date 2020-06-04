@@ -3,7 +3,6 @@
 
 ndt_map_publisher_node:
   ros__parameters:
-    map_topic: "ndt_map"
 #   map_pcd_file: "map_data/path/here.pcd"
 #   map_yaml_file: "map_info/path/here.yaml"
     map_frame: "map"
@@ -22,4 +21,3 @@ ndt_map_publisher_node:
         y: 2.0
         z: 2.0
     viz_map: True
-    viz_map_topic: "viz_ndt_map"

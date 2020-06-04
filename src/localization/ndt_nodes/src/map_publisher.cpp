@@ -146,8 +146,8 @@ NDTMapPublisherNode::NDTMapPublisherNode(
   const std::size_t capacity =
     static_cast<std::size_t>(declare_parameter("map_config.capacity").get<std::size_t>());
   const std::string map_frame = declare_parameter("map_frame").get<std::string>();
-  const std::string map_topic = declare_parameter("map_topic").get<std::string>();
-  const std::string viz_map_topic = declare_parameter("viz_map_topic").get<std::string>();
+  const std::string map_topic = "ndt_map";
+  const std::string viz_map_topic = "viz_ndt_map";
 
   m_map_config_ptr = std::make_unique<MapConfig>(min_point, max_point, voxel_size, capacity);
   init(map_frame, map_topic, viz_map_topic);
