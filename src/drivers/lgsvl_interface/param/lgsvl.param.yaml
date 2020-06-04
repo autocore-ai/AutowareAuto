@@ -3,6 +3,8 @@ lgsvl_interface:
   ros__parameters:
     cycle_time_ms: 10
     # Only one of the three control command topics need be specified
+    
+    # TODO(@jitrc): remove starting here
     # high_level_command:
     #   name: "high_level_command"
     # basic_command:
@@ -15,6 +17,9 @@ lgsvl_interface:
       name: "odometry"
     state_report:
       name: "state_report"
+    # TODO(@jitrc): remove till here, as replaced by 'control_command'
+    # "raw", "basic" or "high_level"
+    control_command: "raw"
     lgsvl:
       control_command_topic: "lgsvl/vehicle_control_cmd"
       state_command_topic: "lgsvl/vehicle_state_cmd"

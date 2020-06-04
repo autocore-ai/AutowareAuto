@@ -215,16 +215,15 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
   }
   decltype(msg.pose.pose.orientation) q{};
   {
-    // Convert from LHS system to RHS system: Y forward, Z up
-    tf2::Quaternion q_rhs{
-      -msg.pose.pose.orientation.z,
+    tf2::Quaternion tf2_q{
       msg.pose.pose.orientation.x,
-      -msg.pose.pose.orientation.y,
+      msg.pose.pose.orientation.y,
+      msg.pose.pose.orientation.z,
       msg.pose.pose.orientation.w};
     // rotate +90 degrees around +z axis to get X forward
     tf2::Quaternion q90{};
     q90.setRPY(0.0, 0.0, 90.0 * (M_PI / 180.0));
-    const auto q_x_forward = q90 * q_rhs;
+    const auto q_x_forward = q90 * tf2_q;
     q.x = q_x_forward.getX();
     q.y = q_x_forward.getY();
     q.z = q_x_forward.getZ();
