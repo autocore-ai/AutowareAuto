@@ -159,7 +159,10 @@ def generate_launch_description():
         node_executable='euclidean_cluster_exe',
         node_namespace='perception',
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
-        condition=IfCondition(LaunchConfiguration('with_obstacle'))
+        condition=IfCondition(LaunchConfiguration('with_obstacle')),
+        remappings=[
+            ("points_in", "points_nonground")
+        ]
     )
     mpc_controller_node = Node(
         package="mpc_controller_node",

@@ -44,7 +44,8 @@ def generate_launch_description():
     euclidean_cluster_node_runner = launch_ros.actions.Node(
         package='euclidean_cluster_nodes',
         node_executable='euclidean_cluster_exe',
-        parameters=[euclidean_cluster_param_file])
+        parameters=[euclidean_cluster_param_file],
+        remappings=[("points_clustered", "cluster_points")])
 
     # ros1 bridge runner definition.
     ray_ground_runner = launch_ros.actions.Node(

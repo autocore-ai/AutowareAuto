@@ -43,7 +43,11 @@ def generate_launch_description():
         node_executable='euclidean_cluster_exe',
         node_namespace='lidars',
         parameters=[get_param_file('euclidean_cluster_nodes', 
-            'vlp16_sim_lexus_cluster.param.yaml')])
+            'vlp16_sim_lexus_cluster.param.yaml')],
+        remappings=[
+            ("points_in", "nonground_points"),
+            ("points_clustered", "cluster_points")
+        ])
 
     # ray ground filter runner definition.
     ray_ground_runner = launch_ros.actions.Node(

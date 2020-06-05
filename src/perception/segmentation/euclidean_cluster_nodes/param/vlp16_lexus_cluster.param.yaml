@@ -3,9 +3,8 @@
 
 euclidean_cluster_cloud_node:
   ros__parameters:
-    cloud_topic: "points_nonground"
-    cluster_topic: "cluster_points"
-    box_topic: "lidar_bounding_boxes"
+    use_cluster: True
+    use_box: True
     max_cloud_size: 55000
     downsample: False
     use_lfit: True
