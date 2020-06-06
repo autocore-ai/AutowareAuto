@@ -20,6 +20,7 @@
     <depend>euclidean_cluster</depend>
     <depend>sensor_msgs</depend>
     <depend>voxel_grid_nodes</depend>
+    <depend>lidar_utils</depend>
 
     <build_depend>autoware_auto_common</build_depend>
 

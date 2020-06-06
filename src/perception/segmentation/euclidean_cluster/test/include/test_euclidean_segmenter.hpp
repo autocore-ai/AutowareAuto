@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_EUCLIDEAN_SEGMENTER_HPP_
 #define TEST_EUCLIDEAN_SEGMENTER_HPP_
@@ -127,27 +128,27 @@ TEST(euclidean_segmenter, combined)
   autoware_auto_msgs::msg::BoundingBox box;
   std::vector<std::pair<float32_t, float32_t>> dummy;
   const auto make = [](const float32_t x, const float32_t y) -> geometry_msgs::msg::Point32
-  {
-    geometry_msgs::msg::Point32 p;
-    p.x = x;
-    p.y = y;
-    return p;
-  };
+    {
+      geometry_msgs::msg::Point32 p;
+      p.x = x;
+      p.y = y;
+      return p;
+    };
 
   const auto box_fuzz = [](
     EuclideanCluster & cls,
     std::vector<std::pair<float32_t, float32_t>> & dummy,
     const autoware_auto_msgs::msg::BoundingBox & box) -> void
-  {
-    insert_point(cls, box.corners[0U].x, box.corners[0U].y);
-    insert_point(cls, box.corners[1U].x, box.corners[1U].y);
-    insert_point(cls, box.corners[2U].x, box.corners[2U].y);
-    insert_point(cls, box.corners[3U].x, box.corners[3U].y);
-    insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
-      box.corners[1U].x, box.corners[1U].y, 0.1F);
-    insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
-      box.corners[3U].x, box.corners[3U].y, 0.1F);
-  };
+    {
+      insert_point(cls, box.corners[0U].x, box.corners[0U].y);
+      insert_point(cls, box.corners[1U].x, box.corners[1U].y);
+      insert_point(cls, box.corners[2U].x, box.corners[2U].y);
+      insert_point(cls, box.corners[3U].x, box.corners[3U].y);
+      insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
+        box.corners[1U].x, box.corners[1U].y, 0.1F);
+      insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
+        box.corners[3U].x, box.corners[3U].y, 0.1F);
+    };
 
   // box 1
   box.centroid = make(15.0, 15.0);

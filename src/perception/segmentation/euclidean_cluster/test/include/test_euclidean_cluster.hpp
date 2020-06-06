@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_EUCLIDEAN_CLUSTER_HPP_
 #define TEST_EUCLIDEAN_CLUSTER_HPP_
@@ -41,7 +42,7 @@ TEST(euclidean_cluster, simple_bar)
   insert_line(output, cls, -10.0F, -15.0F, -10.0F, 5.0F, 0.9F);
   // check clusters
   const auto & clusters = cls.cluster(t);
-  EXPECT_EQ(clusters.clusters.size(), 1);
+  EXPECT_EQ(clusters.clusters.size(), static_cast<size_t>(1));
   // TODO(c.ho) frame
   EXPECT_TRUE(check_cluster(clusters.clusters[0], output));
   EXPECT_EQ(clusters.clusters[0].header.frame_id, "foo");
@@ -50,7 +51,7 @@ TEST(euclidean_cluster, simple_bar)
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
   const auto & clusters2 = cls.cluster(t);
-  EXPECT_EQ(clusters2.clusters.size(), 0);
+  EXPECT_EQ(clusters2.clusters.size(), static_cast<size_t>(0));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -71,7 +72,7 @@ TEST(euclidean_cluster, noisy_L)
   insert_mesh(empty, cls, -10.0F, -10.0F, -20.0F, -20.0F, 2.0F, 2.0F);
   const auto & res1 = cls.cluster(t);
   // check clusters
-  EXPECT_EQ(res1.clusters.size(), 1);
+  EXPECT_EQ(res1.clusters.size(), static_cast<size_t>(1));
   EXPECT_TRUE(check_cluster(res1.clusters[0], output));
   EXPECT_EQ(res1.clusters[0].header.frame_id, "foo");
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
@@ -80,7 +81,7 @@ TEST(euclidean_cluster, noisy_L)
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
   const auto & res2 = cls.cluster(t);
-  EXPECT_EQ(res2.clusters.size(), 0);
+  EXPECT_EQ(res2.clusters.size(), static_cast<size_t>(0));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -120,7 +121,7 @@ TEST(euclidean_cluster, multi_object)
   // cluster
   const auto & res1 = cls.cluster(t);
   // check clusters
-  EXPECT_EQ(res1.clusters.size(), 4);
+  EXPECT_EQ(res1.clusters.size(), static_cast<size_t>(4));
 
   std::vector<std::vector<std::pair<float32_t, float32_t>> *> outputs =
   {&output1, &output2, &output3, &output4};
@@ -130,7 +131,7 @@ TEST(euclidean_cluster, multi_object)
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
   const auto & res2 = cls.cluster(t);
-  EXPECT_EQ(res2.clusters.size(), 0);
+  EXPECT_EQ(res2.clusters.size(), static_cast<size_t>(0));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -149,7 +150,7 @@ TEST(euclidean_cluster, no_cluster)
 
   // cluster and check
   const auto & res = cls.cluster(t);
-  EXPECT_EQ(res.clusters.size(), 0);
+  EXPECT_EQ(res.clusters.size(), static_cast<size_t>(0));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 #endif  // TEST_EUCLIDEAN_CLUSTER_HPP_

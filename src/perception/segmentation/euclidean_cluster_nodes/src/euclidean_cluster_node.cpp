@@ -18,13 +18,13 @@
 ///        hulls
 
 #include <common/types.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 
 #include <memory>
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
-#include "lidar_utils/point_cloud_utils.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
