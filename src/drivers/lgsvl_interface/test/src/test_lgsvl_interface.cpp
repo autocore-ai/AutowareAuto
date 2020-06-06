@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "test_lgsvl_interface.hpp"
+#include <memory>
 
 TEST_F(LgsvlInterface_test, gear_mapping_state_command)
 {
@@ -22,14 +23,13 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
   // Setup subscribtion
   auto handle_state_cmd = [&expected_result, &test_completed]
       (const VSC::SharedPtr msg) -> void {
-
       EXPECT_EQ(msg->gear, expected_result.gear);
       test_completed = true;
     };
   const auto sub_node = std::make_shared<rclcpp::Node>("test_lgsvl_interface_sub_state_command",
       "/gtest");
-  auto sub_ptr = sub_node->create_subscription<lgsvl_interface::VSC>(sim_state_cmd_topic, rclcpp::QoS(
-        10), handle_state_cmd);
+  auto sub_ptr = sub_node->create_subscription<lgsvl_interface::VSC>(
+    sim_state_cmd_topic, rclcpp::QoS(10), handle_state_cmd);
 
   // Setup Node execution
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -62,7 +62,7 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
       EXPECT_FALSE(timed_out);
       EXPECT_TRUE(test_completed);
 
-      //cleaup
+      // cleaup
       rclcpp::sleep_for(std::chrono::milliseconds(100));
       executor.spin_some();
     };
@@ -103,7 +103,8 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_report)
   // Tests
   EXPECT_EQ(lgsvl_interface_->get_state_report().gear, 0);
 
-  publish_gear_and_wait(static_cast<lgsvl_interface::GEAR_TYPE>(lgsvl_interface::LGSVL_GEAR::DRIVE));
+  publish_gear_and_wait(
+    static_cast<lgsvl_interface::GEAR_TYPE>(lgsvl_interface::LGSVL_GEAR::DRIVE));
   EXPECT_EQ(lgsvl_interface_->get_state_report().gear, VSC::GEAR_DRIVE);
 
   publish_gear_and_wait(

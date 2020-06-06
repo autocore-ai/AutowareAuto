@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TEST_LGSVL_INTERFACE_HPP_
+#define TEST_LGSVL_INTERFACE_HPP_
+
 #include <gtest/gtest.h>
 #include <lgsvl_interface/visibility_control.hpp>
 #include <lgsvl_interface/lgsvl_interface.hpp>
+#include <memory>
 
 using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
 using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
@@ -29,7 +33,6 @@ const auto kinematic_state_topic = "test_vehicle_kinematic_state";
 
 class LgsvlInterface_test : public ::testing::Test
 {
-
 protected:
   void SetUp() override
   {
@@ -56,7 +59,6 @@ protected:
 public:
   rclcpp::Node::SharedPtr node_;
   std::unique_ptr<lgsvl_interface::LgsvlInterface> lgsvl_interface_;
-
 };
 
 template<typename T>
@@ -91,6 +93,4 @@ void wait_for_publisher(
     }
   }
 }
-
-
- 
+#endif  // TEST_LGSVL_INTERFACE_HPP_

@@ -1,5 +1,4 @@
 # Copyright 2020 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
@@ -26,11 +27,11 @@ def get_share_file(package_name, file_name):
 
 def generate_launch_description():
     """
-    Launches necessary dependencies for working with LGSVL simulator and ROS 2/Autoware.Auto:
+    Launch necessary dependencies for working with LGSVL simulator and ROS 2/Autoware.Auto.
+
     The LGSVL interface, which translates inputs and outputs to and from ROS standard coordinate
     systems, and the ros2 web bridge, which allows LGSVL to pick up ROS 2 topics.
     """
-
     # --------------------------------- Params -------------------------------
 
     # In combination 'raw_command', 'basic_command' and 'high_level_command' control

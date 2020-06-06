@@ -1,5 +1,4 @@
 # Copyright 2020 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
@@ -28,11 +29,12 @@ def get_share_file(package_name, file_name):
 
 def generate_launch_description():
     """
-    Launches a minimal joystick + LGSVL demo. The joystick_vehicle_interface and the lgsvl_interface
-    are modified via parameter remapping to use VehicleControlCommand as an output. The vehicle can
-    be controlled by manipulating the left joystick of the gamepad.
-    """
+    Launch a minimal joystick + LGSVL demo.
 
+    The joystick_vehicle_interface and the lgsvl_interface
+    are modified via parameter remapping to use VehicleControlCommand as an output.
+    The vehicle can be controlled by manipulating the left joystick of the gamepad.
+    """
     # --------------------------------- Params -------------------------------
 
     # In combination 'raw_command', 'basic_command' and 'high_level_command' control

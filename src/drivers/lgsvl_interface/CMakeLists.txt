@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 project(lgsvl_interface)
 set(CMAKE_CXX_STANDARD 17)
 
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Generate library
@@ -26,12 +29,12 @@ target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # run linters
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
   set(LGSVL_INTERFACE_GTEST test_${PROJECT_NAME}_gtest)
 
-  find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(${LGSVL_INTERFACE_GTEST}
     test/src/gtest_main.cpp
     test/src/test_lgsvl_interface.cpp)
