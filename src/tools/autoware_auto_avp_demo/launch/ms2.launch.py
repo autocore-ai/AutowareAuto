@@ -204,7 +204,11 @@ def generate_launch_description():
         node_executable='p2d_ndt_localizer_exe',
         node_namespace='localization',
         node_name='p2d_ndt_localizer_node',
-        parameters=[LaunchConfiguration('ndt_localizer_param_file')])
+        parameters=[LaunchConfiguration('ndt_localizer_param_file')],
+        remmapings=[
+            ("points_in", "/lidar_front/points_filtered_downsampled")
+        ]
+    )
 
     return LaunchDescription([
         euclidean_cluster_param,

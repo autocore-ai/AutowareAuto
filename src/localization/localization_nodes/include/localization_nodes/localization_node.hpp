@@ -115,19 +115,19 @@ public:
     m_pose_initializer(pose_initializer),
     m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
     m_observation_sub(create_subscription<ObservationMsgT>(
-        declare_parameter("observation_sub.topic").template get<std::string>(),
+        "points_in",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter("observation_sub.history_depth").template
             get<size_t>())}},
         [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
     m_map_sub(create_subscription<MapMsgT>(
-        declare_parameter("map_sub.topic").template get<std::string>(),
+        "ndt_map",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter("map_sub.history_depth").
             template get<size_t>())}}.transient_local(),
         [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
-        declare_parameter("pose_pub.topic").template get<std::string>(),
+        "ndt_pose",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
               "pose_pub.history_depth").template get<size_t>())}}))

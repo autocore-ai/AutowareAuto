@@ -37,7 +37,8 @@ def generate_launch_description():
     p2d_ndt_localizer_runner = launch_ros.actions.Node(
         package='ndt_nodes',
         node_executable='p2d_ndt_localizer_exe',
-        parameters=[p2d_ndt_localizer_param_file])
+        parameters=[p2d_ndt_localizer_param_file],
+        remappings=[("points_in", "points_nonground")])
 
     return launch.LaunchDescription([
         p2d_ndt_localizer_runner])
