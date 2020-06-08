@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef TEST_DRIVER_H_
-#define TEST_DRIVER_H_
+#ifndef TEST_DRIVER_HPP_
+#define TEST_DRIVER_HPP_
 
 #include <iostream>
 #include <chrono>
@@ -154,7 +155,8 @@ TEST_F(velodyne_driver, basic)
   Vlp16Translator driver(cfg);
   driver.convert(pkt, out);
   EXPECT_LE(out.size(),
-    Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::NUM_BLOCKS_PER_PACKET);
+    static_cast<size_t>(Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::
+    NUM_BLOCKS_PER_PACKET));
   // Mostly just a sanity check: All points should fall in a pie slice
   float32_t min_r = std::numeric_limits<float32_t>::max();
   float32_t max_r = 0.0F;
@@ -172,7 +174,7 @@ TEST_F(velodyne_driver, basic)
     const float32_t r_xy = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
     const float32_t phi = atan2f(pt.z, r_xy);
     const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y) + (pt.z * pt.z));
-   // Update min/max
+    // Update min/max
     min_r = std::min(min_r, r);
     max_r = std::max(max_r, r);
     if (fabsf(th) > 0.00000001F) {
@@ -219,4 +221,4 @@ TEST_F(velodyne_driver, benchmark)
   std::cerr << "convert() average runtime: " << duration.count() / num_runs << " µs\n";
 }
 
-#endif  // TEST_DRIVER_H_
+#endif  // TEST_DRIVER_HPP_
