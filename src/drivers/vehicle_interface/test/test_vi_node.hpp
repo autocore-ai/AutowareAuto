@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #ifndef TEST_VI_NODE_HPP_
 #define TEST_VI_NODE_HPP_
 
@@ -121,18 +122,19 @@ public:
   : VehicleInterfaceNode{
       node_name,
       rclcpp::NodeOptions(options)
-        .append_parameter_override("cycle_time_ms", static_cast<int64_t>(30LL))
-        .append_parameter_override("state_machine.gear_shift_velocity_threshold_mps", 0.5F)
-        .append_parameter_override("state_machine.acceleration_limits.min", -3.0F)
-        .append_parameter_override("state_machine.acceleration_limits.max", 3.0F)
-        .append_parameter_override("state_machine.acceleration_limits.threshold", 1.0F)
-        .append_parameter_override("state_machine.front_steer_limits.min", -0.331F)
-        .append_parameter_override("state_machine.front_steer_limits.max", 0.331F)
-        .append_parameter_override("state_machine.front_steer_limits.threshold", 0.3F)
-        .append_parameter_override("state_machine.time_step_ms", static_cast<int64_t>(100LL))
-        .append_parameter_override("state_machine.timeout_acceleration_mps2", 3.0F)
-        .append_parameter_override("state_machine.state_transition_timeout_ms", static_cast<int64_t>(3000LL))
-        .append_parameter_override("state_machine.gear_shift_accel_deadzone_mps2", 0.5F)
+      .append_parameter_override("cycle_time_ms", static_cast<int64_t>(30LL))
+      .append_parameter_override("state_machine.gear_shift_velocity_threshold_mps", 0.5F)
+      .append_parameter_override("state_machine.acceleration_limits.min", -3.0F)
+      .append_parameter_override("state_machine.acceleration_limits.max", 3.0F)
+      .append_parameter_override("state_machine.acceleration_limits.threshold", 1.0F)
+      .append_parameter_override("state_machine.front_steer_limits.min", -0.331F)
+      .append_parameter_override("state_machine.front_steer_limits.max", 0.331F)
+      .append_parameter_override("state_machine.front_steer_limits.threshold", 0.3F)
+      .append_parameter_override("state_machine.time_step_ms", static_cast<int64_t>(100LL))
+      .append_parameter_override("state_machine.timeout_acceleration_mps2", 3.0F)
+      .append_parameter_override("state_machine.state_transition_timeout_ms",
+        static_cast<int64_t>(3000LL))
+      .append_parameter_override("state_machine.gear_shift_accel_deadzone_mps2", 0.5F)
   }
   {
     // sketchy, but this is because the PlatformInterface generally shouldn't be exposed

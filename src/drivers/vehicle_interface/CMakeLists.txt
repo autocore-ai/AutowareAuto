@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(vehicle_interface)
 set(CMAKE_CXX_STANDARD 17) # For variant, optional
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Library
@@ -15,9 +19,9 @@ autoware_set_compile_options(${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # Lint
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
   # Test
-  find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(${PROJECT_NAME}_test
     test/gtest_main.cpp
     test/error_handling.cpp
@@ -40,4 +44,4 @@ if(BUILD_TESTING)
     "signal_filters")
 endif()
 
-ament_auto_package()
+ament_auto_package(INSTALL_TO_SHARE param)

@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 
@@ -32,7 +33,7 @@ TEST_F(sanity_checks, raw_translation)
 
   rclcpp::NodeOptions options{};
   options
-    .append_parameter_override("control_command", "raw");
+  .append_parameter_override("control_command", "raw");
 
   const auto vi_node = std::make_shared<TestVINode>(
     "sanity_check_vi_node", options, false);  // no failure
