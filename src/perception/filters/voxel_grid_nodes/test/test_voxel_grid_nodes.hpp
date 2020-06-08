@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_VOXEL_GRID_NODES_HPP_
 #define TEST_VOXEL_GRID_NODES_HPP_
@@ -50,7 +51,8 @@ protected:
   const std::size_t m_capacity;
 
 public:
-  VoxelAlgorithm() : m_capacity(10U)
+  VoxelAlgorithm()
+  : m_capacity(10U)
   {
     // Initialize config
     PointXYZ min_point;

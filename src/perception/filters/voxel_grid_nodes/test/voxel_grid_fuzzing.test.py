@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import ament_index_python
 import launch
 import launch.actions
@@ -39,7 +37,7 @@ def generate_test_description(ready_fn):
 
     ld, context = lidar_integration.get_point_cloud_mutation_launch_description(
         test_nodes=[node],
-        checkers=[], # TODO we only check that node does not crash for now
+        checkers=[],  # TODO we only check that node does not crash for now
         topic=test_topic,
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())

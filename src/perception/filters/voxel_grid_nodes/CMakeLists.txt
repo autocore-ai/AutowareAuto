@@ -18,22 +18,20 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(voxel_grid_nodes)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
-find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
-find_package(lidar_utils REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(voxel_grid REQUIRED)
 ament_auto_find_build_dependencies()
 
-# includes
-include_directories(include)
-
-add_library(${PROJECT_NAME} SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   include/voxel_grid_nodes/algorithm/voxel_cloud_base.hpp
   include/voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp
   include/voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp
@@ -45,30 +43,18 @@ add_library(${PROJECT_NAME} SHARED
   src/voxel_cloud_node.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-ament_target_dependencies(${PROJECT_NAME}
-  "lidar_utils"
-  "sensor_msgs"
-  "voxel_grid"
-  "rclcpp"
-  "rclcpp_lifecycle"
-)
 
 # Cloud executable
 set(VOXEL_CLOUD_EXE voxel_grid_cloud_node_exe)
-add_executable(${VOXEL_CLOUD_EXE} src/voxel_cloud_main.cpp)
+ament_auto_add_executable(${VOXEL_CLOUD_EXE} src/voxel_cloud_main.cpp)
 autoware_set_compile_options(${VOXEL_CLOUD_EXE})
-target_link_libraries(${VOXEL_CLOUD_EXE} ${PROJECT_NAME})
-ament_target_dependencies(${VOXEL_CLOUD_EXE} "rclcpp" "rclcpp_lifecycle")
 target_compile_definitions(${VOXEL_CLOUD_EXE} PRIVATE
     CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 
-file(COPY param/vlp16_lexus_centroid.param.yaml DESTINATION "${CMAKE_BINARY_DIR}/param")  #copy the param file into the build directory
-
 if(BUILD_TESTING)
   # run linters
-  autoware_static_code_analysis()
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(lidar_integration REQUIRED)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
   set(VOXEL_GRID_NODE_GTEST voxel_algorithm_gtest)
@@ -76,7 +62,6 @@ if(BUILD_TESTING)
   target_link_libraries(${VOXEL_GRID_NODE_GTEST} ${PROJECT_NAME})
   target_include_directories(${VOXEL_GRID_NODE_GTEST} PRIVATE "test/include" "include")
 
-  find_package(ros_testing REQUIRED)
   add_ros_test(
     test/voxel_grid_fuzzing.test.py
     TIMEOUT "120"
@@ -85,7 +70,6 @@ endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
-autoware_install(LIBRARIES ${PROJECT_NAME} EXECUTABLES ${VOXEL_CLOUD_EXE} HAS_INCLUDE HAS_PARAM)
 # Ament Exporting
-ament_export_dependencies("sensor_msgs" "voxel_grid" "rclcpp" "rclcpp_lifecycle")
-ament_package()
+ament_auto_package(INSTALL_TO_SHARE
+  param)
