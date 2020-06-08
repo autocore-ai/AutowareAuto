@@ -1,0 +1,60 @@
+
+mpc_planner:
+  ros__parameters:
+    ego_topic: "vehicle_kinematic_state"
+    target_topic: "target_state"
+    object_topic: "object_bounding_boxes"
+    boundary_topic: "lane_boundaries"
+    trajectory_topic: "trajectory"
+    tf_topic: "tf"
+    diagnostic_topic: "planner_diagnostic"
+    source: "target"
+    max_context_time_error_ms: 100
+    planner:
+      limits:
+        min_longitudinal_velocity_mps: 0.01
+        max_longitudinal_velocity_mps: 35.0
+        min_lateral_velocity_mps: -3.0
+        max_lateral_velocity_mps: 3.0
+        min_acceleration_mps2: -3.0
+        max_acceleration_mps2: 3.0
+        min_yaw_rate_rps: -3.0
+        max_yaw_rate_rps: 3.0
+        min_jerk_mps3: -10.0
+        max_jerk_mps3: 10.0
+        min_steer_angle_rad: -0.331
+        max_steer_angle_rad: 0.331
+        min_steer_angle_rate_rps: -0.331
+        max_steer_angle_rate_rps: 0.331
+      vehicle:
+        cg_to_front_m: 1.2
+        cg_to_rear_m: 1.5
+        front_corner_stiffness: 17000.0
+        rear_corner_stiffness: 20000.0
+        mass_kg: 1460.0
+        yaw_inertia_kgm2: 2170.0
+        width_m: 2.0
+        front_overhang_m: 0.5
+        rear_overhang_m: 0.5
+      weights:
+        nominal:
+          pose: 10.0
+          heading: 10.0
+          longitudinal_velocity: 10.0
+          lateral_velocity: 10.0
+          yaw_rate: 10.0
+          acceleration: 10.0
+          jerk: 10.0
+          steer_angle: 10.0
+          steer_angle_rate: 10.0
+        terminal:
+          pose: 1000.0
+          heading: 1000.0
+          longitudinal_velocity: 1000.0
+          lateral_velocity: 1000.0
+          yaw_rate: 1000.0
+          acceleration: 1000.0
+          jerk: 1000.0
+          steer_angle: 1000.0
+          steer_angle_rate: 1000.0
+
