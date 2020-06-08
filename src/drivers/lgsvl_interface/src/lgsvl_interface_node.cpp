@@ -23,6 +23,7 @@
 #include "lgsvl_interface/lgsvl_interface_node.hpp"
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
+using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 
 namespace lgsvl_interface
@@ -32,23 +33,15 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
   const rclcpp::NodeOptions & options)
 : VehicleInterfaceNode{"lgsvl_interface", options}
 {
-  const auto sim_ctrl_cmd_topic =
-    declare_parameter("lgsvl.control_command_topic").get<std::string>();
-  const auto sim_state_cmd_topic =
-    declare_parameter("lgsvl.state_command_topic").get<std::string>();
-  const auto sim_state_rpt_topic =
-    declare_parameter("lgsvl.state_report_topic").get<std::string>();
-  const auto sim_veh_odom_topic =
-    declare_parameter("lgsvl.veh_odometry_topic").get<std::string>();
+  const auto sim_ctrl_cmd_topic = "vehicle_control_cmd";
+  const auto sim_state_cmd_topic = "vehicle_state_cmd";
+  const auto sim_state_rpt_topic = "state_report";
+  const auto sim_veh_odom_topic = "vehicle_odom";
   // Optional
-  const auto sim_nav_odom_topic_param =
-    declare_parameter("lgsvl.nav_odometry_topic");
   const std::string sim_nav_odom_topic =
-    rclcpp::ParameterType::PARAMETER_NOT_SET == sim_nav_odom_topic_param.get_type() ?
-    "" :
-    sim_nav_odom_topic_param.get<std::string>();
-  const auto kinematic_state_topic =
-    declare_parameter("lgsvl.kinematic_state_topic").get<std::string>();
+    declare_parameter("use_nav_odometry_topic", true) ?
+    "gnss_odom" : "";
+  const auto kinematic_state_topic = "vehicle_kinematic_state";
   const auto table = [this](const std::string & prefix_raw) -> Table1D {
       const std::string prefix = "lgsvl." + prefix_raw + ".";
       return Table1D{

@@ -112,7 +112,14 @@ def generate_launch_description():
         node_executable='lgsvl_interface_exe',
         node_namespace='vehicle',
         output='screen',
-        parameters=[LaunchConfiguration('lgsvl_interface_param_file')]
+        parameters=[LaunchConfiguration('lgsvl_interface_param_file')],
+        remappings=[
+            ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
+            ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
+            ("state_report", "/lgsvl/state_report"),
+            ("gnss_odom", "/lgsvl/gnss_odom"),
+            ("vehicle_odom", "/lgsvl/vehicle_odom")
+        ]
     )
     recordreplay_planner_path = get_share_file(
         package_name='recordreplay_planner_node',

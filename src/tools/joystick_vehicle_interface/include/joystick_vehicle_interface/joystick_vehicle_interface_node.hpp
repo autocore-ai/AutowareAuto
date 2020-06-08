@@ -97,9 +97,7 @@ public:
   JoystickVehicleInterfaceNode(
     const std::string & node_name,
     const std::string & node_namespace,
-    const std::string & high_level_command_topic,
-    const std::string & raw_command_topic,
-    const std::string & basic_command_topic,
+    const std::string & control_command,
     const std::string & state_command_topic,
     const std::string & joy_topic,
     const bool8_t & recordreplay_command_enabled,
@@ -110,9 +108,7 @@ public:
 
 private:
   JOYSTICK_VEHICLE_INTERFACE_LOCAL void init(
-    const std::string & high_level_command_topic,
-    const std::string & raw_command_topic,
-    const std::string & basic_command_topic,
+    const std::string & control_command,
     const std::string & state_command_topic,
     const std::string & joy_topic,
     const bool8_t & recordreplay_command_enabled,

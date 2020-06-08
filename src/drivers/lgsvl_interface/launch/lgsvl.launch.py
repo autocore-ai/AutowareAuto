@@ -34,24 +34,13 @@ def generate_launch_description():
     """
     # --------------------------------- Params -------------------------------
 
-    # In combination 'raw_command', 'basic_command' and 'high_level_command' control
+    # In combination 'raw', 'basic' and 'high_level' control
     # in what mode of control comands to operate in,
-    # only one of them can be active at a time with a topics name
-    # other should be blank/null which is achieved by used ="''"
-    high_level_command_param = DeclareLaunchArgument(
-        'high_level_command',
-        default_value="''",  # use "high_level_command" or "''"
-        description='high_level_command control mode topic name')
-
-    basic_command_param = DeclareLaunchArgument(
-        'basic_command',
-        default_value="''",  # use "vehicle_command" or "''"
-        description='basic_command control mode topic name')
-
-    raw_command_param = DeclareLaunchArgument(
-        'raw_command',
-        default_value='raw_command',  # use "raw_command" or "''"
-        description='raw_command control mode topic name')
+    # only one of them can be active at a time with a value
+    control_command_param = DeclareLaunchArgument(
+        'control_command',
+        default_value="raw",  # use "raw", "basic" or "high_level"
+        description='command control mode topic name')
 
     # Default lgsvl_interface params
     lgsvl_interface_param = DeclareLaunchArgument(
@@ -72,9 +61,14 @@ def generate_launch_description():
         parameters=[
             LaunchConfiguration('lgsvl_interface_param'),
             # overwrite parameters from yaml here
-            {"high_level_command.name": LaunchConfiguration('high_level_command')},
-            {"basic_command.name": LaunchConfiguration('basic_command')},
-            {"raw_command.name": LaunchConfiguration('raw_command')}
+            {"control_command.name": LaunchConfiguration('control_command')}
+        ],
+        remappings=[
+            ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
+            ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
+            ("state_report", "/lgsvl/state_report"),
+            ("gnss_odom", "/lgsvl/gnss_odom"),
+            ("vehicle_odom", "/lgsvl/vehicle_odom")
         ]
     )
 
@@ -82,9 +76,7 @@ def generate_launch_description():
     # lgsvl_bridge = launch.actions.ExecuteProcess(cmd=["rosbridge"], shell=True)
 
     ld = LaunchDescription([
-        high_level_command_param,
-        basic_command_param,
-        raw_command_param,
+        control_command_param,
         lgsvl_interface_param,
         lgsvl_interface
         # lgsvl_bridge  # TODO(c.ho) bring this back once ADE version of web bridge is correct

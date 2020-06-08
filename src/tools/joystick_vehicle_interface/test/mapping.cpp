@@ -76,11 +76,10 @@ struct SubAndMsg
 TEST_P(joy_vi_test, basic_mapping)
 {
   const auto param = GetParam();
-  const auto high_level_command_topic =
-    (PubType::HighLevel == param.pub_type) ? "test_joystick_high_level" : "null";
-  const auto raw_command_topic = (PubType::Raw == param.pub_type) ? "test_joystick_raw" : "null";
-  const auto basic_command_topic =
-    (PubType::Basic == param.pub_type) ? "test_joystick_basic" : "null";
+  const auto control_command =
+    (PubType::HighLevel == param.pub_type) ? "high_level" :
+    (PubType::Raw == param.pub_type) ? "raw" :
+    (PubType::Basic == param.pub_type) ? "basic" : "null";
   constexpr auto state_command_topic = "test_state_command_topic";
   constexpr auto joy_topic = "test_joy_topic";
   constexpr auto recordreplay_command_topic = "recordreplay_cmd";
@@ -89,10 +88,12 @@ TEST_P(joy_vi_test, basic_mapping)
   const auto test_nd = std::make_shared<rclcpp::Node>("test_joystick_vehicle_interface_talker");
   const auto qos = rclcpp::SensorDataQoS{};
   const auto joy_pub = test_nd->create_publisher<sensor_msgs::msg::Joy>(joy_topic, qos);
-  SubAndMsg<autoware_auto_msgs::msg::RawControlCommand> raw{*test_nd, raw_command_topic};
+  SubAndMsg<autoware_auto_msgs::msg::RawControlCommand>
+    raw{*test_nd, (control_command == "raw") ? "raw_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::HighLevelControlCommand>
-  high_level{*test_nd, high_level_command_topic};
-  SubAndMsg<autoware_auto_msgs::msg::VehicleControlCommand> basic{*test_nd, basic_command_topic};
+    high_level{*test_nd, (control_command == "high_level") ? "high_level_command" : "null"};
+  SubAndMsg<autoware_auto_msgs::msg::VehicleControlCommand>
+    basic{*test_nd, (control_command == "basic") ? "basic_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::VehicleStateCommand> state{*test_nd, state_command_topic};
   SubAndMsg<std_msgs::msg::UInt8> recordreplay{*test_nd, recordreplay_command_topic};
 
@@ -112,9 +113,7 @@ TEST_P(joy_vi_test, basic_mapping)
   const auto nd = std::make_shared<JoystickVehicleInterfaceNode>(
     "test_joystick_vehicle_interface",
     "",
-    high_level_command_topic,
-    raw_command_topic,
-    basic_command_topic,
+    control_command,
     state_command_topic,
     joy_topic,
     recordreplay_command_enabled,
@@ -273,7 +272,7 @@ TEST_P(joy_vi_test, basic_mapping)
     EXPECT_EQ(button_check_fn(Buttons::BLINKER_HAZARD), state.msg_->blinker == VSC::BLINKER_HAZARD);
   }
 
-  //Record Replay
+  // Record Replay
   if (recordreplay.msg_) {
     EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_RECORD), recordreplay.msg_->data == 1u);
     EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_REPLAY), recordreplay.msg_->data == 2u);

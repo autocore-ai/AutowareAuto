@@ -31,17 +31,12 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
 : Node{node_name, node_namespace}
 {
   // topics
-  const auto joy_topic = declare_parameter("joy_topic").get<std::string>();
-  const auto high_level_command_topic =
-    declare_parameter("high_level_command_topic").get<std::string>();
-  const auto raw_command_topic =
-    declare_parameter("raw_command_topic").get<std::string>();
-  const auto basic_command_topic =
-    declare_parameter("basic_command_topic").get<std::string>();
-  const auto state_command_topic =
-    declare_parameter("state_command_topic").get<std::string>();
+  const auto joy_topic = "joy";
+  const auto control_command =
+    declare_parameter("control_command").get<std::string>();
+  const auto state_command_topic = "state_command";
   const bool recordreplay_command_enabled =
-    declare_parameter("recordreplay_command_enabled").get<bool>();
+    declare_parameter("recordreplay_command_enabled").get<bool8_t>();
 
   // maps
   const auto check_set = [this](auto & map, auto key, const std::string & param_name) {
@@ -98,9 +93,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(button_map, Buttons::RECORDREPLAY_STOP, "buttons.recordreplay_stop");
   // init
   init(
-    high_level_command_topic,
-    raw_command_topic,
-    basic_command_topic,
+    control_command,
     state_command_topic,
     joy_topic,
     recordreplay_command_enabled,
@@ -114,9 +107,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
 JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   const std::string & node_name,
   const std::string & node_namespace,
-  const std::string & high_level_command_topic,
-  const std::string & raw_command_topic,
-  const std::string & basic_command_topic,
+  const std::string & control_command,
   const std::string & state_command_topic,
   const std::string & joy_topic,
   const bool8_t & recordreplay_command_enabled,
@@ -127,9 +118,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
 : Node{node_name, node_namespace}
 {
   init(
-    high_level_command_topic,
-    raw_command_topic,
-    basic_command_topic,
+    control_command,
     state_command_topic,
     joy_topic,
     recordreplay_command_enabled,
@@ -141,9 +130,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
 
 ////////////////////////////////////////////////////////////////////////////////
 void JoystickVehicleInterfaceNode::init(
-  const std::string & high_level_command_topic,
-  const std::string & raw_command_topic,
-  const std::string & basic_command_topic,
+  const std::string & control_command,
   const std::string & state_command_topic,
   const std::string & joy_topic,
   const bool & recordreplay_command_enabled,
@@ -152,19 +139,17 @@ void JoystickVehicleInterfaceNode::init(
   const AxisScaleMap & axis_offset_map,
   const ButtonMap & button_map)
 {
-  const auto check = [](const std::string & topic) -> bool8_t {
-      return (!topic.empty()) && (topic != "null");
-    };
   const auto qos = rclcpp::QoS{10U}.reliable().durability_volatile();
   // Control commands
-  if (check(high_level_command_topic)) {
-    m_cmd_pub = create_publisher<HighLevelControl>(high_level_command_topic, qos);
-  } else if (check(raw_command_topic)) {
-    m_cmd_pub = create_publisher<RawControl>(raw_command_topic, qos);
-  } else if (check(basic_command_topic)) {
-    m_cmd_pub = create_publisher<BasicControl>(basic_command_topic, qos);
+  if (control_command == "high_level") {
+    m_cmd_pub = create_publisher<HighLevelControl>("high_level_command", qos);
+  } else if (control_command == "raw") {
+    m_cmd_pub = create_publisher<RawControl>("raw_command", qos);
+  } else if (control_command == "basic") {
+    m_cmd_pub = create_publisher<BasicControl>("basic_command", qos);
   } else {
-    throw std::domain_error{"JoystickVehicleInterface must have exactly 1 command topic specified"};
+    throw std::domain_error
+          {"JoystickVehicleInterface does not support " + control_command + "command control mode"};
   }
   // State commands
   if (state_command_topic.empty()) {
