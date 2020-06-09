@@ -40,8 +40,7 @@ Start ADE with the LGSVL volume:
 
 ```
 $ cd ~/adehome/AutowareAuto
-$ source .aderc-lgsvl
-$ ade start --update --enter
+$ ade --rc .aderc-lgsvl start --update --enter
 ```
 
 In the same terminal window, start the LGSVL simulator:
