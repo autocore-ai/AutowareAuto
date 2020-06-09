@@ -4,8 +4,7 @@ vehicle:
       cycle_time_ms: 10
       # Only one of the three control command topics need be specified
       # "raw", "basic" or "high_level"
-      control_command:
-        name: "raw"
+      control_command: "raw"
       lgsvl:
         use_nav_odometry_topic: True
         throttle:
