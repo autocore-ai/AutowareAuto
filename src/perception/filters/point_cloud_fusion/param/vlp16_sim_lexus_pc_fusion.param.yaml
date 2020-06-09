@@ -3,9 +3,6 @@
 lidars:
   point_cloud_fusion_node:
     ros__parameters:
-      output_topic:     "points_filtered"
-      input_topics:
-        - "/lidar_front/points_filtered"
-        - "/lidar_rear/points_filtered"
+      number_of_sources: 2
       output_frame_id:  "base_link"
       cloud_size:       55000

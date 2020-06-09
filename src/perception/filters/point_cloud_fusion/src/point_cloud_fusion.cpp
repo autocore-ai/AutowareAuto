@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tf2_ros/buffer_interface.h>  // TODO(esteve): Workaround for https://github.com/ros2/geometry2/pull/126
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <common/types.hpp>
@@ -38,12 +37,14 @@ PointCloudFusionNode::PointCloudFusionNode(
   const std::string & node_name,
   const std::string & node_namespace)
 : Node(node_name, node_namespace),
-  m_cloud_publisher(create_publisher<PointCloudMsgT>(declare_parameter("output_topic")
-    .get<std::string>(), rclcpp::QoS(10))),
-  m_input_topics(declare_parameter("input_topics").get<std::vector<std::string>>()),
+  m_cloud_publisher(create_publisher<PointCloudMsgT>("output_topic", rclcpp::QoS(10))),
+  m_input_topics(declare_parameter("number_of_sources").get<std::size_t>()),
   m_output_frame_id(declare_parameter("output_frame_id").get<std::string>()),
   m_cloud_capacity(declare_parameter("cloud_size").get<uint32_t>())
 {
+  for (size_t i = 0; i < m_input_topics.size(); ++i) {
+    m_input_topics[i] = "input_topic" + std::to_string(i + 1);
+  }
   init();
 }
 

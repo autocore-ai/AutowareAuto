@@ -85,7 +85,12 @@ def generate_launch_description():
         node_executable='pointcloud_fusion_node_exe',
         node_namespace='lidars',
         parameters=[get_param_file('point_cloud_fusion',
-            'vlp16_sim_lexus_pc_fusion.param.yaml')])
+            'vlp16_sim_lexus_pc_fusion.param.yaml')],
+        remappings=[
+            ("output_topic", "points_filtered"),
+            ("input_topic1", "/lidar_front/points_filtered"),
+            ("input_topic2", "/lidar_rear/points_filtered")
+        ])
 
     # Setup robot state publisher
     vehicle_description_pkg_path = get_package_share_directory(

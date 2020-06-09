@@ -27,8 +27,8 @@ Pointcloud fusion is supported from up to 8 sources only. This limitation is due
 These nodes have the following basic structure:
 
 Input:
-- input topic names
-- output topic name
+- number of source topics
+- output frame id
 - point cloud capacity
 
 
