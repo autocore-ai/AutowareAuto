@@ -51,7 +51,6 @@ if(BUILD_TESTING)
           test/test_measurement_conversion.cpp
           test/test_kalman_filter_wrapper.cpp
 #          test/test_state_estimation_node.cpp
-          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/param
   )
   # TODO(niosus): Above test is temporarily disabled until #488 is fixed
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})

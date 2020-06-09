@@ -111,8 +111,19 @@ TEST_F(StateEstimationNodeTest, publish_and_receive_odom_message) {
   msg.twist.covariance[7] = 1.0;
 
   rclcpp::NodeOptions node_options{};
-  const std::string param_file_name{"state_estimation_node_test.param.yaml"};
-  node_options.arguments({"__params:=" + param_file_name});
+  node_options.append_parameter_override(
+    "topics.input_odom", std::vector<std::string>{"/odom_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_pose", std::vector<std::string>{"/pose_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
+  node_options.append_parameter_override("data_driven", true);
+  node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("mahalanobis_threshold", 10.0);
+  node_options.append_parameter_override(
+    "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
+  node_options.append_parameter_override(
+    "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
   const auto node{std::make_shared<StateEstimationNode>(
       "state_estimation_node", "state_estimation_namespace", node_options)};
 
@@ -150,8 +161,19 @@ TEST_F(StateEstimationNodeTest, track_object_straight_line) {
   msg.twist.covariance[7] = 1.0;
 
   rclcpp::NodeOptions node_options{};
-  const std::string param_file_name{"state_estimation_node_test.param.yaml"};
-  node_options.arguments({"__params:=" + param_file_name});
+  node_options.append_parameter_override(
+    "topics.input_odom", std::vector<std::string>{"/odom_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_pose", std::vector<std::string>{"/pose_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
+  node_options.append_parameter_override("data_driven", true);
+  node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("mahalanobis_threshold", 10.0);
+  node_options.append_parameter_override(
+    "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
+  node_options.append_parameter_override(
+    "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
   const auto node{std::make_shared<StateEstimationNode>(
       "state_estimation_node", "state_estimation_namespace", node_options)};
 
