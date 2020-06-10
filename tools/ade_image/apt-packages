@@ -13,6 +13,7 @@ libboost-all-dev
 lcov
 less
 libpcap-dev
+libpugixml-dev
 man
 openssh-client
 python3-lxml
