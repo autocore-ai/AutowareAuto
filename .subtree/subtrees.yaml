@@ -1,0 +1,12 @@
+mpc:
+  path: src/external/mpc
+  revision: 8fc7cfdd55cea537d44f4e97016d6e7c1ed6243b
+  url: https://gitlab.com/aninnymouse/mpc
+mrt_cmake_modules:
+  path: src/external/mrt_cmake_modules
+  revision: fd6daa6bd680e67fb9951e433778aaccec3a784a
+  url: https://github.com/KIT-MRT/mrt_cmake_modules
+Lanelet2:
+  path: src/external/Lanelet2
+  revision: 2bd4faf6baff4bcc0fc1718f1578c6e01ddcced2
+  url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2
