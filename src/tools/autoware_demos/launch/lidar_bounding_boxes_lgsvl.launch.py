@@ -69,7 +69,8 @@ def generate_launch_description():
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_front',
         node_namespace='lidar_front',
-        parameters=[filter_transform_param])
+        parameters=[filter_transform_param],
+        remappings=[("points_in", "points_raw")])
 
     # point cloud filter transform runner definition for rear lidar
     filter_transform_rear_runner = launch_ros.actions.Node(
@@ -77,7 +78,8 @@ def generate_launch_description():
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_rear',
         node_namespace='lidar_rear',
-        parameters=[filter_transform_param])
+        parameters=[filter_transform_param],
+        remappings=[("points_in", "points_raw")])
 
     # point cloud fusion runner to fuse front and rear lidar
     fuser_runner = launch_ros.actions.Node(

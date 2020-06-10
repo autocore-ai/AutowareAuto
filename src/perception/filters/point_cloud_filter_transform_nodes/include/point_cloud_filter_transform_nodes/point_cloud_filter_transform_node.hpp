@@ -116,12 +116,10 @@ public:
         declare_parameter("static_transformer.translation.z").get<float64_t>())},
     m_init_timeout{std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()}},
     m_timeout{std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()}},
-    m_sub_ptr{create_subscription<PointCloudT>(
-        declare_parameter("raw_topic").get<std::string>(), rclcpp::QoS{10},
+    m_sub_ptr{create_subscription<PointCloudT>("points_in", rclcpp::QoS{10},
         std::bind(
           &PointCloudFilterTransformNodeBase::process_filtered_transformed_message, this, _1))},
-    m_pub_ptr{create_publisher<PointCloudT>(
-        declare_parameter("filtered_topic").get<std::string>(), rclcpp::QoS{10})},
+    m_pub_ptr{create_publisher<PointCloudT>("points_filtered", rclcpp::QoS{10})},
     m_expected_num_publishers{
       static_cast<size_t>(declare_parameter("expected_num_publishers").get<int32_t>())},
     m_expected_num_subscribers{

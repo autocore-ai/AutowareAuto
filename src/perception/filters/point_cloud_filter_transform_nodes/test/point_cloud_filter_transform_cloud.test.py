@@ -59,9 +59,9 @@ def generate_test_description(ready_fn):
             {
                 "expected_num_ground_subscribers": 1,
                 "expected_num_nonground_subscribers": 1,
-                "raw_topic": "points_raw"
             }
-        ]
+        ],
+        remappings=[("points_in", "points_raw")]
     )
 
     filtered_points_checker = lidar_integration.make_pcl_checker(

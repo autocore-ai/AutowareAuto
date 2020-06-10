@@ -4,8 +4,6 @@ lidar_front:
   filter_transform_vlp16_front:
     ros__parameters:
       timeout_ms:       110
-      raw_topic:       "points_raw"
-      filtered_topic:  "points_filtered"
       pcl_size:         55000
       input_frame_id:  "lidar_front"
       output_frame_id: "base_link"
@@ -31,8 +29,6 @@ lidar_rear:
   filter_transform_vlp16_rear:
     ros__parameters:
       timeout_ms:       110
-      raw_topic:       "points_raw"
-      filtered_topic:  "points_filtered"
       pcl_size:         55000
       input_frame_id:  "lidar_rear"
       output_frame_id: "base_link"

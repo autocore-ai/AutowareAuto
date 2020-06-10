@@ -130,14 +130,16 @@ def generate_launch_description():
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_front',
         node_namespace='lidar_front',
-        parameters=[LaunchConfiguration('pc_filter_transform_param_file')]
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
+        remappings=[("points_in", "points_raw")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
         node_executable='point_cloud_filter_transform_node_exe',
         node_name='filter_transform_vlp16_rear',
         node_namespace='lidar_rear',
-        parameters=[LaunchConfiguration('pc_filter_transform_param_file')]
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
+        remappings=[("points_in", "points_raw")]
     )
     lgsvl_interface = Node(
         package='lgsvl_interface',
