@@ -148,7 +148,9 @@ void SpinnakerCameraNode::publish_image(
   std::unique_ptr<sensor_msgs::msg::Image> image)
 {
   const auto publisher_index = m_use_publisher_per_camera ? camera_index : 0UL;
-  m_publishers.at(publisher_index).publish(std::move(image));
+  if (image) {
+    m_publishers.at(publisher_index).publish(std::move(image));
+  }
 }
 
 void SpinnakerCameraNode::ProtectedPublisher::set_publisher(PublisherT::SharedPtr publisher)
@@ -161,7 +163,9 @@ void SpinnakerCameraNode::ProtectedPublisher::publish(
 {
   if (m_publisher) {
     const std::lock_guard<std::mutex> lock{m_publish_mutex};
-    m_publisher->publish(std::move(image));
+    if (image) {
+      m_publisher->publish(std::move(image));
+    }
   } else {
     throw std::runtime_error("Publisher is nullptr, cannot publish.");
   }
