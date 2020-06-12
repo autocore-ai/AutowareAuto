@@ -162,6 +162,8 @@ ade_arm64:
 
 build_barebones:
   <<: *build_barebones_base
+  needs:
+    - ade
 
 build_barebones_arm64:
   tags:
@@ -169,6 +171,8 @@ build_barebones_arm64:
   <<: *build_barebones_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - ade_arm64
 
 build:
   variables:
@@ -181,6 +185,8 @@ build:
       - opt.tar.gz
     reports:
       junit: test-results.xml
+  needs:
+    - ade
 
 build_arm64:
   variables:
@@ -195,6 +201,8 @@ build_arm64:
       - opt.tar.gz
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - ade_arm64
 
 coverage:
   stage: build
@@ -206,6 +214,8 @@ coverage:
     paths:
       - coverage
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
+  needs:
+    - ade
 
 docs:
   stage: build
@@ -216,13 +226,12 @@ docs:
     name: "$CI_JOB_NAME"
     paths:
       - docs/_build/html
+  needs:
+    - ade
 
 pages:
   stage: deploy
   image: alpine
-  dependencies:
-    - coverage
-    - docs
   script:
     - mv docs/_build/html public
     - mv coverage public
@@ -232,25 +241,27 @@ pages:
       - public
   only:
     - master
+  needs:
+    - coverage
+    - docs
 
 volume:
   stage: deploy
   image: docker
   services:
     - docker:dind
-  dependencies:
-    - build
   variables:
     ARCH: ""
   <<: *volume_base
+  needs:
+    - job: build
+      artifacts: true
 
 volume_arm64:
   stage: deploy
   image: docker
   services:
     - docker:19.03.5-dind
-  dependencies:
-    - build_arm64
   tags:
     - arm64
   variables:
@@ -258,3 +269,5 @@ volume_arm64:
   <<: *volume_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - build_arm64
