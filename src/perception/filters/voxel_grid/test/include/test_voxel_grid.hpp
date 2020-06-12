@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_VOXEL_GRID_HPP_
 #define TEST_VOXEL_GRID_HPP_
@@ -20,8 +21,6 @@
 #include <memory>
 #include <limits>
 #include "voxel_grid/voxel_grid.hpp"
-namespace test_voxel_grid
-{
 
 using autoware::perception::filters::voxel_grid::PointXYZ;
 using autoware::perception::filters::voxel_grid::Config;
@@ -102,11 +101,11 @@ TEST_F(VoxelTest, basic)
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().z, min_point.z);
   // Max point
   EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x,
-                  max_point.x - std::numeric_limits<float32_t>::epsilon());
+    max_point.x - std::numeric_limits<float32_t>::epsilon());
   EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y,
-                  max_point.y - std::numeric_limits<float32_t>::epsilon());
+    max_point.y - std::numeric_limits<float32_t>::epsilon());
   EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z,
-                  max_point.z - std::numeric_limits<float32_t>::epsilon());
+    max_point.z - std::numeric_limits<float32_t>::epsilon());
   // Voxel Size
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().x, voxel_size.x);
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().y, voxel_size.y);
@@ -201,14 +200,14 @@ TEST_F(VoxelTest, bad_cases)
 ////////////////////////////////////////////////////////////////////////////////
 TYPED_TEST(TypedVoxelTest, index_simple)
 {
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -0.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -0.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 0.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 0.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 0.5F)), 7);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -0.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -0.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 0.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 0.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 0.5F)), 7UL);
 }
 /// make sure index computation works
 TYPED_TEST(TypedVoxelTest, index_edge)
@@ -226,130 +225,130 @@ TYPED_TEST(TypedVoxelTest, index_edge)
   */
   //// simple internal edges (only on one boundary)
   // xy boundaries, z < 0
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, -0.5F)), 2);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, -0.5F)), 2UL);
   // xy boundaries, z > 0
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, 0.5F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, 0.5F)), 6UL);
   // *z boundaries, z == 0
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 0.0F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 0.0F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 0.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 0.0F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 0.0F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 0.0F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 0.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 0.0F)), 6UL);
 
   //// simple external edges
   // xy boundaries, z < 0
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, -0.5F, -0.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.0F, -0.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, -0.5F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.0F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.5F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.0F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.0F, -0.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.5F, -0.5F)), 2);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, -0.5F, -0.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.0F, -0.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, -0.5F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.0F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.5F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.0F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.0F, -0.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.5F, -0.5F)), 2UL);
   // xy boundaries, z > 0
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, -0.5F, 0.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.0F, 0.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, -0.5F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.0F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.5F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.0F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.0F, 0.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.5F, 0.5F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, -0.5F, 0.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.0F, 0.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, -0.5F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.0F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.5F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.0F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.0F, 0.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.5F, 0.5F)), 6UL);
   // z boundaries, z == -1
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -1.0F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -1.0F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -1.0F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -1.0F)), 2);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -1.0F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -1.0F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -1.0F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -1.0F)), 2UL);
   // z boundaries, z == +1
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 1.0F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 1.0F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 1.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 1.0F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 1.0F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 1.0F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 1.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 1.0F)), 6UL);
 
   //// internal edges (two boundaries)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, 0.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, 0.0F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, 0.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, 0.0F)), 5);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.0F, 0.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.0F, 0.0F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.5F, 0.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -0.5F, 0.0F)), 5UL);
 
   //// external edges (two boundaries)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 1.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, -1.0F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.0F, 0.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 1.0F, 0.0F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -1.0F, 0.0F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.0F, 0.0F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 1.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, -1.0F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.0F, 0.0F, 0.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 1.0F, 0.0F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, -1.0F, 0.0F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.0F, 0.0F, 0.0F)), 6UL);
 
   // complex edge (all three boundaries)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 0.0F)), 7);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.0F, 0.0F, 0.0F)), 7UL);
 }
 
 /// make sure oob points are snapped to the edges
 TYPED_TEST(TypedVoxelTest, index_oob)
 {
   // voxel (0, 0, 0)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -1.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, -1.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, -1.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, -0.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, -0.5F)), 0);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -1.5F, -1.5F)), 0);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -1.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, -1.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, -1.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, -0.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, -0.5F)), 0UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -1.5F, -1.5F)), 0UL);
   // voxel (1, 0, 0)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -1.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, -1.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, -1.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, -0.5F)), 1);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -1.5F, -1.5F)), 1);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -1.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, -1.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, -1.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, -0.5F)), 1UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -1.5F, -1.5F)), 1UL);
   // voxel (0, 1, 0)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -1.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, -1.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, -1.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, -0.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, -0.5F)), 2);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 1.5F, -1.5F)), 2);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, -1.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, -1.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, -1.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, -0.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, -0.5F)), 2UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 1.5F, -1.5F)), 2UL);
   // voxel (1, 1, 0)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -1.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, -1.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, -1.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, -0.5F)), 3);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 1.5F, -1.5F)), 3);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, -1.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, -1.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, -1.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, -0.5F)), 3UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 1.5F, -1.5F)), 3UL);
   // voxel (0, 0, 1)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 1.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, 1.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, 1.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, 0.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, 0.5F)), 4);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -1.5F, 1.5F)), 4);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, 1.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, 1.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, 1.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -1.5F, 0.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -0.5F, 0.5F)), 4UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, -1.5F, 1.5F)), 4UL);
   // voxel (1, 0, 1)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 1.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, 1.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, 1.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, 0.5F)), 5);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -1.5F, 1.5F)), 5);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, 1.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, 1.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, 1.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -1.5F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -0.5F, 0.5F)), 5UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, -1.5F, 1.5F)), 5UL);
   // voxel (0, 1, 1)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 1.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, 1.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, 1.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, 0.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, 0.5F)), 6);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 1.5F, 1.5F)), 6);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 0.5F, 1.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, 1.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, 1.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, 1.5F, 0.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 0.5F, 0.5F)), 6UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(-1.5F, 1.5F, 1.5F)), 6UL);
   // voxel (1, 1, 1)
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 1.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, 1.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, 1.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, 0.5F)), 7);
-  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 1.5F, 1.5F)), 7);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 1.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, 1.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, 1.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 1.5F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 0.5F, 0.5F)), 7UL);
+  EXPECT_EQ(this->cfg_ptr->index(this->make(1.5F, 1.5F, 1.5F)), 7UL);
 }
 
 /// \brief Test generic voxel mechanisms
@@ -600,7 +599,6 @@ TYPED_TEST(TypedVoxelGridTest, centroid_voxel_grid)
   EXPECT_EQ(grid.capacity(), this->capacity);
   // Check via new_voxels: all
   const auto & list = grid.new_voxels();
-  uint32_t count = 0U;
   for (const auto it : list) {
     EXPECT_TRUE(this->check(it->second.get(), this->ref_points2));
   }
@@ -758,5 +756,4 @@ TYPED_TEST(TypedVoxelGridTest, approximate_voxel_grid)
   EXPECT_THROW(grid.insert(*(this->obs_points1.end() - 1)), std::length_error);
   EXPECT_THROW(grid.insert(*(this->obs_points1.end() - 2)), std::length_error);
 }
-}  // namespace test_voxel_grid
 #endif  // TEST_VOXEL_GRID_HPP_
