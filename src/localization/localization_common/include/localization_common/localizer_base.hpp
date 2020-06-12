@@ -116,6 +116,10 @@ public:
     return m_map_valid;
   }
 
+  // Deleting move assignment deletes copy and move assignment operators/constructors
+  // See `Rule of DesDeMovA`: https://safecpp.com/2019/07/01/initial.html
+  RelativeLocalizerBase & operator=(RelativeLocalizerBase && other) = delete;
+
   virtual ~RelativeLocalizerBase() = default;
 
 protected:
