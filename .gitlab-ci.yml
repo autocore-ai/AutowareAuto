@@ -69,15 +69,12 @@ stages:
           git
           clang-tidy
       '
-    - 'git submodule update --init --recursive'
     - 'rosdep init && rosdep update'
     - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
     - 'source /opt/ros/dashing/setup.bash'
     - 'colcon build
            --merge-install
            --install-base /opt/AutowareAuto
-           --cmake-args
-             -DCMAKE_BUILD_TYPE=Debug
       '
 
 .build_base: &build_base
@@ -89,17 +86,13 @@ stages:
           clang-tidy
       '
     - 'git lfs pull --include="*" --exclude=""'
-    - 'git submodule update --init --recursive'
     # build and test
     - 'colcon build
            --merge-install
            --install-base /opt/AutowareAuto
-           --cmake-args
-             -DCMAKE_BUILD_TYPE=Debug
       '
     - 'colcon test
            --merge-install
-           --packages-skip apex_test_tools test_apex_test_tools
            --install-base /opt/AutowareAuto
            --return-code-on-test-failure
       '

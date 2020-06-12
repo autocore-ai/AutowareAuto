@@ -24,12 +24,9 @@ shift $((OPTIND - 1))
 
 if [ ${FLAG_U} -eq 1 ]; then
 	apt-get update && apt-get -y --no-install-recommends install git clang-tidy
-	git submodule update --init --recursive
 fi
 
 colcon build \
-	--cmake-args \
-       	  -DCMAKE_BUILD_TYPE=Debug \
 	--ament-cmake-args \
 	  -DCMAKE_CXX_FLAGS="${COVERAGE_FLAGS}" \
 	  -DCMAKE_C_FLAGS="${COVERAGE_FLAGS}"
