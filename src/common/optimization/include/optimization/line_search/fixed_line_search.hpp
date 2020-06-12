@@ -39,7 +39,7 @@ public:
   /// Returns directly the pre-set (maximum) step length
   /// \return The fixed step length.
   template<typename DomainValueT, typename OptimizationProblemT>
-  DomainValueT compute_step_length(
+  DomainValueT compute_next_step(
     const DomainValueT &, DomainValueT & step_direction,
     OptimizationProblemT &) const noexcept
   {

@@ -33,7 +33,7 @@ template<typename Derived>
 class OPTIMIZATION_PUBLIC LineSearch : public common::helper_functions::crtp<Derived>
 {
 public:
-  // TODO(zozen): should this be forced to be positive?
+  // TODO(igor): should we force this to float? We mostly use 64 bit types in optimization.
   using StepT = float_t;
 
   /// Constructor.
@@ -48,15 +48,15 @@ public:
   /// \tparam OptimizationProblemT Optimization optimization_problem type. Must be an
   /// implementation of `common::optimization::OptimizationProblem`.
   /// \param x0 Initial x value to do the line searching for.
-  /// \param step_direction Step direction to search for the optimal step.
+  /// \param initial_step Initial step to start the search for the optimal step.
   /// \param optimization_problem optimization problem.
   /// \return Optimal step.
   template<typename DomainValueT, typename OptimizationProblemT>
-  inline DomainValueT compute_step_length(
-    const DomainValueT & x0, const DomainValueT & step_direction,
+  inline DomainValueT compute_next_step(
+    const DomainValueT & x0, const DomainValueT & initial_step,
     OptimizationProblemT & optimization_problem)
   {
-    return this->impl().compute_step_length_(x0, step_direction, optimization_problem);
+    return this->impl().compute_next_step_(x0, initial_step, optimization_problem);
   }
 
   /// Getter for the maximum step length

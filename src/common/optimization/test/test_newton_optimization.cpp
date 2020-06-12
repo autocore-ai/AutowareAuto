@@ -208,7 +208,7 @@ TEST(TestFixedLineSearch, fixed_line_search_validation) {
   EXPECT_FLOAT_EQ(fls.get_step_max(), std::numeric_limits<float_t>::min());
   fls.set_step_max(step);
   // TODO(yunus.caliskan): enable in #308
-  //  EXPECT_FLOAT_EQ(fls.compute_step_length(dummy_optimization_problem), step);
+  //  EXPECT_FLOAT_EQ(fls.compute_next_step(dummy_optimization_problem), step);
 }
 
 }  // namespace optimization
