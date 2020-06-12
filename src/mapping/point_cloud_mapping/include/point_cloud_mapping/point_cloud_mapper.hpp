@@ -99,21 +99,24 @@ public:
       LocalizerT::Base::RegistrationSummary>;
   using MapIncrementPtrT = std::shared_ptr<MapIncrementT>;
   using ConstMapIncrementPtrT = std::shared_ptr<const MapIncrementT>;
+  using LocalizerBase = localization::localization_common::
+    RelativeLocalizerBase<ObservationMsgT, MapIncrementT, typename LocalizerT::RegistrationSummary>;
+  using LocalizerBasePtr = std::unique_ptr<LocalizerBase>;
 
   /// Constructor.
   /// \param map_filename_prefix Base filename prefix that will be used to
   /// generate the file name.
-  /// \param localizer Rvalue reference to the localizer pointer.
+  /// \param localizer_ptr Rvalue reference to the localizer pointer.
   /// \param map_frame_id  Frame ID of the map.
   /// \param map Rvalue reference to the map representation pointer.
   MapperBase(
     const std::string & map_filename_prefix,
     MapRepresentationT && map,
-    LocalizerT && localizer,
+    LocalizerBasePtr && localizer_ptr,
     const std::string map_frame_id)
   : m_base_fn_prefix{map_filename_prefix},
     m_map{std::forward<MapRepresentationT>(map)},
-    m_localizer{std::forward<LocalizerT>(localizer)},
+    m_localizer_ptr{std::forward<LocalizerBasePtr>(localizer_ptr)},
     m_frame_id{map_frame_id}
   {
     this->set_map_valid();
@@ -131,11 +134,12 @@ public:
     MaybeLocalizerSummary localization_summary{std::experimental::nullopt};
 
     if (m_map.size() > 0U) {
-      if (!m_localizer.map_valid()) {
+      if (!m_localizer_ptr->map_valid()) {
         throw std::runtime_error("MapperBase: Map representation has data but "
                 "the localizer's map is at an invalid state.");
       }
-      localization_summary = m_localizer.register_measurement(msg, transform_initial, pose_out);
+      localization_summary =
+        m_localizer_ptr->register_measurement(msg, transform_initial, pose_out);
     } else {
       // If the map is empty, there's nothing to register to. We can place the cloud at the
       // center of the map.
@@ -239,10 +243,10 @@ private:
     if (m_map.storage_mode() == MapStorageMode::Independent) {
       switch (insert_summary.update_type) {
         case MapUpdateType::NEW:
-          m_localizer.set_map(increment);
+          m_localizer_ptr->set_map(increment);
           break;
         case MapUpdateType::UPDATE:
-          m_localizer.insert_to_map(increment);
+          m_localizer_ptr->insert_to_map(increment);
           break;
         case MapUpdateType::NO_CHANGE:
         default:
@@ -262,7 +266,7 @@ private:
 
   std::string m_base_fn_prefix;
   MapRepresentationT m_map;
-  LocalizerT m_localizer;
+  LocalizerBasePtr m_localizer_ptr;
   WriteTriggerPolicyT m_trigger_policy;
   PrefixGeneratorT m_fn_prefix_generator;
   std::string m_frame_id;
@@ -294,19 +298,20 @@ public:
       sensor_msgs::msg::PointCloud2, sensor_msgs::msg::PointCloud2,
       RegistrationSummary, WriteTriggerPolicyT, FileNamePrefixGeneratorT>;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using LocalizerBasePtr = typename Base::LocalizerBasePtr;
 
   /// Constructor.
   /// \param map_filename_prefix Base filename prefix that will be used to
   /// generate the file name.
-  /// \param localizer Rvalue reference to the localizer pointer.
+  /// \param localizer_ptr Rvalue reference to the localizer pointer.
   /// \param map Rvalue reference to the map representation pointer.
   /// \param map_frame Map frame id.
   PointCloudMapper(
     const std::string & map_filename_prefix,
-    MapRepresentationT && map, LocalizerT && localizer,
+    MapRepresentationT && map, LocalizerBasePtr && localizer_ptr,
     const std::string & map_frame)
   : Base(map_filename_prefix, std::forward<MapRepresentationT>(map),
-      std::forward<LocalizerT>(localizer), map_frame),
+      std::forward<LocalizerBasePtr>(localizer_ptr), map_frame),
     m_cached_increment_ptr{std::make_shared<Cloud>()}
   {
     common::lidar_utils::init_pcl_msg(*m_cached_increment_ptr, map_frame);

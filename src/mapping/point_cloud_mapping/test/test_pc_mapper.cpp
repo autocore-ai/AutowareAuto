@@ -56,7 +56,7 @@ TEST_F(PCMapperTest, core) {
       EXPECT_FLOAT_EQ(tf.transform.rotation.w, pose_out.pose.pose.orientation.w);
     };
   {
-    MockLocalizer localizer(m_tf1, m_tf2);
+    auto localizer = std::make_unique<MockLocalizer>(m_tf1, m_tf2);
     PlainPointCloudMap pc_map(m_pc1.width + m_pc2.width + 10U, map_frame);
     geometry_msgs::msg::PoseWithCovarianceStamped dummy;
     PointCloudMapper<MockLocalizer, PlainPointCloudMap,
