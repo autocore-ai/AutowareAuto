@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_POINT_CLOUD_FUSION_HPP_
 #define TEST_POINT_CLOUD_FUSION_HPP_
@@ -41,8 +42,9 @@ protected:
   }
 };
 
-sensor_msgs::msg::PointCloud2 make_pc(std::vector<int32_t> seeds, builtin_interfaces::msg::Time
-stamp)
+sensor_msgs::msg::PointCloud2 make_pc(
+  std::vector<int32_t> seeds,
+  builtin_interfaces::msg::Time stamp)
 {
   sensor_msgs::msg::PointCloud2 msg;
   autoware::common::lidar_utils::init_pcl_msg(msg, "base_link", seeds.size());
