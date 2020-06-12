@@ -58,7 +58,6 @@ public:
   using TimePoint = std::chrono::system_clock::time_point;
   using VoxelViewVector = std::vector<VoxelView<VoxelT>>;
 
-
   /// Constructor
   /// \param voxel_grid_config Voxel grid config to configure the underlying voxel grid.
   explicit NDTMapBase(const Config & voxel_grid_config)
@@ -66,6 +65,14 @@ public:
   {
     m_output_vector.reserve(1U);
   }
+
+  // Maps should be moved rather than being copied.
+  NDTMapBase(const NDTMapBase &) = delete;
+  NDTMapBase & operator=(const NDTMapBase &) = delete;
+
+  // Explicitly declaring to default is needed since we explicitly deleted the copy methods.
+  NDTMapBase(NDTMapBase &&) = default;
+  NDTMapBase & operator=(NDTMapBase &&) = default;
 
   /// Lookup the cell at location.
   /// \param x x coordinate

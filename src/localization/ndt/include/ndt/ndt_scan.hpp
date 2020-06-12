@@ -121,6 +121,14 @@ public:
     insert_(msg);
   }
 
+  // Scans should be moved rather than being copied.
+  P2DNDTScan(const P2DNDTScan &) = delete;
+  P2DNDTScan & operator=(const P2DNDTScan &) = delete;
+
+  // Explicitly declaring to default is needed since we explicitly deleted the copy methods.
+  P2DNDTScan(P2DNDTScan &&) = default;
+  P2DNDTScan & operator=(P2DNDTScan &&) = default;
+
   /// Constructor
   /// \param capacity Capacity of the scan. It should be configured according to the max. expected
   /// point cloud message size from the lidar.

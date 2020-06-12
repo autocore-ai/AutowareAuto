@@ -163,9 +163,6 @@ public:
     return m_map.stamp();
   }
 
-
-  virtual ~NDTLocalizerBase() = default;
-
 protected:
   /// Populate the covariance information of an ndt estimate using the information using existing
   /// information regarding scan, map and the optimization problem.
