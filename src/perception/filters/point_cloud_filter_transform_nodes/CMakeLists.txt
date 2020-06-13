@@ -1,5 +1,4 @@
 # Copyright 2017-2020 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 cmake_minimum_required(VERSION 3.5)
 
 ### Export headers
 project(point_cloud_filter_transform_nodes)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ### build node as library
@@ -39,16 +48,11 @@ target_compile_options(${CLOUD_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conve
 
 if(BUILD_TESTING)
   # run linters
-  autoware_static_code_analysis()
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # # Unit tests and single-process integration tests
   # TODO(esteve): disabled for now until the lidar_integration package is merged in
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(lidar_integration REQUIRED)
-  find_package(apex_test_tools REQUIRED)
-  find_package(velodyne_node REQUIRED)
-  find_package(autoware_auto_common REQUIRED)
   set(FILTER_TRANSFORM_NODE_GTEST filter_transform_node_gtest)
   apex_test_tools_add_gtest(${FILTER_TRANSFORM_NODE_GTEST}
       "test/test_point_cloud_filter_transform.cpp")
@@ -65,6 +69,5 @@ endif()
 
 ament_auto_package(
     INSTALL_TO_SHARE
-    design
     param
 )

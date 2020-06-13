@@ -1,5 +1,4 @@
 // Copyright 2017-2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <apex_test_tools/apex_test_tools.hpp>
 #include <gtest/gtest.h>
@@ -50,8 +51,9 @@ builtin_interfaces::msg::Time to_msg_time(
 }
 
 // FIXME(esteve): this function is copied from test_point_cloud_fusion.hpp
-sensor_msgs::msg::PointCloud2 make_pc(std::vector<int32_t> seeds, builtin_interfaces::msg::Time
-stamp)
+sensor_msgs::msg::PointCloud2 make_pc(
+  std::vector<int32_t> seeds,
+  builtin_interfaces::msg::Time stamp)
 {
   sensor_msgs::msg::PointCloud2 msg;
   autoware::common::lidar_utils::init_pcl_msg(msg, "base_link", seeds.size());
@@ -146,8 +148,8 @@ public:
 //           actual_num_points << std::endl;
 //         return false;
 //       }
-//       for (uint32_t pc_idx = 0, pt_cnt = 0; pc_idx < m_filtered_pcl_msgs[i].data.size(); pc_idx +=
-//         m_filtered_pcl_msgs[i].point_step, ++pt_cnt)
+//       for (uint32_t pc_idx = 0, pt_cnt = 0; pc_idx < m_filtered_pcl_msgs[i].data.size();
+//            pc_idx += m_filtered_pcl_msgs[i].point_step, ++pt_cnt)
 //       {
 //         autoware::common::types::PointXYZIF pt;
 //         //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
@@ -155,8 +157,8 @@ public:
 //           static_cast<void *>(&pt.x),
 //           static_cast<const void *>(&m_filtered_pcl_msgs[i].data[pc_idx]),
 //           m_filtered_pcl_msgs[i].point_step);
-//         if (pt.x != expected_points[i][pt_cnt].x || pt.y != expected_points[i][pt_cnt].y || pt.z !=
-//           expected_points[i][pt_cnt].z)
+//         if (pt.x != expected_points[i][pt_cnt].x || pt.y != expected_points[i][pt_cnt].y ||
+//             pt.z != expected_points[i][pt_cnt].z)
 //         {
 //           std::cout << "Unexpected point in filtered output" << std::endl;
 //           return false;
@@ -352,8 +354,9 @@ public:
 //   EXPECT_TRUE(tester.check_filtered_points(expected_filter_output_points, "base_link"));
 // }
 
-struct TestFilterTransformPC2FilterTransformMode :
-  public autoware::perception::filters::point_cloud_filter_transform_nodes::PointCloud2FilterTransformNode
+struct TestFilterTransformPC2FilterTransformMode
+  : public autoware::perception::filters::point_cloud_filter_transform_nodes
+  ::PointCloud2FilterTransformNode
 {
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
 
@@ -374,26 +377,26 @@ struct TestFilterTransformPC2FilterTransformMode :
     const size_t pcl_size,
     const size_t expected_num_publishers = 1U,
     const size_t expected_num_subscribers = 0U)
-    : PointCloud2FilterTransformNode
+  : PointCloud2FilterTransformNode
     (
-    node_name,
-    node_namespace,
-    init_timeout,
-    timeout,
-    input_frame_id,
-    output_frame_id,
-    raw_topic,
-    filtered_topic,
-    start_angle,
-    end_angle,
-    min_radius,
-    max_radius,
-    tf,
-    pcl_size,
-    expected_num_publishers,
-    expected_num_subscribers
+      node_name,
+      node_namespace,
+      init_timeout,
+      timeout,
+      input_frame_id,
+      output_frame_id,
+      raw_topic,
+      filtered_topic,
+      start_angle,
+      end_angle,
+      min_radius,
+      max_radius,
+      tf,
+      pcl_size,
+      expected_num_publishers,
+      expected_num_subscribers
     )
-    {}
+  {}
 
   const PointCloud2 & test_filter_and_transform(const PointCloud2 & msg)
   {
