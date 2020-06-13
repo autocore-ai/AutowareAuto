@@ -48,8 +48,8 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/lgsvl_interface.param.yaml')
     map_publisher_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/map_publisher.param.yaml')
-    odom_state_estimator_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/odom_state_estimator.param.yaml')
+#    odom_state_estimator_param_file = os.path.join(
+#        avp_demo_pkg_prefix, 'param/odom_state_estimator.param.yaml')
     ray_ground_classifier_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
     rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms2.rviz')
@@ -83,11 +83,11 @@ def generate_launch_description():
         default_value=map_publisher_param_file,
         description='Path to config file for Map Publisher'
     )
-    odom_state_estimator_param = DeclareLaunchArgument(
-        'odom_state_estimator_param_file',
-        default_value=odom_state_estimator_param_file,
-        description='Path to config file for Odometry State Estimator'
-    )
+#    odom_state_estimator_param = DeclareLaunchArgument(
+#        'odom_state_estimator_param_file',
+#        default_value=odom_state_estimator_param_file,
+#        description='Path to config file for Odometry State Estimator'
+#    )
     pc_filter_transform_param = DeclareLaunchArgument(
         'pc_filter_transform_param_file',
         default_value=pc_filter_transform_param_file,
@@ -146,11 +146,15 @@ def generate_launch_description():
         node_executable='lgsvl_interface_exe',
         node_namespace='vehicle',
         output='screen',
-        parameters=[LaunchConfiguration('lgsvl_interface_param_file')],
+        parameters=[
+          LaunchConfiguration('lgsvl_interface_param_file'),
+          {"lgsvl.publish_tf": "true"}
+        ],
         remappings=[
             ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
             ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
             ("state_report", "/lgsvl/state_report"),
+            ("state_report_out", "/vehicle/state_report"),
             ("gnss_odom", "/lgsvl/gnss_odom"),
             ("vehicle_odom", "/lgsvl/vehicle_odom")
         ]
@@ -161,12 +165,12 @@ def generate_launch_description():
         node_namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
-    odom_state_estimator = Node(
-        package='robot_localization',
-        node_executable='ekf_node',
-        node_namespace='localization/odom',
-        parameters=[LaunchConfiguration('odom_state_estimator_param_file')]
-    )
+#    odom_state_estimator = Node(
+#        package='robot_localization',
+#        node_executable='ekf_node',
+#        node_namespace='localization/odom',
+#        parameters=[LaunchConfiguration('odom_state_estimator_param_file')]
+#    )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
         node_executable='ray_ground_classifier_cloud_node_exe',
@@ -205,7 +209,7 @@ def generate_launch_description():
         node_namespace='localization',
         node_name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
-        remmapings=[
+        remappings=[
             ("points_in", "/lidar_front/points_filtered_downsampled")
         ]
     )
@@ -214,7 +218,6 @@ def generate_launch_description():
         euclidean_cluster_param,
         lgsvl_interface_param,
         map_publisher_param,
-        odom_state_estimator_param,
         pc_filter_transform_param,
         ray_ground_classifier_param,
         scan_downsampler_param,
@@ -226,7 +229,6 @@ def generate_launch_description():
         filter_transform_vlp16_rear,
         lgsvl_interface,
         map_publisher,
-        odom_state_estimator,
         ray_ground_classifier,
         scan_downsampler,
         ndt_localizer,

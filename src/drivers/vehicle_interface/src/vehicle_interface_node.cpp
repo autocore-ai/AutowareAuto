@@ -228,7 +228,7 @@ void VehicleInterfaceNode::init(
       });
   // Make publishers
   m_state_pub = create_publisher<autoware_auto_msgs::msg::VehicleStateReport>(
-    state_report.topic, rclcpp::QoS{10U});
+    state_report.topic + "_out", rclcpp::QoS{10U});
   m_odom_pub =
     create_publisher<autoware_auto_msgs::msg::VehicleOdometry>(odometry.topic, rclcpp::QoS{10U});
   // Make subordinate subscriber TODO(c.ho) parameterize time better

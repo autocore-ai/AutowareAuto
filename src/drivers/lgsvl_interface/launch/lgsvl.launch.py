@@ -67,6 +67,7 @@ def generate_launch_description():
             ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
             ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
             ("state_report", "/lgsvl/state_report"),
+            ("state_report_out", "state_report"),
             ("gnss_odom", "/lgsvl/gnss_odom"),
             ("vehicle_odom", "/lgsvl/vehicle_odom")
         ]
