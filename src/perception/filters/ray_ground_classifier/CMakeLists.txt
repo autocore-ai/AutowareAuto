@@ -3,17 +3,20 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(ray_ground_classifier)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
-find_package(autoware_auto_cmake REQUIRED)
-find_package(ament_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
-find_package(autoware_auto_algorithm REQUIRED)
-find_package(lidar_utils REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
-# includes
-include_directories(include)
-
-add_library(${PROJECT_NAME} SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   include/ray_ground_classifier/ray_aggregator.hpp
   include/ray_ground_classifier/ray_ground_classifier.hpp
   include/ray_ground_classifier/ray_ground_point_classifier.hpp
@@ -23,15 +26,10 @@ add_library(${PROJECT_NAME} SHARED
   src/ray_ground_classifier.cpp
   src/ray_ground_classifier_types.cpp)
 autoware_set_compile_options(${PROJECT_NAME})
-ament_target_dependencies(${PROJECT_NAME}
-  "autoware_auto_common"
-  "autoware_auto_algorithm"
-  "lidar_utils"
-)
-if(BUILD_TESTING)
-  autoware_static_code_analysis()
 
-  find_package(ament_cmake_gtest REQUIRED)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   ament_add_gtest(test_ray_ground_classifier_gtest
     test/src/test_ray_ground_classifier.cpp
@@ -64,22 +62,8 @@ if(BUILD_TESTING)
   )
 endif()
 
-## install stuff
-autoware_install(
-  HAS_INCLUDE
-  LIBRARIES ${PROJECT_NAME}
-)
-
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 # Ament Exporting
-ament_export_dependencies(
-  "autoware_auto_common"
-  "autoware_auto_algorithm"
-  "lidar_utils"
-)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_include_directories(include)
-
-ament_package()
+ament_auto_package()

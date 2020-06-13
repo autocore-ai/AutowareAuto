@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_RAY_GROUND_CLASSIFIER_AUX_HPP_
 #define TEST_RAY_GROUND_CLASSIFIER_AUX_HPP_
@@ -24,9 +25,6 @@
 
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 #include "ray_ground_classifier/ray_ground_classifier.hpp"
-
-namespace test_ray_ground_classifier
-{
 
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::POINT_BLOCK_CAPACITY;
@@ -142,7 +140,7 @@ void label_and_check(
       ++num_wrong;
     }
   }
-  for(const PointXYZIF & pt : nonground_blk) {
+  for (const PointXYZIF & pt : nonground_blk) {
     if (label[pt.id]) {  // true <--> ground
       std::cerr << pt.id << " expected " << (label[pt.id] ? "ground" : "nonground") << "\n";
       ++num_wrong;
@@ -152,7 +150,5 @@ void label_and_check(
   const size_t TOL = ground_only ? 0U : 1U;
   ASSERT_LE(num_wrong, TOL);
 }
-
-}  // namespace test_ray_ground_classifier
 
 #endif  // TEST_RAY_GROUND_CLASSIFIER_AUX_HPP_

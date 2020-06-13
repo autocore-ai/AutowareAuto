@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <ray_ground_classifier/ray_aggregator.hpp>
 #include <ray_ground_classifier/ray_ground_point_classifier.hpp>
 #include <common/types.hpp>
-
-namespace
-{
 
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::float32_t;
@@ -293,5 +291,3 @@ TEST(ray_aggregator, reset_bug) {
     check_one_ray_fn(pts);
   }
 }
-
-}  // namespace

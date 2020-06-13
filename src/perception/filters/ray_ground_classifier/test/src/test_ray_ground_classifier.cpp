@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <common/types.hpp>
 
@@ -27,9 +28,6 @@
 #include "test_ray_ground_classifier_aux.hpp"
 
 ///////////////////////////////////////////////////////////////
-namespace test_ray_ground_classifier
-{
-
 using autoware::common::types::POINT_BLOCK_CAPACITY;
 using autoware::common::types::float32_t;
 
@@ -533,14 +531,14 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   ground_points.resize(1U);
   nonground_points.resize(1U);
   cls.structured_partition(raw_points, ground_points, nonground_points);
-  EXPECT_EQ(ground_points.size(), 0);
-  EXPECT_EQ(nonground_points.size(), 0);
+  EXPECT_EQ(ground_points.size(), 0UL);
+  EXPECT_EQ(nonground_points.size(), 0UL);
   // add end of scan
   raw_points.resize(1);
   raw_points[0U].id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
   cls.structured_partition(raw_points, ground_points, nonground_points);
-  EXPECT_EQ(ground_points.size(), 1);
-  EXPECT_EQ(nonground_points.size(), 1);
+  EXPECT_EQ(ground_points.size(), 1UL);
+  EXPECT_EQ(nonground_points.size(), 1UL);
   EXPECT_EQ(ground_points[0U].id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
   EXPECT_EQ(nonground_points[0U].id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
 }
@@ -549,155 +547,155 @@ TEST_F(ray_ground_classifier, bad_cases)
 {
   // check negative slopes
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      -5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    -5.0F,         // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      -3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    -3.0F,         // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      -70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    -70.0F,        // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
 
   // check >90 deg slopes
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      95.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    95.0F,         // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      93.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    93.0F,         // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      170.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    170.0F,        // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   // check negative height thresholds
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      170.0F,       // nonground_retro_thresh_deg,
-      -0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    170.0F,        // nonground_retro_thresh_deg,
+    -0.05F,        // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      -1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    -1.5F,         // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   // check for min/max height consistency
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      1.0F,       // min_height_m,
-      0.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    1.0F,          // min_height_m,
+    0.5F           // max_height_m
+  }), std::runtime_error);
   // check for consistency wrt vertical structure threshold
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      75.0F,       // max_local_slope_deg,
-      3.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    75.0F,         // max_local_slope_deg,
+    3.0F,          // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      73.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      5.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    73.0F,         // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    5.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
   // check for local vs global consistency
   EXPECT_THROW(Config cfg2({
-      0.4F,        // sensor_height_m,
-      5.0F,       // max_local_slope_deg,
-      73.0F,        // max_global_slope_deg,
-      70.0F,       // nonground_retro_thresh_deg,
-      0.05F,       // min_height_thresh_m,
-      1.5F,        // max_global_height_thresh_m,
-      1.0F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
-    }), std::runtime_error);
+    0.4F,          // sensor_height_m,
+    5.0F,          // max_local_slope_deg,
+    73.0F,         // max_global_slope_deg,
+    70.0F,         // nonground_retro_thresh_deg,
+    0.05F,         // min_height_thresh_m,
+    1.5F,          // max_global_height_thresh_m,
+    1.0F,          // max_last_local_ground_thresh_m,
+    2.0,           // max_provisional_ground_distance_m,
+    -1.0F,         // min_height_m,
+    1.5F           // max_height_m
+  }), std::runtime_error);
 }
 
 /////
@@ -818,5 +816,3 @@ TEST_F(ray_ground_classifier, benchmark)
   fn(256U);
   fn(512U);
 }
-
-}  // namespace test_ray_ground_classifier

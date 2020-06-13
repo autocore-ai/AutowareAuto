@@ -1,5 +1,4 @@
 // Copyright 2017-2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <common/types.hpp>
@@ -24,8 +25,6 @@
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
-namespace test_ray_ground_classifier
-{
 class ray_ground_classifier_raytrace_vlp16 : public ::testing::Test
 {
 public:
@@ -287,5 +286,3 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_decline)
   generate_points(cfg, dat, pts, labels);
   label_and_check(cfg, pts, labels, false);
 }
-
-}  // namespace test_ray_ground_classifier
