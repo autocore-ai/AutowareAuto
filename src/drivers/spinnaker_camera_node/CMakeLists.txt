@@ -17,23 +17,29 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(spinnaker_camera_node)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
 
+# Even though Spinnaker is not required to build this package,
+# we must rely on it to only build this package if it exists.
+# The dependent package which does rely on Spinnaker (spinnaker_camera_driver)
+# must exist in the ament index to avoid an error on sourcing
+# the install space so we can't use that as the deciding factor.
+find_package(SPINNAKER)
 
-
-if(spinnaker_camera_driver_FOUND)
-  ament_auto_add_library(${PROJECT_NAME}
-      "include/spinnaker_camera_node/spinnaker_camera_node.hpp"
-      "src/spinnaker_camera_node.cpp")
+if(SPINNAKER_FOUND)
+  ament_auto_find_build_dependencies()
+  ament_auto_add_library(${PROJECT_NAME} SHARED
+    "include/spinnaker_camera_node/spinnaker_camera_node.hpp"
+    "src/spinnaker_camera_node.cpp")
   autoware_set_compile_options(${PROJECT_NAME})
 
   set(CAMERA_EXECUTABLE "${PROJECT_NAME}_exe")
   ament_auto_add_executable(${CAMERA_EXECUTABLE}
     "src/spinnaker_camera_node_main.cpp")
   autoware_set_compile_options(${CAMERA_EXECUTABLE})
-
 
   ## Testing
   if(BUILD_TESTING)
@@ -45,10 +51,13 @@ if(spinnaker_camera_driver_FOUND)
     add_ros_test(
       test/spinnaker_camera_node_bad.test.py
       TIMEOUT "10"
-    )
+  )
 
   endif()
 else()
-  message(WARNING "Skipping build as spinnaker_camera_driver was not built.")
+  message(WARNING "SPINNAKER SDK not found, so spinnaker_camera_node could not be built.")
 endif()
-ament_auto_package()
+
+ament_auto_package(
+  INSTALL_TO_SHARE param
+)
