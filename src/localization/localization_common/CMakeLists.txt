@@ -26,16 +26,9 @@ ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${LOCALIZATION_COMMON_LIB_SRC}
 )
+# TODO(igor): Remove this once tf2 warnings are removed.
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 autoware_set_compile_options(${PROJECT_NAME})
-
-# suppresses warnings from TF2 include.
-target_compile_options(${PROJECT_NAME} PRIVATE
-  -Wno-conversion
-  -Wno-double-promotion
-  -Wno-old-style-cast
-  -Wno-sign-conversion
-  -Wno-useless-cast
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

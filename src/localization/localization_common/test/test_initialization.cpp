@@ -125,7 +125,7 @@ INSTANTIATE_TEST_CASE_P(sanity_test, BestEffortInitializationTest,
   std::chrono::milliseconds{100},
   std::chrono::milliseconds{50}
 }
-));
+  ), );
 
 /////////// Helper function implementations:
 

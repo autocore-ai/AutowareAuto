@@ -134,7 +134,7 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
   // At each iteration, injected tracker pointers are used to confirm that the localizer node
   // receives the published messages and forwarded them to the correct places in the localizer.
   // At the end of each iteration, the output of the localizer node is checked for confirmation.
-  for (auto i = 0U; i < 10U; ++i) {
+  for (auto i = 0; i < 10; ++i) {
     ASSERT_NE(i, TEST_ERROR_ID);
     // Only publish maps every 5th message, starting from 0.
     if (i % 5U == 0U) {
@@ -185,7 +185,7 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
 
   /////////////////////// initialize
   constexpr auto initial_id = -1;
-  constexpr auto valid_map_id = 0U;
+  constexpr auto valid_map_id = 0;
   const auto max_poll_iters = 50U;
 
   // Create pointers to inject into the node to track its state.
@@ -257,7 +257,7 @@ void TestRelativeLocalizerNode::set_localizer_(std::unique_ptr<MockRelativeLocal
 MockRelativeLocalizer::MockRelativeLocalizer(
   std::shared_ptr<TestMap> obs_ptr,
   std::shared_ptr<TestObservation> map_ptr)
-: m_observation_tracking_ptr{obs_ptr}, m_map_tracking_ptr{map_ptr} {}
+: m_map_tracking_ptr{map_ptr}, m_observation_tracking_ptr{obs_ptr} {}
 
 MockRelativeLocalizer::RegistrationSummary MockRelativeLocalizer::register_measurement_impl(
   const TestObservation & msg, const Transform & transform_initial,

@@ -65,7 +65,7 @@ public:
   /// Get the timestamp of the current map.
   std::chrono::system_clock::time_point map_stamp() const noexcept override
   {
-    std::chrono::system_clock::time_point::min();
+    return std::chrono::system_clock::time_point::min();
   }
 
   void set_map_impl(const int & map) override
