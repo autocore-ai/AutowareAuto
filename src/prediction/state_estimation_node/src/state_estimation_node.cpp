@@ -166,9 +166,11 @@ StateEstimationNode::StateEstimationNode(
   m_publish_data_driven = declare_parameter("data_driven", false);
   const auto time_between_publish_requests{
     validate_publish_frequency(m_publish_frequency, m_publish_data_driven)};
-  create_wall_timer(
-    time_between_publish_requests,
-    std::bind(&StateEstimationNode::predict_and_publish_current_state, this));
+  if (!m_publish_data_driven) {
+    m_wall_timer = create_wall_timer(
+      time_between_publish_requests,
+      std::bind(&StateEstimationNode::predict_and_publish_current_state, this));
+  }
 
   const auto position_variance{
     declare_parameter("process_noise_variances.position", std::vector<float64_t>{})};

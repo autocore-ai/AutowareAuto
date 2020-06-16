@@ -224,4 +224,73 @@ TEST_F(StateEstimationNodeTest, track_object_straight_line) {
   EXPECT_NEAR(distance_travelled, received_msgs.back()->pose.pose.position.y, epsilon);
 }
 
-// TODO(igor): Add test for the case when we publish on a timer.
+/// @test Test for the case when we publish on a timer.
+TEST_F(StateEstimationNodeTest, publish_on_timer) {
+  nav_msgs::msg::Odometry msg{};
+  msg.header.frame_id = "map";
+  msg.header.stamp.sec = 5;
+  msg.header.stamp.nanosec = 12345U;
+  msg.pose.covariance[0] = 1.0;
+  msg.pose.covariance[7] = 1.0;
+  msg.twist.covariance[0] = 1.0;
+  msg.twist.covariance[7] = 1.0;
+
+  rclcpp::NodeOptions node_options{};
+  node_options.append_parameter_override(
+    "topics.input_odom", std::vector<std::string>{"/odom_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_pose", std::vector<std::string>{"/pose_topic_1"});
+  node_options.append_parameter_override(
+    "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
+  node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("mahalanobis_threshold", 10.0);
+  node_options.append_parameter_override("output_frequency", 10.0);
+  node_options.append_parameter_override(
+    "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
+  node_options.append_parameter_override(
+    "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
+  const auto node{std::make_shared<StateEstimationNode>(
+      "state_estimation_node", "state_estimation_namespace", node_options)};
+
+  auto count_received_msgs{0};
+  create_fake_odom_publisher("/odom_topic_1");
+  create_result_odom_subscription("/state_estimation_namespace/filtered_state", node.get(),
+    [&count_received_msgs](
+      const Odometry::SharedPtr) {
+      count_received_msgs++;
+    });
+
+  // Check that before the node receives the first odometry message it is not publishing.
+  const auto dt{std::chrono::milliseconds{100LL}};
+  auto max_wait_time{std::chrono::seconds{2LL}};
+  auto time_passed{std::chrono::milliseconds{0LL}};
+  while (time_passed < max_wait_time) {
+    rclcpp::spin_some(node);
+    rclcpp::spin_some(get_fake_odometry_node());
+    std::this_thread::sleep_for(dt);
+    time_passed += dt;
+    if (count_received_msgs > 0) {
+      FAIL() << "The node should not have published before receiving an odometry message.";
+    }
+  }
+
+  // Check that after the node receives the first odometry message it continuously publishes.
+  max_wait_time = std::chrono::seconds{10LL};
+  time_passed = std::chrono::milliseconds{0LL};
+  const auto minimum_number_of_messages{20};
+  while (count_received_msgs < minimum_number_of_messages) {
+    if (count_received_msgs < 1) {
+      // We want to stop publishing after receiving the first message as publishing is only needed
+      // here to enable timer-based publishing of the node under test.
+      get_fake_odometry_publisher().publish(msg);
+    }
+    rclcpp::spin_some(node);
+    rclcpp::spin_some(get_fake_odometry_node());
+    std::this_thread::sleep_for(dt);
+    time_passed += dt;
+    if (time_passed > max_wait_time) {
+      FAIL() << "Did not receive enough messages.";
+    }
+  }
+  SUCCEED();
+}

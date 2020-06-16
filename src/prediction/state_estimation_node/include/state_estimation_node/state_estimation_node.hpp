@@ -127,6 +127,8 @@ private:
 
   std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> m_publisher{};
 
+  rclcpp::TimerBase::SharedPtr m_wall_timer{};
+
   common::types::bool8_t m_filter_initialized{};
   common::types::bool8_t m_publish_data_driven{};
   autoware::common::types::float64_t m_publish_frequency{};
