@@ -202,6 +202,18 @@ The [Naming Guidelines](@ref autoware-common-naming-guidelines) provide for stan
 In most cases, topics should receive a default name in code and be remapped if needed.
 Providing topic names as ROS parameters is an anti-pattern, with few exceptions.
 
+### Parameter File Syntax
+
+To avoid the need to change parameter files based on the namespacing or node name of a node, use the "double-star" syntax. e.g.:
+
+```yaml
+/**:
+  ros__parameters:
+    param1: value
+```
+
+The above parameter file can be passed to any node regardless of namespace or name and the parameters will populate those of the node if the declared parameters match those in the file.
+
 ## ROS Components
 
 As of ROS Dashing, the recommended way to write Nodes in ROS 2 is using Components.
