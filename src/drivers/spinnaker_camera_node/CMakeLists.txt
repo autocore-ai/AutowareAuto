@@ -51,8 +51,7 @@ if(SPINNAKER_FOUND)
     add_ros_test(
       test/spinnaker_camera_node_bad.test.py
       TIMEOUT "10"
-  )
-
+    )
   endif()
 else()
   message(WARNING "SPINNAKER SDK not found, so spinnaker_camera_node could not be built.")

@@ -39,6 +39,10 @@ if(SPINNAKER_FOUND)
   ## SPINNAKER is not handled by ament, so we need the manual steps below.
   target_include_directories(${PROJECT_NAME} PUBLIC ${SPINNAKER_INCLUDE_DIRS})
   target_link_libraries(${PROJECT_NAME} ${SPINNAKER_LIBRARIES})
+  # These are external libraries and include folders that we want to be visible to the packages
+  # that depend on this one.
+  ament_export_include_directories(${SPINNAKER_INCLUDE_DIRS})
+  ament_export_libraries(${SPINNAKER_LIBRARIES})
 
   ## Testing
   if(BUILD_TESTING)

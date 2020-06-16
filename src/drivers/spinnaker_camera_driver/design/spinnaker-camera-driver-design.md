@@ -3,7 +3,7 @@ Spinnaker camera driver {#spinnaker-camera-driver}
 
 # Why we implemented this feature
 
-We need to be able to read from a GigE (Ethernet) camera (and potentially other) and publish images through ROS2 pipeline. This driver handles the communication to the Spinnaker SDK to allow getting images from their cameras.
+We need to be able to read from a GigE (Ethernet) camera (and potentially other) and publish images through ROS2 pipeline. This driver handles the communication to the Spinnaker SDK (version 2.0.0.146-amd64 for now) to allow getting images from their cameras.
 
 # How it is organized
 

@@ -57,7 +57,7 @@ CameraWrapper::CameraWrapper(
 CameraWrapper::~CameraWrapper()
 {
   if (m_on_image_callback) {
-    m_camera->UnregisterEvent(*this);
+    m_camera->UnregisterEventHandler(*this);
   }
   if (m_camera->IsStreaming()) {
     m_camera->AcquisitionStop();
@@ -104,7 +104,7 @@ void CameraWrapper::set_on_image_callback(ImageCallbackFunction callback)
   if (!m_on_image_callback) {
     // This is the first time we are setting a callback so we want to register
     // event handling for this camera.
-    m_camera->RegisterEvent(*this);
+    m_camera->RegisterEventHandler(*this);
   }
   m_on_image_callback = callback;
 }
