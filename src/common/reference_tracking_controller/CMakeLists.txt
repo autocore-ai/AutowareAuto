@@ -1,16 +1,25 @@
 cmake_minimum_required(VERSION 3.5)
 project(reference_tracking_controller)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(reference_tracking_controller src/reference_tracking_controller.cpp)
 autoware_set_compile_options(reference_tracking_controller)
 
 if(BUILD_TESTING)
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_auto_package()
