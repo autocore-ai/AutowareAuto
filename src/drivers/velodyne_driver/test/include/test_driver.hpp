@@ -26,7 +26,7 @@
 #include <algorithm>
 
 #include "common/types.hpp"
-#include "velodyne_driver/vlp16_translator.hpp"
+#include "velodyne_driver/velodyne_translator.hpp"
 #include "gtest/gtest.h"
 /// test uint16_t conversion using example from documentation
 TEST(helpers, uint32)
@@ -38,7 +38,9 @@ TEST(helpers, uint32)
 
 using autoware::common::types::float32_t;
 using autoware::drivers::velodyne_driver::Vlp16Translator;
-using autoware::drivers::velodyne_driver::make_point;
+
+using autoware::drivers::velodyne_driver::NUM_BLOCKS_PER_PACKET;
+using autoware::drivers::velodyne_driver::NUM_POINTS_PER_BLOCK;
 
 // This is a real packet captured. This was used originally in the deprecated velodyne_spoof package
 // The points are about 6-25 m away, at an angle of about 1.4-1.5 rad
@@ -155,8 +157,7 @@ TEST_F(velodyne_driver, basic)
   Vlp16Translator driver(cfg);
   driver.convert(pkt, out);
   EXPECT_LE(out.size(),
-    static_cast<size_t>(Vlp16Translator::NUM_POINTS_PER_BLOCK * Vlp16Translator::
-    NUM_BLOCKS_PER_PACKET));
+    static_cast<size_t>(NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET));
   // Mostly just a sanity check: All points should fall in a pie slice
   float32_t min_r = std::numeric_limits<float32_t>::max();
   float32_t max_r = 0.0F;

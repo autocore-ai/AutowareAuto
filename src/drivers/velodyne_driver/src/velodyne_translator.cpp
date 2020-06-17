@@ -1,4 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
+// Copyright 2018-2020 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <common/types.hpp>
-#include <limits>
-#include <utility>
-
-#include "velodyne_driver/vlp16_translator.hpp"
-
-using autoware::common::types::float32_t;
+#include <velodyne_driver/vlp16_data.hpp>
+#include <velodyne_driver/velodyne_translator.hpp>
 
 namespace autoware
 {
@@ -28,17 +23,7 @@ namespace drivers
 {
 namespace velodyne_driver
 {
-////////////////////////////////////////////////////////////////////////////////
-Vlp16Translator::Config::Config(const float32_t rpm)
-: m_rpm(rpm)
-{
-}
-////////////////////////////////////////////////////////////////////////////////
-float32_t Vlp16Translator::Config::get_rpm() const
-{
-  return m_rpm;
-}
-
+template class VelodyneTranslator<VLP16Data>;
 }  // namespace velodyne_driver
 }  // namespace drivers
 }  // namespace autoware

@@ -32,8 +32,12 @@ ament_auto_find_build_dependencies()
 
 ### Build driver library
 ament_auto_add_library(${PROJECT_NAME} SHARED
-        "src/vlp16_config.cpp"
-        "src/vlp16_translator.cpp")
+        "include/velodyne_driver/velodyne_translator.hpp"
+        "include/velodyne_driver/vlp16_data.hpp"
+        "include/velodyne_driver/common.hpp"
+        "src/vlp16_data.cpp"
+        "src/velodyne_translator.cpp")
+
 autoware_set_compile_options(${PROJECT_NAME})
 
 ## Testing

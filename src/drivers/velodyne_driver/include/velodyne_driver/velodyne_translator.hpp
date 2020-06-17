@@ -1,4 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
+// Copyright 2018-2020 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,17 +18,14 @@
 /// \file
 /// \brief This file defines a driver for Velodyne LiDARs
 
-#ifndef VELODYNE_DRIVER__VLP16_TRANSLATOR_HPP_
-#define VELODYNE_DRIVER__VLP16_TRANSLATOR_HPP_
+#ifndef VELODYNE_DRIVER__VELODYNE_TRANSLATOR_HPP_
+#define VELODYNE_DRIVER__VELODYNE_TRANSLATOR_HPP_
 
 #include <velodyne_driver/visibility_control.hpp>
 #include <geometry_msgs/msg/point32.hpp>
-#include <common/types.hpp>
-#include <cstdint>
+#include <velodyne_driver/common.hpp>
+#include <velodyne_driver/vlp16_data.hpp>
 #include <vector>
-
-using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -43,50 +40,12 @@ namespace drivers
 ///        velodne LiDARs respectively.
 namespace velodyne_driver
 {
-inline uint32_t to_uint32(const uint8_t first, const uint8_t second)
-{
-  // probably ok since uint8_t<<8 =>uint32_t, this is to get around
-  // warning due to implicit promotion to int
-  const uint32_t ret = static_cast<uint32_t>(first) << 8U;
-  return ret + static_cast<uint32_t>(second);
-}
-
-inline geometry_msgs::msg::Point32
-make_point(const float32_t x, const float32_t y, const float32_t z)
-{
-  geometry_msgs::msg::Point32 point;
-  point.x = x;
-  point.y = y;
-  point.z = z;
-  return point;
-}
-
-/// \brief This class handles converting packets from a Velodyne VLP16 LiDAR into cartesian points
-class VELODYNE_DRIVER_PUBLIC Vlp16Translator
+/// \brief This class handles converting packets from a velodyne lidar into cartesian points.
+/// \tparam SensorData Data class representing a specific sensor model.
+template<typename SensorData>
+class VELODYNE_DRIVER_PUBLIC VelodyneTranslator
 {
 public:
-  // SENSOR SPECIFIC CONSTANTS
-  /// resolution of azimuth angle: number of points in a full rotation
-  static constexpr uint32_t AZIMUTH_ROTATION_RESOLUTION = 36000U;
-  /// conversion from a degree (vlp) to idx
-  static constexpr float32_t DEG2IDX = static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION) / 360.0F;
-  /// how intensity is quantized: 1 byte = 256 possible values
-  static constexpr uint32_t NUM_INTENSITY_VALUES = 256U;
-
-  /// All of these hardcoded values should remain fixed unless the VLP16 packet spec changes ///
-  /// number of data blocks per data packet
-  static constexpr uint16_t NUM_BLOCKS_PER_PACKET = 12U;
-  /// number of points stored in a data block
-  static constexpr uint16_t NUM_POINTS_PER_BLOCK = 32U;
-
-  /// full (16 point) fire sequence takes this long to cycle
-  static constexpr float32_t FIRE_SEQ_OFFSET_US = 55.296F;
-  /// one laser fires for this long
-  static constexpr float32_t FIRE_DURATION_US = 2.304F;
-  /// rpm min speed
-  static constexpr float32_t MIN_RPM = 300.0F;
-  /// rpm max speed
-  static constexpr float32_t MAX_RPM = 1200.0F;
   /// \brief Stores basic configuration information, does some simple validity checking
   static constexpr uint16_t POINT_BLOCK_CAPACITY = 512U;
 
@@ -95,16 +54,21 @@ public:
 public:
     /// \brief Constructor
     /// \param[in] rpm rotation speed of the velodyne, determines how many points per scan
-    explicit Config(const float32_t rpm);
+    explicit Config(const float32_t rpm)
+    : m_rpm(rpm)
+    {
+    }
     /// \brief Gets rpm value
     /// \return rpm
-    float32_t get_rpm() const;
+    float32_t get_rpm() const
+    {
+      return m_rpm;
+    }
 
 private:
     /// rotation speed of the velodyne, determines how many points per scan
     float32_t m_rpm;
   };
-
   /// \brief corresponds to an individual laser's firing and return
   /// First two bytes are distance, last byte is intensity
   struct DataChannel
@@ -112,7 +76,7 @@ private:
     uint8_t data[3U];
   };
 
-  /// \brief corresponds to a vlp16 data block, which represents two full firings
+  /// \brief corresponds to a velodyne data block.
   struct DataBlock
   {
     uint8_t flag[2U];
@@ -131,18 +95,62 @@ private:
   /// \brief default constructor
   /// \param[in] config config struct with rpm, transform, radial and angle pruning params
   /// \throw std::runtime_error if pruning parameters are inconsistent
-  explicit Vlp16Translator(const Config & config);
+  explicit VelodyneTranslator(const Config & config)
+  : m_sensor_data(config.get_rpm())
+  {
+    init_trig_tables();
+    init_intensity_table();
+  }
 
   /// \brief Convert a packet into a block of cartesian points
   /// \param[in] pkt A packet from a VLP16 HiRes sensor for conversion
   /// \param[out] output Gets filled with cartesian points and any additional flags
-  void convert(const Packet & pkt, std::vector<autoware::common::types::PointXYZIF> & output);
+  void convert(const Packet & pkt, std::vector<autoware::common::types::PointXYZIF> & output)
+  {
+    output.clear();
+
+    for (uint32_t block_id = 0U; block_id < NUM_BLOCKS_PER_PACKET; ++block_id, ++m_block_counter) {
+      const DataBlock & block = pkt.blocks[block_id];
+
+      if ((block.flag[0U] != static_cast<uint8_t>(0xFF)) ||
+        (block.flag[1U] != static_cast<uint8_t>(0xEE)))
+      {
+        continue;
+      }
+      const uint32_t azimuth_base = to_uint32(block.azimuth_bytes[1U], block.azimuth_bytes[0U]);
+
+      for (uint16_t pt_id = 0U; pt_id < NUM_POINTS_PER_BLOCK; ++pt_id) {
+        const DataChannel & channel = block.channels[pt_id];
+        const uint32_t th = (azimuth_base + m_sensor_data.azimuth_offset(block_id, pt_id)) %
+          AZIMUTH_ROTATION_RESOLUTION;
+        const float32_t r = compute_distance_m(channel.data[1U], channel.data[0U]);
+        const uint32_t phi = m_sensor_data.altitude(block_id, pt_id);
+
+        // Compute the point
+        PointXYZIF pt;
+        polar_to_xyz(pt, r, th, phi);
+        pt.intensity = m_intensity_table[channel.data[2U]];
+        pt.id = m_sensor_data.seq_id(m_block_counter, pt_id);
+
+        output.push_back(pt);
+      }
+
+      if (static_cast<float32_t>(m_block_counter) > m_sensor_data.num_blocks_per_revolution()) {
+        // full revolution reached.
+        PointXYZIF pt;
+        pt.id =
+          static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
+        output.push_back(pt);
+        m_block_counter = uint16_t{0U};
+      }
+    }
+  }
 
 private:
   // make sure packet sizes are correct
-  static_assert(sizeof(DataChannel) == 3U, "Error VLP16 data channel size is incorrect");
-  static_assert(sizeof(DataBlock) == 100U, "Error VLP16 data block size is incorrect");
-  static_assert(sizeof(Packet) == 1206U, "Error VLP16 packet size is incorrect");
+  static_assert(sizeof(DataChannel) == 3U, "Error velodyne data channel size is incorrect");
+  static_assert(sizeof(DataBlock) == 100U, "Error velodyne data block size is incorrect");
+  static_assert(sizeof(Packet) == 1206U, "Error velodyne packet size is incorrect");
   // Ensure that a full packet will fit into a point block
   static_assert(static_cast<uint32_t>(POINT_BLOCK_CAPACITY) >=
     ((NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET) + 1U),
@@ -173,60 +181,54 @@ private:
   /// \return the radial distance in meters
   inline float32_t compute_distance_m(const uint8_t first, const uint8_t second) const
   {
-    const uint32_t dist_2mm = to_uint32(first, second);
-    return static_cast<float32_t>(dist_2mm) * 0.002F;    // convert from units of 2mm to m
+    const uint32_t dist_scaled = to_uint32(first, second);
+    return static_cast<float32_t>(dist_scaled) * m_sensor_data.distance_resolution();
   }
 
   template<typename T>
-  inline T clamp(const T val, const T min, const T max)
+  inline T clamp(const T val, const T min, const T max) const
   {
     return (val < min) ? min : ((val > max) ? max : val);
   }
 
-  ///// initialization/precomputation functions
-  /// \brief runs all the table initialization functions in the right order
-  VELODYNE_DRIVER_LOCAL void init_tables(const Config & config);
-
-  /// \brief precomputes the number of points in a complete rotation and the azimuth offset for
-  ///        each firing in a block
-  /// \param[in] rpm the LiDAR's spin rate in revolutions per minute
-  /// \return none
-  VELODYNE_DRIVER_LOCAL void init_azimuth_table_num_points(const float32_t rpm);
-
-  /// \brief initializes the fixed altitude angles for each firing in a block. This only needs to
-  ///        run once and happens in the constructor
-  /// \return none
-  VELODYNE_DRIVER_LOCAL void init_altitude_table();
-
   /// \brief initializes sin and cosine lookup tables
-  VELODYNE_DRIVER_LOCAL void init_trig_tables();
+  VELODYNE_DRIVER_LOCAL void init_trig_tables()
+  {
+    constexpr float32_t IDX2RAD =
+      TAU / static_cast<float32_t>(AZIMUTH_ROTATION_RESOLUTION);
+    for (uint64_t idx = 0U; idx < AZIMUTH_ROTATION_RESOLUTION; ++idx) {
+      m_cos_table[idx] = cosf((static_cast<float32_t>(idx)) * IDX2RAD);
+      m_sin_table[idx] = sinf((static_cast<float32_t>(idx)) * IDX2RAD);
+    }
+  }
 
   /// \brief initializes intensity lookup table
-  VELODYNE_DRIVER_LOCAL void init_intensity_table();
+  VELODYNE_DRIVER_LOCAL void init_intensity_table()
+  {
+    for (uint64_t idx = 0U; idx < NUM_INTENSITY_VALUES; ++idx) {
+      m_intensity_table[idx] = static_cast<float32_t>(idx);
+    }
+  }
 
   /// tau = 2 pi
   static constexpr float32_t TAU = 6.283185307179586476925286766559F;
 
   /// parameters
-  /// lookup table for azimuth offset for each firing in a block
-  uint32_t m_azimuth_ind[NUM_POINTS_PER_BLOCK];
-  /// lookup table for altitude angle for each firing in a fire sequence (2 per block)
-  uint32_t m_altitude_ind[NUM_POINTS_PER_BLOCK];
-
   /// lookup table for sin
-  float32_t m_sin_table[AZIMUTH_ROTATION_RESOLUTION];
+  std::array<float32_t, AZIMUTH_ROTATION_RESOLUTION> m_sin_table;
   /// lookup table for cos
-  float32_t m_cos_table[AZIMUTH_ROTATION_RESOLUTION];
+  std::array<float32_t, AZIMUTH_ROTATION_RESOLUTION> m_cos_table;
   /// lookup table for intensity
-  float32_t m_intensity_table[NUM_INTENSITY_VALUES];
+  std::array<float32_t, AZIMUTH_ROTATION_RESOLUTION> m_intensity_table;
 
   /// mask to avoid modulo: packet id can go up to 3617: 0000 1111 1111 1111 = 4096
-  uint16_t m_fire_id;
-  uint16_t m_num_firing_per_scan;
+  uint16_t m_block_counter{0U};
+  SensorData m_sensor_data;
 };  // class Driver
+using Vlp16Translator = VelodyneTranslator<VLP16Data>;
 
 }  // namespace velodyne_driver
 }  // namespace drivers
 }  // namespace autoware
 
-#endif  // VELODYNE_DRIVER__VLP16_TRANSLATOR_HPP_
+#endif  // VELODYNE_DRIVER__VELODYNE_TRANSLATOR_HPP_

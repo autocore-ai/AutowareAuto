@@ -28,7 +28,7 @@
 #include "common/types.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "udp_driver/udp_driver_node.hpp"
-#include "velodyne_driver/vlp16_translator.hpp"
+#include "velodyne_driver/velodyne_translator.hpp"
 #include "velodyne_node/visibility_control.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
