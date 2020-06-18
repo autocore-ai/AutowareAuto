@@ -34,7 +34,6 @@ namespace velodyne_node
 {
 VelodyneCloudNode::VelodyneCloudNode(
   const std::string & node_name,
-  const std::string & topic,
   const std::string & ip,
   const uint16_t port,
   const std::string & frame_id,
@@ -42,7 +41,7 @@ VelodyneCloudNode::VelodyneCloudNode(
   const velodyne_driver::Vlp16Translator::Config & config)
 : UdpDriverNode<velodyne_driver::Vlp16Translator::Packet, sensor_msgs::msg::PointCloud2>(
     node_name,
-    topic,
+    "points_raw",
     UdpConfig{ip, port}),
   m_translator(config),
   m_published_cloud(false),

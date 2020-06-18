@@ -50,7 +50,6 @@ class VELODYNE_NODE_PUBLIC VelodyneCloudNode
 public:
   /// \brief Default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals
-  /// \param[in] topic Name of the topic to publish output on
   /// \param[in] ip Expected IP of UDP packets
   /// \param[in] port Port that this driver listens to (i.e. sensor device at ip writes to port)
   /// \param[in] frame_id Frame id for the published point cloud messages
@@ -60,7 +59,6 @@ public:
   /// \throw std::runtime_error If cloud_size is not sufficiently large
   VelodyneCloudNode(
     const std::string & node_name,
-    const std::string & topic,
     const std::string & ip,
     const uint16_t port,
     const std::string & frame_id,

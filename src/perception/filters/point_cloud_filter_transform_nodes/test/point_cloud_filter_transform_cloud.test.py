@@ -40,7 +40,6 @@ def generate_test_description(ready_fn):
             ),
             {
                 "port": PORT,
-                "topic": "points_raw"
             }
         ]
     )

@@ -38,7 +38,7 @@ def generate_test_description(ready_fn):
             ),
             {
                 "cloud_size": 500,
-                "topic": test_topic,
+                "topic": test_topic
             }
         ]
     )

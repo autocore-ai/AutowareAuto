@@ -218,7 +218,6 @@ public:
 //   using autoware::drivers::velodyne_node::VelodyneCloudNode;
 //   const auto velodyne_ptr = std::make_shared<VelodyneCloudNode>(
 //     "velodyne_cloud_node",
-//     "points_raw",
 //     m_ip,
 //     port_num,
 //     timeout,

@@ -44,7 +44,6 @@ TEST(velodyne_node, constructor)
   EXPECT_NO_THROW(
     VelodyneCloudNode(
       name,
-      "velodyne_test_topic_1",
       ip,
       port,
       frame_id,
@@ -55,7 +54,6 @@ TEST(velodyne_node, constructor)
   EXPECT_THROW(
     VelodyneCloudNode(
       name,
-      "velodyne_test_topic_2",
       ip,
       port,
       frame_id,
@@ -104,7 +102,6 @@ TEST_P(velodyne_node_integration, DISABLED_test)
   using autoware::drivers::velodyne_node::VelodyneCloudNode;
   std::shared_ptr<VelodyneCloudNode> nd_ptr = std::make_shared<VelodyneCloudNode>(
     name,
-    topic,
     ip,
     port,
     frame_id,

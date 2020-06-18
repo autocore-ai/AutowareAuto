@@ -6,7 +6,6 @@ lidar_front:
     ros__parameters:
       ip: "127.0.0.1"
       port: 2368
-      topic: "points_raw"
       cloud_size:  55000
       frame_id: "lidar_front"
       timeout_ms: 10
