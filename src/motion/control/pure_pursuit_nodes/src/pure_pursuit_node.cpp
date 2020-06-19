@@ -59,15 +59,10 @@ PurePursuitNode::PurePursuitNode(
 ////////////////////////////////////////////////////////////////////////////////
 PurePursuitNode::PurePursuitNode(
   const std::string & node_name,
-  const std::string & pose_topic,
-  const std::string & trajectory_topic,
-  const std::string & command_topic,
-  const std::string & diagnosis_topic,
-  const std::string & tf_topic,
   const pure_pursuit::Config & cfg,
   const std::string & node_namespace)
-: ControllerBaseNode{node_name, node_namespace, command_topic, pose_topic,
-    tf_topic, trajectory_topic, diagnosis_topic}
+: ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
+    "tf", "trajectory", "ctrl_diag"}
 {
   set_controller(std::make_unique<pure_pursuit::PurePursuit>(cfg));
 }

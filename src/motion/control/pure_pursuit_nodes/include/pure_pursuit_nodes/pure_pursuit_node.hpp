@@ -47,20 +47,10 @@ public:
 
   /// \brief Explicit constructor
   /// \param[in] node_name Name of the node
-  /// \param[in] pose_topic Name of input pose topic
-  /// \param[in] trajectory_topic Name of input trajectory topic
-  /// \param[in] command_topic Name of output control command topic
-  /// \param[in] tf_topic Name of input tf topic
-  /// \param[in] diagnosis_topic Name of output diagnosis topic
   /// \param[in] cfg Configuration object for PurePursuit
   /// \param[in] node_namespace Namespace of this node
   PurePursuitNode(
     const std::string & node_name,
-    const std::string & pose_topic,
-    const std::string & trajectory_topic,
-    const std::string & command_topic,
-    const std::string & diagnosis_topic,
-    const std::string & tf_topic,
     const pure_pursuit::Config & cfg,
     const std::string & node_namespace = "");
 };

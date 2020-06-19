@@ -1,14 +1,9 @@
 # config/pure_pursuit_test.param.yaml
 ---
 
-pure_pursuit_node:
+/**:
   ros__parameters:
     timeout_ms:                  100
-    state_topic:                 "current_pose"
-    trajectory_topic:            "trajectory"
-    command_topic:               "ctrl_cmd"
-    diagnostic_topic:            "ctrl_diag"
-    tf_topic:                    "tf"
     controller:
       minimum_lookahead_distance:      6.0
       maximum_lookahead_distance:      100.0
