@@ -229,11 +229,13 @@ void CameraWrapper::configure_camera(
       }
     }
   }
-  if (IsAvailableAndWritable(m_camera->AcquisitionFrameRateEnable) &&
-    IsAvailableAndWritable(m_camera->AcquisitionFrameRate))
+  if (IsAvailableAndWritable(m_camera->AcquisitionFrameRateEnable))
   {
     m_camera->AcquisitionFrameRateEnable.SetValue(true);
-    m_camera->AcquisitionFrameRate.SetValue(camera_settings.get_fps());
+    if(IsAvailableAndWritable(m_camera->AcquisitionFrameRate))
+    {
+      m_camera->AcquisitionFrameRate.SetValue(camera_settings.get_fps());
+    }
   }
   if (IsAvailableAndWritable(m_camera->PixelFormat)) {
     m_camera->PixelFormat.SetValue(
