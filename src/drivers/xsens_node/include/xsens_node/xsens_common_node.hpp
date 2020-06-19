@@ -53,7 +53,6 @@ class XSENS_NODE_PUBLIC XsensCommonNode
 public:
   /// \brief Default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals
-  /// \param[in] topic Name of the topic to publish output on
   /// \param[in] device_name Name of the serial device.
   /// \param[in] serial_port_config config struct with baud_rate, flow_control, parity and
   /// stop_bits params
@@ -62,7 +61,6 @@ public:
   /// \throw std::runtime_error If cloud_size is not sufficiently large
   XsensCommonNode(
     const std::string & node_name,
-    const std::string & topic,
     const std::string & device_name,
     const typename autoware::drivers::serial_driver::SerialDriverNode<XsensCommonNode<TranslatorT,
     MessageT>,
@@ -73,7 +71,7 @@ public:
   : autoware::drivers::serial_driver::SerialDriverNode<XsensCommonNode<TranslatorT, MessageT>,
       typename TranslatorT::Packet, MessageT>(
       node_name,
-      topic,
+      "raw",
       device_name,
       serial_port_config),
     m_translator(config),

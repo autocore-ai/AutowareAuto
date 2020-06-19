@@ -1,11 +1,10 @@
 # config/xsens_test.param.yaml
 ---
 
-xsens_driver_node:
+/**:
   ros__parameters:
     device_name: "/dev/ttyUSB0"
     baud_rate: 115200
-    topic: "test_xsens_node_imu_front"
     flow_control: "none"
     parity: "none"
     stop_bits: "1"
