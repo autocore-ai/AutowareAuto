@@ -1,5 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+// Copyright 2019-2020 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-// Copyright 2019 Apex.AI, Inc.
+//
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 #include <optimization/line_search/more_thuente_line_search.hpp>
 #include <optimization/optimization_problem.hpp>
@@ -37,6 +23,8 @@
 using FloatT = autoware::common::types::float64_t;
 using Matrix = Eigen::Matrix<FloatT, 1, 1>;
 using Vector = Eigen::Matrix<FloatT, 1, 1>;
+
+using autoware::common::optimization::MoreThuenteLineSearch;
 
 constexpr FloatT kRelaxedEpsilon{0.01};
 
@@ -76,13 +64,6 @@ public:
     out << (a_2 - 2.0) / ((a_2 + 2.0) * (a_2 + 2.0));
   }
 };
-
-namespace autoware
-{
-namespace common
-{
-namespace optimization
-{
 
 /// @test       Check that we can minimize a simple parabola with a minimum at 0.
 TEST(MoreThuenteLineSearchTest, simple_quadratic_function_minimization) {
@@ -288,8 +269,3 @@ TEST(MoreThuenteLineSearchTest, wrong_direction) {
     max_line_search.compute_next_step(Vector{2.0}, Vector{1.0}, flipped_f),
     std::domain_error);
 }
-
-
-}  // namespace optimization
-}  // namespace common
-}  // namespace autoware
