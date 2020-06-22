@@ -18,15 +18,19 @@
 
 import launch
 import launch_ros.actions
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
     driver = launch_ros.actions.Node(
-        package='velodyne_node', node_executable='velodyne_block_node_exe',
-        node_name='vlp16_front', node_namespace='lidar_front')
+        package='velodyne_node', node_executable='velodyne_cloud_node_exe',
+        node_namespace='lidar_front',
+        parameters=[get_package_share_directory('velodyne_node') + "/param/vlp16_test.param.yaml"])
     classifier = launch_ros.actions.Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_block_node_exe',
+        node_executable='ray_ground_classifier_cloud_node_exe',
         node_name='ray_ground_classifier',
-        remappings=[("points_in", "lidar_front/points_filtered")])
+        parameters=[get_package_share_directory('ray_ground_classifier_nodes') +
+                    "/param/vlp16_lexus.param.yaml"],
+        remappings=[("points_in", "/lidar_front/points_raw")])
     return launch.LaunchDescription([driver, classifier])
