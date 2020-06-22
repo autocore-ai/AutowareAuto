@@ -75,7 +75,7 @@ This node transforms point clouds from the `velodyne_node` to a common frame. In
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe __ns:=/lidar_front __params:=/opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml __node:=filter_transform_vlp16_front
+ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe __ns:=/lidar_front __params:=/opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
 ```
 
 ![Autoware.Auto transformed points snapshot](autoware-auto-transformed-points.png)
@@ -87,7 +87,7 @@ This node classifies point cloud points according to whether they are ground or 
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe __params:=/opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml
+ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe __params:=/opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml --remap points_in:=/lidar_front/points_filtered
 ```
 
 ![Autoware.Auto ray ground filter snapshot](autoware-auto-ray-ground-filter-smaller.png)
@@ -99,7 +99,7 @@ This node clusters non-ground points into objects and publishes bounding boxes. 
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_exe __params:=/opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml
+ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_exe __params:=/opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground
 ```
 
 ![Autoware.Auto bounding boxes segmentation snapshot](autoware-auto-bounding-boxes-smaller.png)
