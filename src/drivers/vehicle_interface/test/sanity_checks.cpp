@@ -65,7 +65,6 @@ TEST_F(sanity_checks, raw_translation)
   }
   // Check
   EXPECT_TRUE(vi_node->interface().raw_called());
-  EXPECT_TRUE(vi_node->interface().update_called());
   EXPECT_FALSE(vi_node->interface().basic_called());
   EXPECT_FALSE(vi_node->interface().state_called());
   EXPECT_EQ(msg, vi_node->interface().msg());

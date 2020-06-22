@@ -66,7 +66,6 @@ TEST_F(sanity_checks, state_machine)
   // Check state
   {
     EXPECT_TRUE(vi_node->interface().basic_called());
-    EXPECT_TRUE(vi_node->interface().update_called());
     EXPECT_FALSE(vi_node->interface().raw_called());
     EXPECT_TRUE(vi_node->interface().state_called());
   }
