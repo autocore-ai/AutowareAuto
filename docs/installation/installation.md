@@ -206,8 +206,21 @@ Build Cache         0                   0                   0B                  
 
 Use `docker system prune` to remove unused Docker items:
 
-Use `docker system prune` to remove unused Docker items:
-
 ```console
 $ docker system prune -a --volumes
 ```
+
+## General Troubleshooting
+
+Most issues with building Autoware.AUTO are caused by out-of-date software or old build files.
+To update `ade` and the Docker containers it manages as well as clear old builds, run the following in your `adehome/AutowareAuto` folder:
+
+```console
+$ ade stop
+$ sudo ade update-cli
+$ ade start --update --enter
+ade$ cd AutowareAuto
+ade$ rm -rf build/ install/ log/
+```
+
+If you are still having trouble after these commands have been run, please post a request for help on [ROS Answers](https://answers.ros.org/questions/ask/?tags=autoware).
