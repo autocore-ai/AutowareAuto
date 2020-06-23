@@ -3,13 +3,13 @@ Test Trajectory Following - Usage and Configuration
 This package contains launch files, param and scripts for
 easier integration testing of different modules needed for trajectory following functionality.
 
-For exmaple this package can be used to test `controller` and `simulator` with dummy/spoofed trajectory.
+For example this package can be used to test `controller` and `simulator` with dummy/spoofed trajectory.
 
 # Usage
 
 ## 1. Common
 
-* Start LGSVL and ros_bridge
+* Start LGSVL
 
 * MPC controller config
 `test_trajectory_following/param/mpc_controller.param.yaml`

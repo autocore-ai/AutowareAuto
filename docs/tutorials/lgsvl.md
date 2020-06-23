@@ -13,7 +13,7 @@ For more information about the simulator, see:
 
 ## Requirements
 
-- ADE 4.1.0 or later. Follow the
+- ADE 4.2.0 or later. Follow the
 [ADE installation instructions](https://ade-cli.readthedocs.io/en/latest/install.html) to install it
 - NVidia graphics card
 - If using Docker engine version 19.03 or later, [install Native GPU Support](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)).

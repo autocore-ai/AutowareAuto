@@ -10,3 +10,4 @@ Tutorials that are suitable for a beginner are marked as such.
 
 - @subpage perception-stack
 - @subpage lgsvl
+- @subpage trajectory-following
