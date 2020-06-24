@@ -1,6 +1,6 @@
 mpc:
   path: src/external/mpc
-  revision: 8fc7cfdd55cea537d44f4e97016d6e7c1ed6243b
+  revision: eaa5908bdd987051a9dcd9c505f99bfd7f028547
   url: https://gitlab.com/aninnymouse/mpc
 mrt_cmake_modules:
   path: src/external/mrt_cmake_modules
