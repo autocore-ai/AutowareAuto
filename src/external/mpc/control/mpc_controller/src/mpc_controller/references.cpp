@@ -49,12 +49,14 @@ constexpr auto IDYN_Y = 1U;
 constexpr auto IDYN_HEADING = 2U;
 constexpr auto IDYN_VEL_LONG = 3U;
 // Reference variable indices
-static_assert(ACADO_NY == 4, "Unexpected number of reference variables");
+static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
 constexpr auto NY = static_cast<std::size_t>(ACADO_NY);
 constexpr auto IDY_X = 0U;
 constexpr auto IDY_Y = 1U;
 constexpr auto IDY_HEADING = 2U;
 constexpr auto IDY_VEL_LONG = 3U;
+constexpr auto IDY_ACC = 4U;
+constexpr auto IDY_STEER = 5U;
 
 ////////////////////////////////////////////////////////////////////////////////
 void MpcController::apply_weights(const OptimizationConfig & cfg)
@@ -94,7 +96,7 @@ void MpcController::apply_nominal_weights(const StateWeight & cfg, const Index s
   }
   // 0 == hardcoded, 1 == variable, but time invariant, 2 == time varying
   static_assert(ACADO_WEIGHTING_MATRICES_TYPE == 2, "Weighting matrices should vary per timestep)");
-  static_assert(ACADO_NY == 4, "Unexpected number of reference variables");
+  static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
   for (Index i = start; i < end; ++i) {
     constexpr auto NY2 = NY * NY;
     const auto idx = i * NY2;
@@ -104,6 +106,10 @@ void MpcController::apply_nominal_weights(const StateWeight & cfg, const Index s
       static_cast<AcadoReal>(cfg.heading());
     acadoVariables.W[idx + (IDY_VEL_LONG * NY) + IDY_VEL_LONG] =
       static_cast<AcadoReal>(cfg.longitudinal_velocity());
+    acadoVariables.W[idx + (IDY_ACC * NY) + IDY_ACC] =
+      static_cast<AcadoReal>(cfg.acceleration());
+    acadoVariables.W[idx + (IDY_STEER * NY) + IDY_STEER] =
+      static_cast<AcadoReal>(cfg.steer_angle());
   }
 }
 
@@ -127,7 +133,7 @@ void MpcController::zero_nominal_weights(const Index start, Index end)
   }
   // 0 == hardcoded, 1 == variable, but time invariant, 2 == time varying
   static_assert(ACADO_WEIGHTING_MATRICES_TYPE == 2, "Weighting matrices should vary per timestep)");
-  static_assert(ACADO_NY == 4, "Unexpected number of reference variables");
+  static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
   constexpr auto NY2 = NY * NY;
   std::fill(&acadoVariables.W[start * NY2], &acadoVariables.W[end * NY2], AcadoReal{});
   // Zero initialization, above; std::fill preferred over memset for type safety

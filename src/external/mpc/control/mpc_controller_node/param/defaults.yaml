@@ -5,7 +5,7 @@ mpc_controller:
     state_topic: "vehicle_kinematic_state"
     trajectory_topic: "trajectory"
     tf_topic: "tf"
-    static_tf_topic: "static_tf"
+    static_tf_topic: "tf_static"
     diagnostic_topic: "control_diagnostic"
     debug_trajectory_publish_period_ms: 100  # if 0 or missing, no publishing happens
     controller:
@@ -48,9 +48,9 @@ mpc_controller:
           longitudinal_velocity: 10.0
           lateral_velocity: 10.0
           yaw_rate: 10.0
-          acceleration: 10.0
+          acceleration: 1.0
           jerk: 10.0
-          steer_angle: 10.0
+          steer_angle: 30.0
           steer_angle_rate: 10.0
         terminal:
           pose: 1000.0

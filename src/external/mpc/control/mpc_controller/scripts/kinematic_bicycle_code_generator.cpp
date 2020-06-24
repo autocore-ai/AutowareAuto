@@ -17,14 +17,13 @@ USING_NAMESPACE_ACADO
 
 int main(int argc, char * const argv[])
 {
-#include <kinematic_bicycle.snippet.hpp>
+  #include <kinematic_bicycle.snippet.hpp>
   // Weighting matrices and reference functions: not prespecified
   //
 
   Function rf;
   Function rfN;
-
-  rf << x << y << yaw << u;
+  rf << x << y << yaw << u << ax << delta;
   rfN << x << y << yaw << u;
 
   BMatrix W = eye<bool>(rf.getDim());

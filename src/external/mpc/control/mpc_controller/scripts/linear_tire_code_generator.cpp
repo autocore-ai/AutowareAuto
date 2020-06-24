@@ -25,7 +25,7 @@ int main(int argc, char * const argv[])
   Function rf;
   Function rfN;
 
-  rf << x << y << yaw << u;
+  rf << x << y << yaw << u << ax << delta;
   rfN << x << y << yaw << u;
 
   BMatrix W = eye<bool>(rf.getDim());

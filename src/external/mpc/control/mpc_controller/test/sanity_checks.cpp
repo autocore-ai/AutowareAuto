@@ -318,7 +318,7 @@ TEST_P(sanity_checks_simulation, constant_trajectory_simulation)
   controller_.set_trajectory(traj);
   apex_test_tools::memory_test::pause();
   State state;
-  auto iters = traj.points.size();
+  auto iters = 93U;
   // More dumb hard coding: I think there's some accumulation of numerical errors due to warm
   // starting and interpolation
   if (std::chrono::milliseconds(160) == dt) {
