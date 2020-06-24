@@ -147,7 +147,7 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
 
     // Publish recording feedback information
     auto feedback_msg = std::make_shared<RecordTrajectory::Feedback>();
-    feedback_msg->current_length = m_planner->get_record_length();
+    feedback_msg->current_length = static_cast<int32_t>(m_planner->get_record_length());
     m_recordgoalhandle->publish_feedback(feedback_msg);
   }
 
@@ -165,7 +165,7 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
 
     // Publish replaying feedback information
     auto feedback_msg = std::make_shared<ReplayTrajectory::Feedback>();
-    feedback_msg->remaining_length = traj.points.size();
+    feedback_msg->remaining_length = static_cast<int32_t>(traj.points.size());
     m_replaygoalhandle->publish_feedback(feedback_msg);
   }
 }
@@ -279,7 +279,7 @@ void RecordReplayPlannerNode::replay_handle_accepted(
   // Publish loaded states as replaying feedback information
   auto feedback_msg = std::make_shared<ReplayTrajectory::Feedback>();
   auto & remaining_length = feedback_msg->remaining_length;
-  remaining_length = m_planner->get_record_length();
+  remaining_length = static_cast<int32_t>(m_planner->get_record_length());
   m_replaygoalhandle->publish_feedback(feedback_msg);
 
   // Start the replaying process

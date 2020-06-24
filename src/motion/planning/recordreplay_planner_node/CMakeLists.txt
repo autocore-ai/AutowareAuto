@@ -4,8 +4,6 @@ project(recordreplay_planner_node)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(rclcpp_action REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ### Compile options
@@ -18,9 +16,13 @@ endif()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner_node/recordreplay_planner_node.cpp)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
+autoware_set_compile_options(${PROJECT_NAME})
 
 ament_auto_add_executable(${PROJECT_NAME}_exe
   src/recordreplay_planner_node/recordreplay_planner_main.cpp)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
+autoware_set_compile_options(${PROJECT_NAME}_exe)
 
 ### Test
 if(BUILD_TESTING)
@@ -35,8 +37,4 @@ if(BUILD_TESTING)
   target_include_directories(recordreplay_planner_node_unit_tests PRIVATE "include")
 endif()
 
-ament_export_dependencies(
-  "rosidl_default_runtime"
-  "recordreplay_planner_actions"
-)
 ament_auto_package(INSTALL_TO_SHARE param launch)
