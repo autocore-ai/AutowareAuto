@@ -365,62 +365,12 @@ are shown below.
 
 Use the commands below to generate coverage information for `my_cool_pkg`:
 
+\note
+You may need to clean your build before generating the coverage report.
+
 ```bash
-# In ~/workspace/
-# Build with correct flags
-ade$ COVERAGE_FLAGS="-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
-ade$ colcon build \
-          --merge-install \
-          --packages-select my_cool_pkg \
-          --cmake-args \
-            -DCMAKE_BUILD_TYPE=Coverage \
-          --ament-cmake-args \
-            -DCMAKE_CXX_FLAGS="$COVERAGE_FLAGS" \
-            -DCMAKE_C_FLAGS="$COVERAGE_FLAGS"
-
-
-# Get a zero-coverage baseline
-ade$ mkdir $(pwd)/lcov
-ade$ lcov --base-directory $(pwd) --capture --initial --directory $(pwd)/build/my_cool_pkg \
--o $(pwd)/lcov/lcov.base --no-external --rc lcov_branch_coverage=1
-
-# Run unit and integration tests
-ade$ colcon test \
-    --merge-install \
-    --packages-select my_cool_pkg \
-    --abort-on-error \
-    --ctest-args -E __rmw_micro_dds_c\|pclint\|copyright\|cppcheck\|cpplint\|flake8\|lint_cmake\|pep257\|uncrustify
-
-# Get coverage
-ade$ lcov \
-  --base-directory $(pwd) \
-  --capture \
-  --directory $(pwd)/build/my_cool_pkg \
-  --output-file $(pwd)/lcov/lcov.run \
-  --no-external \
-  --rc lcov_branch_coverage=1
-
-# Combine zero-coverage with coverage information.
-ade$ lcov \
-  -a $(pwd)/lcov/lcov.base \
-  -a $(pwd)/lcov/lcov.run \
-  -o $(pwd)/lcov/lcov.total \
-  --rc lcov_branch_coverage=1
-
-# Filter test, build, and install files and generate html
-ade$ lcov -r $(pwd)/lcov/lcov.total \
-    "*/build/*" \
-    "*/install/*" \
-    "CMakeCCompilerId.c" \
-    "CMakeCXXCompilerId.cpp" \
-    -o $(pwd)/lcov/lcov.total.filtered \
-    --rc lcov_branch_coverage=1
-
-ade$ genhtml -o $(pwd)/lcov/ $(pwd)/lcov/lcov.total.filtered -p $(pwd) --legend \
---demangle-cpp --rc genhtml_branch_coverage=1
-
-# See coverage
-ade$ chromium-browser --no-sandbox lcov/index.html
+ade$ cd AutowareAuto
+ade$ ./tools/coverage/package_coverage.sh my_cool_pkg
 ```
 
 The resulting `lcov/index.html` will have a similar form to the following:
