@@ -9,6 +9,10 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <exec_depend>ndt_nodes</exec_depend>
+  <exec_depend>voxel_grid_nodes</exec_depend>
+  <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
+
   <exec_depend>euclidean_cluster_nodes</exec_depend>
   <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
   <exec_depend>point_cloud_fusion</exec_depend>
