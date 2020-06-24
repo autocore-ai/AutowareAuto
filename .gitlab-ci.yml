@@ -1,267 +1,88 @@
 stages:
-  - ade
   - build
-  - deploy
 
-.ade_base: &ade_base
-  stage: ade
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - apk add --update-cache git
-    - cd tools/ade_image
-    - 'export LAST_CHANGE=$(git log -1 --pretty=%H .)'
-    - '
-      if [[ -n "$FORCE" ]]; then
-          chmod og-w . -R;
-          docker build
-              --label ade_image_commit_sha="$CI_COMMIT_SHA"
-              --label ade_image_commit_tag="$CI_COMMIT_TAG"
-              -t image .;
-      else
-          (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA image
-          ) || (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE image
-          ) || (
-              chmod og-w . -R;
-              docker build
-                  --label ade_image_commit_sha="$CI_COMMIT_SHA"
-                  --label ade_image_commit_tag="$CI_COMMIT_TAG"
-                  -t image .;
-          );
-      fi
-      '
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
-
-.build_barebones_base: &build_barebones_base
+build:
   stage: build
   image: ubuntu:bionic
   script:
-    - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-          tzdata
-          gnupg
+    # First install ROS 2 debians
+    # - locale-gen en_US en_US.UTF-8
+    # - update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    # Sources
+    - apt update && apt install -y curl gnupg2 lsb-release git
+    - curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+    - sh -c 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
+    - apt update
+    # Insall and setup; tzdata prompts...
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+    # ROS 2 dashing and development dependencies
+    - 'apt install -y
+        ros-dashing-ros-base
+        python3-colcon-common-extensions
+        build-essential
+        clang
+        clang-tidy
+        clang-tools
+        cmake
+        git
+        python3-pip
+        python-rosdep
+        python3-vcstool
+        wget
       '
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          sudo
-          curl
-          gnupg2
-          lsb-release
-          ca-certificates
+    - 'python3 -m pip install -U
+        argcomplete
+        flake8
+        flake8-blind-except
+        flake8-builtins
+        flake8-class-newline
+        flake8-comprehensions
+        flake8-deprecated
+        flake8-docstrings
+        flake8-import-order
+        flake8-quotes
+        pytest-repeat
+        pytest-rerunfailures
+        pytest
+        pytest-cov
+        pytest-runner
+        setuptools
       '
-    - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
-    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros-latest.list'
-    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          python3-colcon-common-extensions
-          cmake
-          build-essential
-          python-rosdep
-          git
-          clang-tidy
-      '
-    - 'git submodule update --init --recursive'
-    - 'rosdep init && rosdep update'
-    - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
-    - 'source /opt/ros/dashing/setup.bash'
-    - 'colcon build
-           --merge-install
-           --install-base /opt/AutowareAuto
-           --cmake-args
-             -DCMAKE_BUILD_TYPE=Debug
-      '
-
-.build_base: &build_base
-  stage: build
-  image: $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-  script:
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          git
-          clang-tidy
-      '
-    - 'git lfs pull --include="*" --exclude=""'
-    - 'git submodule update --init --recursive'
+    # apt version of clang doesn't support fgcc-record-switches?
+    # - update-alternatives --set c++ /usr/bin/clang++
+    - source /opt/ros/dashing/setup.bash
+    - mkdir mpc && mv `find -maxdepth 1 -not -name . -not -name mpc` mpc/
+    # Autoware.Auto
+    - git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
+    - git clone https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git
+    - git clone https://gitlab.com/ApexAI/apex_test_tools.git
+    - git clone https://github.com/osrf/osrf_testing_tools_cpp.git
+    - export MPC_PKGS=$(colcon list --names-only --base-paths mpc/)
+    - echo $MPC_PKGS
     # build and test
     - 'colcon build
            --merge-install
-           --install-base /opt/AutowareAuto
            --cmake-args
              -DCMAKE_BUILD_TYPE=Debug
+           --packages-up-to
+            $MPC_PKGS
       '
     - 'colcon test
-           --merge-install
-           --packages-skip apex_test_tools test_apex_test_tools
-           --install-base /opt/AutowareAuto
            --return-code-on-test-failure
+           --merge-install
+           --abort-on-error
+           --packages-select
+            $MPC_PKGS
       '
-    - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
-    - colcon test-result --verbose
-
-    # Test package
-    - source /opt/AutowareAuto/setup.bash
-    - 'ros2 run autoware_auto_create_pkg main.py
-          --pkg-name my_cool_pkg
-          --destination /tmp/tmp_ws/src
-          --description "My cool package does cool stuff"
-          --maintainer "Jane Doe"
-          --email "jane.doe@awesome-company.com"
-      '
-    - cd /tmp/tmp_ws
-    - colcon build --packages-select my_cool_pkg
-    - colcon test --packages-select my_cool_pkg
-    - colcon test-result --verbose
-    - cd -
-
-    # prepare volume artifact
-    - mkdir /opt/AutowareAuto/src
-    - '(cd src && git archive --format=tar HEAD | (cd /opt/AutowareAuto/src && tar xf -))'
-    - cp -a LICENSE /opt/AutowareAuto
-    - chmod -R og-w /opt/AutowareAuto
-    - tar cfz opt.tar.gz /opt/AutowareAuto
-
-.volume_base: &volume_base
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
-    - |
-      cat >Dockerfile <<EOF
-      FROM alpine
-      ADD opt.tar.gz /
-      VOLUME /opt/AutowareAuto
-      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
-      EOF
-    - 'docker build
-          --label ade_image_commit_sha="$CI_COMMIT_SHA"
-          --label ade_image_commit_tag="$CI_COMMIT_TAG"
-          -t image .
-      '
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
-
-ade:
-  variables:
-    ARCH: ""
-  <<: *ade_base
-
-ade_arm64:
-  variables:
-    ARCH: "/arm64"
-  tags:
-    - arm64
-  <<: *ade_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-
-build_barebones:
-  <<: *build_barebones_base
-
-build_barebones_arm64:
-  tags:
-    - arm64
-  <<: *build_barebones_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-
-build:
-  variables:
-    ARCH: ""
-  <<: *build_base
+    - pwd && ls
+    # Scan-build stuff
+    - wget https://gitlab.com/aninnymouse/mpc/snippets/1894908/raw
+    - mv raw scan_build.sh
+    - sh scan_build.sh "colcon build --merge-install --packages-up-to $MPC_PKGS"
   artifacts:
+    when: always
     name: "$CI_JOB_NAME"
     paths:
       - log
-      - opt.tar.gz
-    reports:
-      junit: test-results.xml
-
-build_arm64:
-  variables:
-    ARCH: "/arm64"
-  tags:
-    - arm64
-  <<: *build_base
-  artifacts:
-    name: "$CI_JOB_NAME$ARCH"
-    paths:
-      - log
-      - opt.tar.gz
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-
-coverage:
-  stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
-  script:
-    - './tools/coverage/coverage.sh -u'
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - coverage
-  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
-
-docs:
-  stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
-  script:
-    - docs/.doxygen/build.py
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - docs/_build/html
-
-pages:
-  stage: deploy
-  image: alpine
-  dependencies:
-    - coverage
-    - docs
-  script:
-    - mv docs/_build/html public
-    - mv coverage public
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - public
-  only:
-    - master
-
-volume:
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  dependencies:
-    - build
-  variables:
-    ARCH: ""
-  <<: *volume_base
-
-volume_arm64:
-  stage: deploy
-  image: docker
-  services:
-    - docker:19.03.5-dind
-  dependencies:
-    - build_arm64
-  tags:
-    - arm64
-  variables:
-    ARCH: "/arm64"
-  <<: *volume_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
+    expire_in: 1 week
