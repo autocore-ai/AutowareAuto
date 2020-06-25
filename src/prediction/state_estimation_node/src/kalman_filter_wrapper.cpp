@@ -23,13 +23,14 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/time.hpp>
 #include <state_estimation_node/measurement.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 #include <limits>
 #include <cstdint>
-#include <iostream>
 #include <algorithm>
 
 
@@ -191,6 +192,11 @@ nav_msgs::msg::Odometry ConstantAccelerationFilter::get_state() const
     static_cast<float64_t>(m_motion_model[ConstantAcceleration::States::VELOCITY_X]);
   msg.twist.twist.linear.y =
     static_cast<float64_t>(m_motion_model[ConstantAcceleration::States::VELOCITY_Y]);
+
+  const auto rotation_around_z = std::atan2(msg.twist.twist.linear.y, msg.twist.twist.linear.x);
+  tf2::Quaternion rotation;
+  rotation.setRPY(0.0, 0.0, rotation_around_z);
+  msg.pose.pose.orientation = tf2::toMsg(rotation);
 
   // Fill covariances.
   const auto & covariance_factor = m_ekf->get_covariance();

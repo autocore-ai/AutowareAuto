@@ -191,13 +191,13 @@ StateEstimationNode::StateEstimationNode(
     m_frame_id,
     mahalanobis_threshold);
 
-  const auto input_odom_topics{
-    declare_parameter("topics.input_odom").get<std::vector<std::string>>()};
-  const auto input_pose_topics{
-    declare_parameter("topics.input_pose").get<std::vector<std::string>>()};
-  const auto input_twist_topics{
-    declare_parameter("topics.input_twist").get<std::vector<std::string>>()};
-
+  const std::vector<std::string> empty_vector{};
+  const auto input_odom_topics{declare_parameter("topics.input_odom", empty_vector)};
+  const auto input_pose_topics{declare_parameter("topics.input_pose", empty_vector)};
+  const auto input_twist_topics{declare_parameter("topics.input_twist", empty_vector)};
+  if (input_odom_topics.empty() && input_pose_topics.empty() && input_twist_topics.empty()) {
+    throw std::runtime_error("No input topics provided. Make sure to set these in the param file.");
+  }
   create_subscriptions<OdomMsgT>(
     input_odom_topics, &m_odom_subscribers, &StateEstimationNode::odom_callback);
   create_subscriptions<PoseMsgT>(

@@ -39,18 +39,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   ${MESSAGE_MODIFYING_NODE_LIB_HEADERS}
 )
 autoware_set_compile_options(${PROJECT_NAME})
-rclcpp_components_register_nodes(
-  ${PROJECT_NAME} "autoware::covariance_insertion_node::CovarianceInsertionNode")
 
-set(MESSAGE_MODIFYING_NODE_EXE_SRC
-  src/main.cpp
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::covariance_insertion_node::CovarianceInsertionNode"
+  EXECUTABLE ${PROJECT_NAME}_exe
 )
-
-# generate stand-alone executable
-ament_auto_add_executable(${PROJECT_NAME}_exe
-  ${MESSAGE_MODIFYING_NODE_EXE_SRC}
-)
-autoware_set_compile_options(${PROJECT_NAME}_exe)
 
 # Testing
 if(BUILD_TESTING)
