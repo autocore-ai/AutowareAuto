@@ -275,9 +275,12 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
       f_l = phi(interval.a_l);
       f_u = phi(interval.a_u);
     }
-    if (std::abs(interval.a_u - interval.a_l) <
-      std::max(interval.a_u, interval.a_l) * std::numeric_limits<StepT>::epsilon())
-    {
+    constexpr auto EPS = std::numeric_limits<StepT>::epsilon();
+    const auto abs_diff = std::abs(interval.a_u - interval.a_l);
+    const auto rel_diff = std::max(std::abs(interval.a_u), std::abs(interval.a_l)) * EPS;
+    const auto approx_abs_eq = (abs_diff < EPS);
+    const auto approx_rel_eq = (abs_diff < rel_diff);
+    if (approx_abs_eq || approx_rel_eq) {
       // The interval has converged to a point so we can stop here.
       a_t = interval.a_u;
       break;
