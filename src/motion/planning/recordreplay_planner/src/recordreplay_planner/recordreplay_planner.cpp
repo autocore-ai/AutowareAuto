@@ -140,7 +140,7 @@ void RecordReplayPlanner::record_state(const State & state_to_record)
     (state_to_record.state.y - previous_state.state.y) *
     (state_to_record.state.y - previous_state.state.y);
 
-  if (distance_sq >= (m_min_record_distance * m_min_record_distance) ) {
+  if (static_cast<float64_t>(distance_sq) >= (m_min_record_distance * m_min_record_distance) ) {
     m_record_buffer.push_back(state_to_record);
   }
 }
@@ -158,7 +158,7 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
     [this, &current_state](State & other_state) {
       const auto s1 = current_state.state, s2 = other_state.state;
       return (s1.x - s2.x) * (s1.x - s2.x) + (s1.y - s2.y) * (s1.y - s2.y) +
-             m_heading_weight * std::abs(to_angle(s1.heading - s2.heading));
+             static_cast<float32_t>(m_heading_weight) * std::abs(to_angle(s1.heading - s2.heading));
     };
   const auto comparison_function =
     [&distance_from_current_state](State & one, State & two)
@@ -170,7 +170,7 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
       comparison_function);
   auto minimum_idx = std::distance(std::begin(m_record_buffer), minimum_index_iterator);
 
-  return minimum_idx;
+  return static_cast<std::size_t>(minimum_idx);
 }
 
 const BoundingBoxArray & RecordReplayPlanner::get_traj_boxes()
@@ -309,7 +309,7 @@ void RecordReplayPlanner::writeTrajectoryBufferToFile(const std::string & record
         throw std::runtime_error("failed to serialize message");
       } else {
         const char8_t * ref(reinterpret_cast<char8_t *>(serialized_msg_.buffer));
-        file.write(ref, serialized_msg_.buffer_length);
+        file.write(ref, static_cast<std::streamsize>(serialized_msg_.buffer_length));
       }
     }
   } else {
@@ -352,8 +352,8 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
   rmw_serialized_message_t serialized_message_struct;
   serialized_message_struct.buffer =
     reinterpret_cast<uchar8_t *>(serialized_msg_buffer);
-  serialized_message_struct.buffer_length = upper_bound_buffer_length;
-  serialized_message_struct.buffer_capacity = upper_bound_buffer_length;
+  serialized_message_struct.buffer_length = static_cast<std::size_t>(upper_bound_buffer_length);
+  serialized_message_struct.buffer_capacity = static_cast<std::size_t>(upper_bound_buffer_length);
   serialized_message_struct.allocator = rcutils_get_default_allocator();
 
   if (file.is_open()) {
@@ -384,7 +384,7 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
 
       // Move filestream ptr to start of next message
       int32_t offset =
-        serialized_state_msg.buffer_length - current_read_buffer_length;
+        static_cast<int32_t>(serialized_state_msg.buffer_length) - current_read_buffer_length;
       file.seekg(offset, std::ios_base::cur);
 
       // We have to resize the buffer to read the whole file
@@ -392,7 +392,7 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
       if (file_remaining == 0) {
         break;
       } else if (file_remaining < current_read_buffer_length) {
-        current_read_buffer_length = file_remaining;
+        current_read_buffer_length = static_cast<int32_t>(file_remaining);
       }
     }
   } else {

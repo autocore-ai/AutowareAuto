@@ -74,7 +74,6 @@ class sanity_checks_trajectory_properties
 
 TEST_P(sanity_checks_trajectory_properties, basicproperties)
 {
-  const auto t = system_clock::now();
   const auto p = GetParam();
   auto t0 = p.starting_time;
 
@@ -88,7 +87,7 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
   }
 
   // Test: Check that the length is equal to the number of states we fed in
-  EXPECT_EQ(planner_.get_record_length(), N);
+  EXPECT_EQ(planner_.get_record_length(), static_cast<std::size_t>(N));
 
   // Test: Check that the plan returned has the expected time length
   auto trajectory = planner_.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
@@ -106,7 +105,7 @@ INSTANTIATE_TEST_CASE_P(
     PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t({})},
     PropertyTestParameters{std::chrono::milliseconds(100), system_clock::from_time_t(10)},
     PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t(10)}
-));
+  ), );
 
 
 //------------------ Test that length cropping properly works
@@ -146,7 +145,7 @@ INSTANTIATE_TEST_CASE_P(
   testing::Values(
     LengthTestParameters{80},
     LengthTestParameters{200}
-));
+  ), );
 
 
 // Test setup helper function. This creates a planner and records a trajectory
@@ -224,7 +223,7 @@ TEST(recordreplay_sanity_checks, obstacle_stopping)
   // Check: Trajectory without box in place is N long
   {
     auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
-    EXPECT_EQ(trajectory.points.size(), N);
+    EXPECT_EQ(trajectory.points.size(), static_cast<std::size_t>(N));
   }
 
   // Add a box that intersects with the trajectory
@@ -237,7 +236,7 @@ TEST(recordreplay_sanity_checks, obstacle_stopping)
 
   // Check: Trajectory with box added is shorter
   auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
-  EXPECT_EQ(trajectory.points.size(), N - 2);
+  EXPECT_EQ(trajectory.points.size(), static_cast<std::size_t>(N - 2));
 }
 
 TEST(recordreplay_sanity_checks, state_setting_mechanism)
@@ -285,7 +284,7 @@ TEST(recordreplay_sanity_checks, heading_weight_setting)
 TEST(recordreplay_sanity_checks, adding_bounding_boxes)
 {
   auto planner = RecordReplayPlanner{test_vehicle_params};
-  EXPECT_EQ(planner.get_number_of_bounding_boxes(), 0);
+  EXPECT_EQ(planner.get_number_of_bounding_boxes(), 0UL);
 
   auto dummy_boxes = BoundingBoxArray{};
   dummy_boxes.boxes.push_back(BoundingBox{});
@@ -293,7 +292,7 @@ TEST(recordreplay_sanity_checks, adding_bounding_boxes)
 
   planner.update_bounding_boxes(dummy_boxes);
 
-  EXPECT_EQ(planner.get_number_of_bounding_boxes(), 2);
+  EXPECT_EQ(planner.get_number_of_bounding_boxes(), 2UL);
 }
 
 
@@ -333,7 +332,7 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
   // Check a set of corners for being in a set of expected points
   const auto corners_check = [](auto expected_set, auto check_set) {
       for (std::size_t k = 0; k < check_set.size(); ++k) {
-        EXPECT_EQ(expected_set.count(check_set[k]), 1);
+        EXPECT_EQ(expected_set.count(check_set[k]), static_cast<std::size_t>(1));
       }
     };
 
@@ -345,7 +344,7 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
     const auto state = make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0);
     auto aligned_box = get_test_box(state.state);
 
-    EXPECT_EQ(aligned_box.corners.size(), 4);
+    EXPECT_EQ(aligned_box.corners.size(), static_cast<std::size_t>(4));
     const auto expected_corners = std::set<Point32, point_compare>({
       make_point(1.5f, 1.0f),
       make_point(-1.2f, 1.0f),
@@ -361,7 +360,7 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
     const auto rotated_state = make_state(0.0F, 0.0F, 1.5707963267948966, 0.0F, 0.0F, 0.0F, t0);
     auto rotated_box = get_test_box(rotated_state.state);
 
-    EXPECT_EQ(rotated_box.corners.size(), 4);
+    EXPECT_EQ(rotated_box.corners.size(), static_cast<std::size_t>(4));
 
     const auto expected_corners = std::set<Point32, point_compare>({
       make_point(+1.0f, +1.5f),
@@ -417,12 +416,12 @@ TEST(RecordreplayWriteReadTrajectory, WriteReadTrajectory)
   planner.writeTrajectoryBufferToFile(file_name);
 
   planner.clear_record();
-  EXPECT_EQ(planner.get_record_length(), 0);
+  EXPECT_EQ(planner.get_record_length(), static_cast<std::size_t>(0));
 
   planner.readTrajectoryBufferFromFile(file_name);
 
   EXPECT_EQ(std::remove(file_name.c_str()), 0);
-  EXPECT_EQ(planner.get_record_length(), 5);
+  EXPECT_EQ(planner.get_record_length(), static_cast<std::size_t>(5));
 
   const auto t0 = system_clock::from_time_t({});
   auto trajectory = planner.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
