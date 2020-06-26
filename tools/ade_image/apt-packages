@@ -8,6 +8,8 @@ gdb
 git
 git-lfs
 graphviz
+icecc
+icecc-monitor
 jq
 libboost-all-dev
 lcov
