@@ -45,7 +45,7 @@ def generate_launch_description():
         parameters=[get_param_file('euclidean_cluster_nodes', 
             'vlp16_sim_lexus_cluster.param.yaml')],
         remappings=[
-            ("points_in", "nonground_points"),
+            ("points_in", "points_nonground"),
             ("points_clustered", "cluster_points")
         ])
 

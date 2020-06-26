@@ -121,9 +121,7 @@ def generate_launch_description():
         node_executable='euclidean_cluster_exe',
         node_namespace='perception',
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
-        remappings=[
-            ("points_in", "nonground_points")
-        ]
+        remappings=[("points_in", "points_nonground")]
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
