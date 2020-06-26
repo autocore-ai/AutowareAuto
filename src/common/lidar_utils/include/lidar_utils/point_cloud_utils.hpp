@@ -22,6 +22,7 @@
 #include <lidar_utils/visibility_control.hpp>
 
 #include <common/types.hpp>
+#include <helper_functions/float_comparisons.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry/common_3d.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -42,6 +43,7 @@ namespace autoware
 {
 namespace common
 {
+namespace comp = helper_functions::comparisons;
 namespace lidar_utils
 {
 using sensor_msgs::msg::PointCloud2;
@@ -288,7 +290,8 @@ public:
   {
     using common::geometry::dot_3d;
     auto pt_radius = dot_3d(pt, pt);
-    return ((pt_radius + FEPS) >= m_min_r2) && ((pt_radius - FEPS) <= m_max_r2);
+    return comp::abs_gte(pt_radius, m_min_r2, FEPS) &&
+           comp::abs_lte(pt_radius, m_max_r2, FEPS);
   }
 
 private:

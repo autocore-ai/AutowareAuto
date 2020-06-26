@@ -14,6 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #include <common/types.hpp>
+#include <helper_functions/float_comparisons.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 
 #include <algorithm>
@@ -27,7 +28,8 @@
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
 using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
+namespace comp = autoware::common::helper_functions::comparisons;
 
 namespace lgsvl_interface
 {
@@ -56,7 +58,8 @@ LgsvlInterface::LgsvlInterface(
   m_logger{node.get_logger()}
 {
   const auto check = [](const auto value, const auto ref) -> bool8_t {
-      return std::fabs(value - ref) > std::numeric_limits<decltype(value)>::epsilon();
+      constexpr auto EPS = std::numeric_limits<decltype(value)>::epsilon();
+      return comp::abs_gt(value, ref, EPS);
     };
   // check throttle table
   if (check(m_throttle_table.domain().front(), 0.0)) {
@@ -266,7 +269,7 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     pose.pose.pose.position = msg.pose.pose.position;
     pose.pose.pose.orientation = q;
 
-    constexpr auto EPS = std::numeric_limits<float32_t>::epsilon();
+    constexpr auto EPS = std::numeric_limits<float64_t>::epsilon();
     if (std::fabs(msg.pose.covariance[COV_X]) > EPS ||
       std::fabs(msg.pose.covariance[COV_Y]) > EPS ||
       std::fabs(msg.pose.covariance[COV_Z]) > EPS ||

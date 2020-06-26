@@ -58,6 +58,7 @@
 
 #include <optimization/line_search/line_search.hpp>
 #include <optimization/utils.hpp>
+#include <helper_functions/float_comparisons.hpp>
 
 #include <limits>
 #include <algorithm>
@@ -67,6 +68,7 @@ namespace autoware
 {
 namespace common
 {
+namespace comp = helper_functions::comparisons;
 namespace optimization
 {
 
@@ -275,12 +277,9 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
       f_l = phi(interval.a_l);
       f_u = phi(interval.a_u);
     }
-    constexpr auto EPS = std::numeric_limits<StepT>::epsilon();
-    const auto abs_diff = std::abs(interval.a_u - interval.a_l);
-    const auto rel_diff = std::max(std::abs(interval.a_u), std::abs(interval.a_l)) * EPS;
-    const auto approx_abs_eq = (abs_diff < EPS);
-    const auto approx_rel_eq = (abs_diff < rel_diff);
-    if (approx_abs_eq || approx_rel_eq) {
+    constexpr auto ABS_EPS = std::numeric_limits<StepT>::epsilon();
+    constexpr auto REL_EPS = std::numeric_limits<StepT>::epsilon();
+    if (comp::approx_eq(interval.a_u, interval.a_l, ABS_EPS, REL_EPS)) {
       // The interval has converged to a point so we can stop here.
       a_t = interval.a_u;
       break;
