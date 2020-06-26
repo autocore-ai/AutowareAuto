@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_CATR_HPP_
 #define TEST_CATR_HPP_
@@ -304,7 +305,7 @@ TEST(catr_model, cvtr_jacobian)
   Matrix<float32_t, 6, 6> F;
   // -45 degrees
   const Matrix<float32_t, 6, 1>
-    x((Eigen::Matrix<float32_t, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
+  x((Eigen::Matrix<float32_t, 6, 1>() << -1, -3, 5.0F, 0, -3.14159F * 1.5F, 0.1F).finished());
   Matrix<float32_t, 6, 1> dx[6];
 
   std::chrono::nanoseconds dt_(1000000LL);
@@ -337,8 +338,8 @@ TEST(catr_model, cvtr_jacobian)
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {
-          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta))
-            << i << ", " << j;
+          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta)) <<
+            i << ", " << j;
         }
       }
       // const float delta2 = (dx[j](i) - model[i]) / del;
@@ -356,7 +357,7 @@ TEST(catr_model, catr_jacobian)
   Matrix<float32_t, 6, 6> F;
   // -45 degrees
   const Matrix<float32_t, 6, 1>
-    x((Eigen::Matrix<float32_t, 6, 1>() <<-10, 3, 5, 3, -0.5F, -0.3F).finished());
+  x((Eigen::Matrix<float32_t, 6, 1>() << -10, 3, 5, 3, -0.5F, -0.3F).finished());
   Matrix<float32_t, 6, 1> dx[6];
   std::chrono::nanoseconds dt_(1000000LL);
   // compute deltas
@@ -388,8 +389,8 @@ TEST(catr_model, catr_jacobian)
         ASSERT_LT(fabsf(delta - F(i, j)), TOL2) << i << ", " << j << ": del = " << delta;
         // check for matching sign
         if (fabsf(F(i, j)) > TOL2) {
-          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta))
-            << i << ", " << j;
+          ASSERT_FLOAT_EQ(std::copysign(1.0F, F(i, j)), std::copysign(1.0F, delta)) <<
+            i << ", " << j;
         }
       }
       // const float delta2 = (dx[j](i) - model[i]) / del;

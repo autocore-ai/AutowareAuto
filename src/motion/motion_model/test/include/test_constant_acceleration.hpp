@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_CONSTANT_ACCELERATION_HPP_
 #define TEST_CONSTANT_ACCELERATION_HPP_
@@ -22,7 +23,15 @@
 using autoware::common::types::float32_t;
 
 using autoware::motion::motion_model::ConstantAcceleration;
+using autoware::motion::motion_model::index_t;
 using Eigen::Matrix;
+
+static const index_t POSE_X = ConstantAcceleration::States::POSE_X;
+static const index_t POSE_Y = ConstantAcceleration::States::POSE_Y;
+static const index_t VELOCITY_X = ConstantAcceleration::States::VELOCITY_X;
+static const index_t VELOCITY_Y = ConstantAcceleration::States::VELOCITY_Y;
+static const index_t ACCELERATION_X = ConstantAcceleration::States::ACCELERATION_X;
+static const index_t ACCELERATION_Y = ConstantAcceleration::States::ACCELERATION_Y;
 
 TEST(constant_acceleration, basic)
 {
@@ -42,12 +51,12 @@ TEST(constant_acceleration, basic)
   std::chrono::nanoseconds milliseconds_500(std::chrono::milliseconds(500));
 
   model.reset(x);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_X], 0.0F);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_Y], 0.0F);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_X], vx);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_Y], vy);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_X], ax);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_Y], ay);
+  ASSERT_FLOAT_EQ(model[POSE_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[POSE_Y], 0.0F);
+  ASSERT_FLOAT_EQ(model[VELOCITY_X], vx);
+  ASSERT_FLOAT_EQ(model[VELOCITY_Y], vy);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_X], ax);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_Y], ay);
   // push prediction eslewhere
 
   model.predict(y, seconds);
@@ -80,27 +89,21 @@ TEST(constant_acceleration, basic)
       // diagonal terms
       if (idx == jdx) {
         ASSERT_FLOAT_EQ(F(idx, idx), 1.0F);
-      // first order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::VELOCITY_X == jdx) {
+        // first order terms
+      } else if (POSE_X == idx && VELOCITY_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::VELOCITY_Y == jdx) {
+      } else if (POSE_Y == idx && VELOCITY_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::VELOCITY_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (VELOCITY_X == idx && ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      } else if (ConstantAcceleration::States::VELOCITY_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (VELOCITY_Y == idx && ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F);
-      // second order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+        // second order terms
+      } else if (POSE_X == idx && ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F * 0.1F * 0.5F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (POSE_Y == idx && ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.1F * 0.1F * 0.5F);
-      // other terms
+        // other terms
       } else {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.0F);
       }
@@ -118,12 +121,12 @@ TEST(constant_acceleration, basic)
   const float32_t y3 = 0.1F * vy + (0.5F * 0.1F * 0.1F * ay);
   const float32_t vx3 = vx + 0.1F * ax;
   const float32_t vy3 = vy + 0.1F * ay;
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_X], x3);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_Y], y3);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_X], vx3);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_Y], vy3);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_X], ax);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_Y], ay);
+  ASSERT_FLOAT_EQ(model[POSE_X], x3);
+  ASSERT_FLOAT_EQ(model[POSE_Y], y3);
+  ASSERT_FLOAT_EQ(model[VELOCITY_X], vx3);
+  ASSERT_FLOAT_EQ(model[VELOCITY_Y], vy3);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_X], ax);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_Y], ay);
   // combined change
   model.compute_jacobian_and_predict(F, milliseconds_50);
   for (uint32_t idx = 0U; idx < sz; ++idx) {
@@ -131,27 +134,21 @@ TEST(constant_acceleration, basic)
       // diagonal terms
       if (idx == jdx) {
         ASSERT_FLOAT_EQ(F(idx, idx), 1.0F);
-      // first order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::VELOCITY_X == jdx) {
+        // first order terms
+      } else if (POSE_X == idx && VELOCITY_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::VELOCITY_Y == jdx) {
+      } else if (POSE_Y == idx && VELOCITY_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::VELOCITY_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+      } else if (VELOCITY_X == idx && ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      } else if (ConstantAcceleration::States::VELOCITY_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (VELOCITY_Y == idx && ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
-      // second order terms
-      } else if (ConstantAcceleration::States::POSE_X == idx &&
-                 ConstantAcceleration::States::ACCELERATION_X == jdx) {
+        // second order terms
+      } else if (POSE_X == idx && ACCELERATION_X == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F * 0.05F * 0.5F);
-      } else if (ConstantAcceleration::States::POSE_Y == idx &&
-                 ConstantAcceleration::States::ACCELERATION_Y == jdx) {
+      } else if (POSE_Y == idx && ACCELERATION_Y == jdx) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F * 0.05F * 0.5F);
-      // other terms
+        // other terms
       } else {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.0F);
       }
@@ -161,11 +158,11 @@ TEST(constant_acceleration, basic)
   const float32_t y4 = y3 + 0.05F * vy3 + (0.5F * 0.05F * 0.05F * ay);
   const float32_t vx4 = vx3 + 0.05F * ax;
   const float32_t vy4 = vy3 + 0.05F * ay;
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_X], x4);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::POSE_Y], y4);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_X], vx4);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::VELOCITY_Y], vy4);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_X], ax);
-  ASSERT_FLOAT_EQ(model[ConstantAcceleration::States::ACCELERATION_Y], ay);
+  ASSERT_FLOAT_EQ(model[POSE_X], x4);
+  ASSERT_FLOAT_EQ(model[POSE_Y], y4);
+  ASSERT_FLOAT_EQ(model[VELOCITY_X], vx4);
+  ASSERT_FLOAT_EQ(model[VELOCITY_Y], vy4);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_X], ax);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_Y], ay);
 }
 #endif  // TEST_CONSTANT_ACCELERATION_HPP_

@@ -1,5 +1,4 @@
 // Copyright 2018 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef TEST_CONSTANT_VELOCITY_HPP_
 #define TEST_CONSTANT_VELOCITY_HPP_
@@ -90,7 +91,7 @@ TEST(constant_velocity, basic)
       if (idx == jdx) {
         ASSERT_FLOAT_EQ(F(idx, idx), 1.0F);
       } else if (idx == 0U && jdx == 2U) {
-        ASSERT_FLOAT_EQ(F(idx, jdx),  0.05F);
+        ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
       } else if (idx == 1U && jdx == 3U) {
         ASSERT_FLOAT_EQ(F(idx, jdx), 0.05F);
       } else {

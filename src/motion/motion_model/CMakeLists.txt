@@ -3,21 +3,26 @@
 cmake_minimum_required(VERSION 3.5)
 project(motion_model)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
-find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_common REQUIRED)
-find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
 
 # includes
-include_directories(include)
 include_directories(
   SYSTEM ${EIGEN3_INCLUDE_DIR}
 )
 
-add_library(${PROJECT_NAME} SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   include/motion_model/motion_model.hpp
   include/motion_model/constant_velocity.hpp
   include/motion_model/constant_acceleration.hpp
@@ -28,23 +33,21 @@ add_library(${PROJECT_NAME} SHARED
   src/catr_core.cpp
   src/catr_model.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}
-  autoware_auto_common)
 autoware_set_compile_options(${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # run linters
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
   set(MOTION_MODEL_GTEST motion_model_gtest)
-  find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(${MOTION_MODEL_GTEST} test/src/test_motion_models.cpp)
   target_include_directories(${MOTION_MODEL_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${MOTION_MODEL_GTEST} ${PROJECT_NAME})
   ament_target_dependencies(${MOTION_MODEL_GTEST})
 endif()
 
-autoware_install(LIBRARIES ${PROJECT_NAME} HAS_INCLUDE)
 # Ament Exporting
+list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS "motion_model-extras.cmake")
 ament_auto_package()
