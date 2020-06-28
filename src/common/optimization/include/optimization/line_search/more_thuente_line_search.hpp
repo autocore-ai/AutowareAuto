@@ -121,7 +121,7 @@ public:
     const OptimizationDirection optimization_direction = OptimizationDirection::kMinimization,
     const StepT mu = 1.e-4F,
     const StepT eta = 0.1F,  // Default value suggested in Section 5 of the paper.
-    const std::int32_t max_iterations = 100)
+    const std::int32_t max_iterations = 10)
   : LineSearch{max_step},
     m_step_min{min_step},
     m_optimization_direction{optimization_direction},
@@ -245,7 +245,7 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
     } else {
       a_t = find_next_step_length(phi_t, f_l, f_u);
     }
-    if (a_t < m_step_min) {
+    if (a_t < m_step_min || std::isnan(a_t)) {
       // This can happen if we are closer than the minimum step to the optimum. We don't want to do
       // anything in this case.
       a_t = 0.0F;
@@ -277,9 +277,8 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
       f_l = phi(interval.a_l);
       f_u = phi(interval.a_u);
     }
-    constexpr auto ABS_EPS = std::numeric_limits<StepT>::epsilon();
-    constexpr auto REL_EPS = std::numeric_limits<StepT>::epsilon();
-    if (comp::approx_eq(interval.a_u, interval.a_l, ABS_EPS, REL_EPS)) {
+    constexpr auto EPS = std::numeric_limits<StepT>::epsilon();
+    if (comp::approx_eq(interval.a_u, interval.a_l, m_step_min, EPS)) {
       // The interval has converged to a point so we can stop here.
       a_t = interval.a_u;
       break;
@@ -316,17 +315,16 @@ public:
     m_compute_mode.set_score().set_jacobian();
     m_underlying_function.evaluate(m_starting_state, m_compute_mode);
     m_underlying_function.jacobian(m_starting_state, m_underlying_function_jacobian);
+    const auto derivative = m_underlying_function_jacobian.dot(m_step_direction);
     switch (direction) {
       case OptimizationDirection::kMinimization:
-        if (m_underlying_function_jacobian.dot(m_step_direction) > ValueT{0.0}) {
-          throw std::domain_error(
-                  "Derivative should be negative for a minimization problem. Flip the step.");
+        if (derivative > ValueT{0.0}) {
+          m_step_direction *= -1.0;
         }
         break;
       case OptimizationDirection::kMaximization:
-        if (m_underlying_function_jacobian.dot(m_step_direction) < ValueT{0.0}) {
-          throw std::domain_error(
-                  "Derivative should be positive for a maximization problem. Flip the step.");
+        if (derivative < ValueT{0.0}) {
+          m_step_direction *= -1.0;
         }
         // The function phi must have a derivative < 0 following the introduction of the
         // More-Thuente paper. In case we want to solve a maximization problem, the derivative will
@@ -398,11 +396,17 @@ template<typename FunctionValueT>
 MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
   const FunctionValueT & f_t, const FunctionValueT & f_l, const FunctionValueT & f_u)
 {
+  if (std::isnan(f_t.argument) || std::isnan(f_l.argument) || std::isnan(f_u.argument)) {
+    throw std::runtime_error("Got nan values in the step computation function.");
+  }
+  constexpr auto kValueEps = 0.00001;
+  constexpr auto kStepEps = 0.00001F;
   // A lambda to calculate the minimizer of the cubic that interpolates f_a, f_a_derivative, f_b and
   // f_b_derivative on [a, b]. Equation 2.4.52 [Sun, Yuan 2006]
-  const auto find_cubic_minimizer = [](
-    const auto & f_a, const auto & f_b) {
-
+  const auto find_cubic_minimizer = [](const auto & f_a, const auto & f_b) -> StepT {
+      if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
+        return f_a.argument;
+      }
       const auto z = 3.0F * (f_a.value - f_b.value) /
         (f_b.argument - f_a.argument) + f_a.derivative + f_b.derivative;
       const auto w = std::sqrt(z * z - f_a.derivative * f_b.derivative);
@@ -412,16 +416,22 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f_a, f_b and f'_a
-  const auto find_a_q = [](const FunctionValueT & f_a, const FunctionValueT & f_b) {
+  const auto find_a_q = [](const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
+      if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
+        return f_a.argument;
+      }
       return f_a.argument + 0.5F *
              (f_b.argument - f_a.argument) * (f_b.argument - f_a.argument) * f_a.derivative /
              (f_a.value - f_b.value + (f_b.argument - f_a.argument) * f_a.derivative);
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f'_a, and f'_b
-  const auto find_a_s = [](const FunctionValueT & f_a, const FunctionValueT & f_b) {
-      return f_b.argument +
-             (f_b.argument - f_a.argument) * f_b.derivative / (f_a.derivative - f_b.derivative);
+  const auto find_a_s = [](const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
+      if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
+        return f_a.argument;
+      }
+      return f_a.argument +
+             (f_b.argument - f_a.argument) * f_a.derivative / (f_a.derivative - f_b.derivative);
     };
 
   // We cover here all the cases presented in the More-Thuente paper in section 4.
@@ -441,7 +451,8 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
     } else {
       return a_s;
     }
-  } else if (std::fabs(f_t.derivative) <= std::fabs(f_l.derivative)) {  // Case 3 from section 4.
+  } else if (comp::abs_lte(std::abs(f_t.derivative), std::abs(f_l.derivative), kValueEps)) {
+    // Case 3 from section 4.
     const auto a_c = find_cubic_minimizer(f_l, f_t);
     const auto a_s = find_a_s(f_l, f_t);
     if (std::fabs(a_c - f_t.argument) < std::fabs(a_s - f_t.argument)) {

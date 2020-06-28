@@ -131,12 +131,17 @@ public:
     };
 
     // Construct and set the localizer.
+    const float32_t step_max{static_cast<float32_t>(this->declare_parameter(
+        "localizer.optimizer.line_search.step_max").
+      template get<float64_t>())};
+    const float32_t step_min{static_cast<float32_t>(this->declare_parameter(
+        "localizer.optimizer.line_search.step_min").
+      template get<float64_t>())};
+    // TODO(igor): make the line search configurable.
     LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
       localizer_config, OptimizerT{common::optimization::MoreThuenteLineSearch{
-          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_max")
-          .template get<float32_t>()),
-          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_min")
-          .template get<float32_t>())
+          step_max, step_min,
+          common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization
         }});
     this->set_localizer(std::move(localizer_ptr));
   }

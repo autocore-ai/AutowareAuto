@@ -183,8 +183,8 @@ TEST(MoreThuenteLineSearchTest, function_from_paper) {
   const Vector start{0.0};
   // Note: we *must* start at 0 here as otherwise the function will not correspond to one provided
   // in the paper. We can pick the actual starting point through the choice of max step though.
-  const Vector initial_step{1.0};
-  const auto mu{0.5F};
+  const Vector initial_step{1.2};
+  const auto mu{0.001F};
   const auto eta{0.001F};
   auto line_search{MoreThuenteLineSearch{
       max_step, min_step, MoreThuenteLineSearch::OptimizationDirection::kMinimization, mu, eta}};
@@ -249,23 +249,5 @@ TEST(MoreThuenteLineSearchTest, wrong_initialization) {
       100.0F, 1.0F, MoreThuenteLineSearch::OptimizationDirection::kMinimization, 0.1F, 0.1F));
   EXPECT_THROW(MoreThuenteLineSearch(
       100.0F, 1.0F, MoreThuenteLineSearch::OptimizationDirection::kMinimization, 0.1F, 0.1F, 0),
-    std::domain_error);
-}
-
-/// @test       Check that we throw if the direction of optimization is wrong.
-TEST(MoreThuenteLineSearchTest, wrong_direction) {
-  QuadraticFunction f;
-  MoreThuenteLineSearch line_search{10.0F, 0.001F};
-  EXPECT_THROW(line_search.compute_next_step(Vector{-2.0}, Vector{-1.0}, f), std::domain_error);
-  EXPECT_THROW(line_search.compute_next_step(Vector{2.0}, Vector{1.0}, f), std::domain_error);
-
-  QuadraticFunction flipped_f{-1};
-  MoreThuenteLineSearch max_line_search{
-    10.0F, 0.001F, MoreThuenteLineSearch::OptimizationDirection::kMaximization};
-  EXPECT_THROW(
-    max_line_search.compute_next_step(Vector{-2.0}, Vector{-1.0}, flipped_f),
-    std::domain_error);
-  EXPECT_THROW(
-    max_line_search.compute_next_step(Vector{2.0}, Vector{1.0}, flipped_f),
     std::domain_error);
 }
