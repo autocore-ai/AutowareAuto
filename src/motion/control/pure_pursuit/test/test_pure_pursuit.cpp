@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
@@ -134,7 +135,6 @@ TEST_F(PurePursuitTest, simple)
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
-  const Trajectory & traj_result = controller.get_reference_trajectory();
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.0F * dist_front_rear_wheels));

@@ -1,5 +1,4 @@
 # Copyright 2019 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 cmake_minimum_required(VERSION 3.5)
 
 ### Export headers
 project(pure_pursuit)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 ## dependencies
-find_package(autoware_auto_cmake REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -32,12 +40,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 autoware_set_compile_options(${PROJECT_NAME})
 if(BUILD_TESTING)
   # run common linters
-  # find_package(ament_lint_auto)
-  # ament_lint_auto_find_test_dependencies()
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
-  find_package(ament_cmake_gtest REQUIRED)
   set(PURE_PURSUIT_GTEST pure_pursuit_gtest)
   ament_add_gtest(${PURE_PURSUIT_GTEST}
     test/gtest_main.cpp

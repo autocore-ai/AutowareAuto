@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
 #include <motion_testing/motion_testing.hpp>
@@ -37,8 +38,9 @@ protected:
   {
     return std::atan(2.0F * dx * cfg_.get_distance_front_rear_wheel() / (lookahead * lookahead));
   }
-  void check_steer(const VehicleControlCommand cmd,
-                   const float32_t guess, const float32_t TOL = 1.0E-4F)
+  void check_steer(
+    const VehicleControlCommand cmd,
+    const float32_t guess, const float32_t TOL = 1.0E-4F)
   {
     EXPECT_LT(std::fabs(cmd.front_wheel_angle_rad - guess), TOL) <<
       cmd.front_wheel_angle_rad << ", " << guess;
@@ -77,7 +79,7 @@ TEST_P(sanity_checks_axis_aligned_straight, basic)
   const auto dx = GetParam().dx;
   const auto dy = GetParam().dy;
   const auto L = std::max(std::sqrt((dx * dx) + (dy * dy)), cfg_.get_minimum_lookahead_distance());
-  const auto v0 =  L / cfg_.get_speed_to_lookahead_ratio();
+  const auto v0 = L / cfg_.get_speed_to_lookahead_ratio();
   const auto now = std::chrono::system_clock::now();
   const auto traj = constant_velocity_trajectory(x0, y0, th0, v0, ms100);
   const auto s = make_state(x0, y0 + dy, th0, v0, 0.0F, 0.0F, now);
@@ -94,7 +96,7 @@ INSTANTIATE_TEST_CASE_P(basic, sanity_checks_axis_aligned_straight,
     StraightTestParam{0.0F, 0.0F, false},
     StraightTestParam{3.0F, 4.0F, false},
     StraightTestParam{-5.0F, 12.0F, false}
-  ));
+  ), );
 
 // oriented_straight: exercise some basic transform stuff
 //      ^
@@ -114,7 +116,7 @@ TEST_P(sanity_checks_oriented_straight, basic)
   const auto dx = GetParam().dx;
   const auto dy = GetParam().dy;
   const auto L = std::max(std::sqrt((dx * dx) + (dy * dy)), cfg_.get_minimum_lookahead_distance());
-  const auto v0 =  L / cfg_.get_speed_to_lookahead_ratio();
+  const auto v0 = L / cfg_.get_speed_to_lookahead_ratio();
   const auto now = std::chrono::system_clock::now();
   const auto traj = constant_velocity_trajectory(x0, y0, th0, v0, ms100);
   const auto s = make_state(x0 + dx, y0, th0, v0, 0.0F, 0.0F, now);
@@ -135,7 +137,7 @@ INSTANTIATE_TEST_CASE_P(basic, sanity_checks_oriented_straight,
     StraightTestParam{0.0F, 0.0F, true},
     StraightTestParam{3.0F, 4.0F, true},
     StraightTestParam{-5.0F, 12.0F, true}
-  ));
+  ), );
 
 // Orthogonal orientation: easy to compute offset for
 //      __
@@ -152,7 +154,7 @@ TEST_P(sanity_checks_orthogonal_orientation, basic)
   const auto th0 = 0.0F;
   const auto dy = GetParam().dy;
   const auto L = std::max(std::fabs(dy), cfg_.get_minimum_lookahead_distance());
-  const auto v0 =  L / cfg_.get_speed_to_lookahead_ratio();
+  const auto v0 = L / cfg_.get_speed_to_lookahead_ratio();
   const auto now = std::chrono::system_clock::now();
   const auto traj = constant_velocity_trajectory(x0, y0, th0, v0, ms100);
   const auto th = (GetParam().is_pointing_north ? 3.14159F : -3.14159F) / 2.0F;
@@ -170,7 +172,7 @@ INSTANTIATE_TEST_CASE_P(basic, sanity_checks_orthogonal_orientation,
   ::testing::Values(
     StraightTestParam{0.0F, 5.0F, false},
     StraightTestParam{0.0F, 5.0F, true}
-  ));
+  ), );
 
 
 // A track which curves like (ellipsoid):
@@ -199,7 +201,7 @@ protected:
       pt.y = r * std::sin(th);
       pt.heading = ::motion::motion_common::from_angle(th + (3.14159F / 2.0F));
       pt.longitudinal_velocity_mps = 10.0F;
-      pt.time_from_start = ::time_utils::to_message(std::chrono::milliseconds{100LL} * idx);
+      pt.time_from_start = ::time_utils::to_message(std::chrono::milliseconds{100LL} *idx);
       ret.points.push_back(pt);
     }
     return ret;
@@ -232,7 +234,7 @@ TEST_F(sanity_checks, longitudinal_control)
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
   const auto th0 = 0.0F;
-  const auto v0 =  1.0F;
+  const auto v0 = 1.0F;
   const auto v = 10.0F;
   const auto L =
     std::max(v0 * cfg_.get_speed_to_lookahead_ratio(), cfg_.get_minimum_lookahead_distance());
