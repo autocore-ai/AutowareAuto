@@ -6,10 +6,6 @@ project(recordreplay_planner_actions)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(rosidl_default_generators REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
-
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -24,5 +20,4 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ReplayTrajectory.action"
 )
 
-ament_export_dependencies(rosidl_default_runtime)
 ament_auto_package()
