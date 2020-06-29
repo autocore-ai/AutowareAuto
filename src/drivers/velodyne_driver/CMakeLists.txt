@@ -50,7 +50,8 @@ if(BUILD_TESTING)
     # gtest
     set(VELODYNE_GTEST velodyne_gtest)
     ament_add_gtest(${VELODYNE_GTEST}
-            "test/src/test_velodyne.cpp")
+            "test/src/test_velodyne.cpp"
+            "test/src/test_vls128.cpp")
     target_include_directories(${VELODYNE_GTEST} PRIVATE test/include include)
     target_link_libraries(${VELODYNE_GTEST} ${PROJECT_NAME})
 endif()
