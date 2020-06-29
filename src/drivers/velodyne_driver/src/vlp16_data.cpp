@@ -15,6 +15,8 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <velodyne_driver/vlp16_data.hpp>
+#include <utility>
+
 namespace autoware
 {
 namespace drivers
@@ -30,12 +32,12 @@ VLP16Data::VLP16Data(const float32_t rpm)
     static_cast<uint16_t>(std::ceil(60.0E6F / (rpm * FIRE_SEQ_OFFSET_US * 2.0F)));
 }
 
-uint32_t VLP16Data::azimuth_offset(uint32_t, uint32_t pt_id) const
+uint32_t VLP16Data::azimuth_offset(uint16_t, uint32_t, uint32_t pt_id) const
 {
   return m_azimuth_ind[pt_id];
 }
 
-uint32_t VLP16Data::altitude(uint32_t, uint32_t pt_id) const
+uint32_t VLP16Data::altitude(uint16_t, uint32_t, uint32_t pt_id) const
 {
   return m_altitude_ind[pt_id % NUM_LASERS];
 }
@@ -62,6 +64,15 @@ void VLP16Data::init_azimuth_table(const float32_t rpm)
       roundf(DEG2IDX * US_TO_DEG * (FIRE_DURATION_US * static_cast<float32_t>(pt_id)))) + offset;
   }
 }
+
+std::pair<bool8_t, uint16_t> VLP16Data::check_flag(const BlockFlag & flag)
+{
+  const auto valid = (flag[0U] == static_cast<uint8_t>(0xFF)) &&
+    (flag[1U] == static_cast<uint8_t>(0xEE));
+
+  return std::make_pair(valid, 0U);
+}
+
 
 uint16_t VLP16Data::num_blocks_per_revolution() const noexcept
 {

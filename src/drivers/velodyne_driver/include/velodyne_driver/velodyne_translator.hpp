@@ -111,20 +111,21 @@ private:
 
     for (uint32_t block_id = 0U; block_id < NUM_BLOCKS_PER_PACKET; ++block_id, ++m_block_counter) {
       const DataBlock & block = pkt.blocks[block_id];
-
-      if ((block.flag[0U] != static_cast<uint8_t>(0xFF)) ||
-        (block.flag[1U] != static_cast<uint8_t>(0xEE)))
-      {
+      const auto flag_check_result = m_sensor_data.check_flag(block.flag);
+      // Ignore block with invalid flag.
+      if (!flag_check_result.first) {
         continue;
       }
+      // Number of points from the sequence that has already been delivered in previous blocks.
+      const auto num_banked_pts = flag_check_result.second;
       const uint32_t azimuth_base = to_uint32(block.azimuth_bytes[1U], block.azimuth_bytes[0U]);
 
       for (uint16_t pt_id = 0U; pt_id < NUM_POINTS_PER_BLOCK; ++pt_id) {
         const DataChannel & channel = block.channels[pt_id];
-        const uint32_t th = (azimuth_base + m_sensor_data.azimuth_offset(block_id, pt_id)) %
-          AZIMUTH_ROTATION_RESOLUTION;
+        const uint32_t th = (azimuth_base + m_sensor_data.azimuth_offset(
+            num_banked_pts, block_id, pt_id)) % AZIMUTH_ROTATION_RESOLUTION;
         const float32_t r = compute_distance_m(channel.data[1U], channel.data[0U]);
-        const uint32_t phi = m_sensor_data.altitude(block_id, pt_id);
+        const uint32_t phi = m_sensor_data.altitude(num_banked_pts, block_id, pt_id);
 
         // Compute the point
         PointXYZIF pt;

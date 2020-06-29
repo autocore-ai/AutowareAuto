@@ -24,6 +24,7 @@
 #include <velodyne_driver/visibility_control.hpp>
 #include <velodyne_driver/common.hpp>
 #include <cmath>
+#include <utility>
 
 namespace autoware
 {
@@ -50,20 +51,24 @@ public:
   static constexpr uint16_t NUM_LASERS{16U};
   static constexpr float32_t NUM_SEQUENCES_PER_BLOCK{NUM_POINTS_PER_BLOCK / NUM_LASERS};
   static constexpr float32_t DISTANCE_RESOLUTION{0.002f};
-
+  using BlockFlag = uint8_t[2U];
   explicit VLP16Data(const float32_t rpm);
 
   /// Get the azimuth offset for a given point in the given block.
+  /// \param num_banked_pts Number of points from the sequence that were
+  /// transferred on previous blocks.
   /// \param block_id Block ID within the packet.
   /// \param pt_id Point ID within the block.
   /// \return Azimuth offset for the given laser.
-  uint32_t azimuth_offset(uint32_t block_id, uint32_t pt_id) const;
+  uint32_t azimuth_offset(uint16_t num_banked_pts, uint32_t block_id, uint32_t pt_id) const;
 
   /// Get the altitude angle for a given point in the given block.
+  /// \param num_banked_pts Number of points from the sequence that were
+  /// transferred on previous blocks.
   /// \param block_id Block ID within the packet.
   /// \param pt_id Point ID within the block.
   /// \return Altitude angle for the given laser.
-  uint32_t altitude(uint32_t block_id, uint32_t pt_id) const;
+  uint32_t altitude(uint16_t num_banked_pts, uint32_t block_id, uint32_t pt_id) const;
 
   /// Get total number of firing sequences in the number of blocks + number of points.
   /// \param num_blocks Total number of blocks.
@@ -73,6 +78,13 @@ public:
 
   /// Get number of blocks generated in a single revolution.
   uint16_t num_blocks_per_revolution() const noexcept;
+
+  /// Check the block flag for validity and return the number of banked points.
+  /// \param flag 2 byte flag from the block. Should be `0xFFEE`
+  /// \return A pair that contains a bool representing the validity of the flag and an integer
+  /// containing the number of banked poitns. For VLP16 a single block can contain a whole
+  /// firing sequence, hence the value will be 0;
+  std::pair<bool8_t, uint16_t> check_flag(const BlockFlag & flag);
 
   /// Get distance resolution of VLP16
   static constexpr float32_t distance_resolution() noexcept
