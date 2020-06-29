@@ -49,7 +49,7 @@ using autoware::common::types::float64_t;
 using autoware::common::types::TAU;
 
 
-class TrajectorySpoofer
+class TRAJECTORY_SPOOFER_PUBLIC TrajectorySpoofer
 {
   enum class CurveType
   {

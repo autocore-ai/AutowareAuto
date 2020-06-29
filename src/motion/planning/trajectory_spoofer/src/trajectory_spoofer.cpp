@@ -42,8 +42,8 @@ std::chrono::nanoseconds TrajectorySpoofer::get_travel_time_ns(float32_t dist, f
 Complex32 TrajectorySpoofer::to_2d_quaternion(float64_t yaw_angle)
 {
   Complex32 heading;
-  heading.real = std::cos(yaw_angle / 2.0);
-  heading.imag = std::sin(yaw_angle / 2.0);
+  heading.real = static_cast<float32_t>(std::cos(yaw_angle / 2.0));
+  heading.imag = static_cast<float32_t>(std::sin(yaw_angle / 2.0));
   return heading;
 }
 
@@ -60,9 +60,9 @@ void TrajectorySpoofer::set_target_speed(float32_t target_speed)
 float64_t TrajectorySpoofer::to_yaw_angle(const Complex32 & quat_2d)
 {
   // theta = atan2(2qxqw, 1-2(qw)^2)
-  const float64_t sin_y = 2.0 * quat_2d.real * quat_2d.imag;
-  const float64_t cos_y = 1.0 - 2.0 * quat_2d.imag * quat_2d.imag;
-  const float64_t rad_quad = std::atan2(sin_y, cos_y);
+  const float32_t sin_y = 2.0F * quat_2d.real * quat_2d.imag;
+  const float32_t cos_y = 1.0F - 2.0F * quat_2d.imag * quat_2d.imag;
+  const float32_t rad_quad = std::atan2(sin_y, cos_y);
 
   if (rad_quad < 0) {
     return rad_quad + TAU;
@@ -97,14 +97,15 @@ Trajectory TrajectorySpoofer::spoof_straight_trajectory(
 
 
   const auto yaw_angle = to_yaw_angle(starting_state.state.heading);
-  const float64_t seg_len = length / static_cast<float64_t>(num_of_points - 1);
+  const float64_t seg_len =
+    static_cast<float64_t>(length) / static_cast<float64_t>(num_of_points - 1);
   const auto start_time = time_utils::from_message(straight_trajectory.points[0].time_from_start);
-  const auto time_delta = get_travel_time_ns(seg_len, target_speed_);
+  const auto time_delta = get_travel_time_ns(static_cast<float32_t>(seg_len), target_speed_);
 
   for (int i = 1; i < num_of_points; ++i) {
     pt.time_from_start = time_utils::to_message(start_time + i * time_delta);
-    pt.x = std::cos(yaw_angle) * i * seg_len;
-    pt.y = std::sin(yaw_angle) * i * seg_len;
+    pt.x = static_cast<float32_t>(std::cos(yaw_angle) * static_cast<float64_t>(i) * seg_len);
+    pt.y = static_cast<float32_t>(std::sin(yaw_angle) * static_cast<float64_t>(i) * seg_len);
     pt.longitudinal_velocity_mps = target_speed_;
     straight_trajectory.points.push_back(pt);
   }
@@ -124,28 +125,31 @@ Trajectory TrajectorySpoofer::spoof_circular_trajectory(
 
 
   // Number of segments = number of points - 1
-  const float64_t seg_angle_rad = TAU / static_cast<float64_t>(num_of_points - 1);
-  const float64_t seg_len = 2.0 * radius * std::sin(seg_angle_rad / 2.0);
+  const float64_t seg_angle_rad =
+    static_cast<float64_t>(TAU) / static_cast<float64_t>(num_of_points - 1);
+  const float64_t seg_len =
+    2.0 * static_cast<float64_t>(radius) * std::sin(seg_angle_rad / 2.0);
   const auto start_time = time_utils::from_message(circular_trajectory.points[0].time_from_start);
-  const auto time_delta = get_travel_time_ns(seg_len, target_speed_);
+  const auto time_delta = get_travel_time_ns(static_cast<float32_t>(seg_len), target_speed_);
 
   for (int i = 1; i < num_of_points; ++i) {
     const float64_t old_head = to_yaw_angle(pt.heading);
-    const float64_t angle_dist_remain = TAU - i * seg_angle_rad;
+    const float64_t angle_dist_remain =
+      static_cast<float64_t>(TAU) - static_cast<float64_t>(i) * seg_angle_rad;
 
     if (i < num_of_points - 1) {
       // TODO(josh.whitley): Y values still not quite right
-      pt.x = pt.x + std::cos(old_head) * seg_len;
-      pt.y = pt.y + std::sin(old_head) * seg_len;
+      pt.x = pt.x + static_cast<float32_t>(std::cos(old_head)) * static_cast<float32_t>(seg_len);
+      pt.y = pt.y + static_cast<float32_t>(std::sin(old_head)) * static_cast<float32_t>(seg_len);
       pt.longitudinal_velocity_mps = target_speed_;
 
       float64_t new_head = old_head + angle_dist_remain / (num_of_points - i - 1);
 
       // Clip to 0 to 2pi
       if (new_head < 0) {
-        new_head += TAU;
-      } else if (new_head >= TAU) {
-        new_head -= TAU;
+        new_head += static_cast<float64_t>(TAU);
+      } else if (new_head >= static_cast<float64_t>(TAU)) {
+        new_head -= static_cast<float64_t>(TAU);
       }
 
       pt.heading = to_2d_quaternion(new_head);

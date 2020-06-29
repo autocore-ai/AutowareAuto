@@ -15,12 +15,17 @@ cmake_minimum_required(VERSION 3.5)
 
 project(trajectory_spoofer)
 
-find_package(autoware_auto_cmake REQUIRED)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 find_package(ament_cmake_auto REQUIRED)
-
 ament_auto_find_build_dependencies()
-
-include_directories(include)
 
 set(TRAJECTORY_SPOOFER_LIB_SRC
   src/trajectory_spoofer.cpp
@@ -35,6 +40,10 @@ set(TRAJECTORY_SPOOFER_LIB_HEADERS
 ament_auto_add_library(${PROJECT_NAME} SHARED
   ${TRAJECTORY_SPOOFER_LIB_SRC}
   ${TRAJECTORY_SPOOFER_LIB_HEADERS}
+)
+autoware_set_compile_options(${PROJECT_NAME})
+target_compile_options(${PROJECT_NAME} PRIVATE
+  -Wno-unused-parameter # for speed_ramp_on
 )
 
 set(TRAJECTORY_SPOOFER_EXE_SRC
@@ -56,8 +65,11 @@ autoware_set_compile_options(${TRAJECTORY_SPOOFER_EXE})
 
 # Testing
 if(BUILD_TESTING)
+  # Static code analyzers
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
   # Unit tests
-  find_package(ament_cmake_gtest)
   set(TEST_SOURCES test/gtest_main.cpp test/test_trajectory_spoofer.cpp)
   set(TEST_TRAJECTORY_SPOOFER_EXE test_trajectory_spoofer)
   ament_add_gtest(${TEST_TRAJECTORY_SPOOFER_EXE} ${TEST_SOURCES})
@@ -67,9 +79,8 @@ if(BUILD_TESTING)
     "time_utils"
   )
   target_link_libraries(${TEST_TRAJECTORY_SPOOFER_EXE} ${PROJECT_NAME})
-
-  # Static code analyzers
-  autoware_static_code_analysis()
+  target_include_directories(${TEST_TRAJECTORY_SPOOFER_EXE} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
   #find_package(autoware_integration_tests)
   #autoware_integration_tests(
@@ -79,13 +90,5 @@ if(BUILD_TESTING)
   #)
 endif()
 
-# Install stuff
-autoware_install(
-  HAS_INCLUDE
-  LIBRARIES "${PROJECT_NAME}"
-  EXECUTABLES "${TRAJECTORY_SPOOFER_EXE}"
-)
-
 # Ament Exporting
-ament_export_dependencies("rclcpp")
 ament_auto_package(INSTALL_TO_SHARE launch)

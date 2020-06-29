@@ -26,9 +26,10 @@
 
 
 #if !ASSERT_DURATION_MILLI_EQ
-# define ASSERT_DURATION_MILLI_EQ(t1,t2) \
-    ASSERT_TRUE( ( (t1-t2) < std::chrono::milliseconds(1)) && ( (t1-t2)  > std::chrono::milliseconds(-1)) ) << \
-    std::chrono::duration_cast<std::chrono::milliseconds>(t1).count() <<" not within 1ms of "<< \
+# define ASSERT_DURATION_MILLI_EQ(t1, t2) \
+  ASSERT_TRUE( ( (t1 - t2) < std::chrono::milliseconds(1)) && \
+    ( (t1 - t2) > std::chrono::milliseconds(-1)) ) << \
+    std::chrono::duration_cast<std::chrono::milliseconds>(t1).count() << " not within 1ms of " << \
     std::chrono::duration_cast<std::chrono::milliseconds>(t2).count();
 #endif
 
@@ -62,9 +63,9 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   auto end_time = time_utils::from_message(starting_point.state.time_from_start) +
     std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
-//std::chrono::duration_cast<std::chrono::nanoseconds>
+  // std::chrono::duration_cast<std::chrono::nanoseconds>
   // Initial heading of 0 should mean travelling straight along the X axis
-  ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_EQ(traj.points.size(), static_cast<size_t>(num_of_points));
   ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   ASSERT_FLOAT_EQ(last_point.x, length);
   ASSERT_FLOAT_EQ(last_point.y, first_point.y);
@@ -96,7 +97,7 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   const float32_t end_x = std::cos(head_rad) * length;
   const float32_t end_y = std::sin(head_rad) * length;
 
-  ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_EQ(traj.points.size(), static_cast<size_t>(num_of_points));
   ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   ASSERT_FLOAT_EQ(last_point.x, end_x);
   ASSERT_FLOAT_EQ(last_point.y, end_y);
@@ -131,7 +132,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   auto end_time = time_utils::from_message(starting_point.state.time_from_start) +
     std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
-  ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_EQ(traj.points.size(), static_cast<size_t>(num_of_points));
   ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   // last point should have the same x/y as first point
   ASSERT_FLOAT_EQ(last_point.x, first_point.x);
@@ -159,7 +160,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   end_time = time_utils::from_message(starting_point.state.time_from_start) +
     std::chrono::duration<float64_t>(length / ts.get_target_speed());
 
-  ASSERT_EQ(traj.points.size(), num_of_points);
+  ASSERT_EQ(traj.points.size(), static_cast<size_t>(num_of_points));
   ASSERT_DURATION_MILLI_EQ(last_time, end_time);
   // last point should have the same x/y as first point
   ASSERT_FLOAT_EQ(last_point.x, first_point.x);
@@ -170,5 +171,3 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   ASSERT_FLOAT_EQ(last_point.longitudinal_velocity_mps, first_point.longitudinal_velocity_mps);
   ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
 }
-
-
