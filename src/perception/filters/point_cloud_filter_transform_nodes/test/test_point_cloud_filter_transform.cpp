@@ -79,6 +79,7 @@ protected:
   using Vlp16Translator = autoware::drivers::velodyne_driver::Vlp16Translator;
   const Vlp16Translator::Config m_vlp_config{600.0F};
   using Transform = geometry_msgs::msg::Transform;
+  using TransformStamped = geometry_msgs::msg::TransformStamped;
   Transform create_transform(
     std::vector<float64_t> quaternion, std::vector<float64_t>
     translation)
@@ -360,30 +361,23 @@ struct TestFilterTransformPC2FilterTransformMode
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
 
   TestFilterTransformPC2FilterTransformMode(
-    const std::string & node_name,
-    const std::string & node_namespace,
     const std::chrono::nanoseconds & init_timeout,
     const std::chrono::nanoseconds & timeout,
-    const std::string & input_frame_id,
-    const std::string & output_frame_id,
     const std::string & raw_topic,
     const std::string & filtered_topic,
     const float32_t start_angle,
     const float32_t end_angle,
     const float32_t min_radius,
     const float32_t max_radius,
-    const geometry_msgs::msg::Transform & tf,
+    const geometry_msgs::msg::TransformStamped & tf,
     const size_t pcl_size,
     const size_t expected_num_publishers = 1U,
-    const size_t expected_num_subscribers = 0U)
+    const size_t expected_num_subscribers = 0U,
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{})
   : PointCloud2FilterTransformNode
     (
-      node_name,
-      node_namespace,
       init_timeout,
       timeout,
-      input_frame_id,
-      output_frame_id,
       raw_topic,
       filtered_topic,
       start_angle,
@@ -393,7 +387,8 @@ struct TestFilterTransformPC2FilterTransformMode
       tf,
       pcl_size,
       expected_num_publishers,
-      expected_num_subscribers
+      expected_num_subscribers,
+      node_options
     )
   {}
 
@@ -417,23 +412,25 @@ TEST_F(point_cloud_filter_transform_integration, filter_and_transform_bug419)
   const std::string filtered_topic_name{"points_filtered"};
   const std::string input_frame_id{"lidar_front"};
   const std::string output_frame_id{"base_link"};
+  const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{};
+  TransformStamped ts;
+  ts.header.frame_id = input_frame_id;
+  ts.child_frame_id = output_frame_id;
+  ts.transform = m_tf;
   const auto pc2_filter_ptr = std::make_shared<TestFilterTransformPC2FilterTransformMode>(
-    "point_cloud_filter_transform_node",
-    "",
     m_init_timeout,
     std::chrono::milliseconds(110),
-    input_frame_id,
-    output_frame_id,
     raw_topic_name,
     filtered_topic_name,
     start_angle,
     end_angle,
     min_radius,
     max_radius,
-    m_tf,
+    ts,
     5U,
     1U,
-    1U);
+    1U,
+    node_options);
 
   auto time0 = std::chrono::system_clock::now();
   auto t0 = to_msg_time(time0);

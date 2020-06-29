@@ -16,6 +16,7 @@
     <depend>yaml_cpp_vendor</depend>
     <depend>tf2</depend>
     <depend>rclcpp</depend>
+    <depend>rclcpp_components</depend>
 
     <build_depend>autoware_auto_common</build_depend>
 
