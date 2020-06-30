@@ -35,9 +35,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
         "include/velodyne_driver/velodyne_translator.hpp"
         "include/velodyne_driver/vlp16_data.hpp"
         "include/velodyne_driver/vls128_data.hpp"
+        "include/velodyne_driver/vlp32c_data.hpp"
         "include/velodyne_driver/common.hpp"
         "src/vlp16_data.cpp"
         "src/vlS128_data.cpp"
+        "src/vlp32c_data.cpp"
         "src/velodyne_translator.cpp")
 
 autoware_set_compile_options(${PROJECT_NAME})
@@ -51,6 +53,7 @@ if(BUILD_TESTING)
     set(VELODYNE_GTEST velodyne_gtest)
     ament_add_gtest(${VELODYNE_GTEST}
             "test/src/test_velodyne.cpp"
+            "test/src/test_vlp32c.cpp"
             "test/src/test_vls128.cpp")
     target_include_directories(${VELODYNE_GTEST} PRIVATE test/include include)
     target_link_libraries(${VELODYNE_GTEST} ${PROJECT_NAME})

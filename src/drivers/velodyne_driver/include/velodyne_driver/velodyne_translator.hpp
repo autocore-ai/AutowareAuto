@@ -25,6 +25,7 @@
 #include <geometry_msgs/msg/point32.hpp>
 #include <velodyne_driver/common.hpp>
 #include <velodyne_driver/vlp16_data.hpp>
+#include <velodyne_driver/vlp32c_data.hpp>
 #include <velodyne_driver/vls128_data.hpp>
 #include <vector>
 
@@ -228,6 +229,7 @@ private:
   SensorData m_sensor_data;
 };  // class Driver
 using Vlp16Translator = VelodyneTranslator<VLP16Data>;
+using Vlp32CTranslator = VelodyneTranslator<VLP32CData>;
 using Vls128Translator = VelodyneTranslator<VLS128Data>;
 
 }  // namespace velodyne_driver
