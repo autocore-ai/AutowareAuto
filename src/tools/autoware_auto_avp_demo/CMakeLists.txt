@@ -17,7 +17,6 @@ project(autoware_auto_avp_demo)
 
 # dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Testing
@@ -27,12 +26,9 @@ if(BUILD_TESTING)
 endif()
 
 # Install stuff
-install(DIRECTORY
+ament_auto_package(INSTALL_TO_SHARE
   config
   data
   launch
   param
-  DESTINATION share/${PROJECT_NAME}
 )
-
-ament_auto_package()
