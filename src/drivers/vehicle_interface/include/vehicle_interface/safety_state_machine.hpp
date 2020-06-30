@@ -25,7 +25,7 @@
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
 #include <vehicle_interface/visibility_control.hpp>
 
-#include <optional>
+#include <experimental/optional>
 #include <algorithm>
 #include <chrono>
 #include <vector>
@@ -38,7 +38,7 @@ namespace drivers
 {
 namespace vehicle_interface
 {
-using MaybeStateCommand = std::optional<autoware_auto_msgs::msg::VehicleStateCommand>;
+using MaybeStateCommand = std::experimental::optional<autoware_auto_msgs::msg::VehicleStateCommand>;
 using BasicControlCommand = autoware_auto_msgs::msg::VehicleControlCommand;
 using Odometry = autoware_auto_msgs::msg::VehicleOdometry;
 using StateReport = autoware_auto_msgs::msg::VehicleStateReport;
@@ -193,7 +193,7 @@ public:
 
 private:
   using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
-  using MaybeEnum = std::optional<decltype(VSC::blinker)>;
+  using MaybeEnum = std::experimental::optional<decltype(VSC::blinker)>;
   //lint -save -e9150 NOLINT Pure aggregate and only used internally; no constraints on state
   template<typename T>
   struct ValueStamp

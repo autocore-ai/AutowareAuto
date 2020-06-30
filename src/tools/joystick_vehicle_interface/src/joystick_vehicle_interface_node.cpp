@@ -234,7 +234,7 @@ void JoystickVehicleInterfaceNode::on_joy(const sensor_msgs::msg::Joy::SharedPtr
       const auto cmd = compute_command<MessageT>(*msg);
       pub->publish(cmd);
     };
-  std::visit(compute_publish_command, m_cmd_pub);
+  mpark::visit(compute_publish_command, m_cmd_pub);
 
   if (m_recordreplay_cmd_pub != nullptr && m_recordreplay_command.data > 0u) {
     m_recordreplay_cmd_pub->publish(m_recordreplay_command);

@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(joystick_vehicle_interface)
 
-set(CMAKE_CXX_STANDARD 17) # For variant
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(autoware_auto_cmake REQUIRED)

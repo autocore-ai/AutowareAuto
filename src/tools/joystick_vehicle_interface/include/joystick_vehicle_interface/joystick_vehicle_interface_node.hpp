@@ -23,12 +23,12 @@
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
+#include <mpark_variant_vendor/variant.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <common/types.hpp>
 
-#include <variant>
 #include <map>
 #include <string>
 
@@ -154,7 +154,7 @@ private:
   template<typename T>
   using PubT = typename rclcpp::Publisher<T>::SharedPtr;
 
-  using ControlPub = std::variant<PubT<RawControl>, PubT<BasicControl>, PubT<HighLevelControl>>;
+  using ControlPub = mpark::variant<PubT<RawControl>, PubT<BasicControl>, PubT<HighLevelControl>>;
 
   ControlPub m_cmd_pub{};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_cmd_pub{};

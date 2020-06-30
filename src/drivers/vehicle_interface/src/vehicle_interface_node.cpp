@@ -61,7 +61,7 @@ VehicleInterfaceNode::VehicleInterfaceNode(
       };
     };
   // optionally instantiate a config
-  std::optional<StateMachineConfig> state_machine_config{};
+  std::experimental::optional<StateMachineConfig> state_machine_config{};
   {
     const auto velocity_threshold =
       declare_parameter("state_machine.gear_shift_velocity_threshold_mps");
@@ -149,7 +149,7 @@ void VehicleInterfaceNode::on_command_message(
     on_control_send_failure();
   }
   send_state_command(m_last_state_command);
-  m_last_state_command.reset();
+  m_last_state_command = MaybeStateCommand{};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ void VehicleInterfaceNode::on_command_message(
   // Continue with filter using message only if dt>0
   if (dt > std::chrono::nanoseconds::zero()) {
     const auto maybe_state_command = m_last_state_command;
-    m_last_state_command.reset();
+    m_last_state_command = MaybeStateCommand{};
     m_last_command_stamp = stamp;
     const auto filter = [dt](auto & filter_ptr, auto & val) -> void {
         if (filter_ptr) {val = filter_ptr->filter(val, dt);}
@@ -210,7 +210,7 @@ void VehicleInterfaceNode::init(
   const TopicNumMatches & state_command,
   const TopicNumMatches & odometry,
   const TopicNumMatches & state_report,
-  const std::optional<StateMachineConfig> & state_machine_config,
+  const std::experimental::optional<StateMachineConfig> & state_machine_config,
   const FilterConfig & longitudinal_filter,
   const FilterConfig & curvature_filter,
   const FilterConfig & front_steer_filter,
@@ -295,7 +295,7 @@ void VehicleInterfaceNode::check_invariants()
   }
   // Check command sub
   const auto ctrl_not_null =
-    std::visit([](auto && sub) -> bool8_t {return static_cast<bool8_t>(sub);}, m_command_sub);
+    mpark::visit([](auto && sub) -> bool8_t {return static_cast<bool8_t>(sub);}, m_command_sub);
   if (!ctrl_not_null) {
     throw std::domain_error{"Vehicle interface must have exactly one command subscription"};
   }

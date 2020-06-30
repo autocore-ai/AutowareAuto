@@ -22,6 +22,7 @@
 #include <vehicle_interface/safety_state_machine.hpp>
 #include <vehicle_interface/visibility_control.hpp>
 
+#include <mpark_variant_vendor/variant.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <reference_tracking_controller/reference_tracking_controller.hpp>
 #include <signal_filters/signal_filter.hpp>
@@ -33,8 +34,7 @@
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
 
-#include <optional>
-#include <variant>
+#include <experimental/optional>
 #include <chrono>
 #include <exception>
 #include <memory>
@@ -115,7 +115,7 @@ private:
     const TopicNumMatches & state_command,
     const TopicNumMatches & odometry,
     const TopicNumMatches & state_report,
-    const std::optional<StateMachineConfig> & state_machine_config,
+    const std::experimental::optional<StateMachineConfig> & state_machine_config,
     const FilterConfig & longitudinal_filter,
     const FilterConfig & curvature_filter,
     const FilterConfig & front_steer_filter,
@@ -145,7 +145,7 @@ private:
   using HighLevelSub =
     rclcpp::Subscription<autoware_auto_msgs::msg::HighLevelControlCommand>::SharedPtr;
 
-  std::variant<RawSub, BasicSub, HighLevelSub> m_command_sub{};
+  mpark::variant<RawSub, BasicSub, HighLevelSub> m_command_sub{};
 
   std::unique_ptr<PlatformInterface> m_interface{nullptr};
   VehicleFilter m_filter{nullptr, nullptr, nullptr, nullptr};
