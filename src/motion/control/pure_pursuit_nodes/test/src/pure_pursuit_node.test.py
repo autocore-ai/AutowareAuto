@@ -1,5 +1,4 @@
 # Copyright 2019 Apex.AI, Inc.
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 import unittest
 
@@ -30,7 +31,7 @@ def generate_test_description(ready_fn):
         node_executable="pure_pursuit_node_exe",
         node_name="pure_pursuit_node",
         parameters=[
-            "{}/pure_pursuit_test.param.yaml".format(
+            "{}/param/pure_pursuit_test.param.yaml".format(
                 ament_index_python.get_package_share_directory("pure_pursuit_nodes")
             )
         ]

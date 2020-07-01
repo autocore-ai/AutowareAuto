@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <common/types.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -45,7 +46,7 @@ using TrajectoryPointStamped = autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware::motion::control::pure_pursuit::ControllerDiagnostic;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 
-constexpr auto PI = 3.13159F;
+constexpr auto PI = 3.14159F;
 
 void create_traj(
   Trajectory & traj,
@@ -305,7 +306,7 @@ int32_t main(const int32_t argc, char8_t ** const argv)
 
   rclcpp::executors::SingleThreadedExecutor exec;
 
- while (!tester_ptr->done()) {
+  while (!tester_ptr->done()) {
     exec.spin_node_some(tester_ptr);
   }
 

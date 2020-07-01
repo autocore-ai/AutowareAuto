@@ -1,5 +1,4 @@
 // Copyright 2019 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <common/types.hpp>
 #include <motion_common/motion_common.hpp>
@@ -37,7 +38,8 @@ namespace pure_pursuit_nodes
 PurePursuitNode::PurePursuitNode(
   const std::string & node_name,
   const std::string & node_namespace)
-: ControllerBaseNode{node_name, node_namespace}
+: ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
+    "tf", "trajectory", "ctrl_diag"}
 {
   pure_pursuit::Config cfg{
     static_cast<float32_t>(declare_parameter(
