@@ -1,12 +1,10 @@
 # config/vlp16_test.param.yaml
----
-
-lidar_front:
-  vlp16_driver_node:
-    ros__parameters:
-      ip: "127.0.0.1"
-      port: 2368
-      cloud_size:  55000
-      frame_id: "lidar_front"
-      timeout_ms: 10
-      rpm:        600
+/**:
+  ros__parameters:
+    ip: "127.0.0.1"
+    port: 2368
+    cloud_size:  55000
+    topic: "points_raw"  # UdpDriverNode strictly expects to get the topic via `declare_parameter`.
+    frame_id: "lidar_front"
+    timeout_ms: 10
+    rpm:        600

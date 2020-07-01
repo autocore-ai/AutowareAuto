@@ -83,7 +83,7 @@ if(BUILD_TESTING)
 endif()
 
 ## install stuff
-ament_auto_package(INSTALL_TO_SHARE param)
+ament_auto_package(INSTALL_TO_SHARE param launch)
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 # -Wno-ignored-qualifiers is temp fix for udp_driver bug
