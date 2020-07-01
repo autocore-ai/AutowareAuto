@@ -16,6 +16,7 @@
 
 #include <common/types.hpp>
 #include <point_cloud_filter_transform_nodes/point_cloud_filter_transform_node.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
 #include <string>
 
@@ -58,63 +59,42 @@ TransformStamped get_transform(
 }
 
 PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
-  const std::chrono::nanoseconds & init_timeout,
-  const std::chrono::nanoseconds & timeout,
-  const std::string & raw_topic,
-  const std::string & filtered_topic,
-  const float32_t start_angle,
-  const float32_t end_angle,
-  const float32_t min_radius,
-  const float32_t max_radius,
-  const geometry_msgs::msg::TransformStamped & tf,
-  const size_t pcl_size,
-  const size_t expected_num_publishers,
-  const size_t expected_num_subscribers,
   const rclcpp::NodeOptions & node_options)
 : Node("point_cloud2_filter_transform_node", node_options),
-  m_angle_filter{start_angle, end_angle}, m_distance_filter{min_radius, max_radius},
-  m_static_transformer{tf.transform}, m_init_timeout{init_timeout}, m_timeout{timeout},
-  m_sub_ptr{create_subscription<PointCloud2>(
-      raw_topic.c_str(), rclcpp::QoS{10},
-      std::bind(
-        &PointCloud2FilterTransformNode::process_filtered_transformed_message, this, _1))},
-  m_pub_ptr{create_publisher<PointCloud2>(filtered_topic.c_str(), rclcpp::QoS{10})},
-  m_expected_num_publishers{expected_num_publishers},
-  m_expected_num_subscribers{expected_num_subscribers},
-  m_input_frame_id{tf.header.frame_id}, m_output_frame_id{tf.child_frame_id},
-  m_pcl_size{pcl_size}
-{
-  common::lidar_utils::init_pcl_msg(m_filtered_transformed_msg,
-    m_output_frame_id.c_str(), m_pcl_size);
-}
-
-PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
-  const rclcpp::NodeOptions & node_options)
-: PointCloud2FilterTransformNode(
-    std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()},
-    std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()},
-    "points_in",
-    "points_filtered",
+  m_angle_filter{
     static_cast<float32_t>(declare_parameter("start_angle").get<float64_t>()),
-    static_cast<float32_t>(declare_parameter("end_angle").get<float64_t>()),
+    static_cast<float32_t>(declare_parameter("end_angle").get<float64_t>())},
+  m_distance_filter{
     static_cast<float32_t>(declare_parameter("min_radius").get<float64_t>()),
-    static_cast<float32_t>(declare_parameter("max_radius").get<float64_t>()),
+    static_cast<float32_t>(declare_parameter("max_radius").get<float64_t>())},
+  m_input_frame_id{declare_parameter("input_frame_id").get<std::string>()},
+  m_output_frame_id{declare_parameter("output_frame_id").get<std::string>()},
+  m_static_transformer{
     get_transform(
-      declare_parameter("input_frame_id").get<std::string>(),
-      declare_parameter("output_frame_id").get<std::string>(),
+      m_input_frame_id, m_output_frame_id,
       declare_parameter("static_transformer.quaternion.x").get<float64_t>(),
       declare_parameter("static_transformer.quaternion.y").get<float64_t>(),
       declare_parameter("static_transformer.quaternion.z").get<float64_t>(),
       declare_parameter("static_transformer.quaternion.w").get<float64_t>(),
       declare_parameter("static_transformer.translation.x").get<float64_t>(),
       declare_parameter("static_transformer.translation.y").get<float64_t>(),
-      declare_parameter("static_transformer.translation.z").get<float64_t>()),
-    static_cast<size_t>(declare_parameter("pcl_size").get<int32_t>()
-    ),
-    static_cast<size_t>(declare_parameter("expected_num_publishers").get<int32_t>()),
-    static_cast<size_t>(declare_parameter("expected_num_subscribers").get<int32_t>()),
-    node_options
-) {}
+      declare_parameter("static_transformer.translation.z").get<float64_t>()).transform},
+  m_init_timeout{std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()}},
+  m_timeout{std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()}},
+  m_sub_ptr{create_subscription<PointCloud2>(
+      "points_in", rclcpp::QoS{10},
+      std::bind(
+        &PointCloud2FilterTransformNode::process_filtered_transformed_message, this, _1))},
+  m_pub_ptr{create_publisher<PointCloud2>("points_filtered", rclcpp::QoS{10})},
+  m_expected_num_publishers{
+    static_cast<size_t>(declare_parameter("expected_num_publishers").get<int32_t>())},
+  m_expected_num_subscribers{
+    static_cast<size_t>(declare_parameter("expected_num_subscribers").get<int32_t>())},
+  m_pcl_size{static_cast<size_t>(declare_parameter("pcl_size").get<int32_t>())}
+{
+  common::lidar_utils::init_pcl_msg(m_filtered_transformed_msg,
+    m_output_frame_id.c_str(), m_pcl_size);
+}
 
 const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const PointCloud2 & msg)
 {
@@ -224,3 +204,6 @@ PointCloud2FilterTransformNode::intensity_iterator_wrapper::intensity_iterator_w
 }  // namespace filters
 }  // namespace perception
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::perception::filters::point_cloud_filter_transform_nodes::PointCloud2FilterTransformNode)

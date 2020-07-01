@@ -54,41 +54,9 @@ class POINT_CLOUD_FILTER_TRANSFORM_NODES_PUBLIC PointCloud2FilterTransformNode
   : public rclcpp::Node
 {
 public:
-  /// \brief Explicit constructor
-  /// \param init_timeout Timeout for initialization
-  /// \param timeout Timeout for waitset to receive raw point cloud message
-  /// \param raw_topic Name of the input topic containing raw point cloud
-  /// \param filtered_topic Name of the output topic containing filtered point cloud
-  /// \param start_angle Minimum angle in radians
-  /// \param end_angle Maximum angle in radians. Points outside of the sector going counter
-  ///                  clockwise from start and end angle will be discarded
-  /// \param min_radius Radius in meters of the minimum point
-  /// \param max_radius Radius in meters of the maximum point. Any point with radius less than
-  ///                   min and greater than max will be discarded
-  /// \param tf Transform msg to be applied to the raw points
-  /// \param pcl_size Number of points to preallocate for filtered point cloud message
-  /// \param expected_num_publishers Expected number of publishers for the raw point cloud topic
-  /// \param expected_num_subscribers Expected number of subscribers for the filtered point topic
-  /// \param node_options Additional options to control creation of the node.
-  PointCloud2FilterTransformNode(
-    const std::chrono::nanoseconds & init_timeout,
-    const std::chrono::nanoseconds & timeout,
-    const std::string & raw_topic,
-    const std::string & filtered_topic,
-    const float32_t start_angle,
-    const float32_t end_angle,
-    const float32_t min_radius,
-    const float32_t max_radius,
-    const geometry_msgs::msg::TransformStamped & tf,
-    const size_t pcl_size,
-    const size_t expected_num_publishers = 1U,
-    const size_t expected_num_subscribers = 0U,
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{});
-
   /// \brief Parameter constructor
   /// \param node_options Additional options to control creation of the node.
-  PointCloud2FilterTransformNode(
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{});
+  explicit PointCloud2FilterTransformNode(const rclcpp::NodeOptions & node_options);
 
 protected:
   /// \brief Call distance & angle filter and then static transformer for all the points
@@ -159,6 +127,8 @@ private:
   using StaticTransformer = autoware::common::lidar_utils::StaticTransformer;
   AngleFilter m_angle_filter;
   DistanceFilter m_distance_filter;
+  const std::string m_input_frame_id;
+  const std::string m_output_frame_id;
   StaticTransformer m_static_transformer;
   const std::chrono::nanoseconds m_init_timeout;
   const std::chrono::nanoseconds m_timeout;
@@ -166,8 +136,6 @@ private:
   const typename std::shared_ptr<rclcpp::Publisher<PointCloud2>> m_pub_ptr;
   const size_t m_expected_num_publishers;
   const size_t m_expected_num_subscribers;
-  const std::string m_input_frame_id;
-  const std::string m_output_frame_id;
   const std::size_t m_pcl_size;
   PointCloud2 m_filtered_transformed_msg;
 };

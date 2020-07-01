@@ -360,36 +360,9 @@ struct TestFilterTransformPC2FilterTransformMode
 {
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
 
-  TestFilterTransformPC2FilterTransformMode(
-    const std::chrono::nanoseconds & init_timeout,
-    const std::chrono::nanoseconds & timeout,
-    const std::string & raw_topic,
-    const std::string & filtered_topic,
-    const float32_t start_angle,
-    const float32_t end_angle,
-    const float32_t min_radius,
-    const float32_t max_radius,
-    const geometry_msgs::msg::TransformStamped & tf,
-    const size_t pcl_size,
-    const size_t expected_num_publishers = 1U,
-    const size_t expected_num_subscribers = 0U,
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{})
-  : PointCloud2FilterTransformNode
-    (
-      init_timeout,
-      timeout,
-      raw_topic,
-      filtered_topic,
-      start_angle,
-      end_angle,
-      min_radius,
-      max_radius,
-      tf,
-      pcl_size,
-      expected_num_publishers,
-      expected_num_subscribers,
-      node_options
-    )
+  explicit TestFilterTransformPC2FilterTransformMode(
+    const rclcpp::NodeOptions & node_options)
+  : PointCloud2FilterTransformNode(node_options)
   {}
 
   const PointCloud2 & test_filter_and_transform(const PointCloud2 & msg)
@@ -404,33 +377,33 @@ TEST_F(point_cloud_filter_transform_integration, filter_and_transform_bug419)
 {
   rclcpp::init(0, nullptr);
 
-  const float32_t start_angle = 0.;
-  const float32_t end_angle = 4.712;
-  const float32_t min_radius = 0.;
-  const float32_t max_radius = 10.;
-  const std::string raw_topic_name{"points_raw"};
-  const std::string filtered_topic_name{"points_filtered"};
-  const std::string input_frame_id{"lidar_front"};
-  const std::string output_frame_id{"base_link"};
-  const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{};
-  TransformStamped ts;
-  ts.header.frame_id = input_frame_id;
-  ts.child_frame_id = output_frame_id;
-  ts.transform = m_tf;
-  const auto pc2_filter_ptr = std::make_shared<TestFilterTransformPC2FilterTransformMode>(
-    m_init_timeout,
-    std::chrono::milliseconds(110),
-    raw_topic_name,
-    filtered_topic_name,
-    start_angle,
-    end_angle,
-    min_radius,
-    max_radius,
-    ts,
-    5U,
-    1U,
-    1U,
-    node_options);
+  const std::string input_frame_id = "lidar_front";
+
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("start_angle", 0.);
+  params.emplace_back("end_angle", 4.712);
+  params.emplace_back("min_radius", 0.);
+  params.emplace_back("max_radius", 10.);
+  params.emplace_back("input_frame_id", input_frame_id);
+  params.emplace_back("output_frame_id", "base_link");
+  params.emplace_back("static_transformer.quaternion.x", m_tf.rotation.x);
+  params.emplace_back("static_transformer.quaternion.y", m_tf.rotation.y);
+  params.emplace_back("static_transformer.quaternion.z", m_tf.rotation.z);
+  params.emplace_back("static_transformer.quaternion.w", m_tf.rotation.w);
+  params.emplace_back("static_transformer.translation.x", m_tf.translation.x);
+  params.emplace_back("static_transformer.translation.y", m_tf.translation.y);
+  params.emplace_back("static_transformer.translation.z", m_tf.translation.z);
+  params.emplace_back("init_timeout_ms", std::chrono::milliseconds{m_init_timeout}.count());
+  params.emplace_back("timeout_ms", 110);
+  params.emplace_back("expected_num_publishers", 1);
+  params.emplace_back("expected_num_subscribers", 1);
+  params.emplace_back("pcl_size", 5);
+
+  rclcpp::NodeOptions options;
+  options.parameter_overrides(params);
+
+  const auto pc2_filter_ptr = std::make_shared<TestFilterTransformPC2FilterTransformMode>(options);
 
   auto time0 = std::chrono::system_clock::now();
   auto t0 = to_msg_time(time0);
