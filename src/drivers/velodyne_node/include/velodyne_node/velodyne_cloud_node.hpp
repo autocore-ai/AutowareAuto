@@ -42,12 +42,22 @@ namespace drivers
 namespace velodyne_node
 {
 
+/// Template class for the velodyne driver node that receives veldyne `packet`s via
+/// UDP, converts the packet into a PointCloud2 message and publishes this cloud.
+/// \tparam SensorData SensorData implementation for the specific velodyne sensor model.
+template<typename SensorData>
 class VELODYNE_NODE_PUBLIC VelodyneCloudNode
   : public udp_driver::UdpDriverNode<
-    velodyne_driver::Vlp16Translator::Packet,
+    typename velodyne_driver::VelodyneTranslator<SensorData>::Packet,
     sensor_msgs::msg::PointCloud2>
 {
 public:
+  using VelodyneTranslatorT = velodyne_driver::VelodyneTranslator<SensorData>;
+  using UdpDriverNode = udp_driver::UdpDriverNode<velodyne_driver::Vlp16Translator::Packet,
+      sensor_msgs::msg::PointCloud2>;
+  using Config = typename VelodyneTranslatorT::Config;
+  using Packet = typename VelodyneTranslatorT::Packet;
+
   /// \brief Default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals
   /// \param[in] ip Expected IP of UDP packets
@@ -63,7 +73,7 @@ public:
     const uint16_t port,
     const std::string & frame_id,
     const std::size_t cloud_size,
-    const velodyne_driver::Vlp16Translator::Config & config);
+    const Config & config);
 
   /// \brief Parameter file constructor
   /// \param[in] node_name Name of this node
@@ -75,12 +85,12 @@ public:
 protected:
   void init_output(sensor_msgs::msg::PointCloud2 & output) override;
   bool8_t convert(
-    const velodyne_driver::Vlp16Translator::Packet & pkt,
+    const Packet & pkt,
     sensor_msgs::msg::PointCloud2 & output) override;
   bool8_t get_output_remainder(sensor_msgs::msg::PointCloud2 & output) override;
 
 private:
-  velodyne_driver::Vlp16Translator m_translator;
+  VelodyneTranslatorT m_translator;
   std::vector<autoware::common::types::PointXYZIF> m_point_block;
 
   // These next two variables are a minor hack to maintain stateful information across convert()
@@ -97,6 +107,7 @@ private:
   const std::size_t m_cloud_size;
 };  // class VelodyneCloudNode
 
+using VLP16DriverNode = VelodyneCloudNode<velodyne_driver::VLP16Data>;
 }  // namespace velodyne_node
 }  // namespace drivers
 }  // namespace autoware

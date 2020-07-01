@@ -32,17 +32,18 @@ namespace drivers
 {
 namespace velodyne_node
 {
-VelodyneCloudNode::VelodyneCloudNode(
+template<typename T>
+VelodyneCloudNode<T>::VelodyneCloudNode(
   const std::string & node_name,
   const std::string & ip,
   const uint16_t port,
   const std::string & frame_id,
   const std::size_t cloud_size,
-  const velodyne_driver::Vlp16Translator::Config & config)
-: UdpDriverNode<velodyne_driver::Vlp16Translator::Packet, sensor_msgs::msg::PointCloud2>(
+  const Config & config)
+: UdpDriverNode(
     node_name,
     "points_raw",
-    UdpConfig{ip, port}),
+    UdpDriverNode::UdpConfig{ip, port}),
   m_translator(config),
   m_published_cloud(false),
   m_remainder_start_idx(0U),
@@ -50,7 +51,7 @@ VelodyneCloudNode::VelodyneCloudNode(
   m_frame_id(frame_id),
   m_cloud_size(cloud_size)
 {
-  m_point_block.reserve(autoware::drivers::velodyne_driver::Vlp16Translator::POINT_BLOCK_CAPACITY);
+  m_point_block.reserve(VelodyneTranslatorT::POINT_BLOCK_CAPACITY);
   // If your preallocated cloud size is too small, the node really won't operate well at all
   if (static_cast<uint32_t>(m_point_block.capacity()) >= cloud_size) {
     throw std::runtime_error("VelodyneCloudNode: cloud_size must be > PointBlock::CAPACITY");
@@ -58,18 +59,20 @@ VelodyneCloudNode::VelodyneCloudNode(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VelodyneCloudNode::VelodyneCloudNode(
+template<typename T>
+VelodyneCloudNode<T>::VelodyneCloudNode(
   const std::string & node_name,
   const std::string & node_namespace)
 : UdpDriverNode(node_name, node_namespace),
   m_translator(
-    velodyne_driver::Vlp16Translator::Config{
-        static_cast<float32_t>(declare_parameter("rpm").get<int>())}),
+    Config{
+        static_cast<float32_t>(this->declare_parameter("rpm").template get<int>())}),
   m_published_cloud(false),
   m_remainder_start_idx(0U),
   m_point_cloud_idx(0),
-  m_frame_id(declare_parameter("frame_id").get<std::string>().c_str()),
-  m_cloud_size(static_cast<std::size_t>(declare_parameter("cloud_size").get<std::size_t>()))
+  m_frame_id(this->declare_parameter("frame_id").template get<std::string>().c_str()),
+  m_cloud_size(static_cast<std::size_t>(
+      this->declare_parameter("cloud_size").template get<std::size_t>()))
 {
   m_point_block.reserve(autoware::drivers::velodyne_driver::Vlp16Translator::POINT_BLOCK_CAPACITY);
   // If your preallocated cloud size is too small, the node really won't operate well at all
@@ -78,15 +81,17 @@ VelodyneCloudNode::VelodyneCloudNode(
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VelodyneCloudNode::init_output(sensor_msgs::msg::PointCloud2 & output)
+template<typename T>
+void VelodyneCloudNode<T>::init_output(sensor_msgs::msg::PointCloud2 & output)
 {
   autoware::common::lidar_utils::init_pcl_msg(output, m_frame_id.c_str(), m_cloud_size);
   m_point_cloud_its.reset(output, m_point_cloud_idx);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool8_t VelodyneCloudNode::convert(
-  const velodyne_driver::Vlp16Translator::Packet & pkt,
+template<typename T>
+bool8_t VelodyneCloudNode<T>::convert(
+  const Packet & pkt,
   sensor_msgs::msg::PointCloud2 & output)
 {
   // This handles the case when the below loop exited due to containing extra points
@@ -132,7 +137,8 @@ bool8_t VelodyneCloudNode::convert(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool8_t VelodyneCloudNode::get_output_remainder(sensor_msgs::msg::PointCloud2 & output)
+template<typename T>
+bool8_t VelodyneCloudNode<T>::get_output_remainder(sensor_msgs::msg::PointCloud2 & output)
 {
   // The assumption checked in the constructor is that the PointCloud size is bigger than
   // the PointBlocks, which can fully contain a packet. The use case of this method is in case
@@ -141,6 +147,7 @@ bool8_t VelodyneCloudNode::get_output_remainder(sensor_msgs::msg::PointCloud2 & 
   return false;
 }
 
+template class VelodyneCloudNode<velodyne_driver::VLP16Data>;
 }  // namespace velodyne_node
 }  // namespace drivers
 }  // namespace autoware

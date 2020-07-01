@@ -40,7 +40,7 @@ TEST(velodyne_node, constructor)
   using autoware::drivers::velodyne_driver::Vlp16Translator;
   const auto config = Vlp16Translator::Config{600.0F};
 
-  using autoware::drivers::velodyne_node::VelodyneCloudNode;
+  using VelodyneCloudNode = autoware::drivers::velodyne_node::VLP16DriverNode;
   EXPECT_NO_THROW(
     VelodyneCloudNode(
       name,
@@ -99,7 +99,7 @@ TEST_P(velodyne_node_integration, DISABLED_test)
   const auto config = Vlp16Translator::Config{600.0F};
 
   // Node
-  using autoware::drivers::velodyne_node::VelodyneCloudNode;
+  using VelodyneCloudNode = autoware::drivers::velodyne_node::VLP16DriverNode;
   std::shared_ptr<VelodyneCloudNode> nd_ptr = std::make_shared<VelodyneCloudNode>(
     name,
     ip,
