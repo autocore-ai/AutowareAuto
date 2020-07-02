@@ -53,10 +53,9 @@ class VELODYNE_NODE_PUBLIC VelodyneCloudNode
 {
 public:
   using VelodyneTranslatorT = velodyne_driver::VelodyneTranslator<SensorData>;
-  using UdpDriverNode = udp_driver::UdpDriverNode<velodyne_driver::Vlp16Translator::Packet,
-      sensor_msgs::msg::PointCloud2>;
   using Config = typename VelodyneTranslatorT::Config;
   using Packet = typename VelodyneTranslatorT::Packet;
+  using UdpDriverNode = udp_driver::UdpDriverNode<Packet, sensor_msgs::msg::PointCloud2>;
 
   /// \brief Default constructor, starts driver
   /// \param[in] node_name name of the node for rclcpp internals
@@ -108,6 +107,7 @@ private:
 };  // class VelodyneCloudNode
 
 using VLP16DriverNode = VelodyneCloudNode<velodyne_driver::VLP16Data>;
+using VLS128DriverNode = VelodyneCloudNode<velodyne_driver::VLS128Data>;
 }  // namespace velodyne_node
 }  // namespace drivers
 }  // namespace autoware
