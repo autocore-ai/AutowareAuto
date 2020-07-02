@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <experimental/optional>
 #include <gtest/gtest.h>
@@ -76,7 +77,7 @@ struct SubAndMsg
 TEST_P(joy_vi_test, basic_mapping)
 {
   const auto param = GetParam();
-  const auto control_command =
+  const std::string control_command =
     (PubType::HighLevel == param.pub_type) ? "high_level" :
     (PubType::Raw == param.pub_type) ? "raw" :
     (PubType::Basic == param.pub_type) ? "basic" : "null";
@@ -89,11 +90,11 @@ TEST_P(joy_vi_test, basic_mapping)
   const auto qos = rclcpp::SensorDataQoS{};
   const auto joy_pub = test_nd->create_publisher<sensor_msgs::msg::Joy>(joy_topic, qos);
   SubAndMsg<autoware_auto_msgs::msg::RawControlCommand>
-    raw{*test_nd, (control_command == "raw") ? "raw_command" : "null"};
+  raw{*test_nd, (control_command == "raw") ? "raw_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::HighLevelControlCommand>
-    high_level{*test_nd, (control_command == "high_level") ? "high_level_command" : "null"};
+  high_level{*test_nd, (control_command == "high_level") ? "high_level_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::VehicleControlCommand>
-    basic{*test_nd, (control_command == "basic") ? "basic_command" : "null"};
+  basic{*test_nd, (control_command == "basic") ? "basic_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::VehicleStateCommand> state{*test_nd, state_command_topic};
   SubAndMsg<std_msgs::msg::UInt8> recordreplay{*test_nd, recordreplay_command_topic};
 
@@ -283,10 +284,10 @@ TEST_P(joy_vi_test, basic_mapping)
   }
 }
 
-INSTANTIATE_TEST_CASE_P (
+INSTANTIATE_TEST_CASE_P(
   test,
   joy_vi_test,
-  ::testing::Values (
+  ::testing::Values(
     // Raw control command
     JoyMapping{
   PubType::Raw,
@@ -342,4 +343,4 @@ INSTANTIATE_TEST_CASE_P (
   {},
   {{Buttons::RECORDREPLAY_STOP, 1U}}
 }
-  ));
+  ), );

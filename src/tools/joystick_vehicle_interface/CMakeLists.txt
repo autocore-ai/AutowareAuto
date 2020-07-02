@@ -6,23 +6,25 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 ament_auto_find_build_dependencies()
 # Node library
 ament_auto_add_library(joystick_vehicle_interface_node src/joystick_vehicle_interface_node.cpp)
 autoware_set_compile_options(joystick_vehicle_interface_node)
 # Node executable
 ament_auto_add_executable(joystick_vehicle_interface_exe src/joystick_vehicle_interface_main.cpp)
-autoware_set_compile_options(joystick_vehicle_interface_node)
+autoware_set_compile_options(joystick_vehicle_interface_exe)
 
 if(BUILD_TESTING)
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # Test
-  find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(joystick_vehicle_interface_test
     test/gtest_main.cpp
     test/mapping.cpp)
