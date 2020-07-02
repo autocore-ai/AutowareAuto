@@ -15,7 +15,7 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <velodyne_node/velodyne_cloud_node.hpp>
-
+#include <rcutils/cmdline_parser.h>
 
 //lint -e537 NOLINT  // cpplint vs pclint
 #include <string>
@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 #include <cstdio>
+#include <algorithm>
 #include "rclcpp/rclcpp.hpp"
 
 // this file is simply a main file to create a ros1 style standalone node
@@ -33,10 +34,27 @@ int32_t main(const int32_t argc, char ** const argv)
   try {
     rclcpp::init(argc, argv);
 
-    auto vptr = std::make_shared<autoware::drivers::velodyne_node::VLP16DriverNode>(
-      "vlp16_driver_node");
+    const auto run = [](const auto & nd_ptr) {nd_ptr->run();};
 
-    vptr->run();
+    const auto * arg = rcutils_cli_get_option(argv, &argv[argc], "--model");
+    if (arg != nullptr) {
+      auto model = std::string(arg);
+      std::transform(model.begin(), model.end(), model.begin(), [](const auto & c) {
+          return std::tolower(c);
+        });
+      if (model == "vlp16") {
+        run(std::make_shared<
+            autoware::drivers::velodyne_node::VLP16DriverNode>("vlp16_driver_node"));
+      } else if (model == "vls128") {
+        run(std::make_shared<
+            autoware::drivers::velodyne_node::VLS128DriverNode>("vls128_driver_node"));
+      } else {
+        throw std::runtime_error("Model " + model + " is not supperted.");
+      }
+    } else {
+      throw std::runtime_error("Please specify a velodyne model using --model argument");
+    }
+
 
     rclcpp::shutdown();
   } catch (const std::exception & err) {

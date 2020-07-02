@@ -40,7 +40,8 @@ def generate_test_description(ready_fn):
                 "cloud_size": 500,
                 "topic": test_topic
             }
-        ]
+        ],
+        arguments=["--model", "vlp16"]
     )
 
     context = {'vel_node': velodyne_cloud_node}

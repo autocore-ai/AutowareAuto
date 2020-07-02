@@ -40,7 +40,8 @@ def generate_test_description(ready_fn):
                 "expected_num_subscribers": 1,
             }
         ],
-        remappings=[("points_raw", test_topic)]
+        remappings=[("points_raw", test_topic)],
+        arguments=["--model", "vlp16"]
     )
 
     pcl_checker = lidar_integration.make_pcl_checker(
