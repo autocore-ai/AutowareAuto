@@ -45,6 +45,9 @@ int32_t main(const int32_t argc, char ** const argv)
       if (model == "vlp16") {
         run(std::make_shared<
             autoware::drivers::velodyne_node::VLP16DriverNode>("vlp16_driver_node"));
+      } else if (model == "vlp32c") {
+        run(std::make_shared<
+            autoware::drivers::velodyne_node::VLP32CDriverNode>("vlp32c_driver_node"));
       } else if (model == "vls128") {
         run(std::make_shared<
             autoware::drivers::velodyne_node::VLS128DriverNode>("vls128_driver_node"));

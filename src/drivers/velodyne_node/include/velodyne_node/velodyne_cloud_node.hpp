@@ -107,6 +107,7 @@ private:
 };  // class VelodyneCloudNode
 
 using VLP16DriverNode = VelodyneCloudNode<velodyne_driver::VLP16Data>;
+using VLP32CDriverNode = VelodyneCloudNode<velodyne_driver::VLP32CData>;
 using VLS128DriverNode = VelodyneCloudNode<velodyne_driver::VLS128Data>;
 }  // namespace velodyne_node
 }  // namespace drivers

@@ -148,6 +148,7 @@ bool8_t VelodyneCloudNode<T>::get_output_remainder(sensor_msgs::msg::PointCloud2
 }
 
 template class VelodyneCloudNode<velodyne_driver::VLP16Data>;
+template class VelodyneCloudNode<velodyne_driver::VLP32CData>;
 template class VelodyneCloudNode<velodyne_driver::VLS128Data>;
 }  // namespace velodyne_node
 }  // namespace drivers
