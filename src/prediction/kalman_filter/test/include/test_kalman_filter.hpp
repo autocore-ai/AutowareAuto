@@ -396,7 +396,7 @@ TEST(esrcf, convergence)
   float32_t last_ll = -std::numeric_limits<float32_t>::max();
   // microseconds_100 = 0.1s
   std::chrono::nanoseconds microseconds_100(100000000LL);
-  for (uint32_t idx = 0; idx < 30; ++idx) {
+  for (uint32_t iteration = 0; iteration < 30; ++iteration) {
     x(0) += 0.1;
     x(1) -= 0.1;
     kf.temporal_update(microseconds_100);
@@ -406,7 +406,7 @@ TEST(esrcf, convergence)
     EXPECT_GT(kf.get_covariance()(2, 2), P_p(2, 2));
     EXPECT_GT(kf.get_covariance()(3, 3), P_p(3, 3));
     // covariance should be smaller than last prefit
-    if (idx > 0) {
+    if (iteration > 0) {
       EXPECT_LE(kf.get_covariance()(0, 0), P_m(0, 0));
       EXPECT_LE(kf.get_covariance()(1, 1), P_m(1, 1));
       EXPECT_LE(kf.get_covariance()(2, 2), P_m(2, 2));
@@ -454,100 +454,127 @@ TEST(esrcf, convergence)
 }
 
 
-// Hidden states should converge to a good value
+/// @test Hidden states should converge to a good value
 TEST(esrcf, hidden_state)
 {
+  constexpr float32_t kConvergenceEpsilon{0.001F};
+  constexpr auto kIndexX = ConstantVelocity::States::POSE_X;
+  constexpr auto kIndexY = ConstantVelocity::States::POSE_Y;
+  constexpr auto kIndexSpeedX = ConstantVelocity::States::VELOCITY_X;
+  constexpr auto kIndexSpeedY = ConstantVelocity::States::VELOCITY_Y;
+  using FloatSeconds = std::chrono::duration<float32_t>;
   ConstantVelocity model;
-  Matrix<float32_t, 2, 1> R({0.001F, 0.001F});
-  // identity
-  Matrix<float32_t, 4, 4> GQ;
-  GQ <<
-    0.125F, 0.0F, 0.0F, 0.0F,
-    0.0F, 0.125F, 0.0F, 0.0F,
-    0.5F, 0.0F, 0.1F, 0.0F,
-    0.0F, 0.5F, 0.0F, 0.1F
-  ;
-  const float32_t vx = 1.0F, vy = 1.0F;
-  Matrix<float32_t, 4, 1> x({0, 0, 0.0, 0.0});  // all 0's
-  // cholesky of: (so there is some covariance wrt hidden state
-  // 1   0   0.5 0
-  // 0   1   0   0.5
-  // 0.5 0   1   0
-  // 0   0.5 0   1
+  Matrix<float32_t, 2, 1> R({0.01F, 0.01F});
+  const std::chrono::milliseconds dt{100LL};
+  const FloatSeconds time_step_seconds{dt};
+  // We use the Wiener model noise in this test. In this case, we only set noise on acceleration and
+  // the matrix G is responsible to distribute it over to speed and position components of the
+  // state.
+  Matrix<float32_t, 4, 2> G;
+  G <<
+    0.5F * time_step_seconds.count() * time_step_seconds.count(), 0.0F,
+    0.0F, 0.5F * time_step_seconds.count() * time_step_seconds.count(),
+    time_step_seconds.count(), 0.0F,
+    0.0F, time_step_seconds.count();
+  Matrix<float32_t, 4, 4> F;
+  model.compute_jacobian(F, dt);
+  const auto acceleration_variance{2.0F};
+  const auto GQ = F * G * acceleration_variance;
+  Matrix<float32_t, 4, 1> x{Matrix<float32_t, 4, 1>::Zero()};  // all 0's
   Matrix<float32_t, 4, 4> P;
   P <<
     1.0F, 0.0F, 0.0F, 0.0F,
     0.0F, 1.0F, 0.0F, 0.0F,
-    0.0F, 0.0F, 10.0F, 0.0F,
-    0.0F, 0.0F, 0.0F, 10.0F
-  ;
+    0.0F, 0.0F, 1.0F, 0.0F,
+    0.0F, 0.0F, 0.0F, 1.0F;
+  Esrcf<4, 2> kf(model, GQ, x, P);
   // prefit and postfit covariance matrices
-  Matrix<float32_t, 4, 4> P_m(P), P_p(P);
-  const Matrix<float32_t, 4, 4> P0(P);
-  const Matrix<float32_t, 2, 4> H((Matrix<float32_t, 2, 4>() <<
-    1, 0, 0, 0,
-    0, 1, 0, 0).finished());
-
-  Matrix<float32_t, 2, 1> z({0, 0});
-  Esrcf<4, 4> kf(model, GQ, x, P);
+  auto covariance_postfit{P};
+  const Matrix<float32_t, 4, 4> P0{P};
+  const Matrix<float32_t, 2, 4> H{(Matrix<float32_t, 2, 4>{} <<
+      1, 0, 0, 0,
+      0, 1, 0, 0).finished()};
+  Matrix<float32_t, 2, 1> z{0.0F, 0.0F};
+  const float32_t vx = 1.0F;
+  const float32_t vy = 1.0F;
   EXPECT_NE(model[ConstantVelocity::States::VELOCITY_X], vx);
   EXPECT_NE(model[ConstantVelocity::States::VELOCITY_Y], vy);
-  // microseconds_100 = 0.1s
-  const std::chrono::nanoseconds microseconds_100(100000000LL);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
-  // velocity error should be shrinking
   float32_t err_u = std::numeric_limits<float32_t>::max();
   float32_t err_v = std::numeric_limits<float32_t>::max();
   float32_t last_ll = -std::numeric_limits<float32_t>::max();
-  for (uint32_t idx = 0; idx < 90; ++idx) {
-    z(0) += static_cast<float32_t>(microseconds_100.count()) / 1000000000LL * vx;
-    z(1) += static_cast<float32_t>(microseconds_100.count()) / 1000000000LL * vy;
-    kf.temporal_update(microseconds_100);
-    // covariance should grow wrt postfit
-    EXPECT_GT(kf.get_covariance()(0, 0), P_p(0, 0)) << idx;
-    EXPECT_GT(kf.get_covariance()(1, 1), P_p(1, 1)) << idx;
-    // EXPECT_GT(kf.get_covariance()(2, 2), P_p(2, 2)) << idx;
-    // EXPECT_GT(kf.get_covariance()(3, 3), P_p(3, 3)) << idx;
-    // Analytically, the updated velocity/hidden state covariance is
-    // t^2 * (p_v + s^2), where t is the characteristic time step, and s is the characteristic
-    // measurement noise. Since the time step is < 1, then variance shrinks
+
+  auto converged = false;
+  for (auto iteration = 0U; iteration < 100U; ++iteration) {
+    z(ConstantVelocity::States::POSE_X) += time_step_seconds.count() * vx;
+    z(ConstantVelocity::States::POSE_Y) += time_step_seconds.count() * vy;
+    kf.temporal_update(dt);
+    // Covariance should grow wrt postfit unless we have converged.
+    const auto cov_after_prediction{kf.get_covariance() * kf.get_covariance().transpose()};
+    EXPECT_FLOAT_EQ(
+      cov_after_prediction(kIndexX, kIndexX),
+      cov_after_prediction(kIndexY, kIndexY)) <<
+      "Position variances should be the same in this test";
+    EXPECT_FLOAT_EQ(
+      cov_after_prediction(kIndexSpeedX, kIndexSpeedX),
+      cov_after_prediction(kIndexSpeedY, kIndexSpeedY)) <<
+      "Speed variances should be the same in this test";
+    EXPECT_GT(cov_after_prediction(kIndexX, kIndexX), covariance_postfit(kIndexX, kIndexX));
+    EXPECT_GT(cov_after_prediction(kIndexY, kIndexY), covariance_postfit(kIndexY, kIndexY));
+    EXPECT_GT(
+      cov_after_prediction(kIndexSpeedX, kIndexSpeedX),
+      covariance_postfit(kIndexSpeedX, kIndexSpeedX));
+    EXPECT_GT(
+      cov_after_prediction(kIndexSpeedY, kIndexSpeedY),
+      covariance_postfit(kIndexSpeedY, kIndexSpeedY));
     // Hidden state error should shrink
-    float32_t err = fabsf(model[2] - vx);
-    EXPECT_LT(err, err_u) << idx;
+    float32_t err = fabsf(model[ConstantVelocity::States::VELOCITY_X] - vx);
+    EXPECT_LT(err, err_u) << iteration;
     err_u = err;
-    err = fabsf(model[3] - vy);
-    EXPECT_LT(err, err_v) << idx;
+    err = fabsf(model[ConstantVelocity::States::VELOCITY_Y] - vy);
+    EXPECT_LT(err, err_v) << iteration;
     err_v = err;
-    if ((err_u < TOL) && (err_v < TOL)) {
-      // TODO(ltbj): implement memory_test after the completion of #39
-      // osrf_testing_tools_cpp::memory_test::pause();
-      std::cout << "Converged at " << idx << "\n";
-      // TODO(ltbj): implement memory_test after the completion of #39
-      // osrf_testing_tools_cpp::memory_test::resume();
+    if ((err_u < kConvergenceEpsilon) && (err_v < kConvergenceEpsilon)) {
+      converged = true;
       break;
     }
-    P_m = kf.get_covariance();
-    //// exact observation
+    const auto cov_factor_prefit{kf.get_covariance()};
+    // exact observation
     const float32_t ll = kf.observation_update(z, H, R);
     // likelihood should improve or converge
-    EXPECT_GE(ll, last_ll) << idx;
+    EXPECT_GE(ll, last_ll) << iteration;
     last_ll = ll;
     // covariance should shrink or converge
-    EXPECT_LE(kf.get_covariance()(0, 0), P_m(0, 0)) << idx;
-    EXPECT_LE(kf.get_covariance()(1, 1), P_m(1, 1)) << idx;
-    EXPECT_LE(kf.get_covariance()(2, 2), P_m(2, 2)) << idx;
-    EXPECT_LE(kf.get_covariance()(3, 3), P_m(3, 3)) << idx;
-    // postfit covariance should always be smaller than p0
-    EXPECT_LT(kf.get_covariance()(0, 0), P0(0, 0)) << idx;
-    EXPECT_LT(kf.get_covariance()(1, 1), P0(1, 1)) << idx;
-    EXPECT_LT(kf.get_covariance()(2, 2), P0(2, 2)) << idx;
-    EXPECT_LT(kf.get_covariance()(3, 3), P0(3, 3)) << idx;
-    P_p = kf.get_covariance();
+    EXPECT_LE(kf.get_covariance()(kIndexX, kIndexX), cov_factor_prefit(kIndexX, kIndexX));
+    EXPECT_LE(kf.get_covariance()(kIndexY, kIndexY), cov_factor_prefit(kIndexY, kIndexY));
+    EXPECT_LE(
+      kf.get_covariance()(kIndexSpeedX, kIndexSpeedX),
+      cov_factor_prefit(kIndexSpeedX, kIndexSpeedX));
+    EXPECT_LE(
+      kf.get_covariance()(kIndexSpeedY, kIndexSpeedY),
+      cov_factor_prefit(kIndexSpeedY, kIndexSpeedY));
+    // Postfit covariance should be smaller than p0 after some iterations.
+    if (iteration > 10) {
+      EXPECT_LT(kf.get_covariance()(kIndexX, kIndexX), P0(kIndexX, kIndexX));
+      EXPECT_LT(kf.get_covariance()(kIndexY, kIndexY), P0(kIndexY, kIndexY));
+      EXPECT_LT(kf.get_covariance()(kIndexSpeedX, kIndexSpeedX), P0(kIndexSpeedX, kIndexSpeedX));
+      EXPECT_LT(kf.get_covariance()(kIndexSpeedY, kIndexSpeedY), P0(kIndexSpeedY, kIndexSpeedY));
+    }
+    covariance_postfit = kf.get_covariance() * kf.get_covariance().transpose();
+    EXPECT_FLOAT_EQ(
+      covariance_postfit(kIndexX, kIndexX),
+      covariance_postfit(kIndexY, kIndexY)) <<
+      "Position variances should be the same in this test";
+    EXPECT_FLOAT_EQ(
+      covariance_postfit(kIndexSpeedX, kIndexSpeedX),
+      covariance_postfit(kIndexSpeedY, kIndexSpeedY)) <<
+      "Speed variances should be the same in this test";
     // state should be very close to observation
-    EXPECT_LT(fabsf(model[0] - z(0)), kf.get_covariance()(0, 0)) << idx;
-    EXPECT_LT(fabsf(model[1] - z(0)), kf.get_covariance()(1, 1)) << idx;
+    EXPECT_LT(fabsf(model[kIndexX] - z(kIndexX)), kf.get_covariance()(kIndexX, kIndexX));
+    EXPECT_LT(fabsf(model[kIndexY] - z(kIndexY)), kf.get_covariance()(kIndexY, kIndexY));
   }
+  EXPECT_TRUE(converged);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::stop();
 }

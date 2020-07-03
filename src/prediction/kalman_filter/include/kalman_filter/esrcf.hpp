@@ -22,9 +22,10 @@
 #define KALMAN_FILTER__ESRCF_HPP_
 
 #include <common/types.hpp>
+#include <motion_model/motion_model.hpp>
+#include <kalman_filter/srcf_core.hpp>
+
 #include <chrono>
-#include "motion_model/motion_model.hpp"
-#include "kalman_filter/srcf_core.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -53,27 +54,25 @@ public:
   /// \brief constructor
   /// \param[inout] model motion model used for state propagation and jacobian calculation
   /// \param[in] GQ_chol_prod reference to cholesky factor of process noise covariance
-  Esrcf(
+  explicit Esrcf(
     motion::motion_model::MotionModel<NumStates> & model,
     const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> & GQ_chol_prod)
-  : m_model_ptr(&model),
-    m_is_mat1_covariance(false),
-    m_B_mat(GQ_chol_prod),
-    m_GQ_chol_prod_ptr(&GQ_chol_prod)
-  {
-  }
+  : m_model_ptr{&model},
+    m_is_mat1_covariance{false},
+    m_B_mat{GQ_chol_prod},
+    m_GQ_factor{GQ_chol_prod} {}
 
   /// \brief constructor, equivalent of construct(model, GQ, DIAG); reset(x, P);
   /// \param[inout] model motion model used for state propagation and jacobian calculation
   /// \param[in] GQ_chol_prod reference to cholesky factor of process noise covariance
   /// \param[in] x0 initial state
   /// \param[in] P0_chol cholesky factor of initial covariance matrix
-  Esrcf(
+  explicit Esrcf(
     motion::motion_model::MotionModel<NumStates> & model,
     const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> & GQ_chol_prod,
     const state_vec_t & x0,
     const square_mat_t & P0_chol)
-  : Esrcf(model, GQ_chol_prod)
+  : Esrcf{model, GQ_chol_prod}
   {
     reset(x0, P0_chol);
   }
@@ -113,14 +112,12 @@ public:
     // compute jacobian and predict
     m_model_ptr->compute_jacobian_and_predict(jac_mat, dt);
     //// update covariance matrix
-    // scalar factor
-    constexpr float32_t alpha = 1.0F;
     // store jacobian old cov matrix, update F = alpha * F * C
-    jac_mat = alpha * cov_mat * jac_mat;
+    jac_mat = jac_mat * cov_mat;
     // Do temporal update on F, 0 out B
     m_srcf_core.right_lower_triangularize_matrices(jac_mat, m_B_mat);
     m_is_mat1_covariance = !m_is_mat1_covariance;
-    m_B_mat = *m_GQ_chol_prod_ptr;
+    m_B_mat = m_GQ_factor;
   }
 
   /// \brief Do observation update: update state estimate and covariance. temporal_update() is
@@ -141,8 +138,8 @@ public:
     float32_t likelihood = 0.0F;
     for (index_t idx = index_t(); idx < NumObs; ++idx) {
       likelihood += m_srcf_core.scalar_update(
-        z(idx, index_t()),
-        R_diag(idx, index_t()),
+        z[idx],
+        R_diag[idx],
         H.row(idx),
         cov_mat,
         m_state_tmp);
@@ -214,7 +211,7 @@ private:
   square_mat_t m_square_mat2;
   bool8_t m_is_mat1_covariance;
   Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> m_B_mat;
-  const Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> * m_GQ_chol_prod_ptr;
+  Eigen::Matrix<float32_t, NumStates, ProcessNoiseDim> m_GQ_factor;
   static_assert(NumStates > 0U, "must have positive number of states");
   static_assert(ProcessNoiseDim > 0U, "must have positive number of process noise dimensions");
 };  // class Esrcf
