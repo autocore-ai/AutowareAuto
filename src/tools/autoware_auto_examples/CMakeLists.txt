@@ -13,16 +13,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(autoware_auto_examples)
 
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
-install(
-  DIRECTORY rviz/
-  DESTINATION share/${PROJECT_NAME}/rviz
+ament_auto_package(INSTALL_TO_SHARE
+  rviz
+  rviz2
 )
-
-install(
-  DIRECTORY rviz2/
-  DESTINATION share/${PROJECT_NAME}/rviz2
-)
-
-ament_package()
