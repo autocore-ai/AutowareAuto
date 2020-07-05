@@ -24,8 +24,9 @@ rclcpp_components_register_node(dataset_converter_node
 )
 
 if(BUILD_TESTING)
-    # run linters
-    autoware_static_code_analysis()
+  # run linters
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_auto_package()
