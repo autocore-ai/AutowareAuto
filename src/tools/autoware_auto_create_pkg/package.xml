@@ -10,6 +10,14 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <build_depend>ament_cmake_python</build_depend>
+  <build_depend>ament_cmake_copyright</build_depend>
+  <build_depend>ament_cmake_cppcheck</build_depend>
+  <build_depend>ament_cmake_cpplint</build_depend>
+  <build_depend>ament_cmake_flake8</build_depend>
+  <build_depend>ament_cmake_lint_cmake</build_depend>
+  <build_depend>ament_cmake_pep257</build_depend>
+  <build_depend>ament_cmake_uncrustify</build_depend>
+  <build_depend>ament_cmake_xmllint</build_depend>
 
   <exec_depend>ament_index_python</exec_depend>
 
