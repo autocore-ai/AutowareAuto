@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "test_pc_mapper.hpp"
 #include <point_cloud_mapping/point_cloud_mapper.hpp>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <gtest/gtest.h>
+#include <string>
+#include <memory>
+#include <utility>
+#include <vector>
 
-namespace autoware
-{
-namespace mapping
-{
-namespace point_cloud_mapping
-{
+using autoware::mapping::point_cloud_mapping::PlainPointCloudMap;
+using autoware::mapping::point_cloud_mapping::MapUpdateType;
+using autoware::mapping::point_cloud_mapping::PCMapperTestContext;
+using autoware::mapping::point_cloud_mapping::PrefixGeneratorBase;
+using autoware::mapping::point_cloud_mapping::MockLocalizer;
+using autoware::mapping::point_cloud_mapping::PointCloudMapper;
+using autoware::mapping::point_cloud_mapping::CapacityTrigger;
+using autoware::mapping::point_cloud_mapping::PCLCloud;
+using autoware::mapping::point_cloud_mapping::check_pc_equal;
+using autoware::mapping::point_cloud_mapping::MockLocalizerSummary;
+using autoware::mapping::point_cloud_mapping::Cloud;
 
 class PCMapperTest : public PCMapperTestContext, public ::testing::Test {};
 
@@ -188,7 +198,7 @@ void PCMapperTestContext::make_map()
   append_to_pcl(pc2_map, m_expected_map);
 }
 
-void append_to_pcl(const Cloud & pc, PCLCloud & res)
+void autoware::mapping::point_cloud_mapping::append_to_pcl(const Cloud & pc, PCLCloud & res)
 {
   const auto check_not_end = [](const auto & its) {
       return std::all_of(its.cbegin(), its.cend(), [](const auto & it) {return it != it.end();});
@@ -216,8 +226,3 @@ void append_to_pcl(const Cloud & pc, PCLCloud & res)
     }
   }
 }
-
-
-}  // namespace point_cloud_mapping
-}  // namespace mapping
-}  // namespace autoware

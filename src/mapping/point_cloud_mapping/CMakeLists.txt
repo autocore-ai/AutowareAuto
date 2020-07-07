@@ -16,10 +16,17 @@
 cmake_minimum_required(VERSION 3.5)
 project(point_cloud_mapping)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 #dependencies
 find_package(ament_cmake_auto REQUIRED)
-find_package(autoware_auto_cmake REQUIRED)
-find_package(autoware_auto_common REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io)
 ament_auto_find_build_dependencies()
 
@@ -57,12 +64,11 @@ target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
   # run linters
-  autoware_static_code_analysis()
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
   # gtest
   set(PC_MAPPING_TEST pcm_test)
-
-  find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(${PC_MAPPING_TEST}
           test/test_pc_mapper.hpp

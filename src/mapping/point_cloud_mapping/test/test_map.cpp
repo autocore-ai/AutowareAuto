@@ -1,5 +1,4 @@
 // Copyright 2020 Apex.AI, Inc.
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include "test_map.hpp"
 #include <point_cloud_mapping/map.hpp>
 #include <gtest/gtest.h>
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include "test_map.hpp"
+#include <string>
+#include <algorithm>
+#include <set>
+#include <vector>
 
-namespace autoware
-{
-namespace mapping
-{
-namespace point_cloud_mapping
-{
+using autoware::mapping::point_cloud_mapping::PlainPointCloudMap;
+using autoware::mapping::point_cloud_mapping::MapUpdateType;
+using autoware::mapping::point_cloud_mapping::PclCloud;
+using autoware::mapping::point_cloud_mapping::VoxelMapContext;
+using autoware::mapping::point_cloud_mapping::VoxelMap;
+
 TEST(PointCloudMapTest, basic_io) {
   constexpr auto capacity = 10U;
   constexpr auto map_frame = "map";
@@ -40,7 +45,8 @@ TEST(PointCloudMapTest, basic_io) {
       geometry_msgs::msg::PoseWithCovarianceStamped dummy;
       auto capped_increment = std::min(increment_size, (capacity - map_size));
 
-      const auto pc = make_pc(increment_size, map_size, frame);
+      const auto pc = autoware::mapping::point_cloud_mapping::make_pc(increment_size, map_size,
+          frame);
       const auto summary = map.try_add_observation(pc, dummy);
       EXPECT_EQ(summary.update_type, expected_update_type);
       EXPECT_EQ(summary.num_added_pts, capped_increment);
@@ -55,7 +61,7 @@ TEST(PointCloudMapTest, basic_io) {
       map.write(fname_prefix);
       PclCloud pcl_cloud;
       pcl::io::loadPCDFile(fname, pcl_cloud);
-      check_pc(pcl_cloud, map_size);
+      autoware::mapping::point_cloud_mapping::check_pc(pcl_cloud, map_size);
       remove(fname.c_str());
     };
 
@@ -83,7 +89,7 @@ TEST_F(VoxelMapTest, basic_io) {
   constexpr auto false_frame = ".asdasd..";
   auto map_size = 0U;
   ASSERT_NE(false_frame, map_frame);
-  const auto grid_config = perception::filters::voxel_grid::Config(
+  const auto grid_config = autoware::perception::filters::voxel_grid::Config(
     m_min_point, m_max_point, m_voxel_size, m_capacity);
   VoxelMap map{grid_config, map_frame};
 
@@ -93,7 +99,9 @@ TEST_F(VoxelMapTest, basic_io) {
       geometry_msgs::msg::PoseWithCovarianceStamped dummy;
       auto capped_increment = std::min(increment_size, (capacity - map_size));
 
-      const auto pc = make_pc_deviated(increment_size, map_size, frame, FIXED_DEVIATION);
+      const auto pc = autoware::mapping::point_cloud_mapping::make_pc_deviated(increment_size,
+          map_size, frame,
+          FIXED_DEVIATION);
       const auto summary = map.try_add_observation(pc, dummy);
       EXPECT_EQ(summary.update_type, expected_update_type);
 
@@ -109,7 +117,7 @@ TEST_F(VoxelMapTest, basic_io) {
       map.write(fname_prefix);
       PclCloud pcl_cloud;
       pcl::io::loadPCDFile(fname, pcl_cloud);
-      check_pc(pcl_cloud, map_size);
+      autoware::mapping::point_cloud_mapping::check_pc(pcl_cloud, map_size);
       remove(fname.c_str());
     };
 
@@ -132,7 +140,7 @@ TEST_F(VoxelMapTest, basic_io) {
 
 //////////////////////// helper function implementations ///////////////////////
 
-void check_pc(PclCloud & pc, std::size_t size)
+void autoware::mapping::point_cloud_mapping::check_pc(PclCloud & pc, std::size_t size)
 {
   EXPECT_EQ(pc.size(), size);
   std::set<size_t> read_pts;
@@ -147,44 +155,45 @@ void check_pc(PclCloud & pc, std::size_t size)
   }
 }
 
-sensor_msgs::msg::PointCloud2 make_pc(
-  const std::vector<common::types::PointXYZIF> & pts,
+sensor_msgs::msg::PointCloud2 autoware::mapping::point_cloud_mapping::make_pc(
+  const std::vector<autoware::common::types::PointXYZIF> & pts,
   const std::string & frame)
 {
   sensor_msgs::msg::PointCloud2 pc;
-  common::lidar_utils::init_pcl_msg(pc, frame, pts.size());
+  autoware::common::lidar_utils::init_pcl_msg(pc, frame, pts.size());
   auto idx = 0U;
   for (const auto & pt : pts) {
-    common::lidar_utils::add_point_to_cloud(pc, pt, idx);
+    autoware::common::lidar_utils::add_point_to_cloud(pc, pt, idx);
   }
   return pc;
 }
 
-sensor_msgs::msg::PointCloud2 make_pc(
+sensor_msgs::msg::PointCloud2 autoware::mapping::point_cloud_mapping::make_pc(
   std::size_t size, std::size_t offset,
   const std::string & frame)
 {
-  std::vector<common::types::PointXYZIF> pts(size);
+  std::vector<autoware::common::types::PointXYZIF> pts(size);
   auto idx = 0U;
   std::generate(pts.begin(), pts.end(), [&idx, offset]() {
       auto val = static_cast<float_t>((idx++) + offset);
-      return common::types::PointXYZIF{val, val, val, val};
+      return autoware::common::types::PointXYZIF{val, val, val, val};
     });
-  return make_pc(pts, frame);
+  return autoware::mapping::point_cloud_mapping::make_pc(pts, frame);
 }
 
-sensor_msgs::msg::PointCloud2 make_pc_deviated(
+sensor_msgs::msg::PointCloud2 autoware::mapping::point_cloud_mapping::make_pc_deviated(
   std::size_t size, std::size_t offset,
   const std::string & frame, float_t deviation)
 {
-  std::vector<common::types::PointXYZIF> pts;
+  std::vector<autoware::common::types::PointXYZIF> pts;
   pts.reserve(VoxelMapContext::NUM_PTS_PER_CELL * size);
   for (auto idx = 0U; idx < size; ++idx) {
     auto val = static_cast<float_t>((idx) + offset);
-    const auto & cells = get_cells({val, val, val, val}, deviation);
+    const auto & cells = autoware::mapping::point_cloud_mapping::get_cells({val, val, val, val},
+        deviation);
     pts.insert(pts.end(), cells.begin(), cells.end());
   }
-  return make_pc(pts, frame);
+  return autoware::mapping::point_cloud_mapping::make_pc(pts, frame);
 }
 
 VoxelMapContext::VoxelMapContext()
@@ -205,11 +214,11 @@ VoxelMapContext::VoxelMapContext()
 
 // Get the point `center` and 6 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance.
-std::vector<common::types::PointXYZIF> get_cells(
+std::vector<autoware::common::types::PointXYZIF> autoware::mapping::point_cloud_mapping::get_cells(
   const std::array<float_t, 4U> & center,
   float_t fixed_deviation)
 {
-  std::vector<common::types::PointXYZIF> pts;
+  std::vector<autoware::common::types::PointXYZIF> pts;
   pts.reserve(VoxelMapContext::NUM_PTS_PER_CELL);
   pts.push_back({center[0], center[1], center[2], center[3]});
   for (auto idx = 0U; idx < 3U; idx++) {
@@ -225,7 +234,3 @@ std::vector<common::types::PointXYZIF> get_cells(
   }
   return pts;
 }
-
-}  // namespace point_cloud_mapping
-}  // namespace mapping
-}  // namespace autoware
