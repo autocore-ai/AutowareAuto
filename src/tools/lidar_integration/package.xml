@@ -8,7 +8,6 @@
     <license>Apex.AI License</license>
 
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
-    <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
     <buildtool_depend>ament_cmake_pytest</buildtool_depend>
 
@@ -19,7 +18,9 @@
     <depend>launch_testing</depend>
     <depend>rclcpp</depend>
     <depend>rclcpp_lifecycle</depend>
+    <depend>lifecycle_msgs</depend>
     <depend>sensor_msgs</depend>
+    <depend>std_msgs</depend>
 
     <test_depend>ament_lint_common</test_depend>
     <test_depend>ament_lint_auto</test_depend>
