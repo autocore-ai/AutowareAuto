@@ -21,6 +21,8 @@
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
 #include <common/types.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
+
 #include <memory>
 #include <string>
 #include <algorithm>
@@ -39,18 +41,29 @@ namespace voxel_grid_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
 VoxelCloudNode::VoxelCloudNode(
-  const std::string & node_name,
-  const std::string & node_namespace)
-: LifecycleNode(
-    node_name.c_str(), node_namespace.c_str()),
-  m_sub_ptr(create_subscription<Message>("points_in",
-    parse_qos(declare_parameter("subscription.qos.durability"),
-    declare_parameter("subscription.qos.history_depth")),
-    std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>("points_downsampled",
-    parse_qos(declare_parameter("publisher.qos.durability"),
-    declare_parameter("publisher.qos.history_depth")))),
-  m_has_failed(false)
+  const rclcpp::NodeOptions & node_options)
+: LifecycleNode("voxel_grid_cloud_node", node_options),
+  m_sub_ptr{create_subscription<Message>("points_in",
+      rclcpp::QoS(
+        declare_parameter("subscription.qos.history_depth", 10)
+      ).durability(
+        parse_durability_parameter(
+          declare_parameter("subscription.qos.durability", "volatile")
+        )
+      )
+      ,
+      std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1)
+    )},
+  m_pub_ptr{create_publisher<Message>("points_downsampled",
+      rclcpp::QoS(
+        declare_parameter("publisher.qos.history_depth", 10)
+      ).durability(
+        parse_durability_parameter(
+          declare_parameter("publisher.qos.durability", "volatile")
+        )
+      )
+    )},
+  m_has_failed{false}
 {
   // Build config manually (messages only have default constructors)
   voxel_grid::PointXYZ min_point;
@@ -70,23 +83,6 @@ VoxelCloudNode::VoxelCloudNode(
   const voxel_grid::Config cfg{min_point, max_point, voxel_size, capacity};
   // Init
   init(cfg, declare_parameter("is_approximate").get<bool8_t>());
-}
-////////////////////////////////////////////////////////////////////////////////
-VoxelCloudNode::VoxelCloudNode(
-  const std::string & node_name,
-  const std::string & sub_topic,
-  const std::string & pub_topic,
-  const voxel_grid::Config & cfg,
-  const bool8_t is_approximate,
-  const rclcpp::QoS sub_qos,
-  const rclcpp::QoS pub_qos)
-: LifecycleNode(node_name.c_str()),
-  m_sub_ptr(create_subscription<Message>(sub_topic.c_str(),
-    sub_qos, std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1))),
-  m_pub_ptr(create_publisher<Message>(pub_topic.c_str(), pub_qos)),
-  m_has_failed(false)
-{
-  init(cfg, is_approximate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,36 +141,22 @@ void VoxelCloudNode::init(const voxel_grid::Config & cfg, const bool8_t is_appro
 }
 
 /////////////////////////////////////////////////////////////////////////////
-rclcpp::QoS parse_qos(
-  const rclcpp::ParameterValue & durability_param,
-  const rclcpp::ParameterValue & depth_param, const rclcpp::QoS & default_qos)
+rmw_qos_durability_policy_t parse_durability_parameter(
+  const std::string & durability)
 {
-  if ((durability_param.get_type() == rclcpp::PARAMETER_NOT_SET) ||
-    (depth_param.get_type() == rclcpp::PARAMETER_NOT_SET))
-  {
-    RCLCPP_DEBUG(rclcpp::get_logger("qos_parse_logger"),
-      "Cannot parse the qos as there are missing fields in the parameter file. "
-      "A preset qos profile is used instead.");
-    return default_qos;
-  }
-  int32_t depth = depth_param.get<int32_t>();
-  std::string durability = durability_param.get<std::string>();
-
-  std::transform(durability.begin(), durability.end(), durability.begin(),
-    [](uchar8_t c) {return std::tolower(c);}
-  );
-  auto qos = rclcpp::QoS(depth);
   if (durability == "transient_local") {
-    qos.transient_local();
+    return RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
   } else if (durability == "volatile") {
-    qos.durability_volatile();
-  } else {
-    throw std::runtime_error("Durability setting '" + durability + "' is not supported."
-            "Please try 'volatile' or 'transient_local'.");
+    return RMW_QOS_POLICY_DURABILITY_VOLATILE;
   }
-  return qos;
+
+  throw std::runtime_error("Durability setting '" + durability + "' is not supported."
+          "Please try 'volatile' or 'transient_local'.");
 }
 }  // namespace voxel_grid_nodes
 }  // namespace filters
 }  // namespace perception
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode)

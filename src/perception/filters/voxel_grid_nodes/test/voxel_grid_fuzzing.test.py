@@ -24,7 +24,7 @@ def generate_test_description(ready_fn):
     test_topic = "veloyne_cloud_node_test_topic"
     node = launch_ros.actions.LifecycleNode(
         package="voxel_grid_nodes",
-        node_executable="voxel_grid_cloud_node_exe",
+        node_executable="voxel_grid_node_exe",
         node_name="voxel_grid_cloud_node",
         parameters=[
             "{}/param/vlp16_lexus_centroid.param.yaml".format(

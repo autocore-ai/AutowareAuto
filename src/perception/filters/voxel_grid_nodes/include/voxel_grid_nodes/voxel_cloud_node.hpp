@@ -40,37 +40,17 @@ namespace filters
 /// \brief Objects that tie voxel_grid classes to Apex.OS and interprocess communication
 namespace voxel_grid_nodes
 {
-rclcpp::QoS parse_qos(
-  const rclcpp::ParameterValue & durability_param,
-  const rclcpp::ParameterValue & depth_param, const rclcpp::QoS & default_qos = rclcpp::QoS(10));
+rmw_qos_durability_policy_t parse_durability_parameter(
+  const std::string & durability);
 
 /// \brief Boilerplate node that subscribes to point clouds and publishes a downsampled version
 class VOXEL_GRID_NODES_PUBLIC VoxelCloudNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   /// \brief Parameter constructor
-  /// \param[in] node_name Name of the node, controls which parameter set from the file is matched
-  /// \param[in] node_namespace Name of the node's namespace, controls which parameters are used
+  /// \param node_options Additional options to control creation of the node.
   VoxelCloudNode(
-    const std::string & node_name,
-    const std::string & node_namespace = "");
-
-  /// \brief Explicit constructor
-  /// \param[in] node_name Name of the node
-  /// \param[in] sub_topic Name of input topic
-  /// \param[in] pub_topic Name of downsampled output topic
-  /// \param[in] cfg Configuration object for VoxelGrid
-  /// \param[in] is_approximate Whether the internal voxel grid is approximate or not (centroid)
-  /// \param sub_qos QoS profile for the subscription. By default, set to depth of 10.
-  /// \param pub_qos QoS profile for the publisher. By default, set to depth of 10.
-  VoxelCloudNode(
-    const std::string & node_name,
-    const std::string & sub_topic,
-    const std::string & pub_topic,
-    const voxel_grid::Config & cfg,
-    const bool8_t is_approximate,
-    const rclcpp::QoS sub_qos = rclcpp::QoS(10),
-    const rclcpp::QoS pub_qos = rclcpp::QoS(10));
+    const rclcpp::NodeOptions & node_options);
 
   /// \brief Core run loop
   void callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);

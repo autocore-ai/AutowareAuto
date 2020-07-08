@@ -192,7 +192,7 @@ def generate_launch_description():
 
     scan_downsampler = Node(
         package='voxel_grid_nodes',
-        node_executable='voxel_grid_cloud_node_exe',
+        node_executable='voxel_grid_node_exe',
         node_namespace='lidar_front',
         node_name='voxel_grid_cloud_node',
         parameters=[LaunchConfiguration('scan_downsampler_param_file')],

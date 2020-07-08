@@ -15,6 +15,7 @@
     <depend>voxel_grid</depend>
     <depend>rclcpp</depend>
     <depend>rclcpp_lifecycle</depend>
+    <depend>rclcpp_components</depend>
 
     <build_depend>autoware_auto_common</build_depend>
 

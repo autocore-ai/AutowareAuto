@@ -31,7 +31,9 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_library(${PROJECT_NAME} SHARED
+### build node as library
+set(VOXEL_GRID_NODE_LIB voxel_grid_node)
+ament_auto_add_library(${VOXEL_GRID_NODE_LIB} SHARED
   include/voxel_grid_nodes/algorithm/voxel_cloud_base.hpp
   include/voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp
   include/voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp
@@ -42,14 +44,12 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   include/voxel_grid_nodes/voxel_cloud_node.hpp
   src/voxel_cloud_node.cpp
 )
-autoware_set_compile_options(${PROJECT_NAME})
+autoware_set_compile_options(${VOXEL_GRID_NODE_LIB})
 
-# Cloud executable
-set(VOXEL_CLOUD_EXE voxel_grid_cloud_node_exe)
-ament_auto_add_executable(${VOXEL_CLOUD_EXE} src/voxel_cloud_main.cpp)
-autoware_set_compile_options(${VOXEL_CLOUD_EXE})
-target_compile_definitions(${VOXEL_CLOUD_EXE} PRIVATE
-    CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+rclcpp_components_register_node(${VOXEL_GRID_NODE_LIB}
+  PLUGIN "autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode"
+  EXECUTABLE ${VOXEL_GRID_NODE_LIB}_exe
+)
 
 if(BUILD_TESTING)
   # run linters
@@ -59,7 +59,7 @@ if(BUILD_TESTING)
   # gtest
   set(VOXEL_GRID_NODE_GTEST voxel_algorithm_gtest)
   ament_add_gtest(${VOXEL_GRID_NODE_GTEST} test/test_voxel_grid_nodes.cpp)
-  target_link_libraries(${VOXEL_GRID_NODE_GTEST} ${PROJECT_NAME})
+  target_link_libraries(${VOXEL_GRID_NODE_GTEST} ${VOXEL_GRID_NODE_LIB})
   target_include_directories(${VOXEL_GRID_NODE_GTEST} PRIVATE "test/include" "include")
 
   add_ros_test(
@@ -68,7 +68,7 @@ if(BUILD_TESTING)
   )
 endif()
 
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
+target_compile_options(${VOXEL_GRID_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 # Ament Exporting
 ament_auto_package(INSTALL_TO_SHARE

@@ -20,6 +20,7 @@
 #include <point_cloud_filter_transform_nodes/point_cloud_filter_transform_node.hpp>
 #include <velodyne_node/velodyne_cloud_node.hpp>
 #include <common/types.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 
 #include <chrono>
 #include <memory>
