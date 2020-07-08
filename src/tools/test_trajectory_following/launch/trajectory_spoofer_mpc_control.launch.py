@@ -97,8 +97,8 @@ def generate_launch_description():
 
     trajectory_spoofer_node = Node(
         package="trajectory_spoofer",
-        node_executable="trajectory_spoofer_exe",
-        node_name="trajectory_spoofer",
+        node_executable="trajectory_spoofer_node_exe",
+        node_name="trajectory_spoofer_node",
         node_namespace='planning',
         parameters=[LaunchConfiguration('trajectory_spoofer_param_file')],
         remappings=[

@@ -15,6 +15,8 @@
 #include "trajectory_spoofer/trajectory_spoofer_node.hpp"
 #include "trajectory_spoofer/trajectory_spoofer.hpp"
 
+#include <rclcpp_components/register_node_macro.hpp>
+
 #include <memory>
 #include <string>
 
@@ -24,33 +26,22 @@ namespace autoware
 {
 namespace trajectory_spoofer
 {
-TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & options)
-: Node("trajectory_spoofer", options), verbose_(true)
-{
-  speed_ramp_on_ = this->declare_parameter("speed_ramp_on", false);
-  target_speed_ = static_cast<float32_t>(this->declare_parameter("target_speed", 10.0));
-  num_of_points_ = static_cast<int32_t>(this->declare_parameter("num_of_points", 20));
-  std::string trajectory_type_string = this->declare_parameter("trajectory_type", "straight");
-  length_ = static_cast<float32_t>(this->declare_parameter("length", 10.0));
-  radius_ = static_cast<float32_t>(this->declare_parameter("radius", 12.0));
-
-
-  if (trajectory_type_string == "straight") {
-    trajectory_type_ = TrajectoryType::STRAIGHT;
-  } else if (trajectory_type_string == "circle") {
-    trajectory_type_ = TrajectoryType::CIRCLE;
-  } else {
-    exit(0);
-  }
-
-  spoofer_ = std::make_shared<TrajectorySpoofer>(target_speed_);
-
-  trajectory_pub_ = this->create_publisher<Trajectory>("trajectory", 10);
-  state_sub_ = this->create_subscription<VehicleKinematicState>(
-    "vehicle_kinematic_state",
-    rclcpp::QoS{10},
-    [this](VehicleKinematicState::SharedPtr msg) {on_recv_state(msg);});
-}
+TrajectorySpooferNode::TrajectorySpooferNode(const rclcpp::NodeOptions & node_options)
+: Node{"trajectory_spoofer_node", node_options},
+  speed_ramp_on_{declare_parameter("speed_ramp_on", false)},
+  target_speed_{static_cast<float32_t>(declare_parameter("target_speed", 10.0))},
+  num_of_points_{static_cast<int32_t>(declare_parameter("num_of_points", 20))},
+  trajectory_type_{
+    get_trajectory_type_from_string(declare_parameter("trajectory_type", "straight"))},
+  length_{static_cast<float32_t>(declare_parameter("length", 10.0))},
+  radius_{static_cast<float32_t>(declare_parameter("radius", 12.0))},
+  spoofer_{std::make_shared<TrajectorySpoofer>(target_speed_)},
+  trajectory_pub_{create_publisher<Trajectory>("trajectory", 10)},
+  state_sub_{create_subscription<VehicleKinematicState>(
+      "vehicle_kinematic_state", rclcpp::QoS{10},
+      std::bind(
+        &TrajectorySpooferNode::on_recv_state, this, _1))}
+{}
 
 void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
 {
@@ -75,3 +66,6 @@ void TrajectorySpooferNode::on_recv_state(VehicleKinematicState::SharedPtr msg)
 }
 }  // namespace trajectory_spoofer
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::trajectory_spoofer::TrajectorySpooferNode)

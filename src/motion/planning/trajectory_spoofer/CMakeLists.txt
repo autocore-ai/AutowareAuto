@@ -27,41 +27,30 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-set(TRAJECTORY_SPOOFER_LIB_SRC
-  src/trajectory_spoofer.cpp
-)
-
-set(TRAJECTORY_SPOOFER_LIB_HEADERS
-  include/trajectory_spoofer/trajectory_spoofer.hpp
-  include/trajectory_spoofer/visibility_control.hpp
-)
-
 # generate library
-ament_auto_add_library(${PROJECT_NAME} SHARED
-  ${TRAJECTORY_SPOOFER_LIB_SRC}
-  ${TRAJECTORY_SPOOFER_LIB_HEADERS}
+set(TRAJECTORY_SPOOFER_LIB "trajectory_spoofer")
+ament_auto_add_library(${TRAJECTORY_SPOOFER_LIB} SHARED
+  src/trajectory_spoofer.cpp
+  include/trajectory_spoofer/trajectory_spoofer.hpp
 )
-autoware_set_compile_options(${PROJECT_NAME})
-target_compile_options(${PROJECT_NAME} PRIVATE
+autoware_set_compile_options(${TRAJECTORY_SPOOFER_LIB})
+target_compile_options(${TRAJECTORY_SPOOFER_LIB} PRIVATE
   -Wno-unused-parameter # for speed_ramp_on
 )
 
-set(TRAJECTORY_SPOOFER_EXE_SRC
-  src/main.cpp
+# generate library
+set(TRAJECTORY_SPOOFER_NODE_LIB "trajectory_spoofer_node")
+ament_auto_add_library(${TRAJECTORY_SPOOFER_NODE_LIB} SHARED
   src/trajectory_spoofer_node.cpp
-)
-
-set(TRAJECTORY_SPOOFER_EXE_HEADERS
   include/trajectory_spoofer/trajectory_spoofer_node.hpp
 )
+target_link_libraries(${TRAJECTORY_SPOOFER_NODE_LIB} ${TRAJECTORY_SPOOFER_LIB})
+autoware_set_compile_options(${TRAJECTORY_SPOOFER_NODE_LIB})
 
-# generate executable for ros1-style standalone nodes
-set(TRAJECTORY_SPOOFER_EXE "trajectory_spoofer_exe")
-ament_auto_add_executable(${TRAJECTORY_SPOOFER_EXE}
-  ${TRAJECTORY_SPOOFER_EXE_SRC}
-  ${TRAJECTORY_SPOOFER_EXE_HEADERS}
+rclcpp_components_register_node(${TRAJECTORY_SPOOFER_NODE_LIB}
+  PLUGIN "autoware::trajectory_spoofer::TrajectorySpooferNode"
+  EXECUTABLE ${TRAJECTORY_SPOOFER_NODE_LIB}_exe
 )
-autoware_set_compile_options(${TRAJECTORY_SPOOFER_EXE})
 
 # Testing
 if(BUILD_TESTING)
@@ -78,7 +67,10 @@ if(BUILD_TESTING)
     "autoware_auto_msgs"
     "time_utils"
   )
-  target_link_libraries(${TEST_TRAJECTORY_SPOOFER_EXE} ${PROJECT_NAME})
+  target_link_libraries(
+    ${TEST_TRAJECTORY_SPOOFER_EXE}
+    ${TRAJECTORY_SPOOFER_LIB}
+    ${TRAJECTORY_SPOOFER_NODE_LIB})
   target_include_directories(${TEST_TRAJECTORY_SPOOFER_EXE} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

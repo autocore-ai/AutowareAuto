@@ -27,6 +27,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
+#include <string>
 
 namespace autoware
 {
@@ -34,19 +35,13 @@ namespace trajectory_spoofer
 {
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 using VehicleKinematicState = autoware_auto_msgs::msg::VehicleKinematicState;
+using std::placeholders::_1;
 
 /// \class TrajectorySpooferNode
 /// \brief ROS 2 Node for creating fake trajectories
 class TRAJECTORY_SPOOFER_PUBLIC TrajectorySpooferNode
   : public rclcpp::Node
 {
-public:
-  /// \brief default constructor, starts node
-  /// \param[in] options an rclcpp::NodeOptions object to configure the node
-  /// \throw runtime error if failed to start threads or configure node
-  explicit TrajectorySpooferNode(const rclcpp::NodeOptions & options);
-  void on_recv_state(VehicleKinematicState::SharedPtr msg);
-
 private:
   enum class TrajectoryType : uint8_t
   {
@@ -54,11 +49,10 @@ private:
     CIRCLE = 2u,
   };
 
-  bool8_t verbose_;
   bool8_t speed_ramp_on_;
-  TrajectoryType trajectory_type_;
   float32_t target_speed_;
   int32_t num_of_points_;
+  TrajectoryType trajectory_type_;
   float32_t length_;
   float32_t radius_;
 
@@ -67,7 +61,27 @@ private:
   std::shared_ptr<TrajectorySpoofer> spoofer_;
   std::shared_ptr<rclcpp::Publisher<Trajectory>> trajectory_pub_;
   std::shared_ptr<rclcpp::Subscription<VehicleKinematicState>> state_sub_;
+
+  TrajectoryType get_trajectory_type_from_string(const std::string & trajectory_type_string)
+  {
+    if (trajectory_type_string == "straight") {
+      return TrajectoryType::STRAIGHT;
+    } else if (trajectory_type_string == "circle") {
+      return TrajectoryType::CIRCLE;
+    } else {
+      throw std::invalid_argument{"Unknown trajectory type"};
+    }
+  }
+
+public:
+  /// \brief default constructor, starts node
+  /// \param[in] node_options an rclcpp::NodeOptions object to configure the node
+  /// \throw runtime error if failed to start threads or configure node
+  explicit TrajectorySpooferNode(const rclcpp::NodeOptions & node_options);
+
+  void on_recv_state(VehicleKinematicState::SharedPtr msg);
 };
+
 }  // namespace trajectory_spoofer
 }  // namespace autoware
 

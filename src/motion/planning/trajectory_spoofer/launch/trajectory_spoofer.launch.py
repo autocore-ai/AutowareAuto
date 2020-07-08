@@ -20,8 +20,8 @@ def generate_launch_description():
     """Launch trajectory_spoofer node."""
     trajectory_spoofer_node = launch_ros.actions.Node(
         package="trajectory_spoofer",
-        node_executable="trajectory_spoofer_exe",
-        node_name="trajectory_spoofer",
+        node_executable="trajectory_spoofer_node_exe",
+        node_name="trajectory_spoofer_node",
         parameters=[
             {
                 "speed_ramp_on": False,

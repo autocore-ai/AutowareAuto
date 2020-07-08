@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <trajectory_spoofer/trajectory_spoofer.hpp>
+#include <trajectory_spoofer/trajectory_spoofer_node.hpp>
 
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
@@ -23,7 +24,7 @@
 
 #include <cmath>
 #include <iostream>
-
+#include <vector>
 
 #if !ASSERT_DURATION_MILLI_EQ
 # define ASSERT_DURATION_MILLI_EQ(t1, t2) \
@@ -38,6 +39,7 @@ using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware::trajectory_spoofer::TrajectorySpoofer;
+using autoware::trajectory_spoofer::TrajectorySpooferNode;
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
@@ -170,4 +172,18 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   ASSERT_FLOAT_EQ(last_point.heading.imag, first_point.heading.imag);
   ASSERT_FLOAT_EQ(last_point.longitudinal_velocity_mps, first_point.longitudinal_velocity_mps);
   ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
+}
+
+TEST(test_trajectory_spoofer, instantiate)
+{
+  // Basic test to ensure that TrajectorySpooferNode can be instantiated
+  rclcpp::init(0, nullptr);
+
+  rclcpp::NodeOptions node_options;
+
+  std::vector<rclcpp::Parameter> params;
+
+  node_options.parameter_overrides(params);
+
+  ASSERT_NO_THROW(TrajectorySpooferNode{node_options});
 }
