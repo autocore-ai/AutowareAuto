@@ -201,17 +201,19 @@ Similarly, the factors end up being
 
 for the second update
 */
-// TODO(esteve): Test disabled until we fix
-// https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/92
-TEST(srcf_core, DISABLED_degenerate)
+TEST(srcf_core, degenerate)
 {
+  using Vector2f = Matrix<float32_t, 2, 1>;
+  using Matrix2f = Matrix<float32_t, 2, 2>;
   const float32_t eps = 1.0E-6F;
   EXPECT_LT(fabsf((1.0F + (eps * eps)) - 1), TOL);
   const float32_t sigma = 1.0F / eps;
-  Matrix<float32_t, 2, 2> H, C;
-  H << 1, eps, 1, 1;
-  C << sigma * sigma, 0, 0, sigma * sigma;
-  Matrix<float32_t, 2, 1> R({1, 1}), x;
+  Matrix2f H{(Matrix2f{} << 1, eps, 1, 1).finished()};
+  Matrix2f C{(Matrix2f{} <<
+      sigma * sigma, 0,
+      0, sigma * sigma).finished()};
+  Vector2f R{1, 1};
+  Vector2f x{Vector2f::Zero()};
   // cholesky on C
   Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
 
@@ -221,7 +223,7 @@ TEST(srcf_core, DISABLED_degenerate)
   // osrf_testing_tools_cpp::memory_test::start();
   // update
   float32_t ll = core.scalar_update(0, R(0), H.row(0), C, x);
-  EXPECT_LT(fabsf(C(0, 0) - sqrtf(2)), TOL);
+  EXPECT_LT(fabsf(C(0, 0) - sqrtf(2)), TOL) << "C matrix: " << C;
   EXPECT_LT(fabsf(C(1, 0) - (-sqrtf(2) * sigma / 2)), TOL);
   EXPECT_LT(fabsf(C(1, 1) - sqrtf(2) * sigma / 2), TOL);
   ll += core.scalar_update(0, R(1), H.row(1), C, x);
