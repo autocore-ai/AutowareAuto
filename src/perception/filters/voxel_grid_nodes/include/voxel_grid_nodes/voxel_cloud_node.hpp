@@ -20,11 +20,8 @@
 #ifndef VOXEL_GRID_NODES__VOXEL_CLOUD_NODE_HPP_
 #define VOXEL_GRID_NODES__VOXEL_CLOUD_NODE_HPP_
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_base.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <lifecycle_msgs/msg/transition.hpp>
-#include <lifecycle_msgs/msg/state.hpp>
 #include <common/types.hpp>
 #include <memory>
 #include <string>
@@ -44,7 +41,7 @@ rmw_qos_durability_policy_t parse_durability_parameter(
   const std::string & durability);
 
 /// \brief Boilerplate node that subscribes to point clouds and publishes a downsampled version
-class VOXEL_GRID_NODES_PUBLIC VoxelCloudNode : public rclcpp_lifecycle::LifecycleNode
+class VOXEL_GRID_NODES_PUBLIC VoxelCloudNode : public rclcpp::Node
 {
 public:
   /// \brief Parameter constructor
@@ -63,10 +60,8 @@ private:
 
   using Message = sensor_msgs::msg::PointCloud2;
 
-  using Transition = lifecycle_msgs::msg::Transition;
-
   const rclcpp::Subscription<Message>::SharedPtr m_sub_ptr;
-  const std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<Message>> m_pub_ptr;
+  const std::shared_ptr<rclcpp::Publisher<Message>> m_pub_ptr;
   std::unique_ptr<algorithm::VoxelCloudBase> m_voxelgrid_ptr;
   bool8_t m_has_failed;
 };  // VoxelCloudNode

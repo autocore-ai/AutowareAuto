@@ -42,7 +42,7 @@ namespace voxel_grid_nodes
 ////////////////////////////////////////////////////////////////////////////////
 VoxelCloudNode::VoxelCloudNode(
   const rclcpp::NodeOptions & node_options)
-: LifecycleNode("voxel_grid_cloud_node", node_options),
+: Node("voxel_grid_cloud_node", node_options),
   m_sub_ptr{create_subscription<Message>("points_in",
       rclcpp::QoS(
         declare_parameter("subscription.qos.history_depth", 10)
@@ -111,32 +111,6 @@ void VoxelCloudNode::init(const voxel_grid::Config & cfg, const bool8_t is_appro
     m_voxelgrid_ptr = std::make_unique<algorithm::VoxelCloudApproximate>(cfg);
   } else {
     m_voxelgrid_ptr = std::make_unique<algorithm::VoxelCloudCentroid>(cfg);
-  }
-  // register callbacks
-  using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
-  // Activation
-  const auto activate_fn = [this](const rclcpp_lifecycle::State &)
-    {
-      std::string status_msg{get_name()};
-      status_msg += " has activated";
-      RCLCPP_INFO(this->get_logger(), status_msg.c_str());
-      this->m_pub_ptr->on_activate();
-      return LifecycleNodeInterface::CallbackReturn::SUCCESS;
-    };
-  if (!register_on_activate(activate_fn)) {
-    throw std::runtime_error("Could not register activate callback");
-  }
-  // Deactivation
-  const auto deactivate_fn = [this](const rclcpp_lifecycle::State &)
-    {
-      std::string status_msg{get_name()};
-      status_msg += " has deactivated";
-      RCLCPP_INFO(this->get_logger(), status_msg.c_str());
-      this->m_pub_ptr->on_deactivate();
-      return LifecycleNodeInterface::CallbackReturn::SUCCESS;
-    };
-  if (!register_on_deactivate(deactivate_fn)) {
-    throw std::runtime_error("Could not register deactivate callback");
   }
 }
 
