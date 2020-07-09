@@ -224,3 +224,20 @@ ade$ rm -rf build/ install/ log/
 ```
 
 If you are still having trouble after these commands have been run, please post a request for help on [ROS Answers](https://answers.ros.org/questions/ask/?tags=autoware).
+
+## Troubleshooting Specific Errors
+
+### Error
+
+When starting `ade` with GPU support enabled for Nvidia graphics, you may sometimes receive the following error:
+
+```console
+docker: Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "process_linux.go:449: container init caused \"process_linux.go:432: running prestart hook 0 caused \\\"error running hook: exit status 1, stdout: , stderr: nvidia-container-cli: initialization error: cuda error: forward compatibility was attempted on non supported hw\\\\n\\\"\"": unknown.
+ERROR: Command return non-zero exit code (see above): 125
+```
+
+This usually indicates that a new Nvidia graphics driver has been installed (usually via `apt`) but the system has not yet been restarted.
+
+### Solution
+
+Restart your system after installing the new NVIDIA driver.
