@@ -26,7 +26,7 @@ class BicycleState(minisim.SerdeInterface):
     with an added state for the current steering angle (delta).
     """
 
-    def __init__(self, x, y, v, phi, delta):
+    def __init__(self, x, y, v, phi):
         """
         Create a BicycleStates object with the given states.
 
@@ -48,10 +48,9 @@ class BicycleState(minisim.SerdeInterface):
         self.y = y
         self.v = v
         self.phi = phi
-        self.delta = delta
 
     def serialize(self) -> np.ndarray:
-        return np.array([self.x, self.y, self.v, self.phi, self.delta])
+        return np.array([self.x, self.y, self.v, self.phi])
 
     @staticmethod
     def deserialize(serialized: np.ndarray) -> "BicycleState":
@@ -68,12 +67,12 @@ class BicycleParameters:
 
 class BicycleCommand(minisim.SerdeInterface):
 
-    def __init__(self, acceleration, steering_rate):
+    def __init__(self, acceleration, steering):
         self.acceleration = acceleration
-        self.steering_rate = steering_rate
+        self.steering = steering
 
     def serialize(self) -> np.ndarray:
-        return np.array([self.acceleration, self.steering_rate])
+        return np.array([self.acceleration, self.steering])
 
     @staticmethod
     def deserialize(inputs_serialized) -> "BicycleCommand":
@@ -99,13 +98,12 @@ class BicycleDynamics(minisim.DynamicsInterface):
         """
         s = states
         lf, lr = self.parameters.lf, self.parameters.lr
-        beta = np.arctan((lr * np.tan(s.delta)) / (lf + lr))
+        beta = np.arctan((lr * np.tan(u.steering)) / (lf + lr))
         return BicycleState(
             x=(s.v * np.cos(s.phi + beta)),
             y=(s.v * np.sin(s.phi + beta)),
             v=(u.acceleration),
             phi=(s.v / lr * np.sin(beta)),
-            delta=u.steering_rate,
         )
 
     def evaluate_dynamics_serialized(

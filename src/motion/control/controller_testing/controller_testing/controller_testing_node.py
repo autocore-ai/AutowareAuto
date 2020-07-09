@@ -86,6 +86,7 @@ class ControllerTestingNode(Node):
         self.param_cog_to_rear_axle = self.declare_parameter(
             "vehicle.cog_to_rear_axle"
         ).value
+        self.param_wheelbase = self.param_cog_to_rear_axle + self.param_cog_to_front_axle
         self.param_trajectory_generate = self.declare_parameter("trajectory.generate").value
         self.param_trajectory_frame = self.declare_parameter("trajectory.frame").value
         self.param_trajectory_length = self.declare_parameter("trajectory.length").value
@@ -161,9 +162,13 @@ class ControllerTestingNode(Node):
             y=0.0,
             v=0.0,
             phi=0.0,
-            delta=0.0
         )
         self._prev_state = None
+
+        tf = self.convert_bicycle_to_transform(
+            self._current_state, self.get_clock().now()
+        )
+        self._publisher_tf.publish(tf)
 
         # timer for sim_tick
         self.timer = self.create_timer(self._simulator.step_time, self.sim_tick)
@@ -292,9 +297,8 @@ class ControllerTestingNode(Node):
         velocity_history = get_from_history(lambda instant: instant.state.v)
         cmd_a_history = get_from_history(lambda instant: instant.command.acceleration)
         cmd_steer_history = get_from_history(
-            lambda instant: instant.command.steering_rate
+            lambda instant: instant.command.steering
         )
-        steer_histroy = get_from_history(lambda instant: instant.state.delta)
 
         # Show an x-y plot of the CoG as well as a plot of velocity vs time
         pp.figure(0)
@@ -309,20 +313,15 @@ class ControllerTestingNode(Node):
         fig.set_size_inches(10, 7)
         ax[0][0].set_title("time - acceleration command")
         ax[0][0].set(xlabel="simulation time [s]", ylabel="a cmd [m/s^2]")
-        ax[0][0].scatter(time_history, cmd_a_history, marker="x", s=3.0, color="blue")
+        ax[0][0].plot(time_history, cmd_a_history, marker=".", c="blue")
         ax[0][1].set_title("time - steering command")
         ax[0][1].set(xlabel="simulation time [s]", ylabel="wheel angle cmd [rad]")
-        ax[0][1].scatter(
-            time_history, cmd_steer_history, marker="x", s=3.0, color="blue"
-        )
+        ax[0][1].plot(time_history, cmd_steer_history, marker=".", c="b")
         ax[1][0].set_title("time - velocity state")
         ax[1][0].set(xlabel="simulation time [s]", ylabel="v state [m/s]")
-        ax[1][0].scatter(
-            time_history, velocity_history, marker="x", s=3.0, color="blue", label='state'
-        )
+        ax[1][0].plot(time_history, velocity_history, marker=".", c="b", label='state')
         ax[1][1].set_title("time - steering state")
         ax[1][1].set(xlabel="simulation time [s]", ylabel="wheel angle state [rad]")
-        ax[1][1].scatter(time_history, steer_histroy, marker="x", s=3.0, color="blue")
 
         # Add Trajectgory velocity to "time - velocity state" chart for comparison
         if self._traj_cache is not None:
@@ -334,8 +333,8 @@ class ControllerTestingNode(Node):
             traj_velocity_history = get_from_traj_history(
                 lambda instant: instant.longitudinal_velocity_mps
             )
-            ax[1][0].scatter(
-                traj_time_history, traj_velocity_history, marker="o", s=3.0, c='r', label='traj'
+            ax[1][0].plot(
+                traj_time_history, traj_velocity_history, marker=".", c='r', label='traj'
             )
             ax[1][0].legend()
             ax[1][0].set_title("time - velocity")
@@ -367,35 +366,23 @@ class ControllerTestingNode(Node):
             fig2.set_size_inches(10, 7)
             ax2[0][0].set_title("time - acceleration error")
             ax2[0][0].set(xlabel="simulation time [s]", ylabel="a cmd [m/s^2]")
-            ax2[0][0].scatter(
-                diag_time_history, acceleration_error_mps2, marker="x", s=3.0, color="blue"
-            )
+            ax2[0][0].plot(diag_time_history, acceleration_error_mps2, marker=".", c="b")
             ax2[0][1].set_title("time - yaw rate error")
             ax2[0][1].set(xlabel="simulation time [s]", ylabel="yaw_rate_error [rad/s]")
-            ax2[0][1].scatter(
-                diag_time_history, yaw_rate_error_rps, marker="x", s=3.0, color="blue"
-            )
+            ax2[0][1].plot(diag_time_history, yaw_rate_error_rps, marker=".", c="b")
             ax2[1][0].set_title("time - velocity error")
             ax2[1][0].set(xlabel="simulation time [s]", ylabel="v error [m/s]")
-            ax2[1][0].scatter(
-                diag_time_history, velocity_error_mps, marker="x", s=3.0,
-                color="blue", label='state'
-            )
+            ax2[1][0].plot(diag_time_history, velocity_error_mps, marker=".", c="b", label='state')
             ax2[1][1].set_title("time - yaw error")
             ax2[1][1].set(xlabel="simulation time [s]", ylabel="yaw_error [rad]")
-            ax2[1][1].scatter(diag_time_history, yaw_error_rad, marker="x", s=3.0, color="blue")
+            ax2[1][1].plot(diag_time_history, yaw_error_rad, marker=".", c="b")
 
             ax2[2][0].set_title("time - lateral_error")
             ax2[2][0].set(xlabel="simulation time [s]", ylabel="lateral error[m]")
-            ax2[2][0].scatter(
-                diag_time_history, lateral_error_m, marker="x", s=3.0,
-                color="blue", label='state'
-            )
+            ax2[2][0].plot(diag_time_history, lateral_error_m, marker=".", c="b", label='state')
             ax2[2][1].set_title("time - longitudinal error")
             ax2[2][1].set(xlabel="simulation time [s]", ylabel="longitudinal error [m]")
-            ax2[2][1].scatter(
-                diag_time_history, longitudinal_error_m, marker="x", s=3.0, color="blue"
-            )
+            ax2[2][1].plot(diag_time_history, longitudinal_error_m, marker=".", c="b")
 
         # Show all figures in a blocking manner, once they're closed, exit.
         pp.show()
@@ -420,14 +407,20 @@ class ControllerTestingNode(Node):
         state_msg.state.lateral_velocity_mps = 0.0  # not modeled in this
         state_msg.state.acceleration_mps2 = 0.0  # modeled as an input
         state_msg.state.heading_rate_rps = 0.0  # modeled as an input
-        state_msg.state.front_wheel_angle_rad = state.delta
+        if (self._current_command is None):
+            state_msg.state.front_wheel_angle_rad = 0.0
+        else:
+            state_msg.state.front_wheel_angle_rad = self._current_command.steering
+
         state_msg.state.rear_wheel_angle_rad = 0.0  # not modeled in this
 
         state_msg.header.stamp = now.to_msg()
         state_msg.header.frame_id = self.param_state_frame
 
         if prev_state is not None:
-            state_msg.state.heading_rate_rps = (state.delta - prev_state.delta) / dt_sec
+            # for rear-wheel center
+            state_msg.state.heading_rate_rps = state.v * math.tan(self._current_command.steering) \
+                / self.param_cog_to_rear_axle
             state_msg.state.acceleration_mps2 = (state.v - prev_state.v) / dt_sec
 
         return state_msg
@@ -455,7 +448,11 @@ class ControllerTestingNode(Node):
 
         odom_msg.twist.twist.angular.x = 0.0
         odom_msg.twist.twist.angular.y = 0.0
-        odom_msg.twist.twist.angular.z = state.delta
+        if (self._current_command is None):
+            odom_msg.twist.twist.angular.z = 0.0
+        else:
+            odom_msg.twist.twist.angular.z = state.v \
+                * math.tan(self._current_command.steering) / self.param_wheelbase
 
         return odom_msg
 
