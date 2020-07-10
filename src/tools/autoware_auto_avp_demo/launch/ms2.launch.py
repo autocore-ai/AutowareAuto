@@ -118,7 +118,7 @@ def generate_launch_description():
 
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_exe',
+        node_executable='euclidean_cluster_node_exe',
         node_namespace='perception',
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
         remappings=[("points_in", "points_nonground")]

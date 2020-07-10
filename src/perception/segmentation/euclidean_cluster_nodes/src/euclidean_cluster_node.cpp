@@ -18,13 +18,13 @@
 ///        hulls
 
 #include <common/types.hpp>
+#include <euclidean_cluster_nodes/euclidean_cluster_node.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <memory>
 #include <string>
-
-#include "rclcpp/rclcpp.hpp"
-#include "euclidean_cluster_nodes/euclidean_cluster_node.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -39,16 +39,19 @@ namespace euclidean_cluster_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
 EuclideanClusterNode::EuclideanClusterNode(
-  const std::string & node_name,
-  const std::string & node_namespace)
-: Node(node_name.c_str(), node_namespace.c_str()),
+  const rclcpp::NodeOptions & node_options)
+: Node("euclidean_cluster_cloud_node", node_options),
   m_cloud_sub_ptr{create_subscription<PointCloud2>(
-      "points_in", rclcpp::QoS(10),
+      "points_in",
+      rclcpp::QoS(10),
       [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
   m_cluster_pub_ptr{declare_parameter("use_cluster").get<bool8_t>() ?
-  create_publisher<Clusters>("points_clustered", rclcpp::QoS(10)) : nullptr},
+  create_publisher<Clusters>(
+    "points_clustered",
+    rclcpp::QoS(10)) : nullptr},
 m_box_pub_ptr{declare_parameter("use_box").get<bool8_t>() ?
-  create_publisher<BoundingBoxArray>("lidar_bounding_boxes", rclcpp::QoS{10}) :
+  create_publisher<BoundingBoxArray>(
+    "lidar_bounding_boxes", rclcpp::QoS{10}) :
   nullptr},
 m_cluster_alg{
   euclidean_cluster::Config{
@@ -97,53 +100,11 @@ m_use_z{declare_parameter("use_z").get<bool8_t>()}
               min_point,
               max_point,
               voxel_size,
-              static_cast<std::size_t>(declare_parameter("max_cloud_size").get<std::size_t>())
+              static_cast<std::size_t>(get_parameter("max_cloud_size").as_int())
             });
   }
 }
-////////////////////////////////////////////////////////////////////////////////
-EuclideanClusterNode::EuclideanClusterNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & cloud_topic,
-  const std::string & cluster_topic,
-  const std::string & box_topic,
-  const euclidean_cluster::Config & cls_cfg,
-  const euclidean_cluster::HashConfig & hash_cfg,
-  const bool8_t use_lfit,
-  const bool8_t use_z,
-  const std::unique_ptr<filters::voxel_grid::Config> voxel_cfg_ptr)
-: Node{node_name.c_str(), node_namespace.c_str()},
-  m_cloud_sub_ptr{create_subscription<PointCloud2>(cloud_topic.c_str(),
-      rclcpp::QoS(10),
-      [this](const PointCloud2::SharedPtr msg) {handle(msg);})},
-  m_cluster_pub_ptr{cluster_topic.empty() ? nullptr :
-  create_publisher<Clusters>(cluster_topic.c_str(), rclcpp::QoS(10))},
-m_box_pub_ptr{box_topic.empty() ? nullptr :
-  create_publisher<BoundingBoxArray>(box_topic.c_str(), rclcpp::QoS{10})},
-m_cluster_alg{cls_cfg, hash_cfg},
-m_clusters{},
-m_boxes{},
-m_voxel_ptr{voxel_cfg_ptr ? std::make_unique<VoxelAlgorithm>(*voxel_cfg_ptr) : nullptr},
-m_use_lfit{use_lfit},
-m_use_z{use_z}
-{
-  init(cls_cfg);
-  // Check if you're squashing z
-  if (voxel_cfg_ptr && (!use_z)) {
-    if ((voxel_cfg_ptr->get_max_point().z - voxel_cfg_ptr->get_min_point().z) <
-      voxel_cfg_ptr->get_voxel_size().z)
-    {
-      // Warn
-      RCLCPP_WARN(get_logger(),
-        "z is not used, but voxel z size permits height information; more downsampling is"
-        " possible");
-    } else {
-      // Info
-      RCLCPP_INFO(get_logger(), "z is not used, height aspect is fully downsampled away");
-    }
-  }
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
 {
@@ -246,3 +207,6 @@ void EuclideanClusterNode::handle(const PointCloud2::SharedPtr msg_ptr)
 }  // namespace segmentation
 }  // namespace perception
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::perception::segmentation::euclidean_cluster_nodes::EuclideanClusterNode)

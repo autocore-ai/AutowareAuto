@@ -40,7 +40,7 @@ def generate_launch_description():
     # euclidean cluster node execution definition.
     euclidean_cluster_node_runner = launch_ros.actions.Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_exe',
+        node_executable='euclidean_cluster_node_exe',
         node_namespace='lidars',
         parameters=[get_param_file('euclidean_cluster_nodes', 
             'vlp16_sim_lexus_cluster.param.yaml')],

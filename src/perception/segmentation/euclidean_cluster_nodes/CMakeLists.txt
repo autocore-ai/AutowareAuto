@@ -41,16 +41,23 @@ autoware_set_compile_options(${CLUSTER_NODE_LIB})
 target_compile_options(
   ${CLUSTER_NODE_LIB} PUBLIC "-Wno-sign-conversion" "-Wno-conversion")
 
-# Executable
-set(CLUSTER_MAIN euclidean_cluster_exe)
-ament_auto_add_executable(${CLUSTER_MAIN} src/euclidean_cluster_main.cpp)
-autoware_set_compile_options(${CLUSTER_MAIN})
+rclcpp_components_register_node(${CLUSTER_NODE_LIB}
+  PLUGIN "autoware::perception::segmentation::euclidean_cluster_nodes::EuclideanClusterNode"
+  EXECUTABLE ${CLUSTER_NODE_LIB}_exe
+)
 
 ## Testing
 if(BUILD_TESTING)
   # Static checking only if built via ament
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  # gtest
+  set(CLUSTER_NODE_GTEST eucliden_cluster_nodes_gtest)
+  ament_add_gtest(${CLUSTER_NODE_GTEST} test/test_euclidean_cluster_nodes.cpp)
+  target_link_libraries(${CLUSTER_NODE_GTEST} ${CLUSTER_NODE_LIB})
+  target_include_directories(${CLUSTER_NODE_GTEST} PRIVATE "test/include" "include")
+  ament_target_dependencies(${CLUSTER_NODE_GTEST} "rclcpp")
 endif()
 # Ament Exporting
 ament_auto_package(INSTALL_TO_SHARE
