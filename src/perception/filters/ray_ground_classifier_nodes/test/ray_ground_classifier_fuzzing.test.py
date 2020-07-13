@@ -22,7 +22,7 @@ import lidar_integration
 def generate_test_description(ready_fn):
     # The node under test and the checker node that will pass/fail our tests:
     test_topic = "veloyne_cloud_node_test_topic"
-    node = launch_ros.actions.LifecycleNode(
+    node = launch_ros.actions.Node(
         package="ray_ground_classifier_nodes",
         node_executable="ray_ground_classifier_cloud_node_exe",
         node_name="ray_ground_classifier",

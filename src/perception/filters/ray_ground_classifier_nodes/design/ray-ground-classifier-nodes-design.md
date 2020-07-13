@@ -65,7 +65,7 @@ on construction.
 
 ## Error detection and handling
 
-Most error handling occurs inside `rclcpp`, `rclcpp_lifecycle`, inside the `RayGroundClassifier`
+Most error handling occurs inside `rclcpp`, inside the `RayGroundClassifier`
 itself, or in the associated configuration class.
 
 The only explicit error handling that occurs in these nodes is catching errors in the runtime loop.
@@ -75,7 +75,7 @@ and attempt to continue running.
 
 ## Security considerations
 
-These components inherit security considerations from `rclcpp_lifecycle::LifecycleNode`, and
+These components inherit security considerations from `rclcpp::Node`, and
 the core `RayGroundClassifier` class.
 
 

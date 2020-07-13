@@ -26,15 +26,13 @@ ament_auto_add_library(${CLOUD_NODE_LIB} SHARED
   src/ray_ground_classifier_cloud_node.cpp)
 autoware_set_compile_options(${CLOUD_NODE_LIB})
 
-# Associated executable
-set(CLOUD_NODE_EXE "${CLOUD_NODE_LIB}_exe")
-ament_auto_add_executable(${CLOUD_NODE_EXE} src/ray_ground_classifier_cloud_node_main.cpp)
-autoware_set_compile_options(${CLOUD_NODE_EXE})
-target_compile_definitions(${CLOUD_NODE_EXE} PRIVATE CMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+rclcpp_components_register_node(${CLOUD_NODE_LIB}
+  PLUGIN "autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode"
+  EXECUTABLE ${CLOUD_NODE_LIB}_exe
+)
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 target_compile_options(${CLOUD_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
-target_compile_options(${CLOUD_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 if(BUILD_TESTING)
   # run linters

@@ -36,15 +36,15 @@ class RayGroundPclValidationTester : public rclcpp::Node
 public:
   RayGroundPclValidationTester()
   : Node{"pcl_listener"},
-    m_sub_nonground_points{create_subscription<PointCloud2>("nonground_cloud", rclcpp::QoS{50},
+    m_sub_nonground_points{create_subscription<PointCloud2>("points_nonground", rclcpp::QoS{50},
         [this](const PointCloud2::SharedPtr msg) {
           m_nonground_points.emplace_back(*msg);
         })},
-    m_sub_ground_points{create_subscription<PointCloud2>("ground_cloud", rclcpp::QoS{50},
+    m_sub_ground_points{create_subscription<PointCloud2>("points_ground", rclcpp::QoS{50},
       [this](const PointCloud2::SharedPtr msg) {
         m_ground_points.emplace_back(*msg);
       })},
-  m_pub_raw_points{create_publisher<PointCloud2>("raw_cloud", rclcpp::QoS{50})}
+  m_pub_raw_points{create_publisher<PointCloud2>("points_in", rclcpp::QoS{50})}
   {
   }
 
@@ -91,55 +91,43 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
 {
   rclcpp::init(0, nullptr);
 
-  using Config = autoware::perception::filters::ray_ground_classifier::Config;
-  const Config ray_config{
-    0.0,
-    20.0,
-    7.0,
-    70.0,
-    0.05,
-    3.3,
-    3.6,
-    5.0,
-    -2.5,
-    3.5
-  };
-  using RayAggregator = autoware::perception::filters::ray_ground_classifier::RayAggregator;
-  const RayAggregator::Config ray_agg_config{
-    -3.14159,
-    3.14159,
-    0.01,
-    512
-  };
-
   using autoware::perception::filters::ray_ground_classifier_nodes::RayGroundClassifierCloudNode;
   std::shared_ptr<RayGroundClassifierCloudNode> ray_gnd_ptr;
   std::shared_ptr<RayGroundPclValidationTester> ray_gnd_validation_tester;
-  const std::string raw_pcl_topic{"raw_cloud"};
-  const std::string ground_pcl_topic{"ground_cloud"};
-  const std::string nonground_pcl_topic{"nonground_cloud"};
   const uint32_t mini_cloud_size = 10U;
 
-  const uint32_t cloud_size{55000U};
+  const int32_t cloud_size{55000U};
   const char8_t * const frame_id{"base_link"};
 
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("frame_id", frame_id);
+
+  params.emplace_back("cloud_timeout_ms", 110);
+
+  params.emplace_back("pcl_size", cloud_size);
+
+  params.emplace_back("classifier.sensor_height_m", 0.0);
+  params.emplace_back("classifier.max_local_slope_deg", 20.0);
+  params.emplace_back("classifier.max_global_slope_deg", 7.0);
+  params.emplace_back("classifier.nonground_retro_thresh_deg", 70.0);
+  params.emplace_back("classifier.min_height_thresh_m", 0.05);
+  params.emplace_back("classifier.max_global_height_thresh_m", 3.3);
+  params.emplace_back("classifier.max_last_local_ground_thresh_m", 3.6);
+  params.emplace_back("classifier.max_provisional_ground_distance_m", 5.0);
+  params.emplace_back("classifier.min_height_m", -2.5);
+  params.emplace_back("classifier.max_height_m", 3.5);
+
+  params.emplace_back("aggregator.min_ray_angle_rad", -3.14159);
+  params.emplace_back("aggregator.max_ray_angle_rad", 3.14159);
+  params.emplace_back("aggregator.ray_width_rad", 0.01);
+  params.emplace_back("aggregator.max_ray_points", 512);
+
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
   ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
-    "ray_ground_classifier_cloud_node",
-    raw_pcl_topic,
-    ground_pcl_topic,
-    nonground_pcl_topic,
-    frame_id,
-    std::chrono::milliseconds(110),
-    cloud_size,
-    ray_config,
-    ray_agg_config
-  );
-  if (lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE != ray_gnd_ptr->configure().id()) {
-    throw std::runtime_error("Could not configure RayGroundClassifierCloudNode!");
-  }
-  if (lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE != ray_gnd_ptr->activate().id()) {
-    throw std::runtime_error("Could not activate RayGroundClassifierCloudNode!");
-  }
+    node_options);
 
   ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
 
