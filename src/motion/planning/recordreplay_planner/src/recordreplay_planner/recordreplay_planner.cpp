@@ -201,8 +201,8 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
   m_traj_end_idx =
-    std::min(record_length - m_traj_start_idx, trajectory.points.max_size()) + m_traj_start_idx;
-
+    std::min({record_length - m_traj_start_idx, trajectory.points.max_size(),
+        m_cache_traj_bbox_arr.boxes.max_size()}) + m_traj_start_idx;
 
   // Build bounding box cache
   if (m_cache_traj_bbox_arr.boxes.empty() ||
@@ -210,10 +210,9 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   {
     m_cache_traj_bbox_arr.boxes.clear();
     m_cache_traj_bbox_arr.header = current_state.header;
-    for (std::size_t i = {}; i < get_record_length(); ++i) {
+    for (std::size_t i = m_traj_start_idx; i < m_traj_end_idx; ++i) {
       const auto boundingbox = compute_boundingbox_from_trajectorypoint(
-        m_record_buffer[m_traj_start_idx + i].state,
-        m_vehicle_param);
+        m_record_buffer[i].state, m_vehicle_param);
       m_cache_traj_bbox_arr.boxes.push_back(boundingbox);
     }
   }
@@ -227,7 +226,8 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 
   // Collision detection
   for (std::size_t i = m_traj_start_idx; i < m_traj_end_idx; ++i) {
-    const auto & boundingbox = m_cache_traj_bbox_arr.boxes[i];
+    const size_t i_bbox = i - m_traj_start_idx;
+    const auto & boundingbox = m_cache_traj_bbox_arr.boxes[i_bbox];
 
     // Check for collisions with all perceived obstacles
     for (const auto & obstaclebox : m_latest_bounding_boxes.boxes) {
