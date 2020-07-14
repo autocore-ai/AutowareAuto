@@ -29,8 +29,8 @@ localization:
         quaternion:
           x: 0.0
           y: 0.0
-          z: -0.9954150398196859
-          w: 0.09564987454656154
+          z: 0.0
+          w: 1.0
       # localizer specific configuration
       localizer:
         #underlying voxel grid configuration of the map
@@ -64,4 +64,4 @@ localization:
             step_max: 0.12
             step_min: 0.0001
         # Maximum accepted duration between a scan and an initial pose guess
-        guess_time_tolerance_ms: 750
+        guess_time_tolerance_ms: 10000
