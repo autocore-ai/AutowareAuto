@@ -49,7 +49,7 @@ using P2DNDTConfig = ndt::P2DNDTLocalizerConfig<Types...>;
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
 using Optimizer_ =
   common::optimization::NewtonsMethodOptimizer<common::optimization::MoreThuenteLineSearch>;
-using OptimizerOptions_ = common::optimization::NewtonOptimizationOptions;
+using OptimizerOptions_ = common::optimization::OptimizationOptions;
 using PoseInitializer_ = localization_common::BestEffortInitializer;
 
 /// P2D NDT localizer node. Currently uses the hard coded optimizer and pose initializers.
@@ -138,10 +138,12 @@ public:
       template get<float64_t>())};
     // TODO(igor): make the line search configurable.
     LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
-      localizer_config, OptimizerT{common::optimization::MoreThuenteLineSearch{
-          step_max, step_min,
-          common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization
-        }});
+      localizer_config, OptimizerT{
+            common::optimization::MoreThuenteLineSearch{
+              step_max, step_min,
+              common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization},
+            localizer_config.optimizer_options()
+          });
     this->set_localizer(std::move(localizer_ptr));
   }
 

@@ -16,6 +16,7 @@
 
 #include "optimization/newtons_method_optimizer.hpp"
 #include "optimization/line_search/fixed_line_search.hpp"
+#include "optimization/line_search/more_thuente_line_search.hpp"
 
 namespace autoware
 {
@@ -25,6 +26,7 @@ namespace optimization
 {
 // Instantiation of the optimizer with concrete types.
 template class NewtonsMethodOptimizer<FixedLineSearch>;
+template class NewtonsMethodOptimizer<MoreThuenteLineSearch>;
 }  // namespace optimization
 }  // namespace common
 }  // namespace autoware

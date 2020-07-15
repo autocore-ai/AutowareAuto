@@ -41,17 +41,18 @@ public:
   /// \param optimization_problem optimization_problem optimization objective
   /// \param x0 initial value
   /// \param x_out optimized value
-  /// \param options optimization options
   /// \return summary object
-  template<typename OptimizationProblemT, typename DomainValueT, typename OptionsT,
+  template<
+    typename OptimizationProblemT,
+    typename DomainValueT,
     typename EigenSolverT = Eigen::LDLT<typename OptimizationProblemT::Hessian>>
   OptimizationSummary solve(
     OptimizationProblemT & optimization_problem,
-    const DomainValueT & x0, DomainValueT & x_out,
-    const OptionsT & options)
+    const DomainValueT & x0,
+    DomainValueT & x_out)
   {
     return this->impl().template solve_<OptimizationProblemT, DomainValueT, EigenSolverT>(
-      optimization_problem, x0, x_out, options);
+      optimization_problem, x0, x_out);
   }
 };
 

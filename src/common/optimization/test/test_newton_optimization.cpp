@@ -24,14 +24,14 @@
 
 using autoware::common::types::float64_t;
 using autoware::common::optimization::Polynomial1dParam;
-using autoware::common::optimization::NewtonOptimizationOptions;
+using autoware::common::optimization::OptimizationOptions;
 using autoware::common::optimization::FixedLineSearch;
 using autoware::common::optimization::NewtonsMethodOptimizer;
 using autoware::common::optimization::TerminationType;
 using autoware::common::optimization::Polynomial1DOptimizationProblem;
 using autoware::common::optimization::Vector1D;
 
-using NewtonPolynomialTestParam1D = Polynomial1dParam<NewtonOptimizationOptions, FixedLineSearch>;
+using NewtonPolynomialTestParam1D = Polynomial1dParam<OptimizationOptions, FixedLineSearch>;
 class NewtonOptimizationParamTest
   : public ::testing::TestWithParam<NewtonPolynomialTestParam1D> {};
 
@@ -45,10 +45,10 @@ TEST_P(NewtonOptimizationParamTest, newton_optimization_validation) {
   const auto solution = objective.solution;
   const auto is_convex = objective.convex;
 
-  NewtonsMethodOptimizer<FixedLineSearch> optimizer(line_search);
+  NewtonsMethodOptimizer<FixedLineSearch> optimizer{line_search, options};
 
   decltype(problem)::DomainValue x_out;
-  const auto summary = optimizer.solve(problem, x0, x_out, options);
+  const auto summary = optimizer.solve(problem, x0, x_out);
   EXPECT_EQ(summary.termination_type(), expected_termination);
   if (is_convex && (expected_termination == TerminationType::CONVERGENCE)) {
     EXPECT_FLOAT_EQ(x_out(0, 0), solution);
@@ -63,21 +63,21 @@ INSTANTIATE_TEST_CASE_P(
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
   Vector1D{3.0},  // x0 = 3
-  NewtonOptimizationOptions(30, 4e-2, 0.0, 0.0),  // Square of the step size threshold.
+  OptimizationOptions(30, 4e-2, 0.0, 0.0),  // Square of the step size threshold.
   FixedLineSearch(0.2),
   TerminationType::CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
   Vector1D{3.0},  // x0 = 3
-  NewtonOptimizationOptions(30, 0.0, 1e-5, 0.0),
+  OptimizationOptions(30, 0.0, 1e-5, 0.0),
   FixedLineSearch(0.2),
   TerminationType::NO_CONVERGENCE  // Can't converge because 0.2 > 1e-5
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{1.0, 2, 1.0},  // (x+1)^2+1
   Vector1D{3.0},  // x0 = 3
-  NewtonOptimizationOptions(30, 0.0, 0.0, 1e-4),
+  OptimizationOptions(30, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.2),
   TerminationType::CONVERGENCE
 }
@@ -96,35 +96,35 @@ INSTANTIATE_TEST_CASE_P(
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{0.0, 2, -11.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{2.0, 2, 100.0},
   Vector1D{2},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{1.0, 2, 1.0},
   Vector1D{100.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::NO_CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{1.0, 2, 1.0},
   Vector1D{2.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.0001),  // won't converge because step size is too small
   TerminationType::NO_CONVERGENCE
 },
@@ -132,14 +132,14 @@ INSTANTIATE_TEST_CASE_P(
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-2.0, 4, 10.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-2.0, 16, 10.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 }
@@ -157,42 +157,42 @@ INSTANTIATE_TEST_CASE_P(
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{inf},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::FAILURE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{max},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::FAILURE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{qnan},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(0.5),
   TerminationType::FAILURE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(inf),
   TerminationType::FAILURE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(qnan),
   TerminationType::FAILURE
 },
     NewtonPolynomialTestParam1D{
   Polynomial1DOptimizationProblem{-1.0, 2, 1.0},
   Vector1D{0.0},
-  NewtonOptimizationOptions(10, 0.0, 0.0, 1e-4),
+  OptimizationOptions(10, 0.0, 0.0, 1e-4),
   FixedLineSearch(max),
   TerminationType::FAILURE
 }

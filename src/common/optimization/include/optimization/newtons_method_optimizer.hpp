@@ -41,25 +41,33 @@ public:
   using StepT = float_t;
 
   /// Constructor to initialize the line search method
-  explicit NewtonsMethodOptimizer(const LineSearchT & line_searcher)
-  : m_line_searcher(line_searcher) {}
+  ///
+  /// @param[in]  line_searcher  An instance of a line search class.
+  /// @param[in]  options        Options to be used for this optimization.
+  ///
+  explicit NewtonsMethodOptimizer(
+    const LineSearchT & line_searcher,
+    const OptimizationOptions & options)
+  : m_line_searcher{line_searcher}, m_options{options} {}
 
   /// Solves `x_out` for an objective `optimization_problem` and an initial value `x0`
-  /// \tparam OptimizationProblemT Optimization problem type. Must be an
-  /// implementation of `common::optimization::OptimizationProblem`.
-  /// \tparam DomainValueT Type of the parameter
-  /// \tparam EigenSolverT Type of eigen solver to be used internallt for solving the
-  /// necessary linear equations. By default set to `Eigen::LDLT`.
-  /// \param optimization_problem optimization_problem optimization objective
-  /// \param x0 initial value
-  /// \param x_out optimized value
-  /// \param options optimization options
-  /// \return summary object
+  ///
+  /// @param      optimization_problem  optimization_problem optimization objective
+  /// @param      x0                    initial value
+  /// @param      x_out                 optimized value
+  ///
+  /// @tparam     OptimizationProblemT  Optimization problem type. Must be an implementation of
+  ///                                   `common::optimization::OptimizationProblem`.
+  /// @tparam     DomainValueT          Type of the parameter
+  /// @tparam     EigenSolverT          Type of eigen solver to be used internallt for solving the
+  ///                                   necessary linear equations. By default set to `Eigen::LDLT`.
+  ///
+  /// @return     Summary of this optimization.
+  ///
   template<typename OptimizationProblemT, typename DomainValueT, typename EigenSolverT>
   OptimizationSummary solve_(
     OptimizationProblemT & optimization_problem,
-    const DomainValueT & x0, DomainValueT & x_out,
-    const NewtonOptimizationOptions & options)
+    const DomainValueT & x0, DomainValueT & x_out)
   {
     // Get types from the method's templated parameter
     using Value = typename OptimizationProblemT::Value;
@@ -85,14 +93,14 @@ public:
     optimization_problem.hessian(x_out, hessian);
 
     // Early exit if the initial solution is good enough.
-    if (jacobian.template lpNorm<Eigen::Infinity>() <= options.gradient_tolerance()) {
+    if (jacobian.template lpNorm<Eigen::Infinity>() <= m_options.gradient_tolerance()) {
       // As there's no newton solution yet, jacobian can be a good substitute.
       return OptimizationSummary{jacobian.norm(), TerminationType::CONVERGENCE, 0UL};
     }
 
     // Iterate until convergence, error, or maximum number of iterations
     auto nr_iterations = 0UL;
-    for (; nr_iterations < options.max_num_iterations(); ++nr_iterations) {
+    for (; nr_iterations < m_options.max_num_iterations(); ++nr_iterations) {
       if (!x_out.allFinite() || !jacobian.allFinite() || !hessian.allFinite()) {
         termination_type = TerminationType::FAILURE;
         break;
@@ -122,7 +130,7 @@ public:
       // (Inspired from https://github.com/ceres-solver/ceres-solver/blob/4362a2169966e08394252098
       // c80d1f26764becd0/include/ceres/tiny_solver.h#L244)
       const auto parameter_tolerance =
-        options.parameter_tolerance() * (prev_x_norm + options.parameter_tolerance());
+        m_options.parameter_tolerance() * (prev_x_norm + m_options.parameter_tolerance());
       if (step.norm() <= parameter_tolerance) {
         termination_type = TerminationType::CONVERGENCE;
         break;
@@ -135,14 +143,14 @@ public:
       optimization_problem.hessian(x_out, hessian);
 
       // Check if the max-norm of the gradient is small enough.
-      if (jacobian.template lpNorm<Eigen::Infinity>() <= options.gradient_tolerance()) {
+      if (jacobian.template lpNorm<Eigen::Infinity>() <= m_options.gradient_tolerance()) {
         termination_type = TerminationType::CONVERGENCE;
         break;
       }
 
       // Check change in cost function.
       if (std::fabs(score - score_previous) <=
-        (options.function_tolerance() * std::fabs(score_previous)))
+        (m_options.function_tolerance() * std::fabs(score_previous)))
       {
         termination_type = TerminationType::CONVERGENCE;
         break;
@@ -158,6 +166,7 @@ public:
 private:
   // initialize on construction
   LineSearchT m_line_searcher;
+  OptimizationOptions m_options;
 };
 }  // namespace optimization
 }  // namespace common

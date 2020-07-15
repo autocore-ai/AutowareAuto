@@ -44,7 +44,7 @@ namespace ndt_mapping_nodes
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
 using Optimizer = common::optimization::NewtonsMethodOptimizer<
   common::optimization::MoreThuenteLineSearch>;
-using OptimizerOptions = common::optimization::NewtonOptimizationOptions;
+using OptimizerOptions = common::optimization::OptimizationOptions;
 using Localizer = localization::ndt::P2DNDTLocalizer<Optimizer, OptimizerOptions,
     localization::ndt::DynamicNDTMap>;
 using P2DNDTConfig = localization::ndt::P2DNDTLocalizerConfig<OptimizerOptions>;
@@ -119,13 +119,19 @@ private:
     };
 
     auto localizer_ptr = std::make_unique<Localizer>(
-      localizer_config, Optimizer{common::optimization::MoreThuenteLineSearch{
-          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_max")
-          .template get<float32_t>()),
-          static_cast<float32_t>(this->declare_parameter("localizer.optimizer.line_search.step_min")
-          .template get<float32_t>()),
-          common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization
-        }});
+      localizer_config,
+      Optimizer{
+            common::optimization::MoreThuenteLineSearch{
+              static_cast<float32_t>(this->declare_parameter(
+                "localizer.optimizer.line_search.step_max")
+              .template get<float32_t>()),
+              static_cast<float32_t>(this->declare_parameter(
+                "localizer.optimizer.line_search.step_min")
+              .template get<float32_t>()),
+              common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization
+            },
+            localizer_config.optimizer_options()
+          });
     const auto & map_frame_id = this->declare_parameter("map.frame_id").template get<std::string>();
     VoxelMap map{parse_grid_config("map"), map_frame_id};
 

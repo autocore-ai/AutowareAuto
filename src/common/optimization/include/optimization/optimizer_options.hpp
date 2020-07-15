@@ -42,14 +42,8 @@ enum class TerminationType
   FAILURE = 2U
 };
 
-// Optimization options base class.
-class OPTIMIZATION_PUBLIC OptimizationOptionsBase
-{
-// TODO(yunus.caliskan, zoza): Add a switch for MINIMIZATION/MAXIMIZATION. Gather common params.
-};
-
 // Optimization options class for newton's method.
-class OPTIMIZATION_PUBLIC NewtonOptimizationOptions : public OptimizationOptionsBase
+class OPTIMIZATION_PUBLIC OptimizationOptions
 {
 public:
   /// Constructor to initialize const members
@@ -58,7 +52,7 @@ public:
   /// \param parameter_tolerance minimum step size relative to the parameter's norm.
   /// \param gradient_tolerance minimum absolute change in the gradient.
   /// \throws std::domain_error on negative or NaN tolerance values.
-  NewtonOptimizationOptions(
+  OptimizationOptions(
     uint64_t max_num_iterations = std::numeric_limits<int64_t>::max(),
     float64_t function_tolerance = 0.0, float64_t parameter_tolerance = 0.0,
     float64_t gradient_tolerance = 0.0);

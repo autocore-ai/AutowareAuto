@@ -35,9 +35,9 @@ using autoware::localization::ndt::transform_adapters::transform_to_pose;
 
 using autoware::common::optimization::FixedLineSearch;
 using NewtonOptimizer = autoware::common::optimization::NewtonsMethodOptimizer<FixedLineSearch>;
-using NewtonOptimizerOptions = autoware::common::optimization::NewtonOptimizationOptions;
+using OptimizerOptions = autoware::common::optimization::OptimizationOptions;
 using FixedLineSearch = autoware::common::optimization::FixedLineSearch;
-using P2DTestLocalizer = P2DNDTLocalizer<NewtonOptimizer, NewtonOptimizerOptions>;
+using P2DTestLocalizer = P2DNDTLocalizer<NewtonOptimizer, OptimizerOptions>;
 
 class P2DLocalizerTest : public OptimizationTestContext, public ::testing::Test
 {
@@ -45,7 +45,7 @@ public:
   P2DLocalizerTest()
   : m_localizer_config{
       P2DNDTOptimizationConfig{0.45},
-      NewtonOptimizerOptions{5U, 0.0002, 0.0002, 1e-4},
+      OptimizerOptions{5U, 0.0002, 0.0002, 1e-4},
       m_grid_config,
       m_downsampled_cloud.width,
       m_guess_time_tol} {}
@@ -69,7 +69,7 @@ protected:
   }
 
   const std::chrono::milliseconds m_guess_time_tol{10};
-  P2DNDTLocalizerConfig<NewtonOptimizerOptions> m_localizer_config;
+  P2DNDTLocalizerConfig<OptimizerOptions> m_localizer_config;
   float32_t m_step_size{0.12};
 };
 
@@ -115,12 +115,13 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   auto map_cloud = dynamic_map_to_cloud(m_dynamic_map);
   map_cloud.header.stamp = ::time_utils::to_message(map_time);
 
-  P2DTestLocalizer localizer{m_localizer_config, NewtonOptimizer{FixedLineSearch{m_step_size}}};
+  P2DTestLocalizer localizer{
+    m_localizer_config,
+    NewtonOptimizer{FixedLineSearch{m_step_size}, m_localizer_config.optimizer_options()}};
 
   localizer.set_map(dynamic_map_to_cloud(m_dynamic_map));
   decltype(localizer)::PoseWithCovarianceStamped ros_pose_out{};
-  localizer.register_measurement(translated_cloud, transform_initial,
-    ros_pose_out);
+  localizer.register_measurement(translated_cloud, transform_initial, ros_pose_out);
 
   transform_to_pose(ros_pose_out.pose.pose, pose_out);
 
@@ -142,8 +143,9 @@ INSTANTIATE_TEST_CASE_P(sanity_test, P2DLocalizerParameterTest,
 
 TEST_F(P2DLocalizerParameterTest, delayed_scan) {
   P2DTestLocalizer::Transform transform_initial;
-  P2DTestLocalizer localizer{m_localizer_config,
-    NewtonOptimizer{FixedLineSearch{m_step_size}}};
+  P2DTestLocalizer localizer{
+    m_localizer_config,
+    NewtonOptimizer{FixedLineSearch{m_step_size}, m_localizer_config.optimizer_options()}};
 
   const auto now = std::chrono::system_clock::now();
   const auto dt = std::chrono::milliseconds(1);
@@ -167,8 +169,9 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
   P2DTestLocalizer::Transform transform_initial{};
   P2DTestLocalizer::PoseWithCovarianceStamped ros_pose_out{};
 
-  P2DTestLocalizer localizer{m_localizer_config,
-    NewtonOptimizer{FixedLineSearch{m_step_size}}};
+  P2DTestLocalizer localizer{
+    m_localizer_config,
+    NewtonOptimizer{FixedLineSearch{m_step_size}, m_localizer_config.optimizer_options()}};
 
   const auto now = std::chrono::system_clock::now();
   constexpr auto dt = std::chrono::milliseconds(1);

@@ -40,15 +40,18 @@ using CloudT = sensor_msgs::msg::PointCloud2;
 /// \tparam NDTOptimizationProblemT Type of ndt optimization problem.
 /// \tparam OptimizerT Type of optimizer.
 /// \tparam ConfigT Type of localization configuration.
-template<typename ScanT, typename MapT, typename NDTOptimizationProblemT,
-  typename OptimizerT, typename ConfigT>
+template<
+  typename ScanT,
+  typename MapT,
+  typename NDTOptimizationProblemT,
+  typename OptimizerT,
+  typename ConfigT>
 class NDT_PUBLIC NDTLocalizerBase : public localization_common::RelativeLocalizerBase<CloudT,
     CloudT, localization_common::OptimizedRegistrationSummary>
 {
 public:
   using Transform = geometry_msgs::msg::TransformStamped;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
-  using OptimizerOptions = typename ConfigT::OptimizerOptions;
   using Base = localization_common::RelativeLocalizerBase<CloudT,
       CloudT, localization_common::OptimizedRegistrationSummary>;
   /// Constructor
@@ -59,11 +62,11 @@ public:
   /// implementation class and moved to the base class.
   /// \param optimizer Optimizer to use during optimization.
   explicit NDTLocalizerBase(
-    const ConfigT & config, ScanT && scan, MapT && map,
-    const OptimizerT & optimizer)
-  : m_optimizer{optimizer}, m_config(config),
-    m_scan{std::forward<ScanT>(scan)}, m_map{std::forward<MapT>(map)},
-    m_optimizer_options{config.optimizer_options()} {}
+    const ConfigT & config, ScanT && scan, MapT && map, const OptimizerT & optimizer)
+  : m_optimizer{optimizer},
+    m_config{config},
+    m_scan{std::forward<ScanT>(scan)},
+    m_map{std::forward<MapT>(map)} {}
 
   /// Register a measurement to the current map and return the transformation from map to the
   /// measurement.
@@ -95,8 +98,7 @@ public:
 
     // Define and solve the problem.
     NDTOptimizationProblemT problem(m_scan, m_map, m_config.optimization_config());
-    const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result,
-        m_optimizer_options);
+    const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result);
 
     if (opt_summary.termination_type() == common::optimization::TerminationType::FAILURE) {
       throw std::runtime_error("NDT localizer has likely encountered a numerical "
@@ -225,7 +227,6 @@ private:
   ConfigT m_config;
   ScanT m_scan;
   MapT m_map;
-  OptimizerOptions m_optimizer_options;
 };
 
 /// P2D localizer implementation.
