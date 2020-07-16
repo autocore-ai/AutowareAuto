@@ -303,6 +303,10 @@ private:
           on_invalid_output(pose_out);
         }
       } catch (...) {
+        // TODO(mitsudome-r) remove this hack in #458
+        if (m_tf_publisher) {
+          republish_tf(get_stamp(*msg_ptr));
+        }
         on_bad_registration(std::current_exception());
       }
     } else {
@@ -331,8 +335,13 @@ private:
     tf2::Vector3 translation{pose.position.x, pose.position.y, pose.position.z};
     const tf2::Transform map_base_link_transform{rotation, translation};
 
-    const auto odom_tf = m_tf_buffer.lookupTransform("odom", "base_link",
-        time_utils::from_message(pose_msg.header.stamp));
+    geometry_msgs::msg::TransformStamped odom_tf;
+    try {
+      odom_tf = m_tf_buffer.lookupTransform("odom", "base_link",
+          time_utils::from_message(pose_msg.header.stamp));
+    } catch (const tf2::ExtrapolationException &) {
+      odom_tf = m_tf_buffer.lookupTransform("odom", "base_link", tf2::TimePointZero);
+    }
     tf2::Quaternion odom_rotation{odom_tf.transform.rotation.x,
       odom_tf.transform.rotation.y, odom_tf.transform.rotation.z, odom_tf.transform.rotation.w};
     tf2::Vector3 odom_translation{odom_tf.transform.translation.x, odom_tf.transform.translation.y,
@@ -353,6 +362,18 @@ private:
     tf_stamped.transform.rotation.set__x(tf_rot.x()).set__y(tf_rot.y()).set__z(tf_rot.z()).
     set__w(tf_rot.w());
     tf_message.transforms.push_back(tf_stamped);
+    m_tf_publisher->publish(tf_message);
+  }
+
+  // TODO(mitsudome-r) remove this hack in #458
+  /// Publish the pose message as a transform.
+  void republish_tf(builtin_interfaces::msg::Time stamp)
+  {
+    auto map_odom_tf = m_tf_buffer.lookupTransform(m_localizer_ptr->map_frame_id(), "odom",
+        tf2::TimePointZero);
+    map_odom_tf.header.stamp = stamp;
+    tf2_msgs::msg::TFMessage tf_message;
+    tf_message.transforms.push_back(map_odom_tf);
     m_tf_publisher->publish(tf_message);
   }
 
