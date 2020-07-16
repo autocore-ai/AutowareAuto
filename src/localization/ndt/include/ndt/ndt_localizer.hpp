@@ -44,27 +44,36 @@ template<
   typename ScanT,
   typename MapT,
   typename NDTOptimizationProblemT,
-  typename OptimizerT,
-  typename ConfigT>
+  typename OptimizationProblemConfigT,
+  typename OptimizerT>
 class NDT_PUBLIC NDTLocalizerBase : public localization_common::RelativeLocalizerBase<CloudT,
     CloudT, localization_common::OptimizedRegistrationSummary>
 {
 public:
   using Transform = geometry_msgs::msg::TransformStamped;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
-  using Base = localization_common::RelativeLocalizerBase<CloudT,
-      CloudT, localization_common::OptimizedRegistrationSummary>;
+
   /// Constructor
-  /// \param config NDT localizer config
-  /// \param scan Initial value of the ndt scan. This element is expected to be constructed in the
-  /// implementation class and moved to the base class.
-  /// \param map Initial value of the ndt map. This element is expected to be constructed in the
-  /// implementation class and moved to the base class.
-  /// \param optimizer Optimizer to use during optimization.
+  ///
+  /// @param      config                       NDT localizer config
+  /// @param      optimization_problem_config  The optimization problem config
+  /// @param      optimizer                    Optimizer to use during optimization.
+  /// @param      scan                         Initial value of the ndt scan. This element is
+  ///                                          expected to be constructed in the implementation
+  ///                                          class and moved to the base class.
+  /// @param      map                          Initial value of the ndt map. This element is
+  ///                                          expected to be constructed in the implementation
+  ///                                          class and moved to the base class.
+  ///
   explicit NDTLocalizerBase(
-    const ConfigT & config, ScanT && scan, MapT && map, const OptimizerT & optimizer)
-  : m_optimizer{optimizer},
-    m_config{config},
+    const NDTLocalizerConfigBase & config,
+    const OptimizationProblemConfigT & optimization_problem_config,
+    const OptimizerT & optimizer,
+    ScanT && scan,
+    MapT && map)
+  : m_config{config},
+    m_optimization_problem_config{optimization_problem_config},
+    m_optimizer{optimizer},
     m_scan{std::forward<ScanT>(scan)},
     m_map{std::forward<MapT>(map)} {}
 
@@ -97,7 +106,7 @@ public:
     m_scan.insert(msg);
 
     // Define and solve the problem.
-    NDTOptimizationProblemT problem(m_scan, m_map, m_config.optimization_config());
+    NDTOptimizationProblemT problem(m_scan, m_map, m_optimization_problem_config);
     const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result);
 
     if (opt_summary.termination_type() == common::optimization::TerminationType::FAILURE) {
@@ -148,11 +157,15 @@ public:
     return m_optimizer;
   }
   /// Get the localizer configuration.
-  const ConfigT & config() const noexcept
+  const NDTLocalizerConfigBase & config() const noexcept
   {
     return m_config;
   }
-
+  /// Get the optimization problem configuration.
+  const OptimizationProblemConfigT & optimization_problem_config() const noexcept
+  {
+    return m_optimization_problem_config;
+  }
   /// Get the frame id of the current map.(Required for base interface)
   const std::string & map_frame_id() const noexcept override
   {
@@ -223,8 +236,9 @@ protected:
   }
 
 private:
+  NDTLocalizerConfigBase m_config;
+  OptimizationProblemConfigT m_optimization_problem_config;
   OptimizerT m_optimizer;
-  ConfigT m_config;
   ScanT m_scan;
   MapT m_map;
 };
@@ -234,22 +248,28 @@ private:
 /// \tparam OptimizerT Optimizer type.
 /// \tparam OptimizerOptionsT Optimizer options type.
 /// \tparam MapT Type of map to be used. By default it is StaticNDTMap.
-template<typename OptimizerT, typename OptimizerOptionsT, typename MapT = StaticNDTMap>
-class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<P2DNDTScan, MapT,
-    P2DNDTOptimizationProblem<MapT>, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>
+template<typename OptimizerT, typename MapT = StaticNDTMap>
+class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<
+    P2DNDTScan, MapT, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>
 {
 public:
   using CloudT = sensor_msgs::msg::PointCloud2;
-  using ParentT = NDTLocalizerBase<P2DNDTScan, MapT,
-      P2DNDTOptimizationProblem<MapT>, OptimizerT, P2DNDTLocalizerConfig<OptimizerOptionsT>>;
-  using Base = typename ParentT::Base;
+  using ParentT = NDTLocalizerBase<
+    P2DNDTScan, MapT, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>;
   using Transform = typename ParentT::Transform;
   using PoseWithCovarianceStamped = typename ParentT::PoseWithCovarianceStamped;
-  using ConfigT = P2DNDTLocalizerConfig<OptimizerOptionsT>;
   using ScanT = P2DNDTScan;
 
-  explicit P2DNDTLocalizer(const ConfigT & config, const OptimizerT & optimizer)
-  : ParentT(config, ScanT{config.scan_capacity()}, MapT{config.map_config()}, optimizer) {}
+  explicit P2DNDTLocalizer(
+    const P2DNDTLocalizerConfig & config,
+    const OptimizerT & optimizer,
+    const Real outlier_ratio)
+  : ParentT{
+      config,
+      P2DNDTOptimizationConfig{outlier_ratio},
+      optimizer,
+      ScanT{config.scan_capacity()},
+      MapT{config.map_config()}} {}
 
 protected:
   void set_covariance(

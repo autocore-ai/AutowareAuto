@@ -40,38 +40,35 @@ namespace localization
 namespace ndt_nodes
 {
 // Alias common types.
-using CloudMsg = sensor_msgs::msg::PointCloud2;
-template<typename ... Types>
-using P2DNDTLocalizer = ndt::P2DNDTLocalizer<Types...>;
-template<typename ... Types>
-using P2DNDTConfig = ndt::P2DNDTLocalizerConfig<Types...>;
 
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
 using Optimizer_ =
   common::optimization::NewtonsMethodOptimizer<common::optimization::MoreThuenteLineSearch>;
-using OptimizerOptions_ = common::optimization::OptimizationOptions;
 using PoseInitializer_ = localization_common::BestEffortInitializer;
 
 /// P2D NDT localizer node. Currently uses the hard coded optimizer and pose initializers.
 /// \tparam OptimizerT Hard coded for Newton optimizer. TODO(yunus.caliskan): Make Configurable
-/// \tparam OptimizerOptionsT Hard coded for Newton optimizer. TODO(yunus.caliskan): Make
-/// Configurable
 /// \tparam PoseInitializerT Hard coded for Best effort. TODO(yunus.caliskan): Make Configurable
-template<typename OptimizerT = Optimizer_,
-  typename OptimizerOptionsT = OptimizerOptions_,
-  typename PoseInitializerT = PoseInitializer_>
+template<typename OptimizerT = Optimizer_, typename PoseInitializerT = PoseInitializer_>
 class NDT_NODES_PUBLIC P2DNDTLocalizerNode
-  : public localization_nodes::RelativeLocalizerNode<CloudMsg, CloudMsg,
-    P2DNDTLocalizer<OptimizerT, OptimizerOptionsT>,
+  : public localization_nodes::RelativeLocalizerNode<
+    sensor_msgs::msg::PointCloud2,
+    sensor_msgs::msg::PointCloud2,
+    ndt::P2DNDTLocalizer<OptimizerT>,
     PoseInitializerT>
 {
 public:
-  using Localizer = P2DNDTLocalizer<OptimizerT, OptimizerOptionsT>;
+  using Localizer = ndt::P2DNDTLocalizer<OptimizerT>;
   using RegistrationSummary = typename Localizer::RegistrationSummary;
-  using LocalizerBasePtr = std::unique_ptr<localization_common::RelativeLocalizerBase<CloudMsg,
-      CloudMsg, RegistrationSummary>>;
-  using ParentT = localization_nodes::RelativeLocalizerNode<CloudMsg, CloudMsg,
-      Localizer, PoseInitializerT>;
+  using LocalizerBasePtr = std::unique_ptr<localization_common::RelativeLocalizerBase<
+        sensor_msgs::msg::PointCloud2,
+        sensor_msgs::msg::PointCloud2,
+        RegistrationSummary>>;
+  using ParentT = localization_nodes::RelativeLocalizerNode<
+    sensor_msgs::msg::PointCloud2,
+    sensor_msgs::msg::PointCloud2,
+    Localizer,
+    PoseInitializerT>;
   using PoseWithCovarianceStamped = typename Localizer::PoseWithCovarianceStamped;
   using Transform = typename Localizer::Transform;
 
@@ -111,22 +108,24 @@ public:
       get_point_param("localizer.map.voxel_size"), capacity};
 
     // Fetch localizer configuration
-    P2DNDTConfig<OptimizerOptionsT> localizer_config{
-      ndt::P2DNDTOptimizationConfig{this->declare_parameter(
-          "localizer.optimization.outlier_ratio").template get<float64_t>()},
-      OptimizerOptionsT{
-        static_cast<uint64_t>(
-          this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
-        this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
-        this->declare_parameter(
-          "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
-        this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
-      },
+    ndt::P2DNDTLocalizerConfig localizer_config{
       map_config,
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
       template get<uint32_t>()),
       std::chrono::milliseconds(static_cast<uint64_t>(
           this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
+    };
+
+    const auto outlier_ratio{this->declare_parameter(
+        "localizer.optimization.outlier_ratio").template get<float64_t>()};
+
+    common::optimization::OptimizationOptions optimizer_options{
+      static_cast<uint64_t>(
+        this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
+      this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
+      this->declare_parameter(
+        "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
+      this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
     };
 
     // Construct and set the localizer.
@@ -138,12 +137,14 @@ public:
       template get<float64_t>())};
     // TODO(igor): make the line search configurable.
     LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
-      localizer_config, OptimizerT{
+      localizer_config,
+      OptimizerT{
             common::optimization::MoreThuenteLineSearch{
               step_max, step_min,
               common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization},
-            localizer_config.optimizer_options()
-          });
+            optimizer_options
+          },
+      outlier_ratio);
     this->set_localizer(std::move(localizer_ptr));
   }
 

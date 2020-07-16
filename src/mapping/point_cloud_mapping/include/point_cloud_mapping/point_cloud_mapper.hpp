@@ -89,15 +89,15 @@ class POINT_CLOUD_MAPPING_PUBLIC MapperBase
     ObservationMsgT, MapIncrementT, RegistrationSummaryT>
 {
 public:
-  static_assert(std::is_same<MapIncrementT, typename LocalizerT::Base::MapMsg>::value,
+  static_assert(std::is_same<MapIncrementT, typename LocalizerT::MapMsg>::value,
     "MapperBase and the utilized Relative Localizer must use the same map increment type");
-  static_assert(std::is_same<ObservationMsgT, typename LocalizerT::Base::InputMsg>::value,
+  static_assert(std::is_same<ObservationMsgT, typename LocalizerT::InputMsg>::value,
     "MapperBase and the utilized Relative Localizer must use the same observation type");
 
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using TransformStamped = geometry_msgs::msg::TransformStamped;
-  using MaybeLocalizerSummary = std::experimental::optional<typename
-      LocalizerT::Base::RegistrationSummary>;
+  using MaybeLocalizerSummary =
+    std::experimental::optional<typename LocalizerT::RegistrationSummary>;
   using MapIncrementPtrT = std::shared_ptr<MapIncrementT>;
   using ConstMapIncrementPtrT = std::shared_ptr<const MapIncrementT>;
   using RegistrationSummary = RegistrationSummaryT;
@@ -288,13 +288,13 @@ template<typename LocalizerT, typename MapRepresentationT,
   class WriteTriggerPolicyT, class FileNamePrefixGeneratorT>
 class PointCloudMapper : public MapperBase<LocalizerT, MapRepresentationT,
     sensor_msgs::msg::PointCloud2, sensor_msgs::msg::PointCloud2,
-    MapperRegistrationSummaryBase<typename LocalizerT::Base::RegistrationSummary,
+    MapperRegistrationSummaryBase<typename LocalizerT::RegistrationSummary,
     ConstCloudPtr>,
     WriteTriggerPolicyT, FileNamePrefixGeneratorT>
 {
 public:
   using RegistrationSummary =
-    MapperRegistrationSummaryBase<typename LocalizerT::Base::RegistrationSummary,
+    MapperRegistrationSummaryBase<typename LocalizerT::RegistrationSummary,
       ConstCloudPtr>;
   using Base = MapperBase<LocalizerT, MapRepresentationT,
       sensor_msgs::msg::PointCloud2, sensor_msgs::msg::PointCloud2,

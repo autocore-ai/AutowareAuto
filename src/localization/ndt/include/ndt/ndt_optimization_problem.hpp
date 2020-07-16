@@ -111,17 +111,19 @@ public:
   using PointGrad = Eigen::Matrix<float64_t, 3, 6>;
   using PointHessian = Eigen::Matrix<float64_t, 18, 6>;
 
-  /// Constructor. It should be noted here that ndt optimization problem does not take
-  /// ownership of neither the scan nor the map but uses the references. Hence an optimization
-  /// problem must not outlive the scan or the map.
-  /// \param scan Scan to align with the map.
-  /// \param map NDT map to be aligned.
-  /// \param config Optimization config.
+  /// Constructor.
+  ///
+  /// It should be noted here that ndt optimization problem does not take ownership of neither the
+  /// scan nor the map but uses the references. Hence an optimization problem must not outlive the
+  /// scan or the map.
+  ///
+  /// @param      scan    Scan to align with the map.
+  /// @param      map     NDT map to be aligned.
+  /// @param      config  Optimization config for this objective.
+  ///
   P2DNDTObjective(
-    const P2DNDTScan & scan, const Map & map,
-    const P2DNDTOptimizationConfig & config)
-  : m_scan_ref(scan),
-    m_map_ref(map)
+    const P2DNDTScan & scan, const Map & map, const P2DNDTOptimizationConfig config)
+  : m_scan_ref(scan), m_map_ref(map)
   {
     init(config.outlier_ratio());
   }

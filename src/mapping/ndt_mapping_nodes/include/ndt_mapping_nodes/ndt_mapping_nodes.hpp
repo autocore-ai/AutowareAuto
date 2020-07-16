@@ -44,10 +44,8 @@ namespace ndt_mapping_nodes
 // TODO(yunus.caliskan) remove the hard-coded optimizer set up and make it fully configurable
 using Optimizer = common::optimization::NewtonsMethodOptimizer<
   common::optimization::MoreThuenteLineSearch>;
-using OptimizerOptions = common::optimization::OptimizationOptions;
-using Localizer = localization::ndt::P2DNDTLocalizer<Optimizer, OptimizerOptions,
-    localization::ndt::DynamicNDTMap>;
-using P2DNDTConfig = localization::ndt::P2DNDTLocalizerConfig<OptimizerOptions>;
+using Localizer = localization::ndt::P2DNDTLocalizer<Optimizer, localization::ndt::DynamicNDTMap>;
+using P2DNDTConfig = localization::ndt::P2DNDTLocalizerConfig;
 using PoseInitializer = localization::localization_common::BestEffortInitializer;
 using VoxelMap = point_cloud_mapping::VoxelMap;
 using Mapper = point_cloud_mapping::PointCloudMapper<Localizer, VoxelMap,
@@ -101,21 +99,23 @@ private:
 
     // Fetch localizer configuration
     P2DNDTConfig localizer_config{
-      localization::ndt::P2DNDTOptimizationConfig{this->declare_parameter(
-          "localizer.optimization.outlier_ratio").template get<float64_t>()},
-      OptimizerOptions{
-        static_cast<uint64_t>(
-          this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
-        this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
-        this->declare_parameter(
-          "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
-        this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
-      },
       parse_grid_config("localizer.map"),
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
       template get<uint32_t>()),
       std::chrono::milliseconds(static_cast<uint64_t>(
           this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
+    };
+
+    const auto outlier_ratio{this->declare_parameter(
+        "localizer.optimization.outlier_ratio").template get<float64_t>()};
+
+    const common::optimization::OptimizationOptions optimization_options{
+      static_cast<uint64_t>(
+        this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
+      this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
+      this->declare_parameter(
+        "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
+      this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
     };
 
     auto localizer_ptr = std::make_unique<Localizer>(
@@ -130,8 +130,8 @@ private:
               .template get<float32_t>()),
               common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization
             },
-            localizer_config.optimizer_options()
-          });
+            optimization_options},
+      outlier_ratio);
     const auto & map_frame_id = this->declare_parameter("map.frame_id").template get<std::string>();
     VoxelMap map{parse_grid_config("map"), map_frame_id};
 

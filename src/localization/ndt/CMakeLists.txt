@@ -26,7 +26,6 @@ set(NDT_NODES_LIB_SRC
     src/ndt_map.cpp
     src/ndt_voxel.cpp
     src/ndt_voxel_view.cpp
-    src/ndt_config.cpp
 )
 
 set(NDT_NODES_LIB_HEADERS
