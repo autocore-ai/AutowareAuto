@@ -18,7 +18,7 @@
       max_x:  130.0
       min_y: -130.0
       max_y:  130.0
-      side_length: 1.0
+      side_length: 0.7
     voxel:
       min_point:
         x: -130.0
