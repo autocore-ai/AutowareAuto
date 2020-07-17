@@ -210,6 +210,8 @@ Use `docker system prune` to remove unused Docker items:
 $ docker system prune -a --volumes
 ```
 
+# Troubleshooting
+
 ## General Troubleshooting
 
 Most issues with building Autoware.AUTO are caused by out-of-date software or old build files.
