@@ -121,6 +121,8 @@ private:
   std::string m_odom_frame_id{};
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+
+  bool m_enable_obstacle_detection{true};
 };  // class RecordReplayPlannerNode
 }  // namespace recordreplay_planner_node
 }  // namespace planning

@@ -39,6 +39,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
     static_cast<float64_t>(declare_parameter("heading_weight").get<float32_t>());
   const auto min_record_distance =
     static_cast<float64_t>(declare_parameter("min_record_distance").get<float32_t>());
+  m_enable_obstacle_detection = static_cast<bool>(
+    declare_parameter("enable_obstacle_detection").get<bool>());
 
   const VehicleConfig vehicle_param{
     static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float32_t>()),
@@ -112,10 +114,14 @@ void RecordReplayPlannerNode::init(
   m_ego_sub = create_subscription<State>(ego_topic, QoS{10},
       [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
 
-  using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
-  m_boundingbox_sub = create_subscription<BoundingBoxArray>(bounding_boxes_topic,
-      QoS{10},
-      [this](const BoundingBoxArray::SharedPtr msg) {on_bounding_box(msg);}, SubAllocT{});
+  if (m_enable_obstacle_detection) {
+    using SubAllocT =
+      rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
+    m_boundingbox_sub = create_subscription<BoundingBoxArray>(
+      bounding_boxes_topic, QoS{10},
+      [this](const BoundingBoxArray::SharedPtr msg) {on_bounding_box(msg);},
+      SubAllocT{});
+  }
 
   // Set up publishers
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;

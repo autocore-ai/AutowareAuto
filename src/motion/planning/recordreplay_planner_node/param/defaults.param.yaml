@@ -3,6 +3,7 @@ planning:
     ros__parameters:
       heading_weight: 0.1
       min_record_distance: 0.5
+      enable_obstacle_detection: False
       vehicle:
         cg_to_front_m: 1.0
         cg_to_rear_m: 1.0
