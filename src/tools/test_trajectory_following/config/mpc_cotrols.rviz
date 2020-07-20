@@ -416,7 +416,7 @@ Visualization Manager:
     - Alpha: 0.5
       Class: autoware_rviz_plugins/Trajectory
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       Name: Trajectory
       Namespaces:
         trajectory_arrow: true
@@ -430,7 +430,7 @@ Visualization Manager:
     - Alpha: 1
       Class: autoware_rviz_plugins/Trajectory
       Color: 0; 0; 255
-      Enabled: true
+      Enabled: false
       Name: DebugTrajectory
       Namespaces:
         trajectory_arrow: true
