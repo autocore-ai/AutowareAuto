@@ -15,11 +15,11 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <gtest/gtest.h>
+#include <common/types.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_common/motion_common.hpp>
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #include <time_utils/time_utils.hpp>
-#include <common/types.hpp>
 
 #include <string>
 
