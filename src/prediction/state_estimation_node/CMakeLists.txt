@@ -50,9 +50,8 @@ if(BUILD_TESTING)
           test/test_measurement.cpp
           test/test_measurement_conversion.cpp
           test/test_kalman_filter_wrapper.cpp
-#          test/test_state_estimation_node.cpp
+          test/test_state_estimation_node.cpp
   )
-  # TODO(niosus): Above test is temporarily disabled until #488 is fixed
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
   target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
 

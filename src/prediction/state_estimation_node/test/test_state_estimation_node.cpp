@@ -35,7 +35,8 @@ rclcpp::Time to_ros_time(const std::chrono::system_clock::time_point & time_poin
 }
 }  // namespace
 
-class StateEstimationNodeTest : public ::testing::Test
+// TODO(niosus): Re-enable tests when #488 is solved.
+class DISABLED_StateEstimationNodeTest : public ::testing::Test
 {
 protected:
   void SetUp() override
@@ -100,7 +101,7 @@ private:
 };
 
 /// @test Test that if we publish one message, it generates a state estimate which is sent out.
-TEST_F(StateEstimationNodeTest, publish_and_receive_odom_message) {
+TEST_F(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
   msg.header.stamp.sec = 5;
@@ -152,7 +153,7 @@ TEST_F(StateEstimationNodeTest, publish_and_receive_odom_message) {
 }
 
 /// @test Test that we can track an object moving in a straight line.
-TEST_F(StateEstimationNodeTest, track_object_straight_line) {
+TEST_F(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
   msg.pose.covariance[0] = 1.0;
@@ -225,7 +226,7 @@ TEST_F(StateEstimationNodeTest, track_object_straight_line) {
 }
 
 /// @test Test for the case when we publish on a timer.
-TEST_F(StateEstimationNodeTest, publish_on_timer) {
+TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
   msg.header.stamp.sec = 5;
