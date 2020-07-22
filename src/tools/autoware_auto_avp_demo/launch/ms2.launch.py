@@ -57,6 +57,10 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/scan_downsampler.param.yaml')
     ndt_localizer_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ndt_localizer.param.yaml')
+    mpc_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/mpc.param.yaml')
+    recordreplay_planner_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/recordreplay_planner.param.yaml')
 
     pc_filter_transform_pkg_prefix = get_package_share_directory(
         'point_cloud_filter_transform_nodes')
@@ -112,6 +116,16 @@ def generate_launch_description():
         'scan_downsampler_param_file',
         default_value=scan_downsampler_param_file,
         description='Path to config file for lidar scan downsampler'
+    )
+    mpc_param = DeclareLaunchArgument(
+        'mpc_param_file',
+        default_value=mpc_param_file,
+        description='Path to config file for MPC'
+    )
+    recordreplay_planner_param = DeclareLaunchArgument(
+        'recordreplay_planner_param_file',
+        default_value=recordreplay_planner_param_file,
+        description='Path to config file for record/replay planner'
     )
 
     # Nodes
@@ -211,6 +225,25 @@ def generate_launch_description():
             ("points_in", "/lidar_front/points_filtered_downsampled")
         ]
     )
+    mpc = Node(
+        package='mpc_controller_node',
+        node_executable='mpc_controller_node_exe',
+        node_name='mpc_controller',
+        node_namespace='control',
+        parameters=[LaunchConfiguration('mpc_param_file')]
+    )
+    recordreplay_planner = Node(
+        package='recordreplay_planner_node',
+        node_executable='recordreplay_planner_node_exe',
+        node_name='recordreplay_planner',
+        node_namespace='planning',
+        parameters=[LaunchConfiguration('recordreplay_planner_param_file')],
+        remappings=[
+            ('vehicle_state', '/vehicle/vehicle_kinematic_state'),
+            ('planned_trajectory', '/planning/trajectory'),
+            ('obstacle_bounding_boxes', '/perception/lidar_bounding_boxes'),
+        ]
+    )
 
     return LaunchDescription([
         euclidean_cluster_param,
@@ -221,6 +254,8 @@ def generate_launch_description():
         scan_downsampler_param,
         ndt_localizer_param,
         with_rviz_param,
+        mpc_param,
+        recordreplay_planner_param,
         urdf_publisher,
         euclidean_clustering,
         filter_transform_vlp16_front,
@@ -230,5 +265,7 @@ def generate_launch_description():
         ray_ground_classifier,
         scan_downsampler,
         ndt_localizer,
+        mpc,
+        recordreplay_planner,
         rviz2
     ])

@@ -1,0 +1,63 @@
+/**:
+  ros__parameters:
+    command_topic: "/vehicle/vehicle_command"
+    state_topic: "/vehicle/vehicle_kinematic_state"
+    trajectory_topic: "/planning/trajectory"
+    tf_topic: "/tf"
+    static_tf_topic: "/tf_static"
+    diagnostic_topic: "control_diagnostic"
+    debug_trajectory_publish_period_ms: 100  # if 0 or missing, no publishing happens
+    controller:
+      interpolation: true
+      sample_tolerance_ms: 20
+      control_lookahead_ms: 100
+      limits:
+        min_longitudinal_velocity_mps: 0.00
+        max_longitudinal_velocity_mps: 35.0
+        min_lateral_velocity_mps: -3.0
+        max_lateral_velocity_mps: 3.0
+        min_acceleration_mps2: -3.0
+        max_acceleration_mps2: 3.0
+        min_yaw_rate_rps: -3.0
+        max_yaw_rate_rps: 3.0
+        min_jerk_mps3: -10.0
+        max_jerk_mps3: 10.0
+        min_steer_angle_rad: -0.331
+        max_steer_angle_rad: 0.331
+        min_steer_angle_rate_rps: -0.331
+        max_steer_angle_rate_rps: 0.331
+      vehicle:
+        cg_to_front_m: 1.228
+        cg_to_rear_m: 1.5618
+        front_corner_stiffness: 17000.0
+        rear_corner_stiffness: 20000.0
+        mass_kg: 1460.0
+        yaw_inertia_kgm2: 2170.0
+        width_m: 2.0
+        front_overhang_m: 0.5
+        rear_overhang_m: 0.5
+      behavior:
+        stop_rate_mps2: 3.0
+        time_step_ms: 100
+        is_temporal_reference: true
+      weights:
+        nominal:
+          pose: 10.0
+          heading: 10.0
+          longitudinal_velocity: 10.0
+          lateral_velocity: 10.0
+          yaw_rate: 10.0
+          acceleration: 10.0
+          jerk: 10.0
+          steer_angle: 10.0
+          steer_angle_rate: 10.0
+        terminal:
+          pose: 1000.0
+          heading: 1000.0
+          longitudinal_velocity: 1000.0
+          lateral_velocity: 1000.0
+          yaw_rate: 1000.0
+          acceleration: 1000.0
+          jerk: 1000.0
+          steer_angle: 1000.0
+          steer_angle_rate: 1000.0

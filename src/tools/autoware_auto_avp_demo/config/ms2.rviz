@@ -3,8 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 1873
   - Class: rviz_common/Selection
@@ -56,6 +55,8 @@ Visualization Manager:
           Value: true
         lidar_rear:
           Value: true
+        map:
+          Value: true
         nav_base:
           Value: true
         odom:
@@ -66,18 +67,21 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
+        base_link:
+          gnss:
+            {}
+          imu:
+            {}
+          lidar_front:
+            {}
+          lidar_rear:
+            {}
+          nav_base:
+            {}
+        map:
+          {}
         odom:
-          base_link:
-            gnss:
-              {}
-            imu:
-              {}
-            lidar_front:
-              {}
-            lidar_rear:
-              {}
-            nav_base:
-              {}
+          {}
       Update Interval: 0
       Value: true
     - Alpha: 0.5
@@ -186,7 +190,7 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 1
+    - Alpha: 0.6000000238418579
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -196,31 +200,31 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 0
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud Map
-      Position Transformer: ""
+      Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 3
+      Size (Pixels): 2
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /localization/viz_ndt_map
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: autoware_rviz_plugins/BoundingBoxArray
       Enabled: true
       Name: Lidar Objects
       Namespaces:
-        {}
+        bounding_box: true
       Topic: /perception/lidar_bounding_boxes
       Unreliable: false
       Value: true
@@ -317,7 +321,7 @@ Visualization Manager:
       Enabled: true
       Name: RRP tfed_obstacle
       Namespaces:
-        {}
+        bounding_box: true
       Topic: /planning/debug/transformed_obstacle_boxes
       Unreliable: false
       Value: true
@@ -347,7 +351,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 114.18242645263672
+      Distance: 92.35545349121094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -362,7 +366,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.7853981852531433
       Target Frame: base_link
       Value: Orbit (rviz)
       Yaw: 3.141590118408203
