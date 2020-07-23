@@ -162,6 +162,7 @@ StateEstimationNode::StateEstimationNode(
   m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
 {
   m_frame_id = declare_parameter("frame_id").get<std::string>();
+  m_child_frame_id = declare_parameter("child_frame_id").get<std::string>();
   m_publish_frequency = declare_parameter("output_frequency", kInvalidFrequency);
   m_publish_data_driven = declare_parameter("data_driven", false);
   const auto time_between_publish_requests{
@@ -206,6 +207,11 @@ StateEstimationNode::StateEstimationNode(
     input_twist_topics, &m_twist_subscribers, &StateEstimationNode::twist_callback);
 
   m_publisher = create_publisher<nav_msgs::msg::Odometry>(kDefaultOutputTopic, kDefaultHistory);
+
+  const auto publish_ft = declare_parameter("publish_tf", false);
+  if (publish_ft) {
+    m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf", kDefaultHistory);
+  }
 }
 
 void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
@@ -215,7 +221,7 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
     time_observation_received, message_to_measurement<MeasurementPoseAndSpeed>(
       *msg, get_transform(msg->header)));
   if (m_publish_data_driven) {
-    m_publisher->publish(m_ekf->get_state());
+    publish_current_state();
   }
 }
 
@@ -226,7 +232,7 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
     time_observation_received, message_to_measurement<MeasurementPose>(
       *msg, get_transform(msg->header)));
   if (m_publish_data_driven) {
-    m_publisher->publish(m_ekf->get_state());
+    publish_current_state();
   }
 }
 
@@ -243,7 +249,7 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
     time_observation_received, message_to_measurement<MeasurementSpeed>(
       *msg, get_transform(msg->header)));
   if (m_publish_data_driven) {
-    m_publisher->publish(m_ekf->get_state());
+    publish_current_state();
   }
 }
 
@@ -261,7 +267,27 @@ void StateEstimationNode::predict_and_publish_current_state()
 {
   if (m_ekf->is_initialized()) {
     m_ekf->temporal_update(to_time_point(now()));
-    m_publisher->publish(m_ekf->get_state());
+    publish_current_state();
+  }
+}
+
+void StateEstimationNode::publish_current_state()
+{
+  if (m_ekf->is_initialized() && m_publisher) {
+    const auto & state = m_ekf->get_state();
+    m_publisher->publish(state);
+    if (m_tf_publisher) {
+      TfMsgT tf_msg{};
+      tf_msg.transforms.emplace_back();
+      auto & tf = tf_msg.transforms.back();
+      tf.header = state.header;
+      tf.child_frame_id = m_child_frame_id;
+      tf.transform.translation.x = state.pose.pose.position.x;
+      tf.transform.translation.y = state.pose.pose.position.y;
+      tf.transform.translation.z = state.pose.pose.position.z;
+      tf.transform.rotation = state.pose.pose.orientation;
+      m_tf_publisher->publish(tf_msg);
+    }
   }
 }
 

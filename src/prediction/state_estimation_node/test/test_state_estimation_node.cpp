@@ -33,10 +33,17 @@ rclcpp::Time to_ros_time(const std::chrono::system_clock::time_point & time_poin
   using std::chrono::nanoseconds;
   return rclcpp::Time{duration_cast<nanoseconds>(time_point.time_since_epoch()).count()};
 }
+
+tf2::TimePoint to_tf_time_point(nav_msgs::msg::Odometry::_header_type::_stamp_type & stamp)
+{
+  using std::chrono::seconds;
+  using std::chrono::nanoseconds;
+  return tf2::TimePoint{seconds{stamp.sec} + nanoseconds{stamp.nanosec}};
+}
 }  // namespace
 
 // TODO(niosus): Re-enable tests when #488 is solved.
-class DISABLED_StateEstimationNodeTest : public ::testing::Test
+class DISABLED_StateEstimationNodeTest : public ::testing::TestWithParam<bool>
 {
 protected:
   void SetUp() override
@@ -45,6 +52,8 @@ protected:
     rclcpp::init(0, nullptr);
     ASSERT_TRUE(rclcpp::is_initialized());
     m_fake_odometry_node = std::make_shared<rclcpp::Node>("fake_odometry_node");
+    m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
+      m_tf_buffer, m_fake_odometry_node, false);
   }
 
   void TearDown() override
@@ -93,15 +102,24 @@ protected:
 
   rclcpp::Node::SharedPtr get_fake_odometry_node() {return m_fake_odometry_node;}
   rclcpp::Publisher<Odometry> & get_fake_odometry_publisher() {return *m_fake_odometry_publisher;}
+  tf2::BufferCore & get_tf_buffer() {return m_tf_buffer;}
 
 private:
   rclcpp::Node::SharedPtr m_fake_odometry_node{nullptr};
   rclcpp::Publisher<Odometry>::SharedPtr m_fake_odometry_publisher{nullptr};
   rclcpp::Subscription<Odometry>::SharedPtr m_fake_odometry_subscription{nullptr};
+  std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{nullptr};
+  tf2::BufferCore m_tf_buffer;
 };
 
+INSTANTIATE_TEST_CASE_P(
+  StateEstimationNodeTests,
+  DISABLED_StateEstimationNodeTest,
+  ::testing::Values(true, false), );
+
 /// @test Test that if we publish one message, it generates a state estimate which is sent out.
-TEST_F(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
+TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
+  const bool publish_tf = GetParam();
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
   msg.header.stamp.sec = 5;
@@ -119,7 +137,9 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   node_options.append_parameter_override(
     "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
   node_options.append_parameter_override("data_driven", true);
+  node_options.append_parameter_override("publish_tf", publish_tf);
   node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("child_frame_id", "base_link");
   node_options.append_parameter_override("mahalanobis_threshold", 10.0);
   node_options.append_parameter_override(
     "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
@@ -149,11 +169,28 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
       FAIL() << "Did not receive a message soon enough.";
     }
   }
+  if (publish_tf) {
+    EXPECT_TRUE(
+      get_tf_buffer().canTransform("map", "base_link", to_tf_time_point(msg.header.stamp)));
+    const auto transform{
+      get_tf_buffer().lookupTransform("map", "base_link", to_tf_time_point(msg.header.stamp))};
+    EXPECT_EQ(transform.header.frame_id, "map");
+    EXPECT_EQ(transform.child_frame_id, "base_link");
+    EXPECT_EQ(transform.header.stamp.sec, msg.header.stamp.sec);
+    EXPECT_EQ(transform.header.stamp.nanosec, msg.header.stamp.nanosec);
+    EXPECT_DOUBLE_EQ(transform.transform.translation.x, 0.0);
+    EXPECT_DOUBLE_EQ(transform.transform.translation.y, 0.0);
+    EXPECT_DOUBLE_EQ(transform.transform.translation.z, 0.0);
+  } else {
+    EXPECT_FALSE(
+      get_tf_buffer().canTransform("map", "base_link", to_tf_time_point(msg.header.stamp)));
+  }
   SUCCEED();
 }
 
 /// @test Test that we can track an object moving in a straight line.
-TEST_F(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
+TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
+  const bool publish_tf = GetParam();
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
   msg.pose.covariance[0] = 1.0;
@@ -169,7 +206,9 @@ TEST_F(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
   node_options.append_parameter_override(
     "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
   node_options.append_parameter_override("data_driven", true);
+  node_options.append_parameter_override("publish_tf", publish_tf);
   node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("child_frame_id", "base_link");
   node_options.append_parameter_override("mahalanobis_threshold", 10.0);
   node_options.append_parameter_override(
     "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
@@ -219,6 +258,24 @@ TEST_F(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
     std::this_thread::sleep_for(dt);
     ASSERT_LT(time_passed, max_wait_time) <<
       "Some messages were dropped. Received: " << received_msgs.size();
+    if (received_msgs.empty()) {continue;}
+    if (publish_tf) {
+      auto & msg = *received_msgs.back();
+      EXPECT_TRUE(get_tf_buffer().canTransform(
+          "map", "base_link", to_tf_time_point(msg.header.stamp)));
+      const auto transform{get_tf_buffer().lookupTransform(
+          "map", "base_link", to_tf_time_point(msg.header.stamp))};
+      EXPECT_EQ(transform.header.frame_id, "map");
+      EXPECT_EQ(transform.child_frame_id, "base_link");
+      EXPECT_EQ(transform.header.stamp.sec, msg.header.stamp.sec);
+      EXPECT_EQ(transform.header.stamp.nanosec, msg.header.stamp.nanosec);
+      EXPECT_DOUBLE_EQ(transform.transform.translation.x, msg.pose.pose.position.x);
+      EXPECT_DOUBLE_EQ(transform.transform.translation.y, msg.pose.pose.position.y);
+      EXPECT_DOUBLE_EQ(transform.transform.translation.z, msg.pose.pose.position.z);
+    } else {
+      EXPECT_FALSE(get_tf_buffer().canTransform(
+          "map", "base_link", to_tf_time_point(msg.header.stamp)));
+    }
   }
   const double epsilon = 0.2;
   EXPECT_NEAR(distance_travelled, received_msgs.back()->pose.pose.position.x, epsilon);
@@ -244,6 +301,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   node_options.append_parameter_override(
     "topics.input_twist", std::vector<std::string>{"/twist_topic_1"});
   node_options.append_parameter_override("frame_id", "map");
+  node_options.append_parameter_override("child_frame_id", "base_link");
   node_options.append_parameter_override("mahalanobis_threshold", 10.0);
   node_options.append_parameter_override("output_frequency", 10.0);
   node_options.append_parameter_override(

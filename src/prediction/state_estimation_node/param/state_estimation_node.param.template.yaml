@@ -46,8 +46,14 @@
     # - Or put "data_driven: true" here. The node will publish when new data arrives.
     data_driven: true
 
+    # Decides if the node publishes tf.
+    publish_tf: false
+
     # Frame <frame_id> in which the pose is estimated. For a point in the ego-frame p_ego holds:
     # p_<frame_id> = T_<frame_id>_ego * p_ego,
     # where T_<frame_id>_ego is a transformation matrix constructed from the rotation and
     # translation of the ego frame with respect to the <frame_id> frame.
     frame_id: "map"
+
+    # A child frame id for the tf transformations.
+    child_frame_id: "base_link"

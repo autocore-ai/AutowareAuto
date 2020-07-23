@@ -35,6 +35,7 @@
 
 #include <tf2/buffer_core.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <Eigen/Geometry>
 
@@ -79,6 +80,7 @@ private:
   using OdomMsgT = nav_msgs::msg::Odometry;
   using PoseMsgT = geometry_msgs::msg::PoseWithCovarianceStamped;
   using TwistMsgT = geometry_msgs::msg::TwistWithCovarianceStamped;
+  using TfMsgT = tf2_msgs::msg::TFMessage;
 
   template<std::int32_t kDim>
   using VectorT = Eigen::Matrix<float32_t, kDim, 1>;
@@ -104,6 +106,9 @@ private:
   /// Predict the state and publish the current estimate.
   void predict_and_publish_current_state();
 
+  /// Publish the currently estimated state.
+  void publish_current_state();
+
   /// Get the transformation from a frame in a provided header to the current frame.
   Eigen::Isometry3f get_transform(const std_msgs::msg::Header & header);
 
@@ -125,7 +130,8 @@ private:
   std::vector<rclcpp::Subscription<PoseMsgT>::SharedPtr> m_pose_subscribers;
   std::vector<rclcpp::Subscription<TwistMsgT>::SharedPtr> m_twist_subscribers;
 
-  std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> m_publisher{};
+  std::shared_ptr<rclcpp::Publisher<OdomMsgT>> m_publisher{};
+  std::shared_ptr<rclcpp::Publisher<TfMsgT>> m_tf_publisher{};
 
   rclcpp::TimerBase::SharedPtr m_wall_timer{};
 
@@ -134,6 +140,7 @@ private:
   autoware::common::types::float64_t m_publish_frequency{};
 
   std::string m_frame_id{};
+  std::string m_child_frame_id{};
 
   // TODO(igor): we can replace the unique_ptr here with std::variant or alike at a later time to
   // allow configuring which filter to use at runtime.

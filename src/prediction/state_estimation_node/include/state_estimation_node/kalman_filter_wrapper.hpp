@@ -197,7 +197,7 @@ private:
   SquareMatrixT<kNumOfStates> m_initial_covariance_factor;
   /// The kalman filter class that takes care of the state estimation.
   std::unique_ptr<FilterT> m_ekf{};
-  /// Frame in which the estimation happens.
+  /// Frame in which the estimation happens, e.g. "odom".
   std::string m_frame_id{};
   /// The threshold on the Mahalanobis distance used to reject outliers.
   common::types::float32_t m_mahalanobis_threshold{};
