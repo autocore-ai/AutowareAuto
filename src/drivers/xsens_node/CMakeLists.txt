@@ -30,12 +30,15 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(Boost REQUIRED COMPONENTS system)
+
 set(XSENS_IMU_NODE_LIB xsens_imu_node)
 ament_auto_add_library(${XSENS_IMU_NODE_LIB} SHARED
   include/xsens_node/xsens_common_node.hpp
   include/xsens_node/visibility_control.hpp
   src/xsens_imu_node.cpp)
 autoware_set_compile_options(${XSENS_IMU_NODE_LIB})
+target_link_libraries(${XSENS_IMU_NODE_LIB} ${Boost_LIBRARIES})
 
 set(XSENS_GPS_NODE_LIB xsens_gps_node)
 ament_auto_add_library(${XSENS_GPS_NODE_LIB} SHARED
@@ -43,15 +46,18 @@ ament_auto_add_library(${XSENS_GPS_NODE_LIB} SHARED
   include/xsens_node/visibility_control.hpp
   src/xsens_gps_node.cpp)
 autoware_set_compile_options(${XSENS_GPS_NODE_LIB})
+target_link_libraries(${XSENS_GPS_NODE_LIB} ${Boost_LIBRARIES})
 
 # generate executable for ros1-style standalone nodes
 set(XSENS_IMU_NODE_EXE "xsens_imu_node_exe")
 ament_auto_add_executable(${XSENS_IMU_NODE_EXE} src/xsens_imu_node_main.cpp)
 autoware_set_compile_options(${XSENS_IMU_NODE_EXE})
+target_link_libraries(${XSENS_IMU_NODE_EXE} ${XSENS_IMU_NODE_LIB})
 
 set(XSENS_GPS_NODE_EXE "xsens_gps_node_exe")
 ament_auto_add_executable(${XSENS_GPS_NODE_EXE} src/xsens_gps_node_main.cpp)
 autoware_set_compile_options(${XSENS_GPS_NODE_EXE})
+target_link_libraries(${XSENS_GPS_NODE_EXE} ${XSENS_GPS_NODE_LIB})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

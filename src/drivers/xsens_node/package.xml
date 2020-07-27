@@ -14,9 +14,9 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>xsens_driver</build_depend>
 
+    <depend>libboost-system-dev</depend>
     <depend>serial_driver</depend>
     <depend>autoware_auto_common</depend>
-    <depend>lidar_utils</depend>
 
     <exec_depend>rclcpp_lifecycle</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
