@@ -1,26 +1,26 @@
 Controller Testing- Usage and Configuration
 =============
-This package contains launch files, param and scripts for 
+This package contains launch files, param and scripts for
 running simulted controller tests with dynamic vehicle model, and generate plots
 
 
 
 # Params
 
-* MPC controller config 
+* MPC controller config
 `mpc_controller_node/param/defaults.yaml`
 * Test and simulation config
 `controller_testing/param/defaults.param.yaml`
 
 # Usage
-
-* For faster than realtime use `real_time_sim:=False`
-
+- MPC
 ```
-ros2 launch controller_testing controller_testing_node.launch.py real_time_sim:=False with_rviz:=False
+ros2 launch controller_testing controller_testing_node_mpc.launch.py real_time_sim:=True with_rviz:=True
 ```
 
-* For realtime use with rviz
+-  Pure Pursuit
 ```
-ros2 launch controller_testing controller_testing_node.launch.py real_time_sim:=True with_rviz:=True
+ros2 launch controller_testing controller_testing_node_pure_pursuit.launch.py real_time_sim:=True with_rviz:=True
 ```
+
+* For faster than realtime use, change arguments into `real_time_sim:=False` and `with_rviz=False`.
