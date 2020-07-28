@@ -198,7 +198,7 @@ def generate_launch_description():
         node_executable='ray_ground_classifier_cloud_node_exe',
         node_namespace='perception',
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
-        remappings=[("points_in", "/lidar_front/points_filtered")]
+        remappings=[("points_in", "/lidars/points_fused")]
     )
     rviz2 = Node(
         package='rviz2',
@@ -217,12 +217,12 @@ def generate_launch_description():
     scan_downsampler = Node(
         package='voxel_grid_nodes',
         node_executable='voxel_grid_node_exe',
-        node_namespace='lidar_front',
+        node_namespace='lidars',
         node_name='voxel_grid_cloud_node',
         parameters=[LaunchConfiguration('scan_downsampler_param_file')],
         remappings=[
-            ("points_in", "points_filtered"),
-            ("points_downsampled", "points_filtered_downsampled")
+            ("points_in", "points_fused"),
+            ("points_downsampled", "points_fused_downsampled")
         ]
     )
     ndt_localizer = Node(
@@ -232,7 +232,7 @@ def generate_launch_description():
         node_name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
         remappings=[
-            ("points_in", "/lidar_front/points_filtered_downsampled")
+            ("points_in", "/lidars/points_fused_downsampled")
         ]
     )
 
