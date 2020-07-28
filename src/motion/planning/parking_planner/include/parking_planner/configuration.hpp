@@ -46,7 +46,7 @@ constexpr float64_t INTEGRATION_STEP_SIZE = 0.2;
 
 /// \brief Number of steps performed (each of length of INTEGRATION_STEP_SIZE) for
 ///        the RK4 integration.
-constexpr std::size_t NUMBER_OF_INTEGRATION_STEPS = 3;
+constexpr std::size_t NUMBER_OF_INTEGRATION_STEPS = 4;
 
 }  // namespace parking_planner
 }  // namespace planning

@@ -128,11 +128,11 @@ struct IntegrationTestParams
   PlanningStatus expected_status;
 };
 
-class DISABLED_TestIntegration : public ::testing::TestWithParam<IntegrationTestParams> {};
+class TestIntegration : public ::testing::TestWithParam<IntegrationTestParams> {};
 
 // TODO(jwhitleywork): Re-enable this test when fixed on arm64. Relevant issue is #551.
 // This test runs the parking planner like a user would
-TEST_P(DISABLED_TestIntegration, with_obstacles) {
+TEST_P(TestIntegration, with_obstacles) {
   const auto params = GetParam();
   RecordProperty("scenario_name", params.scenario_name);
 
@@ -204,7 +204,7 @@ const auto slanted_gap_obstacles = std::vector<Polytope2D>{
 };
 
 // This would be INSTANTIATE_TEST_SUITE_P in gtest 1.10 and up, but Autoware uses gtest 1.8.
-INSTANTIATE_TEST_CASE_P(integration, DISABLED_TestIntegration, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(integration, TestIntegration, ::testing::Values(
     // Parallel, close, and car is somewhat small
     IntegrationTestParams{"parallel_close_small",
       side_gap_obstacles,
