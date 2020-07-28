@@ -6,7 +6,8 @@
         - /localization/ndt_pose_with_covariance
     data_driven: true
     frame_id: "map"
-    mahalanobis_threshold: 1.0
+    child_frame_id: "base_link"
+    mahalanobis_threshold: 2.0
 
     process_noise_variances:
       acceleration: [2.0, 2.0]
