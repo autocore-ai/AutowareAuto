@@ -1,7 +1,7 @@
 # config/vlp16_lexus_centroid.param.yaml
 ---
 
-voxel_grid_cloud_node:
+/**:
   ros__parameters:
     is_approximate: false
     config:

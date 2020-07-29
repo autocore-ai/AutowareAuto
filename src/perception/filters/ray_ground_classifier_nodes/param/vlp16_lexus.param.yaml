@@ -1,7 +1,6 @@
 # config/vlp16_lexus.param.yaml
 ---
-
-ray_ground_classifier:
+/**:
   ros__parameters:
     timeout_ms:       10
     cloud_timeout_ms: 110
