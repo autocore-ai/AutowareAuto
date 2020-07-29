@@ -23,6 +23,7 @@
 #include <common/types.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/quaternion_stamped.hpp>
 #include <kalman_filter/esrcf.hpp>
 #include <motion_model/constant_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -109,8 +110,11 @@ private:
   /// Publish the currently estimated state.
   void publish_current_state();
 
+  /// Update the latest orientation with newer one.
+  void update_latest_orientation_if_needed(const geometry_msgs::msg::QuaternionStamped & rotation);
+
   /// Get the transformation from a frame in a provided header to the current frame.
-  Eigen::Isometry3f get_transform(const std_msgs::msg::Header & header);
+  geometry_msgs::msg::TransformStamped get_transform(const std_msgs::msg::Header & header);
 
   template<typename MessageT>
   using CallbackFnT = void (StateEstimationNode::*)(const typename MessageT::SharedPtr);
@@ -137,7 +141,7 @@ private:
 
   common::types::bool8_t m_filter_initialized{};
   common::types::bool8_t m_publish_data_driven{};
-  autoware::common::types::float64_t m_publish_frequency{};
+  common::types::float64_t m_publish_frequency{};
 
   std::string m_frame_id{};
   std::string m_child_frame_id{};
@@ -148,6 +152,9 @@ private:
 
   tf2::BufferCore m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;
+
+  geometry_msgs::msg::QuaternionStamped m_latest_orientation{};
+  common::types::float64_t m_min_speed_to_use_speed_orientation{};
 };
 
 }  // namespace state_estimation_node

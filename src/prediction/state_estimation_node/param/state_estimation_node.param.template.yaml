@@ -57,3 +57,7 @@
 
     # A child frame id for the tf transformations.
     child_frame_id: "base_link"
+
+    # The minimum speed at which the output message orientation would be taken from the last
+    # observed pose or odometry message. This is 0 by default, i.e. not used by default.
+    min_speed_to_use_speed_orientation: 0.0

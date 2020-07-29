@@ -20,6 +20,7 @@
 #include <state_estimation_node/time.hpp>
 #include <state_estimation_node/measurement_conversion.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_eigen/tf2_eigen.h>
 
 #include <string>
@@ -141,6 +142,13 @@ Eigen::Matrix<float32_t, kStateDim, kStateDim> create_state_variances(
   return diagonal.asDiagonal();
 }
 
+autoware::common::types::float64_t get_speed(const geometry_msgs::msg::Twist & twist)
+{
+  const auto x = twist.linear.x;
+  const auto y = twist.linear.y;
+  return std::sqrt(x * x + y * y);
+}
+
 
 }  // namespace
 
@@ -212,14 +220,25 @@ StateEstimationNode::StateEstimationNode(
   if (publish_ft) {
     m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf", kDefaultHistory);
   }
+
+  m_min_speed_to_use_speed_orientation = declare_parameter(
+    "min_speed_to_use_speed_orientation", 0.0);
 }
 
 void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 {
   const auto time_observation_received = to_time_point(now());
+  const auto transform = get_transform(msg->header);
   m_ekf->observation_update(
     time_observation_received, message_to_measurement<MeasurementPoseAndSpeed>(
-      *msg, get_transform(msg->header)));
+      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+  geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
+  tf2::doTransform(
+    geometry_msgs::msg::QuaternionStamped{}.
+    set__quaternion(msg->pose.pose.orientation).
+    set__header(msg->header),
+    orientation_in_expected_frame, transform);
+  update_latest_orientation_if_needed(orientation_in_expected_frame);
   if (m_publish_data_driven) {
     publish_current_state();
   }
@@ -228,9 +247,17 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 {
   const auto time_observation_received = to_time_point(now());
+  const auto transform = get_transform(msg->header);
   m_ekf->observation_update(
     time_observation_received, message_to_measurement<MeasurementPose>(
-      *msg, get_transform(msg->header)));
+      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+  geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
+  tf2::doTransform(
+    geometry_msgs::msg::QuaternionStamped{}.
+    set__quaternion(msg->pose.pose.orientation).
+    set__header(msg->header),
+    orientation_in_expected_frame, transform);
+  update_latest_orientation_if_needed(orientation_in_expected_frame);
   if (m_publish_data_driven) {
     publish_current_state();
   }
@@ -245,22 +272,21 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
     return;
   }
   const auto time_observation_received = to_time_point(now());
+  const auto transform = get_transform(msg->header);
   m_ekf->observation_update(
     time_observation_received, message_to_measurement<MeasurementSpeed>(
-      *msg, get_transform(msg->header)));
+      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
   if (m_publish_data_driven) {
     publish_current_state();
   }
 }
 
-Eigen::Isometry3f StateEstimationNode::get_transform(const std_msgs::msg::Header & header)
+geometry_msgs::msg::TransformStamped StateEstimationNode::get_transform(
+  const std_msgs::msg::Header & header)
 {
   // Get the transform between the msg and the output frame. We treat the
   // possible exceptions as unrecoverable and let them bubble up.
-  auto transform = m_tf_buffer.lookupTransform(
-    m_frame_id, header.frame_id, to_time_point(header.stamp));
-  Eigen::Isometry3f transform_eigen{tf2::transformToEigen(transform).cast<float32_t>()};
-  return transform_eigen;
+  return m_tf_buffer.lookupTransform(m_frame_id, header.frame_id, to_time_point(header.stamp));
 }
 
 void StateEstimationNode::predict_and_publish_current_state()
@@ -274,7 +300,10 @@ void StateEstimationNode::predict_and_publish_current_state()
 void StateEstimationNode::publish_current_state()
 {
   if (m_ekf->is_initialized() && m_publisher) {
-    const auto & state = m_ekf->get_state();
+    auto state = m_ekf->get_state();
+    if (get_speed(state.twist.twist) < m_min_speed_to_use_speed_orientation) {
+      state.pose.pose.orientation = m_latest_orientation.quaternion;
+    }
     m_publisher->publish(state);
     if (m_tf_publisher) {
       TfMsgT tf_msg{};
@@ -289,6 +318,16 @@ void StateEstimationNode::publish_current_state()
       m_tf_publisher->publish(tf_msg);
     }
   }
+}
+
+void StateEstimationNode::update_latest_orientation_if_needed(
+  const geometry_msgs::msg::QuaternionStamped & rotation)
+{
+  if (m_latest_orientation.header.stamp.sec > rotation.header.stamp.sec) {return;}
+  if (m_latest_orientation.header.stamp.sec == rotation.header.stamp.sec) {
+    if (m_latest_orientation.header.stamp.nanosec > rotation.header.stamp.nanosec) {return;}
+  }
+  m_latest_orientation = rotation;
 }
 
 template<typename MessageT>
