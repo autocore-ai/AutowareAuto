@@ -39,16 +39,45 @@ The rviz config has displays for all topics in this tutorial. As nodes are launc
 
 In order to bring up the perception stack, point cloud data needs to be published to the `/lidar_front/points_raw` topic. Several methods for doing this are given below.
 
-- Running a simulator: To do this, see [Running the LGSVL Simulator along side Autoware.Auto](lgsvl.html)
-- Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) and then launch the node:
+1. Replaying recorded sensor data. To do this:
+  1. Download the PCAP file [Dual VLP-16 Hi-Res pcap file](https://autoware-auto.s3.us-east-2.amazonaws.com/route_small_loop_rw.pcap).
+  2. Move the downloaded file into your `adehome` folder.
+  3. Replay the file using `udpreplay`:
+```console
+$ ade enter
+ade$ udpreplay -r -1 route_small_loop_rw.pcap
+```
+  4. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) for the front lidar:
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run velodyne_node velodyne_cloud_node_exe __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test.param.yaml
+ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test.param.yaml
+```
+  5. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) for the rear lidar:
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_rear __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test_rear.param.yaml
+```
+2. Running a simulator: To do this, see [Running the LGSVL Simulator along side Autoware.Auto](lgsvl.html)
+3. Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) and then launch the node:
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test.param.yaml
 ```
 
 \note
-At this point, there exists a convenience launch file that can bring up the robot_state_publisher along with the rest of the perception stack using a single command. You can either use the below launch file to bring up the stack, or continue on with the tutorial:
+At this point, there exists a convenience launch file that can bring up the robot_state_publisher along with the rest of the perception stack using a single command.
+You can either use the below launch file to bring up the stack, or continue on with the tutorial:
+
+- When using PCAP data:
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_demos lidar_bounding_boxes_pcap.launch.py
+```
+- When using the LGSVL simulator:
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
@@ -59,6 +88,12 @@ ade$ ros2 launch autoware_demos lidar_bounding_boxes_lgsvl.launch.py
 
 This node publishes the transform tree of the vehicle available. To do this:
 
+- When using PCAP data:
+```console
+$ ade enter
+ade$ ros2 run robot_state_publisher robot_state_publisher /opt/AutowareAuto/share/lexus_rx_450h_description/urdf/lexus_rx_450h_pcap.urdf
+```
+- When using the LGSVL simulator:
 ```console
 $ ade enter
 ade$ ros2 run robot_state_publisher robot_state_publisher /opt/AutowareAuto/share/lexus_rx_450h_description/urdf/lexus_rx_450h.urdf
@@ -99,7 +134,7 @@ This node clusters non-ground points into objects and publishes bounding boxes. 
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_exe __params:=/opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground
+ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_node_exe __params:=/opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground
 ```
 
 ![Autoware.Auto bounding boxes segmentation snapshot](autoware-auto-bounding-boxes-smaller.png)
