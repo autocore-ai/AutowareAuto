@@ -114,19 +114,7 @@ We aim for a 100% line coverage and continuously improve our testsuite to achiev
 In particular, we do not accept changes that reduce the coverage value.
 If a merge request has a lower line coverage than `master`, we will request the contributor to add more tests.
 
-The following commands, taken from our automated CI pipeline, are _one example_ of how to generate a coverage report for Autoware.Auto.
-You can execute them in your Autoware.Auto workspace and confirm that the coverage value is sufficient before submitting your merge request.
-Note that this is _not required_, as the CI pipeline will produce a coverage report automatically for your merge request.
-
-```bash
-colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug --ament-cmake-args -DCMAKE_CXX_FLAGS="$COVERAGE_FLAGS" -DCMAKE_C_FLAGS="$COVERAGE_FLAGS"
-lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.base --initial
-colcon test --abort-on-error
-lcov --config-file .lcovrc --base-directory "$PWD" --capture --directory build -o lcov.test
-lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total
-lcov --config-file .lcovrc -r lcov.total "*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*" -o lcov.total.filtered
-genhtml --config-file .lcovrc -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage
-```
+Instructions for generating a coverage report can be found here: \ref how-to-write-tests-and-measure-coverage-coverage.
 
 For information about writing unit or integration tests, see the [Writing Unit Tests in ROS](#unit-tests-in-ros) and [Writing Integration Tests in ROS](#integration-tests-in-ros) sections.
 
