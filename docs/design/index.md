@@ -9,5 +9,7 @@ This section of the Autoware.Auto documentation describes how the software is de
 - @subpage autoware-fusion-design
 - @subpage autoware-prediction-design
 - @subpage autoware-localization-design
+- @subpage autoware-mapping-design
 - @subpage autoware-motion-design
 - @subpage autoware-vehicle-interfaces-design
+- @subpage autoware-tools-design

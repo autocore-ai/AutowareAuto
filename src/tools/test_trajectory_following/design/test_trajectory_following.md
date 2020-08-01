@@ -1,4 +1,4 @@
-Test Trajectory Following - Usage and Configuration
+Test Trajectory Following {#test-trajectory-following}
 =============
 This package contains launch files, param and scripts for
 easier integration testing of different modules needed for trajectory following functionality.

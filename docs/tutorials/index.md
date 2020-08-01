@@ -8,6 +8,7 @@ Others are much more in-depth, diving deep into the technical reasoning and know
 Choose tutorials that are appropriate to your skill level and your particular needs from Autoware.Auto.
 Tutorials that are suitable for a beginner are marked as such.
 
+- @subpage autoware-demos
 - @subpage perception-stack
 - @subpage lgsvl
 - @subpage trajectory-following

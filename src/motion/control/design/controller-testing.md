@@ -1,4 +1,4 @@
-Controller Testing- Usage and Configuration
+Controller Testing {#controller-testing}
 =============
 This package contains launch files, param and scripts for
 running simulted controller tests with dynamic vehicle model, and generate plots

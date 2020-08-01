@@ -8,17 +8,12 @@ software for self-driving vehicles hosted under the Autoware Foundation. Autowar
 the [Autoware.AI project](https://www.autoware.ai/), based on
 [ROS 1](http://wiki.ros.org/Documentation).
 
-Autoware.Auto, another project from the Autoware Foundation, is a clean slate rewrite
-of Autoware.AI based on [ROS 2](https://index.ros.org/doc/ros2/). Compared
-to Autoware.AI, Autoware.Auto has the best possible software engineering practices which includes PR
-reviews, PR builds through CI, 100% documentation, 100% code coverage, style guide, development, and
-release process.
+The [Autoware.Auto project](https://www.autoware.auto/), based on [ROS 2](https://index.ros.org/doc/ros2/), is the next generation successor of Autoware.AI. Autoware.Auto is built with modern software engineering best practices including code reviews, continuous integration testing, thorough documentation, thorough test coverage, style and development guides, and a well-defined release process.
 
 Autoware.Auto has two other major differentiators when it's compared to Autoware.AI:
 
-1. Crisply defined interfaces for different modules (messages and APIs)
-2. An architecture designed for determinism, such that it is possible to reproduce behaviors on live
-machines and development machines
+1. Improved system architecture and module interface design (including messages and APIs)
+2. An emphasis on reproducibility and determinism at the library, node, and system levels
 
 ![Autoware.Auto testing vehicle](images/lexus.jpg)
 
@@ -30,13 +25,12 @@ Autoware.Auto initially targets the following 2 use cases:
 1. Autonomous Valet Parking
 2. Autonomous Depot Maneuvering
 
+Uses cases are designed with respect to target Operational Design Domains (ODDs). Demonstrations for target ODDs can be found in \ref odd-demos.
+
 After the initial set of [milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones)
 are completed, Autoware.Auto will allow you to easily map a parking lot, create
 a map for autonomous driving, and drive over this parking lot entirely autonomously; all in less
 than 2 weeks.
-
-![Autonomous valet parking](images/valet_parking.jpeg)
-
 
 # Supported Hardware
 
@@ -55,12 +49,8 @@ than 2 weeks.
 
 # Roadmap
 
-Functional features in Autoware.Auto are developed according to the roadmap below. More granular
-feature planning is being handled via
+Feature planning is being handled via
 [GitLab milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones).
-
-![Functional feature roadmap](images/aa_roadmap.png)
-
 
 # Documentation
 
@@ -70,7 +60,7 @@ If you are new to Autoware.Auto, begin at the installation documentation, then m
 
 - @subpage installation
 - @subpage tutorials
-- @subpage demonstrations
+- @subpage odd-demos
 - @subpage contributors-guide
 - @subpage design
 

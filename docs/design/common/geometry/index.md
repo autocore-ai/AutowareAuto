@@ -1,4 +1,5 @@
 Geometry {#autoware-common-geometry-design}
 =======
 
-- @subpage md_src_common_autoware_auto_geometry_design_spatial-hash-design
+- @subpage geometry-interval
+- @subpage geometry-spatial-hash

@@ -1,4 +1,4 @@
-Autoware.Auto 3D perception stack {#perception-stack}
+3D perception stack {#perception-stack}
 ============
 
 [TOC]

@@ -1,7 +1,9 @@
 Autonomous Valet Parking demonstration {#avpdemo}
 =================================================
 
-The Autonomous Valet Parking (AVP) demonstration uses Autoware.Auto to provide a valet parking service.
+The Autonomous Valet Parking (AVP) demonstration uses Autoware.Auto to provide a valet parking service in the parking lot ODD.
+
+![Autonomous valet parking](images/valet_parking.jpeg)
 
 # Description of the demonstration
 
@@ -9,10 +11,10 @@ The AVP demonstration uses Autoware.Auto to provide the following functions:
 
 1. Automatically drive a car from a pre-defined drop-off zone (e.g. the entrance to a carpark) to a
    parking spot indicated by an external system.
-1. Park a car in a parking spot, starting in a lane near that parking spot.
-1. Drive out of a parking spot.
-1. Drive to a pre-defined pick-up zone (e.g. the exit from a carpark).
-1. Automatically stop for obstacles while achieving the above.
+2. Park a car in a parking spot, starting in a lane near that parking spot.
+3. Drive out of a parking spot.
+4. Drive to a pre-defined pick-up zone (e.g. the exit from a carpark).
+5. Automatically stop for obstacles while achieving the above.
 
 
 # Prerequisites {#avpdemo-prerequisites}
@@ -41,10 +43,10 @@ You can use the included sample carpark, or your own carpark.
 If using your own carpark, you will need to provide a simulated world for it as described in [Prerequisites]{@ref avpdemo-prerequisites}.
 
 1. [Install the ADE]{@ref installation-and-development-install-ade} and install the LGSVL simulator.
-1. Configure the simulated world.
-1. Configure the simulated car.
-1. Follow the instructions for launching LGSVL to launch the simulator.
-1. Do magic stuff to make it all work.
+2. Configure the simulated world.
+3. Configure the simulated car.
+4. Follow the instructions for launching LGSVL to launch the simulator.
+5. Do magic stuff to make it all work.
 
 
 # Setup and launching (hardware)

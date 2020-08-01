@@ -1,4 +1,4 @@
-osm_planner
+OSM Planner {#osm-planner}
 =============
 
 # Purpose / Use cases
