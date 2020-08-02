@@ -46,25 +46,9 @@ class POINT_CLOUD_FUSION_PUBLIC PointCloudFusionNode : public rclcpp::Node
 {
 public:
   /// \brief constructor
-  /// \param node_name Name of the node
-  /// \param node_namespace namespace of the node
-  PointCloudFusionNode(
-    const std::string & node_name, const std::string & node_namespace);
-
-  /// \brief constructor
-  /// \param node_name Name of the node
-  /// \param node_namespace namespace of the node
-  /// \param output_topic Topic the fused point cloud will be published on
-  /// \param input_topics List of pointcloud input topics
-  /// \param output_frame_id ID of the frame the fused point cloud should be on
-  /// \param cloud_size Maximum size for a pointcloud
-  PointCloudFusionNode(
-    const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & output_topic,
-    const std::vector<std::string> & input_topics,
-    const std::string & output_frame_id,
-    const uint32_t cloud_size);
+  /// \param[in] options An rclcpp::NodeOptions object
+  explicit PointCloudFusionNode(
+    const rclcpp::NodeOptions node_options);
 
 private:
   using PointT = common::types::PointXYZIF;

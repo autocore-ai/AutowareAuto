@@ -138,10 +138,17 @@ builtin_interfaces::msg::Time to_msg_time(
 }
 
 TEST_F(TestPCF, test_basic_fusion) {
-  std::vector<std::string> topics{"topic1", "topic2"};
+  std::vector<rclcpp::Parameter> params;
+  params.emplace_back("number_of_sources", 2);
+  params.emplace_back("output_frame_id", "base_link");
+  params.emplace_back("cloud_size", static_cast<int64_t>(55000U));
+
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
   auto pcf_node =
     std::make_shared<autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode>(
-    "test_pcf_node", "", "points_concat", topics, "base_link", 55000U);
+    node_options);
 
   bool8_t test_completed = false;
   auto time0 = std::chrono::system_clock::now();
@@ -154,9 +161,9 @@ TEST_F(TestPCF, test_basic_fusion) {
   auto pc2 = make_pc({4, 5, 6}, t1);
   auto expected_result = make_pc({1, 2, 3, 4, 5, 6}, t1);
 
-  auto pub_ptr1 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("topic1",
+  auto pub_ptr1 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("input_topic1",
       rclcpp::QoS(10));
-  auto pub_ptr2 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("topic2",
+  auto pub_ptr2 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("input_topic2",
       rclcpp::QoS(10));
 
   auto handle_concat =
@@ -166,7 +173,7 @@ TEST_F(TestPCF, test_basic_fusion) {
       test_completed = true;
     };
 
-  auto sub_ptr = pcf_node->create_subscription<sensor_msgs::msg::PointCloud2>("points_concat",
+  auto sub_ptr = pcf_node->create_subscription<sensor_msgs::msg::PointCloud2>("output_topic",
       rclcpp::QoS(10), handle_concat);
 
   pub_ptr1->publish(pc1);

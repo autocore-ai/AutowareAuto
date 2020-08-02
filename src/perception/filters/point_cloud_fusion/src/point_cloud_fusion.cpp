@@ -35,9 +35,8 @@ namespace point_cloud_fusion
 {
 
 PointCloudFusionNode::PointCloudFusionNode(
-  const std::string & node_name,
-  const std::string & node_namespace)
-: Node(node_name, node_namespace),
+  const rclcpp::NodeOptions node_options)
+: Node("point_cloud_fusion_node", node_options),
   m_cloud_publisher(create_publisher<PointCloudMsgT>("output_topic", rclcpp::QoS(10))),
   m_input_topics(declare_parameter("number_of_sources").get<std::size_t>()),
   m_output_frame_id(declare_parameter("output_frame_id").get<std::string>()),
@@ -48,23 +47,6 @@ PointCloudFusionNode::PointCloudFusionNode(
   }
   init();
 }
-
-PointCloudFusionNode::PointCloudFusionNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & output_topic,
-  const std::vector<std::string> & input_topics,
-  const std::string & output_frame_id,
-  const uint32_t cloud_size)
-: Node(node_name, node_namespace),
-  m_cloud_publisher(create_publisher<PointCloudMsgT>(output_topic, rclcpp::QoS(10))),
-  m_input_topics(input_topics),
-  m_output_frame_id(output_frame_id),
-  m_cloud_capacity(cloud_size)
-{
-  init();
-}
-
 
 void PointCloudFusionNode::init()
 {

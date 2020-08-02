@@ -31,21 +31,11 @@ int32_t main(const int32_t argc, char ** const argv)
 {
   int32_t ret = 0;
   try {
-    const char8_t * node_name = "point_cloud_fusion_node";
-    const char8_t * arg = rcutils_cli_get_option(argv, &argv[argc], "--node_name");
-    if (nullptr != arg) {
-      node_name = arg;
-    }
-    const char8_t * node_namespace = "";
-    arg = rcutils_cli_get_option(argv, &argv[argc], "--node_namespace");
-    if (nullptr != arg) {
-      node_namespace = arg;
-    }
-
     rclcpp::init(argc, argv);
 
+    rclcpp::NodeOptions node_options;
     auto pc_ptr = std::make_shared<autoware::perception::filters::point_cloud_fusion
-        ::PointCloudFusionNode>(node_name, node_namespace);
+        ::PointCloudFusionNode>(node_options);
 
     rclcpp::spin(pc_ptr);
     rclcpp::shutdown();
