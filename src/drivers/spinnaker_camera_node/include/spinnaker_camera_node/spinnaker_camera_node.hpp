@@ -37,13 +37,9 @@ class SPINNAKER_CAMERA_NODE_PUBLIC SpinnakerCameraNode : public ::rclcpp::Node
 {
 public:
   /// ROS 2 parameter contructor.
-  /// \param[in] node_name The name of the node.
-  /// \param[in] node_namespace Namespace of the node.
   /// \param[in] node_options Node options for this node.
-  explicit SpinnakerCameraNode(
-    const std::string & node_name,
-    const std::string & node_namespace = "",
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{});
+  explicit explicit SpinnakerCameraNode(
+    const rclcpp::NodeOptions & node_options);
 
 private:
   /// A wrapper around a publisher that handles proper multithreading protection.

@@ -31,8 +31,9 @@ int main(int argc, char * argv[])
     rclcpp::init(argc, argv);
     rclcpp::executors::SingleThreadedExecutor exe;
 
+    rclcpp::NodeOptions node_options;
     auto node = std::make_shared<SpinnakerCameraNode>(
-      "spinnaker_camera_node");
+      node_options);
 
     exe.add_node(node->get_node_base_interface());
     exe.spin();

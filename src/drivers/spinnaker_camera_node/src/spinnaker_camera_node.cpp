@@ -49,10 +49,8 @@ namespace camera
 {
 
 SpinnakerCameraNode::SpinnakerCameraNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
   const rclcpp::NodeOptions & node_options)
-: rclcpp::Node{node_name, node_namespace, node_options}
+: rclcpp::Node{"spinnaker_camera_node", node_options}
 {
   m_spinnaker_wrapper =
     std::make_unique<spinnaker::SystemWrapper>();

@@ -29,8 +29,6 @@ def generate_test_description(ready_fn):
     spinnaker_camera_node = launch_ros.actions.LifecycleNode(
         package="spinnaker_camera_node",
         node_executable="spinnaker_camera_node_exe",
-        node_name="spinnaker_camera_node",
-        node_namespace="spinnaker_namespace",
         parameters=[
             "{}/param/spinnaker_camera_test.param.yaml".format(
                 ament_index_python.get_package_share_directory("spinnaker_camera_node")
