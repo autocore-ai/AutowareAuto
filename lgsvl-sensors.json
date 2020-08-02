@@ -159,5 +159,12 @@
   {
     "type": "Keyboard Control",
     "name": "Keyboard Car Control"
+  },
+  {
+    "type": "Clock",
+    "name": "Simulation Clock",
+    "params": {
+      "Topic": "/lgsvl/clock"
+    }
   }
 ]
