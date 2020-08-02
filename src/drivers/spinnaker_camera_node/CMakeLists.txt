@@ -45,10 +45,10 @@ if(SPINNAKER_FOUND)
     "src/spinnaker_camera_node.cpp")
   autoware_set_compile_options(${PROJECT_NAME})
 
-  set(CAMERA_EXECUTABLE "${PROJECT_NAME}_exe")
-  ament_auto_add_executable(${CAMERA_EXECUTABLE}
-    "src/spinnaker_camera_node_main.cpp")
-  autoware_set_compile_options(${CAMERA_EXECUTABLE})
+  rclcpp_components_register_node(${PROJECT_NAME}
+    PLUGIN "autoware::drivers::camera::SpinnakerCameraNode"
+    EXECUTABLE ${PROJECT_NAME}_exe
+  )
 
   ## Testing
   if(BUILD_TESTING)
