@@ -46,7 +46,7 @@ class POINT_CLOUD_FUSION_PUBLIC PointCloudFusionNode : public rclcpp::Node
 {
 public:
   /// \brief constructor
-  /// \param[in] options An rclcpp::NodeOptions object
+  /// \param[in] node_options An rclcpp::NodeOptions object
   explicit PointCloudFusionNode(
     const rclcpp::NodeOptions node_options);
 
