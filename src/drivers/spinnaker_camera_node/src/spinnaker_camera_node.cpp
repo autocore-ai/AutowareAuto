@@ -15,6 +15,7 @@
 #include <spinnaker_camera_node/spinnaker_camera_node.hpp>
 
 #include <rcutils/logging_macros.h>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -172,3 +173,5 @@ void SpinnakerCameraNode::ProtectedPublisher::publish(
 }  // namespace camera
 }  // namespace drivers
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::drivers::camera::SpinnakerCameraNode)
