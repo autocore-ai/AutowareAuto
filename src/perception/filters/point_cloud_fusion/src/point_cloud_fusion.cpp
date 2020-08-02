@@ -14,13 +14,15 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-#include <point_cloud_fusion/point_cloud_fusion.hpp>
 #include <common/types.hpp>
-#include <memory>
-#include <vector>
+#include <point_cloud_fusion/point_cloud_fusion.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <vector>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -193,3 +195,6 @@ bool8_t PointCloudFusionNode::concatenate_pointcloud(
 }  // namespace filters
 }  // namespace perception
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode)

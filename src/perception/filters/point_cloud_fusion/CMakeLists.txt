@@ -39,9 +39,10 @@ ament_auto_add_library(${PC_FUSION_LIB} SHARED
   include/point_cloud_fusion/visibility_control.hpp)
 autoware_set_compile_options(${PC_FUSION_LIB})
 
-set(PC_FUSION_EXEC pointcloud_fusion_node_exe)
-ament_auto_add_executable(${PC_FUSION_EXEC} src/point_cloud_fusion_node_main.cpp)
-autoware_set_compile_options(${PC_FUSION_EXEC})
+rclcpp_components_register_node(${PC_FUSION_LIB}
+  PLUGIN "autoware::covariance_insertion_node::CovarianceInsertionNode"
+  EXECUTABLE ${PC_FUSION_LIB}_exe
+)
 
 if(BUILD_TESTING)
   # run linters
@@ -63,8 +64,6 @@ endif()
 
 # required by tf2, message_filters
 target_compile_options(${PC_FUSION_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
-target_compile_options(${PC_FUSION_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
 
 # Ament Exporting
