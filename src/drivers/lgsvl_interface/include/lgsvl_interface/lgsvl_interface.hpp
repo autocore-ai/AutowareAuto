@@ -28,7 +28,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
-#include <helper_functions/lookup_table.hpp>
+#include <geometry/lookup_table.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_interface/platform_interface.hpp>
 
