@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <recordreplay_planner/recordreplay_planner.hpp>
+#include <recordreplay_planner/vehicle_bounding_box.hpp>
 #include <motion_testing/motion_testing.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
@@ -25,7 +26,6 @@
 #include <geometry_msgs/msg/point32.hpp>
 
 #include <geometry/intersection.hpp>
-#include <geometry/vehicle_bounding_box.hpp>
 #include <common/types.hpp>
 
 #include <chrono>
@@ -35,6 +35,7 @@
 #include <cstdio>
 
 using motion::planning::recordreplay_planner::RecordReplayPlanner;
+using motion::planning::recordreplay_planner::compute_boundingbox_from_trajectorypoint;
 using std::chrono::system_clock;
 using motion::motion_testing::make_state;
 using autoware_auto_msgs::msg::Trajectory;
@@ -47,7 +48,6 @@ using motion::motion_common::from_angle;
 using autoware::common::geometry::intersect;
 using autoware::common::geometry::norm_2d;
 using autoware::common::geometry::minus_2d;
-using autoware::common::geometry::compute_boundingbox_from_trajectorypoint;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;

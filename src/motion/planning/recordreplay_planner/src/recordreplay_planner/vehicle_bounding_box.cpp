@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "geometry/vehicle_bounding_box.hpp"
+#include "recordreplay_planner/vehicle_bounding_box.hpp"
 
 #include <motion_common/motion_common.hpp>
 #include <geometry/bounding_box/rotating_calipers.hpp>
@@ -29,11 +29,11 @@
 #include <type_traits>
 #include <algorithm>
 
-namespace autoware
+namespace motion
 {
-namespace common
+namespace planning
 {
-namespace geometry
+namespace recordreplay_planner
 {
 using motion::motion_common::to_angle;
 using geometry_msgs::msg::Point32;
@@ -83,6 +83,6 @@ BoundingBox compute_boundingbox_from_trajectorypoint(
 }
 
 
-}  // namespace geometry
-}  // namespace common
-}  // namespace autoware
+}  // namespace recordreplay_planner
+}  // namespace planning
+}  // namespace motion

@@ -17,7 +17,6 @@
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry/common_2d.hpp>
 #include <geometry/intersection.hpp>
-#include <geometry/vehicle_bounding_box.hpp>
 #include <time_utils/time_utils.hpp>
 #include <motion_common/motion_common.hpp>
 #include <common/types.hpp>
@@ -33,6 +32,7 @@
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 #include "rmw/rmw.h"
 #include "rmw/serialized_message.h"
+#include "recordreplay_planner/vehicle_bounding_box.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
@@ -48,7 +48,6 @@ namespace recordreplay_planner
 using geometry_msgs::msg::Point32;
 using motion::motion_common::to_angle;
 using autoware::common::geometry::intersect;
-using autoware::common::geometry::compute_boundingbox_from_trajectorypoint;
 
 RecordReplayPlanner::RecordReplayPlanner(const VehicleConfig & vehicle_param)
 : m_vehicle_param(vehicle_param)
