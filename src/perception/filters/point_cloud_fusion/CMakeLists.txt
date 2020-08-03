@@ -40,7 +40,7 @@ ament_auto_add_library(${PC_FUSION_LIB} SHARED
 autoware_set_compile_options(${PC_FUSION_LIB})
 
 rclcpp_components_register_node(${PC_FUSION_LIB}
-  PLUGIN "autoware::covariance_insertion_node::CovarianceInsertionNode"
+  PLUGIN "autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode"
   EXECUTABLE ${PC_FUSION_LIB}_exe
 )
 
