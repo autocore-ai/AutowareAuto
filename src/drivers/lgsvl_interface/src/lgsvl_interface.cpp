@@ -217,22 +217,7 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     m_odom_zero.z = msg.pose.pose.position.z;
     m_odom_set = true;
   }
-  decltype(msg.pose.pose.orientation) q{};
-  {
-    tf2::Quaternion tf2_q{
-      msg.pose.pose.orientation.x,
-      msg.pose.pose.orientation.y,
-      msg.pose.pose.orientation.z,
-      msg.pose.pose.orientation.w};
-    // rotate +90 degrees around +z axis to get X forward
-    tf2::Quaternion q90{};
-    q90.setRPY(0.0, 0.0, 90.0 * (M_PI / 180.0));
-    const auto q_x_forward = q90 * tf2_q;
-    q.x = q_x_forward.getX();
-    q.y = q_x_forward.getY();
-    q.z = q_x_forward.getZ();
-    q.w = q_x_forward.getW();
-  }
+  decltype(msg.pose.pose.orientation) q{msg.pose.pose.orientation};
   const auto px = msg.pose.pose.position.x - m_odom_zero.x;
   const auto py = msg.pose.pose.position.y - m_odom_zero.y;
   const auto pz = msg.pose.pose.position.z - m_odom_zero.z;
@@ -245,7 +230,6 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
       const auto inv_mag = 1.0 / std::sqrt((q.z * q.z) + (q.w * q.w));
       vse.state.heading.real = static_cast<decltype(vse.state.heading.real)>(q.w * inv_mag);
       vse.state.heading.imag = static_cast<decltype(vse.state.heading.imag)>(q.z * inv_mag);
-      // LGSVL is y-up and left handed
     }
 
     // Get values from vehicle odometry
