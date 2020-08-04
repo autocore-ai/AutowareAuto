@@ -46,9 +46,7 @@ public:
       0.05F,       // min_height_thresh_m,
       1.5F,        // max_global_height_thresh_m,
       1.8F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      -1.0F,       // min_height_m,
-      1.5F         // max_height_m
+      2.0,         // max_provisional_ground_distance_m
   }
   {
   }

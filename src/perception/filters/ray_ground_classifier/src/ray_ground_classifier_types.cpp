@@ -42,9 +42,7 @@ Config::Config(
   const float32_t min_height_thresh_m,
   const float32_t max_global_height_thresh_m,
   const float32_t max_last_local_ground_thresh_m,
-  const float32_t max_provisional_ground_distance_m,
-  const float32_t min_height_m,
-  const float32_t max_height_m)
+  const float32_t max_provisional_ground_distance_m)
 : m_ground_z_m(-sensor_height_m),
   m_max_local_slope(tanf(static_cast<float32_t>(deg2rad(max_local_slope_deg)))),
   m_max_global_slope(tanf(static_cast<float32_t>(deg2rad(max_global_slope_deg)))),
@@ -52,9 +50,7 @@ Config::Config(
   m_min_height_thresh_m(min_height_thresh_m),
   m_max_global_height_thresh_m(max_global_height_thresh_m),
   m_max_last_local_ground_thresh_m(max_last_local_ground_thresh_m),
-  m_max_provisional_ground_distance_m(max_provisional_ground_distance_m),
-  m_min_height_m(min_height_m),
-  m_max_height_m(max_height_m)
+  m_max_provisional_ground_distance_m(max_provisional_ground_distance_m)
 {
   // TODO(c.ho) nan check
   if ((max_local_slope_deg <= 0.0F) ||
@@ -74,9 +70,6 @@ Config::Config(
     (m_max_global_height_thresh_m <= 0.0F))
   {
     throw std::runtime_error("ray ground classifier: config distances must be positive");
-  }
-  if ((m_min_height_m >= m_max_height_m)) {
-    throw std::runtime_error("ray ground classifier: inconsistent max/min heights");
   }
   if ((max_local_slope_deg >= nonground_retro_thresh_deg) ||
     (max_global_slope_deg >= nonground_retro_thresh_deg))

@@ -81,10 +81,6 @@ struct RAY_GROUND_CLASSIFIER_PUBLIC Config
   ///                                           point (for classifying as ground from nonground)
   /// \param[in] max_provisional_ground_distance_m Max radial distance until provisional ground is
   ///                                              not influenced by next points
-  /// \param[in] min_height_m Points below this height in point cloud's frame will not be considered
-  ///                         for ground filtering
-  /// \param[in] max_height_m Points above this height in point cloud's frame will not be considered
-  ///                         for ground filtering
   /// throw std::runtime_error If any of the configuration parameters are inconsistent (e.g. angles
   ///                          are outside of (0, 90), min_* > max_*, etc.)
   Config(
@@ -95,9 +91,7 @@ struct RAY_GROUND_CLASSIFIER_PUBLIC Config
     const float32_t min_height_thresh_m,
     const float32_t max_global_height_thresh_m,
     const float32_t max_last_local_ground_thresh_m,
-    const float32_t max_provisional_ground_distance_m,
-    const float32_t min_height_m,
-    const float32_t max_height_m);
+    const float32_t max_provisional_ground_distance_m);
   /// \brief Get height of sensor off of ground, in meters
   /// \return The value in meters
   float32_t get_sensor_height() const;
@@ -128,14 +122,6 @@ struct RAY_GROUND_CLASSIFIER_PUBLIC Config
 
   /// \brief The maximum influence distance for provisional ground point label
   const float32_t m_max_provisional_ground_distance_m;
-
-  /// \brief The minimum height (in sensor frame) of points to classify, points lower than this are
-  ///        ignored
-  const float32_t m_min_height_m;
-
-  /// \brief The maximum height (in sensor frame) of points to classify, points higher than this are
-  ///        ignored
-  const float32_t m_max_height_m;
 };  // class Config
 
 /// \brief This is a simplified point view of a ray. The only information needed is height and

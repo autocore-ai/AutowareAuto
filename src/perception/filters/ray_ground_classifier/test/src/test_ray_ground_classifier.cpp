@@ -365,9 +365,7 @@ TEST_F(ray_ground_classifier, plateau_ground)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     1.8F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    2.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   };
   ASSERT_LT(fabsf(cfg2.m_max_local_slope - tanf(10.0F * 3.14159F / 180.0F)), 0.001F);
   dat =
@@ -408,9 +406,7 @@ TEST_F(ray_ground_classifier, provisional_ground)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   };
   ASSERT_LT(fabsf(cfg2.m_nonground_retro_thresh - tanf(70.0F * 3.14159F / 180.0F)), 0.001F);
   ASSERT_LT(fabsf(cfg2.m_max_last_local_ground_thresh_m - 5.0F), 0.001F);
@@ -431,27 +427,6 @@ TEST_F(ray_ground_classifier, provisional_ground)
   };
   generate_points(cfg2, dat, pts, labels);
   label_and_check(cfg2, pts, labels, false);
-}
-
-// Test height filtering
-TEST_F(ray_ground_classifier, height_filter)
-{
-  EXPECT_FLOAT_EQ(cfg.m_min_height_m, -1.0F);
-  EXPECT_FLOAT_EQ(cfg.m_max_height_m, 1.5F);
-  autoware::perception::filters::ray_ground_classifier::RayGroundClassifier filter(cfg);
-  autoware::common::types::PointXYZIF pt1, pt2;
-  pt1.x = 1.0F;
-  pt1.z = cfg.m_max_height_m + 0.00001F;
-  filter.insert(&pt1);
-  pt2.x = 2.0F;
-  pt2.z = cfg.m_min_height_m - 0.00001F;
-  filter.insert(&pt2);
-  autoware::perception::filters::ray_ground_classifier::PointPtrBlock blk1, blk2;
-  blk1.clear();
-  blk2.clear();
-  filter.partition(blk1, blk2, false);
-  EXPECT_EQ(blk1.size(), 0U);
-  EXPECT_EQ(blk2.size(), 0U);
 }
 
 // same as wall, but just a different path to exercise the logic
@@ -566,9 +541,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -578,9 +551,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -590,9 +561,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
 
   // check >90 deg slopes
@@ -604,9 +573,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -616,9 +583,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -628,9 +593,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check negative height thresholds
   EXPECT_THROW(Config cfg2({
@@ -641,9 +604,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     -0.05F,        // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -653,22 +614,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     -1.5F,         // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
-  }), std::runtime_error);
-  // check for min/max height consistency
-  EXPECT_THROW(Config cfg2({
-    0.4F,          // sensor_height_m,
-    5.0F,          // max_local_slope_deg,
-    3.0F,          // max_global_slope_deg,
-    70.0F,         // nonground_retro_thresh_deg,
-    0.05F,         // min_height_thresh_m,
-    1.5F,          // max_global_height_thresh_m,
-    5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    1.0F,          // min_height_m,
-    0.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check for consistency wrt vertical structure threshold
   EXPECT_THROW(Config cfg2({
@@ -679,9 +625,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   EXPECT_THROW(Config cfg2({
     0.4F,          // sensor_height_m,
@@ -691,9 +635,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     5.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check for local vs global consistency
   EXPECT_THROW(Config cfg2({
@@ -704,9 +646,7 @@ TEST_F(ray_ground_classifier, bad_cases)
     0.05F,         // min_height_thresh_m,
     1.5F,          // max_global_height_thresh_m,
     1.0F,          // max_last_local_ground_thresh_m,
-    2.0,           // max_provisional_ground_distance_m,
-    -1.0F,         // min_height_m,
-    1.5F           // max_height_m
+    2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
 }
 

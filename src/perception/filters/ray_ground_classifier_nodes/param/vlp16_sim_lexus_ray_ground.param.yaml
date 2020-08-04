@@ -17,8 +17,6 @@
       max_global_height_thresh_m:          0.3
       max_last_local_ground_thresh_m:      0.6
       max_provisional_ground_distance_m:   5.0
-      min_height_m:                        -0.5
-      max_height_m:                        1.5
     aggregator:
       min_ray_angle_rad: -3.14159
       max_ray_angle_rad:  3.14159

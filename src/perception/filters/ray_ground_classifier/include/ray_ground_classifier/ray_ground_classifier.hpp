@@ -135,10 +135,6 @@ private:
 
   /// actual ground filter
   RayGroundPointClassifier m_point_classifier;
-
-  /// misc parameters for height filtering
-  const float32_t m_min_height_m;
-  const float32_t m_max_height_m;
 };  // class RayGroundClassifier
 }  // namespace ray_ground_classifier
 }  // namespace filters

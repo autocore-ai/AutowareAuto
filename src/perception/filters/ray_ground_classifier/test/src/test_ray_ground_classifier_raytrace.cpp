@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,10 +37,7 @@ public:
       0.05F,       // min_height_thresh_m,
       0.9F,        // max_global_height_thresh_m,
       1.8F,        // max_last_local_ground_thresh_m,
-      2.0,         // max_provisional_ground_distance_m,
-      // these are so height filtering doesn't hit for the purposes of our logic
-      -1.3F,       // min_height_m,
-      2.8F         // max_height_m
+      2.0,         // max_provisional_ground_distance_m
   }
   {
   }

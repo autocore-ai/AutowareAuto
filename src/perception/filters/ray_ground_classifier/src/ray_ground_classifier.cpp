@@ -41,9 +41,7 @@ namespace ray_ground_classifier
 RayGroundClassifier::RayGroundClassifier(const Config & cfg)
 : m_sort_array(autoware::common::types::POINT_BLOCK_CAPACITY),
   m_ray_sorter(autoware::common::types::POINT_BLOCK_CAPACITY),
-  m_point_classifier(cfg),
-  m_min_height_m(cfg.m_min_height_m),
-  m_max_height_m(cfg.m_max_height_m)
+  m_point_classifier(cfg)
 {
   m_sort_array.clear();
 }
@@ -51,9 +49,7 @@ RayGroundClassifier::RayGroundClassifier(const Config & cfg)
 RayGroundClassifier::RayGroundClassifier(const RayGroundClassifier & original)
 : m_sort_array(original.m_sort_array),
   m_ray_sorter(original.m_ray_sorter.capacity()),
-  m_point_classifier(original.m_point_classifier),
-  m_min_height_m(original.m_min_height_m),
-  m_max_height_m(original.m_max_height_m)
+  m_point_classifier(original.m_point_classifier)
 {
   m_sort_array.clear();
 }
@@ -167,28 +163,25 @@ void RayGroundClassifier::partition(
   for (std::size_t idx = 0U; idx < ray.size(); ++idx) {
     const std::size_t jdx = idx;  // fixes PCLint FP: idx modified in loop
     const PointXYZIFR & pt = ray[jdx];
-    const float32_t z = pt.get_z();
-    if ((m_max_height_m >= z) && (m_min_height_m <= z)) {
-      const RayGroundPointClassifier::PointLabel label = m_point_classifier.is_ground(pt);
-      // modify label of last point
-      if (((label == RayGroundPointClassifier::PointLabel::NONGROUND) &&
-        (last_label == RayGroundPointClassifier::PointLabel::PROVISIONAL_GROUND)) ||
-        (label == RayGroundPointClassifier::PointLabel::RETRO_NONGROUND))
-      {
-        last_label = RayGroundPointClassifier::PointLabel::NONGROUND;
-      }
-      // push last point accordingly
-      if (last_point_ptr != nullptr) {
-        if (RayGroundPointClassifier::label_is_ground(last_label)) {
-          insert(ground_block, last_point_ptr);
-        } else {
-          insert(nonground_block, last_point_ptr);
-        }
-      }
-      // update state
-      last_point_ptr = pt.get_point_pointer();
-      last_label = label;
+    const RayGroundPointClassifier::PointLabel label = m_point_classifier.is_ground(pt);
+    // modify label of last point
+    if (((label == RayGroundPointClassifier::PointLabel::NONGROUND) &&
+      (last_label == RayGroundPointClassifier::PointLabel::PROVISIONAL_GROUND)) ||
+      (label == RayGroundPointClassifier::PointLabel::RETRO_NONGROUND))
+    {
+      last_label = RayGroundPointClassifier::PointLabel::NONGROUND;
     }
+    // push last point accordingly
+    if (last_point_ptr != nullptr) {
+      if (RayGroundPointClassifier::label_is_ground(last_label)) {
+        insert(ground_block, last_point_ptr);
+      } else {
+        insert(nonground_block, last_point_ptr);
+      }
+    }
+    // update state
+    last_point_ptr = pt.get_point_pointer();
+    last_label = label;
   }
   // push trailing point
   if (last_point_ptr != nullptr) {

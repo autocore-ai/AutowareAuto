@@ -64,9 +64,7 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
           static_cast<float32_t>(declare_parameter(
             "classifier.max_last_local_ground_thresh_m").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
-            "classifier.max_provisional_ground_distance_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.min_height_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.max_height_m").get<float32_t>())
+            "classifier.max_provisional_ground_distance_m").get<float32_t>())
         })),
 #else
   m_classifier(ray_ground_classifier::Config{
@@ -84,9 +82,7 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
           static_cast<float32_t>(declare_parameter(
             "classifier.max_last_local_ground_thresh_m").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
-            "classifier.max_provisional_ground_distance_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.min_height_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter("classifier.max_height_m").get<float32_t>())
+            "classifier.max_provisional_ground_distance_m").get<float32_t>())
         }),
 #endif
   m_aggregator(ray_ground_classifier::RayAggregator::Config{
