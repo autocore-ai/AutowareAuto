@@ -37,7 +37,7 @@ namespace point_cloud_fusion
 {
 
 PointCloudFusionNode::PointCloudFusionNode(
-  const rclcpp::NodeOptions node_options)
+  const rclcpp::NodeOptions & node_options)
 : Node("point_cloud_fusion_node", node_options),
   m_cloud_publisher(create_publisher<PointCloudMsgT>("output_topic", rclcpp::QoS(10))),
   m_input_topics(declare_parameter("number_of_sources").get<std::size_t>()),

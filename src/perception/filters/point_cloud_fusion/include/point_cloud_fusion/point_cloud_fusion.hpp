@@ -48,7 +48,7 @@ public:
   /// \brief constructor
   /// \param[in] node_options An rclcpp::NodeOptions object
   explicit PointCloudFusionNode(
-    const rclcpp::NodeOptions node_options);
+    const rclcpp::NodeOptions & node_options);
 
 private:
   using PointT = common::types::PointXYZIF;
