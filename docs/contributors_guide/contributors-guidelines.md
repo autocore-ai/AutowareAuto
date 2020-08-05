@@ -70,7 +70,7 @@ Developers should commit and push regularly to the server to avoid data loss.
 
 ## IDEs
 
-While we provide an ADE volume for Atom for convenince, no specific IDE is required to develop software for Autoware.Auto.
+No specific IDE is required to develop software for Autoware.Auto.
 However, we recommend using an IDE that has good support for ROS 2, such as Atom, Visual Studio Code or CLion.
 If you plan to use the ADE (which is currently required), see the [Installation](@ref installation) guide.
 

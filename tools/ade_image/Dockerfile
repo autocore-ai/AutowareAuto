@@ -48,10 +48,6 @@ RUN pip3 install -U \
     && rm -rf /root/.cache /tmp/pip-* /tmp/pip3-packages
 
 
-RUN mkdir -p /opt/aw-atom-config/bin
-COPY atom-install-our-plugins /etc/atom/atom-install-our-plugins
-
-
 RUN git clone https://github.com/rigtorp/udpreplay && mkdir -p udpreplay/build \
       && cd udpreplay/build && cmake .. && make && make install \
       && cd - && rm -rf udpreplay/

@@ -3,7 +3,6 @@ export ADE_GITLAB=gitlab.com
 export ADE_REGISTRY=registry.gitlab.com
 export ADE_IMAGES="
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/ade:master
-  registry.gitlab.com/apexai/ade-atom:latest
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto:master
   registry.gitlab.com/apexai/ade-lgsvl:2020.08-native-bridge
 "
