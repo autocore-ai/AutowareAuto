@@ -38,7 +38,7 @@ class SPINNAKER_CAMERA_NODE_PUBLIC SpinnakerCameraNode : public ::rclcpp::Node
 public:
   /// ROS 2 parameter contructor.
   /// \param[in] node_options Node options for this node.
-  explicit explicit SpinnakerCameraNode(
+  explicit SpinnakerCameraNode(
     const rclcpp::NodeOptions & node_options);
 
 private:
