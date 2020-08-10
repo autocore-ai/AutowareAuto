@@ -60,17 +60,7 @@ public:
   using GoalHandleReplayTrajectory = rclcpp_action::ServerGoalHandle<ReplayTrajectory>;
 
   /// Parameter file constructor
-  RecordReplayPlannerNode(const std::string & name, const std::string & ns);
-  /// Explicit constructor
-  RecordReplayPlannerNode(
-    const std::string & name,
-    const std::string & ns,
-    const std::string & ego_topic,
-    const std::string & trajectory_topic,
-    const std::string & bounding_boxes_topic,
-    const VehicleConfig & vehicle_param,
-    const float64_t heading_weight,
-    const float64_t min_record_distance);
+  explicit RecordReplayPlannerNode(const rclcpp::NodeOptions & node_options);
 
 protected:
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;

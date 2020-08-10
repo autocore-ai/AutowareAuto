@@ -31,33 +31,33 @@ using State = autoware_auto_msgs::msg::VehicleKinematicState;
 
 using motion::motion_common::VehicleConfig;
 
-const auto test_vehicle_params = VehicleConfig(
-  1.0, 1.0, 0.5, 0.5, 1500.0, 12.0, 2.0, 0.5, 0.2);
-
 TEST(mytest_base, basic)
 {
-  const auto ego_topic = "ego_topic";
-  const auto trajectory_topic = "trajectory_topic";
-  const auto bounding_boxes_topic = "bounding_boxes_topic";
   const auto heading_weight = 0.1;
   const auto min_record_distance = 0.0;
   rclcpp::init(0, nullptr);
 
-  auto plannernode = std::make_shared<RecordReplayPlannerNode>(
-    "some_name",
-    "",
-    ego_topic,
-    trajectory_topic,
-    bounding_boxes_topic,
-    test_vehicle_params,
-    heading_weight,
-    min_record_distance);
+  rclcpp::NodeOptions node_options;
+  node_options.append_parameter_override("heading_weight", heading_weight);
+  node_options.append_parameter_override("min_record_distance", min_record_distance);
+  node_options.append_parameter_override("enable_obstacle_detection", true);
+  node_options.append_parameter_override("vehicle.cg_to_front_m", 1.0);
+  node_options.append_parameter_override("vehicle.cg_to_rear_m", 1.0);
+  node_options.append_parameter_override("vehicle.front_corner_stiffness", 0.5);
+  node_options.append_parameter_override("vehicle.rear_corner_stiffness", 0.5);
+  node_options.append_parameter_override("vehicle.mass_kg", 1500.0);
+  node_options.append_parameter_override("vehicle.yaw_inertia_kgm2", 12.0);
+  node_options.append_parameter_override("vehicle.width_m", 2.0);
+  node_options.append_parameter_override("vehicle.front_overhang_m", 0.5);
+  node_options.append_parameter_override("vehicle.rear_overhang_m", 0.2);
+
+  auto plannernode = std::make_shared<RecordReplayPlannerNode>(node_options);
 
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
-  const auto publisher =
-    std::make_shared<rclcpp::Node>("recordreplay_node_testpublisher");
-  const auto pub =
-    publisher->create_publisher<State>(ego_topic, rclcpp::QoS{10}.transient_local(), PubAllocT{});
+  const auto publisher = std::make_shared<rclcpp::Node>(
+    "recordreplay_node_testpublisher");
+  const auto pub = publisher->create_publisher<State>(
+    "vehicle_state", rclcpp::QoS{10}.transient_local(), PubAllocT{});
 
   rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(plannernode);

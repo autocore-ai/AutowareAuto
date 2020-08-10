@@ -21,8 +21,9 @@ int32_t main(int32_t argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
+  rclcpp::NodeOptions node_options;
   using motion::planning::recordreplay_planner_node::RecordReplayPlannerNode;
-  const auto nd = std::make_shared<RecordReplayPlannerNode>("recordreplay_planner", "");
+  const auto nd = std::make_shared<RecordReplayPlannerNode>(node_options);
 
   rclcpp::spin(nd);
 

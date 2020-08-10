@@ -29,8 +29,8 @@ namespace planning
 {
 namespace recordreplay_planner_node
 {
-RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const std::string & ns)
-: Node{name, ns}
+RecordReplayPlannerNode::RecordReplayPlannerNode(const rclcpp::NodeOptions & node_options)
+: Node{"recordreplay_planner", node_options}
 {
   const auto ego_topic = "vehicle_state";
   const auto trajectory_topic = "planned_trajectory";
@@ -53,21 +53,6 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const std::string & name, const
     static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float32_t>()),
     static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float32_t>())
   };
-  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
-    min_record_distance);
-}
-////////////////////////////////////////////////////////////////////////////////
-RecordReplayPlannerNode::RecordReplayPlannerNode(
-  const std::string & name,
-  const std::string & ns,
-  const std::string & ego_topic,
-  const std::string & trajectory_topic,
-  const std::string & bounding_boxes_topic,
-  const VehicleConfig & vehicle_param,
-  const float64_t heading_weight,
-  const float64_t min_record_distance)
-: Node{name, ns}
-{
   init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
     min_record_distance);
 }
