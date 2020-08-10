@@ -279,3 +279,7 @@ void RecordReplayPlannerNode::replay_handle_accepted(
 }  // namespace recordreplay_planner_node
 }  // namespace planning
 }  // namespace motion
+
+#include "rclcpp_components/register_node_macro.hpp"  // NOLINT
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  motion::planning::recordreplay_planner_node::RecordReplayPlannerNode)
