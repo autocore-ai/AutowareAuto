@@ -19,10 +19,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 autoware_set_compile_options(${PROJECT_NAME})
 
-ament_auto_add_executable(${PROJECT_NAME}_exe
-  src/recordreplay_planner_node/recordreplay_planner_main.cpp)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-autoware_set_compile_options(${PROJECT_NAME}_exe)
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "motion::planning::recordreplay_planner_node::RecordReplayPlannerNode"
+  EXECUTABLE ${PROJECT_NAME}_exe
+)
 
 ### Test
 if(BUILD_TESTING)
