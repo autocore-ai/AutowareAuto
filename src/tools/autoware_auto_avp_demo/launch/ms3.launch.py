@@ -54,7 +54,7 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
     rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms3.rviz')
     scan_downsampler_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/scan_downsampler.param.yaml')
+        avp_demo_pkg_prefix, 'param/scan_downsampler_ms3.param.yaml')
     ndt_localizer_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ndt_localizer.param.yaml')
     mpc_param_file = os.path.join(
