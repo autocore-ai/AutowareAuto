@@ -22,14 +22,10 @@ autoware_set_compile_options(${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME} PRIVATE
   -Wno-useless-cast -Wno-double-promotion -Wno-old-style-cast -Wno-sign-conversion)
 
-rclcpp_components_register_nodes(
-  ${PROJECT_NAME}
-  "lgsvl_interface::LgsvlInterfaceNode")
-
-ament_auto_add_executable(${PROJECT_NAME}_exe
-  src/lgsvl_interface_main.cpp)
-autoware_set_compile_options(${PROJECT_NAME}_exe)
-target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "lgsvl_interface::LgsvlInterfaceNode"
+  EXECUTABLE ${PROJECT_NAME}_exe
+)
 
 if(BUILD_TESTING)
   # run linters
