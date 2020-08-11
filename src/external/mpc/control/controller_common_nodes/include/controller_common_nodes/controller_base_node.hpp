@@ -58,6 +58,17 @@ public:
     const std::string & trajectory_topic,
     const std::string & diagnostic_topic,
     const std::string & static_tf_topic = "static_tf");
+  /// Explicit constructor
+  ControllerBaseNode(
+    const std::string & name,
+    const std::string & ns,
+    const rclcpp::NodeOptions & node_options,
+    const std::string & command_topic,
+    const std::string & state_topic,
+    const std::string & tf_topic,
+    const std::string & trajectory_topic,
+    const std::string & diagnostic_topic,
+    const std::string & static_tf_topic = "static_tf");
 
   virtual ~ControllerBaseNode() noexcept = default;
 

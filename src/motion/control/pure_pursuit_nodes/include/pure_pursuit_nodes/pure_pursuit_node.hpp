@@ -40,20 +40,9 @@ class PURE_PURSUIT_NODES_PUBLIC PurePursuitNode
 {
 public:
   /// \brief Parameter constructor
-  /// \param[in] node_name Name of the node, controls which parameter set from the file is matched
-  /// \param[in] node_namespace Name of the node's namespace, controls which parameters are used
-  PurePursuitNode(
-    const std::string & node_name,
-    const std::string & node_namespace = "");
-
-  /// \brief Explicit constructor
-  /// \param[in] node_name Name of the node
-  /// \param[in] cfg Configuration object for PurePursuit
-  /// \param[in] node_namespace Namespace of this node
-  PurePursuitNode(
-    const std::string & node_name,
-    const pure_pursuit::Config & cfg,
-    const std::string & node_namespace = "");
+  /// \param[in] node_options Node options for this node.
+  explicit PurePursuitNode(
+    const rclcpp::NodeOptions & node_options);
 };
 }  // namespace pure_pursuit_nodes
 }  // namespace control

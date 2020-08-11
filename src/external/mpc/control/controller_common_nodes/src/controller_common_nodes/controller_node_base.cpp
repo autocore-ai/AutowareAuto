@@ -53,7 +53,31 @@ ControllerBaseNode::ControllerBaseNode(
   const std::string & trajectory_topic,
   const std::string & diagnostic_topic,
   const std::string & static_tf_topic)
-: Node{name, ns, rclcpp::NodeOptions{rcl_get_default_allocator()}}
+: ControllerBaseNode{
+    name,
+    ns,
+    rclcpp::NodeOptions{rcl_get_default_allocator()},
+    command_topic,
+    state_topic,
+    tf_topic,
+    trajectory_topic,
+    diagnostic_topic,
+    static_tf_topic
+}
+{}
+
+////////////////////////////////////////////////////////////////////////////////
+ControllerBaseNode::ControllerBaseNode(
+  const std::string & name,
+  const std::string & ns,
+  const rclcpp::NodeOptions & node_options,
+  const std::string & command_topic,
+  const std::string & state_topic,
+  const std::string & tf_topic,
+  const std::string & trajectory_topic,
+  const std::string & diagnostic_topic,
+  const std::string & static_tf_topic)
+: Node{name, ns, node_options}
 {
   init(command_topic, state_topic, tf_topic, static_tf_topic, trajectory_topic, diagnostic_topic);
 }

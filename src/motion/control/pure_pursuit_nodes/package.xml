@@ -12,6 +12,7 @@
 
     <depend>controller_common_nodes</depend>
     <depend>pure_pursuit</depend>
+    <depend>rclcpp_components</depend>
 
     <build_depend>motion_common</build_depend>
     <build_depend>time_utils</build_depend>
