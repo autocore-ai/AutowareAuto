@@ -64,13 +64,13 @@ class TestWaitForShutdown(unittest.TestCase):
 class TestProcessOutput(unittest.TestCase):
 
     def test_exit_code(self, proc_output, proc_info, state_node):
-        # Check that process exits with code 2 (failure due to caught error
-        launch_testing.asserts.assertExitCodes(proc_info, [2],
+        # Check that process exits with code -6 (failure due to uncaught error
+        launch_testing.asserts.assertExitCodes(proc_info, [-6],
                                                process=state_node)
 
         # Check that correct error message is produced, we get the same error
         # code if the configuration file is not found
-        ref_stderr = "Got exception: Please provide either " + \
+        ref_stderr = "what():  Please provide either " + \
             "'output_frequency' setting or 'data_driven' one, not both."
         full_stderr = "".join(
             output.text.decode() for output in proc_output[state_node]

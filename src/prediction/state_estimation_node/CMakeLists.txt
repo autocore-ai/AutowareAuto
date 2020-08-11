@@ -32,13 +32,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 autoware_set_compile_options(${PROJECT_NAME})
-rclcpp_components_register_nodes(${PROJECT_NAME}
-  "autoware::prediction::state_estimation_node::StateEstimationNode")
 
-set(STATE_ESTIMATION_NODE_EXE "${PROJECT_NAME}_exe")
-ament_auto_add_executable(${STATE_ESTIMATION_NODE_EXE}
-  "src/state_estimation_node_main.cpp")
-autoware_set_compile_options(${STATE_ESTIMATION_NODE_EXE})
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::prediction::state_estimation_node::StateEstimationNode"
+  EXECUTABLE ${PROJECT_NAME}_exe
+)
 
 ## Testing
 if(BUILD_TESTING)

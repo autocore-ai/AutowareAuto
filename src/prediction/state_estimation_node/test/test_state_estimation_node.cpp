@@ -145,8 +145,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
     "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
   node_options.append_parameter_override(
     "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
-  const auto node{std::make_shared<StateEstimationNode>(
-      "state_estimation_node", "state_estimation_namespace", node_options)};
+  const auto node{std::make_shared<StateEstimationNode>(node_options)};
 
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
@@ -214,8 +213,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
     "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
   node_options.append_parameter_override(
     "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
-  const auto node{std::make_shared<StateEstimationNode>(
-      "state_estimation_node", "state_estimation_namespace", node_options)};
+  const auto node{std::make_shared<StateEstimationNode>(node_options)};
 
   std::vector<Odometry::SharedPtr> received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
@@ -308,8 +306,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
     "state_variances", std::vector<double>{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
   node_options.append_parameter_override(
     "process_noise_variances.acceleration", std::vector<double>{1.0, 1.0});
-  const auto node{std::make_shared<StateEstimationNode>(
-      "state_estimation_node", "state_estimation_namespace", node_options)};
+  const auto node{std::make_shared<StateEstimationNode>(node_options)};
 
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");

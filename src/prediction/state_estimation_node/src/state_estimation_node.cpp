@@ -159,14 +159,9 @@ namespace prediction
 namespace state_estimation_node
 {
 
-StateEstimationNode::StateEstimationNode(const rclcpp::NodeOptions & node_options)
-: StateEstimationNode{"state_estimation_node", "", node_options} {}
-
 StateEstimationNode::StateEstimationNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
   const rclcpp::NodeOptions & node_options)
-: rclcpp::Node{node_name, node_namespace, node_options},
+: rclcpp::Node{"state_estimation_node", node_options},
   m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
 {
   m_frame_id = declare_parameter("frame_id").get<std::string>();

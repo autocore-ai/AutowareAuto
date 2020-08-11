@@ -58,24 +58,12 @@ class STATE_ESTIMATION_NODE_PUBLIC StateEstimationNode : public rclcpp::Node
 {
 public:
   ///
-  /// ROS 2 parameter contructor.
-  ///
-  /// @param[in]  node_name       The name of the node.
-  /// @param[in]  node_namespace  Namespace of the node.
-  /// @param[in]  node_options    Node options for this node.
-  ///
-  explicit StateEstimationNode(
-    const std::string & node_name,
-    const std::string & node_namespace = "",
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{});
-
-  ///
   /// ROS 2 parameter contructor for node composition.
   ///
   /// @param[in]  node_options    Node options for this node.
   ///
   explicit StateEstimationNode(
-    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{});
+    const rclcpp::NodeOptions & node_options);
 
 private:
   using OdomMsgT = nav_msgs::msg::Odometry;
