@@ -38,10 +38,10 @@ stages:
       '
     - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
     - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
 
 .build_barebones_base: &build_barebones_base
   stage: build
@@ -143,9 +143,9 @@ stages:
       '
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker tag image $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
     - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
 
 ade:
   variables:
