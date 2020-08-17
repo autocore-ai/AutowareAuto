@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Testing of mpc_controller in LGSVL simulation using recordreplay planner."""
+"""Testing of purepursuit_controller in LGSVL simulation using recordreplay planner."""
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -31,9 +31,9 @@ def get_share_file(package_name, file_name):
 
 def generate_launch_description():
     """
-    Launch nodes with params to test record_replay_planner with mpc_controller in simulation.
+    Launch nodes with params to test record_replay_planner with pure pursuit in simulation.
 
-    mpc_controller + LGSVL + recordreplay planner + lidar osbtacle ddetection
+    pure_pursuit_controller + LGSVL + recordreplay planner + lidar osbtacle ddetection
     """
     # --------------------------------- Params -------------------------------
     joy_translator_param_file = get_share_file(
@@ -47,8 +47,9 @@ def generate_launch_description():
         package_name='autoware_auto_avp_demo', file_name='param/ray_ground_classifier.param.yaml')
     euclidean_cluster_param_file = get_share_file(
         package_name='autoware_auto_avp_demo', file_name='param/euclidean_cluster.param.yaml')
-    mpc_controller_param_file = get_share_file(
-        package_name='test_trajectory_following', file_name='param/mpc_controller.param.yaml')
+    pure_pursuit_controller_param_file = get_share_file(
+        package_name='test_trajectory_following',
+        file_name='param/pure_pursuit_controller.param.yaml')
     rviz_cfg_path = get_share_file(
         package_name='test_trajectory_following', file_name='config/default_control.rviz')
     urdf_path = get_share_file(
@@ -80,15 +81,15 @@ def generate_launch_description():
         default_value=euclidean_cluster_param_file,
         description='Path to config file for Euclidean Clustering'
     )
-    mpc_controller_param = DeclareLaunchArgument(
-        'mpc_controller_param_file',
-        default_value=mpc_controller_param_file,
-        description='Path to config file for MPC Controller'
+    pure_pursuit_controller_param = DeclareLaunchArgument(
+        'pure_pursuit_controller_param_file',
+        default_value=pure_pursuit_controller_param_file,
+        description='Path to config file for Pure Pursuit Controller'
     )
-    with_mpc_param = DeclareLaunchArgument(
-        'with_mpc',
+    with_pure_pursuit_param = DeclareLaunchArgument(
+        'with_pure_pursuit',
         default_value='True',
-        description='Enable mpc controller'
+        description='Enable pure pursuit controller'
     )
     with_obstacle_param = DeclareLaunchArgument(
         'with_obstacle',
@@ -174,14 +175,20 @@ def generate_launch_description():
             ("points_in", "points_nonground")
         ]
     )
-    mpc_controller_node = Node(
-        package="mpc_controller_node",
-        node_executable="mpc_controller_node_exe",
-        node_name="mpc_controller",
+    pure_pursuit_controller_node = Node(
+        package="pure_pursuit_nodes",
+        node_executable="pure_pursuit_node_exe",
+        node_name="pure_pursuit_controller",
         node_namespace='control',
-        parameters=[LaunchConfiguration('mpc_controller_param_file')],
+        parameters=[LaunchConfiguration('pure_pursuit_controller_param_file')],
         output='screen',
-        condition=IfCondition(LaunchConfiguration('with_mpc'))
+        remappings=[
+            ("current_pose", "/vehicle/vehicle_kinematic_state"),
+            ("trajectory", "/planning/trajectory"),
+            ("ctrl_cmd", "/vehicle/vehicle_command"),
+            ("ctrl_diag", "/control/control_diagnostic"),
+        ],
+        condition=IfCondition(LaunchConfiguration('with_pure_pursuit'))
     )
     rviz2 = Node(
         package='rviz2',
@@ -210,9 +217,9 @@ def generate_launch_description():
         euclidean_clustering,
         recordreplay_planner_node,
         joy_ctrl_record_replay_traj,
-        with_mpc_param,
-        mpc_controller_param,
-        mpc_controller_node,
+        with_pure_pursuit_param,
+        pure_pursuit_controller_param,
+        pure_pursuit_controller_node,
         urdf_publisher,
         rviz2
     ])

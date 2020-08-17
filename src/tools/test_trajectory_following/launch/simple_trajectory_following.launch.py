@@ -51,7 +51,7 @@ def generate_launch_description():
     controller_testing_param_file = get_share_file(
         package_name='test_trajectory_following', file_name='param/controller_testing.param.yaml')
     rviz_cfg_path = get_share_file(
-        package_name='test_trajectory_following', file_name='config/mpc_cotrols.rviz')
+        package_name='test_trajectory_following', file_name='config/default_control.rviz')
     lexus_rx_450h_urdf_path = get_share_file(
         package_name='lexus_rx_450h_description', file_name='urdf/lexus_rx_450h.urdf')
 
