@@ -1,7 +1,7 @@
 # param/p2d_ndt_node.param.yaml
 ---
 
-p2d_ndt_localizer_node:
+/**:
   ros__parameters:
     ##### Define input and outputs:
     # Config of the input point cloud subscription

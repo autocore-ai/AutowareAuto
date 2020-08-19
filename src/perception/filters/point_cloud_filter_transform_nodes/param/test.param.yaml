@@ -1,51 +1,49 @@
 # config/test.param.yaml
 ---
-lidar_front:
-  vlp16_front_filter_transform_node:
-    ros__parameters:
-      timeout_ms:       110
-      pcl_size:         55000
-      input_frame_id:  "lidar_front"
-      output_frame_id: "base_link"
-      init_timeout_ms:  5000
-      expected_num_subscribers: 1
-      expected_num_publishers:  1
-      start_angle:            3.22886       # radius
-      end_angle:              3.05433
-      min_radius:             1.5           # meters
-      max_radius:             150.0
-      static_transformer:
-        quaternion:
-          x:                    0.0
-          y:                    0.0
-          z:                    0.0
-          w:                    1.0
-        translation:
-          x:                    0.0
-          y:                    0.0
-          z:                    0.0
+/**:
+  ros__parameters:
+    timeout_ms:       110
+    pcl_size:         55000
+    input_frame_id:  "lidar_front"
+    output_frame_id: "base_link"
+    init_timeout_ms:  5000
+    expected_num_subscribers: 1
+    expected_num_publishers:  1
+    start_angle:            3.22886       # radius
+    end_angle:              3.05433
+    min_radius:             1.5           # meters
+    max_radius:             150.0
+    static_transformer:
+      quaternion:
+        x:                    0.0
+        y:                    0.0
+        z:                    0.0
+        w:                    1.0
+      translation:
+        x:                    0.0
+        y:                    0.0
+        z:                    0.0
 
-lidar_front:
-  point_cloud_filter_transform_node:
-    ros__parameters:
-      timeout_ms:       110
-      pcl_size:         55000
-      input_frame_id:  "lidar_front"
-      output_frame_id: "base_link"
-      init_timeout_ms:  5000
-      expected_num_subscribers: 0
-      expected_num_publishers:  0
-      start_angle:            0.0       # radius
-      end_angle:              3.14159
-      min_radius:             0.0       # meters
-      max_radius:             30.0
-      static_transformer:
-        quaternion: # rotate by 90 degrees about y axis
-          x:                    0.70710678118
-          y:                    0.0
-          z:                    0.70710678118
-          w:                    0.0
-        translation:
-          x:                    0.0
-          y:                    0.0
-          z:                    0.0
+/**:
+  ros__parameters:
+    timeout_ms:       110
+    pcl_size:         55000
+    input_frame_id:  "lidar_front"
+    output_frame_id: "base_link"
+    init_timeout_ms:  5000
+    expected_num_subscribers: 0
+    expected_num_publishers:  0
+    start_angle:            0.0       # radius
+    end_angle:              3.14159
+    min_radius:             0.0       # meters
+    max_radius:             30.0
+    static_transformer:
+      quaternion: # rotate by 90 degrees about y axis
+        x:                    0.70710678118
+        y:                    0.0
+        z:                    0.70710678118
+        w:                    0.0
+      translation:
+        x:                    0.0
+        y:                    0.0
+        z:                    0.0

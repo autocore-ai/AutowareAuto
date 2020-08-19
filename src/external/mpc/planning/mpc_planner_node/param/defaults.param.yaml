@@ -1,5 +1,5 @@
 
-mpc_planner:
+/**:
   ros__parameters:
     ego_topic: "vehicle_kinematic_state"
     target_topic: "target_state"

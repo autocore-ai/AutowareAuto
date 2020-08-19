@@ -1,5 +1,5 @@
 
-mpc_controller:
+/**:
   ros__parameters:
     command_topic: "ctrl_cmd"
     state_topic: "vehicle_kinematic_state"

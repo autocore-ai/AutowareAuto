@@ -1,6 +1,6 @@
 
 ---
-point_cloud_fusion_node:
+/**:
   ros__parameters:
     # Specifies the number of source topics to be fused.
     # Topic names are "input_topic1, input_topic2, ...".

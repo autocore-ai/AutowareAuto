@@ -1,7 +1,7 @@
 # params/map_publisher.param.yaml
 ---
 
-ndt_map_publisher_node:
+/**:
   ros__parameters:
 #   map_pcd_file: "map_data/path/here.pcd"
 #   map_yaml_file: "map_info/path/here.yaml"

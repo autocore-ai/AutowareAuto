@@ -1,6 +1,6 @@
 # This is a template parameter file which can be copied and modified for
 # a specific implementation
-vehicle_interface:
+/**:
   ros__parameters:
     cycle_time_ms: 10
     # Only one of the three control command topics need be specified

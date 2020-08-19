@@ -1,4 +1,4 @@
-joystick_vehicle_interface:
+/**:
   ros__parameters:
     control_command: "raw"
     recordreplay_command_enabled: false

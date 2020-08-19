@@ -1,7 +1,7 @@
 # config/pcl_map_voxel_grid_downsample.param.yaml
 ---
 
-voxel_grid_cloud_node:
+/**:
   ros__parameters:
     is_approximate: false
     publisher:
