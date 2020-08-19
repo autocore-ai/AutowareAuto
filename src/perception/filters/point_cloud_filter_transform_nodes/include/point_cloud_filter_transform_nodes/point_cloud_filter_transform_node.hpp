@@ -106,7 +106,7 @@ public:
     bool8_t eof();
 
     template<typename PointFieldValueT>
-    void get_curent_value(PointFieldValueT & point_field_value)
+    void get_current_value(PointFieldValueT & point_field_value)
     {
       switch (m_intensity_datatype) {
         case sensor_msgs::msg::PointField::UINT8:

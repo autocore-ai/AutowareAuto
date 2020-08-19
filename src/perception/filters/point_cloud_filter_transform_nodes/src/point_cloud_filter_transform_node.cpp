@@ -123,7 +123,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
     pt.x = *x_it;
     pt.y = *y_it;
     pt.z = *z_it;
-    intensity_it.get_curent_value(pt.intensity);
+    intensity_it.get_current_value(pt.intensity);
 
     if (point_not_filtered(pt)) {
       auto transformed_point = transform_point(pt);
