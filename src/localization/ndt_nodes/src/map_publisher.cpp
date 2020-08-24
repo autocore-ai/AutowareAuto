@@ -14,16 +14,18 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include <common/types.hpp>
+#include <GeographicLib/Geocentric.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 #include <ndt_nodes/map_publisher.hpp>
 #include <pcl/io/pcd_io.h>
-#include <lidar_utils/point_cloud_utils.hpp>
-#include <yaml-cpp/yaml.h>
-#include <GeographicLib/Geocentric.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <string>
+#include <tf2/LinearMath/Quaternion.h>
+#include <yaml-cpp/yaml.h>
+
 #include <memory>
-#include "common/types.hpp"
+#include <string>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -93,33 +95,12 @@ void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 
 }
 
 NDTMapPublisherNode::NDTMapPublisherNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & map_topic,
-  const std::string & map_frame,
-  const MapConfig & map_config,
-  const std::string & pcl_file_name,
-  const std::string & yaml_file_name,
-  const bool8_t viz_map,
-  const std::string & viz_map_topic
+  const rclcpp::NodeOptions & node_options
 )
-: Node(node_name, node_namespace),
-  m_pcl_file_name(pcl_file_name),
-  m_yaml_file_name(yaml_file_name),
-  m_viz_map(viz_map),
-  m_map_config_ptr{std::make_unique<MapConfig>(map_config)}
-{
-  init(map_frame, map_topic, viz_map_topic);
-}
-
-NDTMapPublisherNode::NDTMapPublisherNode(
-  const std::string & node_name,
-  const std::string & node_namespace
-)
-: Node(node_name, node_namespace),
+: Node("ndt_map_publisher_node", node_options),
   m_pcl_file_name(declare_parameter("map_pcd_file").get<std::string>()),
   m_yaml_file_name(declare_parameter("map_yaml_file").get<std::string>()),
-  m_viz_map(static_cast<bool8_t>(declare_parameter("viz_map").get<bool8_t>()))
+  m_viz_map(declare_parameter("viz_map", false))
 {
   using PointXYZ = perception::filters::voxel_grid::PointXYZ;
   PointXYZ min_point;
@@ -402,3 +383,5 @@ void NDTMapPublisherNode::reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg)
 }  // namespace ndt_nodes
 }  // namespace localization
 }  // namespace autoware
+
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::localization::ndt_nodes::NDTMapPublisherNode)

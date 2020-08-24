@@ -25,29 +25,55 @@ find_package(PCL 1.8 REQUIRED COMPONENTS io)
 ament_auto_find_build_dependencies()
 include_directories(SYSTEM ${PCL_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIRS})
 
-set(NDT_NODES_LIB_SRC
-    src/map_publisher.cpp
+set(NDT_MAP_PUBLISHER_NODE_LIB_SRC
+  src/map_publisher.cpp
 )
 
-ament_auto_add_library(
-${PROJECT_NAME} SHARED
-        ${NDT_NODES_LIB_SRC}
+set(NDT_MAP_PUBLISHER_NODE_LIB_HEADERS
+  include/ndt_nodes/map_publisher.hpp
 )
 
-autoware_set_compile_options(${PROJECT_NAME})
+set(NDT_MAP_PUBLISHER_NODE_LIB ndt_map_publisher)
+ament_auto_add_library(${NDT_MAP_PUBLISHER_NODE_LIB} SHARED
+  ${NDT_MAP_PUBLISHER_NODE_LIB_SRC}
+  ${NDT_MAP_PUBLISHER_NODE_LIB_HEADERS}
+)
+autoware_set_compile_options(${NDT_MAP_PUBLISHER_NODE_LIB})
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${NDT_MAP_PUBLISHER_NODE_LIB}
   ${PCL_LIBRARIES}
   ${GeographicLib_LIBRARIES}
   ${YAML_CPP_LIBRARIES})
 
-set(MAP_PUBLISHER_EXE ndt_map_publisher_exe)
-ament_auto_add_executable(${MAP_PUBLISHER_EXE} src/map_publisher_main.cpp)
-autoware_set_compile_options(${MAP_PUBLISHER_EXE})
+rclcpp_components_register_node(${NDT_MAP_PUBLISHER_NODE_LIB}
+  PLUGIN "autoware::localization::ndt_nodes::NDTMapPublisherNode"
+  EXECUTABLE ${NDT_MAP_PUBLISHER_NODE_LIB}_exe
+)
 
-set(P2D_NDT_NODE p2d_ndt_localizer_exe)
-ament_auto_add_executable(${P2D_NDT_NODE} src/p2d_ndt_localizer_main.cpp)
-autoware_set_compile_options(${P2D_NDT_NODE})
+set(P2D_NDT_LOCALIZER_NODE_LIB_SRC
+  src/p2d_ndt_localizer.cpp
+)
+
+set(P2D_NDT_LOCALIZER_NODE_LIB_HEADERS
+  include/ndt_nodes/ndt_localizer_nodes.hpp
+)
+
+set(P2D_NDT_LOCALIZER_NODE_LIB p2d_ndt_localizer)
+ament_auto_add_library(${P2D_NDT_LOCALIZER_NODE_LIB} SHARED
+  ${P2D_NDT_LOCALIZER_NODE_LIB_SRC}
+  ${P2D_NDT_LOCALIZER_NODE_LIB_HEADERS}
+)
+autoware_set_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB})
+
+target_link_libraries(${P2D_NDT_LOCALIZER_NODE_LIB}
+  ${PCL_LIBRARIES}
+  ${GeographicLib_LIBRARIES}
+  ${YAML_CPP_LIBRARIES})
+
+rclcpp_components_register_node(${P2D_NDT_LOCALIZER_NODE_LIB}
+  PLUGIN "autoware::localization::ndt_nodes::P2DNDTLocalizerNodeComponent"
+  EXECUTABLE ${P2D_NDT_LOCALIZER_NODE_LIB}_exe
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -59,19 +85,16 @@ if(BUILD_TESTING)
   ament_add_gtest(${NDT_NODES_TEST}
           test/test_map_publisher.cpp)
   target_link_libraries(${NDT_NODES_TEST}
-    ${PROJECT_NAME}
+    ${NDT_MAP_PUBLISHER_NODE_LIB}
     ${GeographicLib_LIBRARIES}
     ${YAML_CPP_LIBRARIES})
 endif()
 
 # required for tf2
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
+target_compile_options(${NDT_MAP_PUBLISHER_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
-target_compile_options(${MAP_PUBLISHER_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
-
-target_compile_options(${P2D_NDT_NODE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
+target_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
 ament_auto_package()

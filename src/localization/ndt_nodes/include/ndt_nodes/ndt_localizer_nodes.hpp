@@ -90,62 +90,21 @@ public:
     m_predict_rotation_threshold{
       this->declare_parameter("predict_pose_threshold.rotation").template get<double>()}
   {
-    auto get_point_param = [this](const std::string & config_name_prefix) {
-        perception::filters::voxel_grid::PointXYZ point;
-        point.x = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".x").
-          template get<float32_t>());
-        point.y = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".y").
-          template get<float32_t>());
-        point.z = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".z").
-          template get<float32_t>());
-        return point;
-      };
-    // Fetch map configuration
-    const auto capacity = static_cast<std::size_t>(
-      this->declare_parameter("localizer.map.capacity").template get<std::size_t>());
-    const perception::filters::voxel_grid::Config map_config{get_point_param(
-        "localizer.map.min_point"), get_point_param("localizer.map.max_point"),
-      get_point_param("localizer.map.voxel_size"), capacity};
+    init();
+  }
 
-    // Fetch localizer configuration
-    ndt::P2DNDTLocalizerConfig localizer_config{
-      map_config,
-      static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
-      template get<uint32_t>()),
-      std::chrono::milliseconds(static_cast<uint64_t>(
-          this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
-    };
 
-    const auto outlier_ratio{this->declare_parameter(
-        "localizer.optimization.outlier_ratio").template get<float64_t>()};
-
-    common::optimization::OptimizationOptions optimizer_options{
-      static_cast<uint64_t>(
-        this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
-      this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
-      this->declare_parameter(
-        "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
-      this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
-    };
-
-    // Construct and set the localizer.
-    const float32_t step_max{static_cast<float32_t>(this->declare_parameter(
-        "localizer.optimizer.line_search.step_max").
-      template get<float64_t>())};
-    const float32_t step_min{static_cast<float32_t>(this->declare_parameter(
-        "localizer.optimizer.line_search.step_min").
-      template get<float64_t>())};
-    // TODO(igor): make the line search configurable.
-    LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
-      localizer_config,
-      OptimizerT{
-            common::optimization::MoreThuenteLineSearch{
-              step_max, step_min,
-              common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization},
-            optimizer_options
-          },
-      outlier_ratio);
-    this->set_localizer(std::move(localizer_ptr));
+  P2DNDTLocalizerNode(
+    const std::string & node_name,
+    const rclcpp::NodeOptions & node_options,
+    const PoseInitializerT & pose_initializer)
+  : ParentT(node_name, node_options, pose_initializer),
+    m_predict_translation_threshold{
+      this->declare_parameter("predict_pose_threshold.translation").template get<double>()},
+    m_predict_rotation_threshold{
+      this->declare_parameter("predict_pose_threshold.rotation").template get<double>()}
+  {
+    init();
   }
 
 protected:
@@ -222,6 +181,66 @@ private:
     };
     return std::fabs(pose_rotation.angularDistance(guess_rotation)) <=
            (m_predict_rotation_threshold + EPS);
+  }
+
+  void init()
+  {
+    auto get_point_param = [this](const std::string & config_name_prefix) {
+        perception::filters::voxel_grid::PointXYZ point;
+        point.x = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".x").
+          template get<float32_t>());
+        point.y = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".y").
+          template get<float32_t>());
+        point.z = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".z").
+          template get<float32_t>());
+        return point;
+      };
+    // Fetch map configuration
+    const auto capacity = static_cast<std::size_t>(
+      this->declare_parameter("localizer.map.capacity").template get<std::size_t>());
+    const perception::filters::voxel_grid::Config map_config{get_point_param(
+        "localizer.map.min_point"), get_point_param("localizer.map.max_point"),
+      get_point_param("localizer.map.voxel_size"), capacity};
+
+    // Fetch localizer configuration
+    ndt::P2DNDTLocalizerConfig localizer_config{
+      map_config,
+      static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
+      template get<uint32_t>()),
+      std::chrono::milliseconds(static_cast<uint64_t>(
+          this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
+    };
+
+    const auto outlier_ratio{this->declare_parameter(
+        "localizer.optimization.outlier_ratio").template get<float64_t>()};
+
+    common::optimization::OptimizationOptions optimizer_options{
+      static_cast<uint64_t>(
+        this->declare_parameter("localizer.optimizer.max_iterations").template get<uint64_t>()),
+      this->declare_parameter("localizer.optimizer.score_tolerance").template get<float64_t>(),
+      this->declare_parameter(
+        "localizer.optimizer.parameter_tolerance").template get<float64_t>(),
+      this->declare_parameter("localizer.optimizer.gradient_tolerance").template get<float64_t>()
+    };
+
+    // Construct and set the localizer.
+    const float32_t step_max{static_cast<float32_t>(this->declare_parameter(
+        "localizer.optimizer.line_search.step_max").
+      template get<float64_t>())};
+    const float32_t step_min{static_cast<float32_t>(this->declare_parameter(
+        "localizer.optimizer.line_search.step_min").
+      template get<float64_t>())};
+    // TODO(igor): make the line search configurable.
+    LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
+      localizer_config,
+      OptimizerT{
+            common::optimization::MoreThuenteLineSearch{
+              step_max, step_min,
+              common::optimization::MoreThuenteLineSearch::OptimizationDirection::kMaximization},
+            optimizer_options
+          },
+      outlier_ratio);
+    this->set_localizer(std::move(localizer_ptr));
   }
 
   ndt::Real m_predict_translation_threshold;

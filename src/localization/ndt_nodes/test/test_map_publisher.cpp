@@ -14,15 +14,18 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include "test_map_publisher.hpp"
-#include <pcl/io/pcd_io.h>
 #include <gtest/gtest.h>
-#include <ndt_nodes/map_publisher.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
+#include <ndt_nodes/map_publisher.hpp>
+#include <pcl/io/pcd_io.h>
 #include <yaml-cpp/yaml.h>
-#include <string>
+
 #include <limits>
 #include <memory>
+#include <string>
+#include <vector>
+
+#include "test_map_publisher.hpp"
 
 using autoware::localization::ndt_nodes::read_from_pcd;
 using autoware::localization::ndt_nodes::geocentric_pose_t;
@@ -142,7 +145,7 @@ TEST_F(MapPublisherTest, core_functionality)
   // should match the cells in this map.
   DynamicNDTMap dynamic_validation_map(grid_config);
   StaticNDTMap static_received_map(grid_config);
-  const auto map_topic = "publisher_test_map_topic";
+  const auto map_topic = "ndt_map";
   const auto map_frame = "map";
   auto callback_counter = 0U;
   Cloud received_cloud_map;
@@ -157,8 +160,36 @@ TEST_F(MapPublisherTest, core_functionality)
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
 
-  NDTMapPublisherNode map_publisher("test_map_publisher", "", map_topic, map_frame,
-    grid_config, pcl_file_name, yaml_file_name);
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("map_pcd_file", pcl_file_name);
+  params.emplace_back("map_yaml_file", yaml_file_name);
+  params.emplace_back("map_frame", map_frame);
+
+  params.emplace_back("map_config.min_point.x",
+    static_cast<float32_t>(grid_config.get_min_point().x));
+  params.emplace_back("map_config.min_point.y",
+    static_cast<float32_t>(grid_config.get_min_point().y));
+  params.emplace_back("map_config.min_point.z",
+    static_cast<float32_t>(grid_config.get_min_point().z));
+  params.emplace_back("map_config.max_point.x",
+    static_cast<float32_t>(grid_config.get_max_point().x));
+  params.emplace_back("map_config.max_point.y",
+    static_cast<float32_t>(grid_config.get_max_point().y));
+  params.emplace_back("map_config.max_point.z",
+    static_cast<float32_t>(grid_config.get_max_point().z));
+  params.emplace_back("map_config.voxel_size.x",
+    static_cast<float32_t>(grid_config.get_voxel_size().x));
+  params.emplace_back("map_config.voxel_size.y",
+    static_cast<float32_t>(grid_config.get_voxel_size().y));
+  params.emplace_back("map_config.voxel_size.z",
+    static_cast<float32_t>(grid_config.get_voxel_size().z));
+  params.emplace_back("map_config.capacity", static_cast<int32_t>(grid_config.get_capacity()));
+
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
+  NDTMapPublisherNode map_publisher(node_options);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
@@ -212,8 +243,8 @@ TEST_F(MapPublisherTest, viz_functionality)
   const auto pcl_file_name = "MapPublisherTest_test.pcd";
   // have a validation source cloud. The viz cloud publisher's output
   // should match the cells in this map.
-  const auto map_topic = "publisher_test_map_topic";
-  const auto viz_map_topic = "viz_publisher_test_map_topic";
+  const auto map_topic = "map_topic";
+  const auto viz_map_topic = "viz_ndt_map";
   const auto map_frame = "map";
   auto callback_counter = 0U;
   auto viz_callback_counter = 0U;
@@ -244,9 +275,37 @@ TEST_F(MapPublisherTest, viz_functionality)
   ASSERT_TRUE(std::ifstream{yaml_file_name}.good());
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
-  const auto map_publisher_ptr = std::make_shared<NDTMapPublisherNode>("test_map_publisher", "",
-      map_topic, map_frame,
-      grid_config, pcl_file_name, yaml_file_name, true, viz_map_topic);
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("map_pcd_file", pcl_file_name);
+  params.emplace_back("map_yaml_file", yaml_file_name);
+  params.emplace_back("map_frame", map_frame);
+  params.emplace_back("viz_map", true);
+
+  params.emplace_back("map_config.min_point.x",
+    static_cast<float32_t>(grid_config.get_min_point().x));
+  params.emplace_back("map_config.min_point.y",
+    static_cast<float32_t>(grid_config.get_min_point().y));
+  params.emplace_back("map_config.min_point.z",
+    static_cast<float32_t>(grid_config.get_min_point().z));
+  params.emplace_back("map_config.max_point.x",
+    static_cast<float32_t>(grid_config.get_max_point().x));
+  params.emplace_back("map_config.max_point.y",
+    static_cast<float32_t>(grid_config.get_max_point().y));
+  params.emplace_back("map_config.max_point.z",
+    static_cast<float32_t>(grid_config.get_max_point().z));
+  params.emplace_back("map_config.voxel_size.x",
+    static_cast<float32_t>(grid_config.get_voxel_size().x));
+  params.emplace_back("map_config.voxel_size.y",
+    static_cast<float32_t>(grid_config.get_voxel_size().y));
+  params.emplace_back("map_config.voxel_size.z",
+    static_cast<float32_t>(grid_config.get_voxel_size().z));
+  params.emplace_back("map_config.capacity", static_cast<int32_t>(grid_config.get_capacity()));
+
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
+  const auto map_publisher_ptr = std::make_shared<NDTMapPublisherNode>(node_options);
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);

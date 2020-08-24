@@ -70,34 +70,10 @@ class NDT_NODES_PUBLIC NDTMapPublisherNode : public rclcpp::Node
 public:
   using MapConfig = perception::filters::voxel_grid::Config;
   using VoxelGrid = perception::filters::voxel_grid_nodes::algorithm::VoxelCloudCentroid;
-  /// Constructor.
-  /// \param node_name Name of node.
-  /// \param node_namespace Namespace of node.
-  /// \param map_topic The topic the maps will be published to.
-  /// \param map_frame The frame of the map.
-  /// \param map_config The VoxelGrid configuration of the underlying DynamicNDTMap
-  /// \param pcl_file_name The name of the pcl map data file in pcd format.
-  /// \param yaml_file_name The name of the yaml file with map orgin data.
-  /// \param viz_map Boolean flag to choose whether to publish a visualizable point cloud.
-  /// \param viz_map_topic The topic hte vizualizable map will be published to.
-  NDTMapPublisherNode(
-    const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & map_topic,
-    const std::string & map_frame,
-    const MapConfig & map_config,
-    const std::string & pcl_file_name,
-    const std::string & yaml_file_name,
-    const bool8_t viz_map = false,
-    const std::string & viz_map_topic = ""
-  );
-
-  /// Construct with a config file.
-  /// \param node_name Name of node.
-  /// \param node_namespace Namespace of node.
-  NDTMapPublisherNode(
-    const std::string & node_name,
-    const std::string & node_namespace
+  /// \brief Parameter constructor
+  /// \param node_options Additional options to control creation of the node.
+  explicit NDTMapPublisherNode(
+    const rclcpp::NodeOptions & node_options
   );
 
   /// Run the publisher. Following actions are executed in order:
