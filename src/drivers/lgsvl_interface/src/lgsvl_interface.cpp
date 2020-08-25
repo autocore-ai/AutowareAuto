@@ -24,7 +24,6 @@
 #include <unordered_map>
 #include <utility>
 
-
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
 using autoware::common::types::bool8_t;
@@ -236,6 +235,9 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
     vse.state.longitudinal_velocity_mps = get_odometry().velocity_mps;
     vse.state.front_wheel_angle_rad = get_odometry().front_wheel_angle_rad;
     vse.state.rear_wheel_angle_rad = get_odometry().rear_wheel_angle_rad;
+    if (state_report().gear == autoware_auto_msgs::msg::VehicleStateReport::GEAR_REVERSE) {
+      vse.state.longitudinal_velocity_mps *= -1.0f;
+    }
 
     vse.state.lateral_velocity_mps =
       static_cast<decltype(vse.state.lateral_velocity_mps)>(msg.twist.twist.linear.y);
