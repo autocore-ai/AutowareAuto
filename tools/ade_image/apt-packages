@@ -91,6 +91,3 @@ ros-dashing-udp-driver
 
 # Node.js
 nodejs
-
-# Autoware.Auto packages
-ros-dashing-autoware-auto-msgs
