@@ -226,10 +226,11 @@ Command ControllerBase::compute_stop_command(const State & state) const noexcept
   ret.rear_wheel_angle_rad = Real{};
   // Compute stopping acceleration
   // validate input
-  const auto velocity = std::max(Real{}, state.state.longitudinal_velocity_mps);
+  const auto velocity = std::fabs(state.state.longitudinal_velocity_mps);
   const auto dt = std::chrono::duration_cast<std::chrono::duration<Real>>(m_config.time_step());
-  const auto decel = velocity / dt.count();  // positive
-  ret.long_accel_mps2 = -std::min(decel, m_config.safe_deceleration_rate());
+  const auto decel = std::min(velocity / dt.count(),
+      m_config.safe_deceleration_rate());  // positive
+  ret.long_accel_mps2 = state.state.longitudinal_velocity_mps >= 0.0 ? -decel : decel;
 
   return ret;
 }
