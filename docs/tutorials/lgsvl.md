@@ -43,11 +43,18 @@ $ cd ~/adehome/AutowareAuto
 $ ade --rc .aderc-lgsvl start --update --enter
 ```
 
-In the same terminal window, start the LGSVL simulator:
+To start the LGSVL simulator, in the same terminal window:
 
-* `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp /opt/lgsvl/simulator`
+```
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ /opt/lgsvl/simulator
+```
 
 Now start your favorite browser and go to [http://127.0.0.1:8080](http://127.0.0.1:8080) where simulations can be configured.
+
+**Note:** Since CycloneDDS is now the default DDS implementation in `ade`, prefixing `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` to the simulator command is no longer necessary.
+However, if you are not using the latest version of the Autoware.Auto Docker containers or source code, you may receive errors when launching LGSVL.
+If this is the case, try prefixing the command above with `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`.
 
 **Note:** When running LGSVL Simulator in a Docker container, the "Open Browser..." button in the simulator window does not work.
 
