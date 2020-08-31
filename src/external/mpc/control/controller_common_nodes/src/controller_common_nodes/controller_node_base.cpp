@@ -187,8 +187,9 @@ bool ControllerBaseNode::try_compute(const State & state)
     return true;
   }
   if (m_controller->get_reference_trajectory().header.frame_id.empty()) {
-    RCLCPP_WARN(get_logger(),
-      "try_compute: empty trajectory frame, possibly uninitialized, deferring");
+    // TODO(Takamasa Horibe): enable with RCLCPP_WARN_THROTTLE after Foxy
+    // RCLCPP_WARN(get_logger(),
+    //   "try_compute: empty trajectory frame, possibly uninitialized, deferring");
     return false;
   }
   // TODO(c.ho) these should honestly be two functions

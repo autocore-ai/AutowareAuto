@@ -242,9 +242,10 @@ TEST_F(bad_cases, empty_trajectory_frame)
   EXPECT_EQ(sub_->commands().size(), 0U);
   // TODO(c.ho) Expect following string:
   // try_compute: empty trajectory frame, ignoring
-  std::string last_line{};
-  (void)std::getline(*ss, last_line);
-  EXPECT_EQ(last_line, "try_compute: empty trajectory frame, possibly uninitialized, deferring");
+  // TODO(Takamasa Horibe): enable with RCLCPP_WARN_THROTTLE after Foxy
+  // std::string last_line{};
+  // (void)std::getline(*ss, last_line);
+  // EXPECT_EQ(last_line, "try_compute: empty trajectory frame, possibly uninitialized, deferring");
 }
 
 TEST_F(bad_cases, empty_trajectory)
