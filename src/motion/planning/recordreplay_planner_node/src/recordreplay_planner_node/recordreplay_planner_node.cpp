@@ -71,7 +71,8 @@ void RecordReplayPlannerNode::init(
   // Setup Tf Buffer with listener
   rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(clock);
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_,
+      std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
 
   // Set up action for control of recording and replaying
   m_recordserver = rclcpp_action::create_server<RecordTrajectory>(
