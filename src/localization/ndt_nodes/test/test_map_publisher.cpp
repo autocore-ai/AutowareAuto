@@ -186,11 +186,6 @@ TEST_F(MapPublisherTest, core_functionality)
     static_cast<float32_t>(grid_config.get_voxel_size().z));
   params.emplace_back("map_config.capacity", static_cast<int32_t>(grid_config.get_capacity()));
 
-  rclcpp::NodeOptions node_options;
-  node_options.parameter_overrides(params);
-
-  NDTMapPublisherNode map_publisher(node_options);
-
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
 
@@ -205,7 +200,11 @@ TEST_F(MapPublisherTest, core_functionality)
   ASSERT_TRUE(std::ifstream{pcl_file_name}.good());
 
   // Read pcd, pass the cloud to the internal dynamic map.
-  EXPECT_NO_THROW(map_publisher.run());
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
+  std::shared_ptr<NDTMapPublisherNode> map_publisher;
+  EXPECT_NO_THROW(map_publisher = std::make_shared<NDTMapPublisherNode>(node_options));
 
   while (callback_counter < 1U) {
     rclcpp::spin_some(listener_node);
@@ -305,7 +304,7 @@ TEST_F(MapPublisherTest, viz_functionality)
   rclcpp::NodeOptions node_options;
   node_options.parameter_overrides(params);
 
-  const auto map_publisher_ptr = std::make_shared<NDTMapPublisherNode>(node_options);
+  std::shared_ptr<NDTMapPublisherNode> map_publisher_ptr;
 
   // Build a dense PC that can be transformed into 125 cells. See function for details.
   build_pc(grid_config);
@@ -316,7 +315,7 @@ TEST_F(MapPublisherTest, viz_functionality)
   ASSERT_TRUE(std::ifstream{pcl_file_name}.good());
 
   // Read pcd, pass the cloud to the internal dynamic map.
-  EXPECT_NO_THROW(map_publisher_ptr->run());
+  EXPECT_NO_THROW(map_publisher_ptr = std::make_shared<NDTMapPublisherNode>(node_options));
 
   while (viz_callback_counter < 1U) {
     rclcpp::spin_some(map_publisher_ptr);  // TODO(yunus.caliskan): Remove spinning in #380

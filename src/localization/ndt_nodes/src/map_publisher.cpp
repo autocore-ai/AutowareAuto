@@ -132,6 +132,7 @@ NDTMapPublisherNode::NDTMapPublisherNode(
 
   m_map_config_ptr = std::make_unique<MapConfig>(min_point, max_point, voxel_size, capacity);
   init(map_frame, map_topic, viz_map_topic);
+  run();
 }
 
 void NDTMapPublisherNode::init(

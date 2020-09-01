@@ -83,7 +83,8 @@ if(BUILD_TESTING)
   set(NDT_NODES_TEST ndt_nodes_gtest)
 
   ament_add_gtest(${NDT_NODES_TEST}
-          test/test_map_publisher.cpp)
+    test/test_map_publisher.cpp
+    WORKING_DIRECTORY /tmp)
   target_link_libraries(${NDT_NODES_TEST}
     ${NDT_MAP_PUBLISHER_NODE_LIB}
     ${GeographicLib_LIBRARIES}
