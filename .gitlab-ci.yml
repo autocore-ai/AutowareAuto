@@ -98,7 +98,6 @@ stages:
            --return-code-on-test-failure
       '
     - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
-    - colcon test-result --verbose
 
     # Test package
     - source /opt/AutowareAuto/setup.bash
@@ -121,6 +120,8 @@ stages:
     - cp -a LICENSE /opt/AutowareAuto
     - chmod -R og-w /opt/AutowareAuto
     - tar cfz opt.tar.gz /opt/AutowareAuto
+  after_script:
+    - colcon test-result --verbose
 
 .volume_base: &volume_base
   stage: deploy
@@ -150,13 +151,11 @@ stages:
 ade:
   variables:
     ARCH: ""
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
   <<: *ade_base
 
 ade_arm64:
   variables:
     ARCH: "/arm64"
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
   tags:
     - arm64
   <<: *ade_base
@@ -164,6 +163,8 @@ ade_arm64:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
 build_barebones:
+  variables:
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
   <<: *build_barebones_base
   needs:
     - ade
@@ -171,6 +172,8 @@ build_barebones:
 build_barebones_arm64:
   tags:
     - arm64
+  variables:
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
   <<: *build_barebones_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
