@@ -20,6 +20,8 @@
 #include <ndt_nodes/visibility_control.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ndt/ndt_map.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_msgs/msg/tf_message.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_centroid.hpp>
 #include <string>
@@ -124,7 +126,7 @@ private:
   /// Can be removed when #102 is merged in.
   void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg);
 
-  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> m_earth_map_broadcaster;
+  rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_pub_earth_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pub;
   std::unique_ptr<ndt::DynamicNDTMap> m_ndt_map_ptr;
   sensor_msgs::msg::PointCloud2 m_map_pc;
@@ -139,6 +141,7 @@ private:
   std::unique_ptr<VoxelGrid> m_voxelgrid_ptr;
   // Workaround. TODO(yunus.caliskan): Remove in #380
   rclcpp::TimerBase::SharedPtr m_visualization_timer{nullptr};
+  rclcpp::TimerBase::SharedPtr m_transform_pub_timer{nullptr};
 };
 
 }  // namespace ndt_nodes

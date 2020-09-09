@@ -190,8 +190,8 @@ void NDTMapPublisherNode::init(
         });
   }
 
-  m_earth_map_broadcaster =
-    std::make_unique<tf2_ros::StaticTransformBroadcaster>(this);
+  m_pub_earth_map = create_publisher<tf2_msgs::msg::TFMessage>("/tf_static",
+      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 }
 
 void NDTMapPublisherNode::run()
@@ -254,10 +254,20 @@ void NDTMapPublisherNode::publish_earth_to_map_transform(
 
   tf2::Quaternion q;
   q.setRPY(roll, pitch, yaw);
+  tf.header.stamp = rclcpp::Clock().now();
   tf.transform.rotation = tf2::toMsg(q);
   tf.header.frame_id = "earth";
   tf.child_frame_id = "map";
-  m_earth_map_broadcaster->sendTransform(tf);
+
+  tf2_msgs::msg::TFMessage static_tf_msg;
+  static_tf_msg.transforms.push_back(tf);
+
+  m_transform_pub_timer = create_wall_timer(std::chrono::seconds(1),
+      [this, static_tf_msg]() {
+        m_pub_earth_map->publish(static_tf_msg);
+      });
+
+  m_pub_earth_map->publish(static_tf_msg);
 }
 
 void NDTMapPublisherNode::map_to_pc()
