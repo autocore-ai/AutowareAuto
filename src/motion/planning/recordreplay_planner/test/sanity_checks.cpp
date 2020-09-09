@@ -79,9 +79,11 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
 
   // Build a trajectory
   constexpr auto N = 10;
+  constexpr auto dx = 1.0F;
   const auto time_increment = p.time_spacing_ms;
+  const auto v = dx / (1.0e-3F * p.time_spacing_ms.count());
   for (uint32_t k = {}; k < N; ++k) {
-    const auto next_state = make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+    const auto next_state = make_state(dx * k, 0.0F, 0.0F, v, 0.0F, 0.0F,
         t0 + k * time_increment);
     planner_.record_state(next_state);
   }
@@ -93,8 +95,9 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
   auto trajectory = planner_.plan(make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0));
   float64_t trajectory_time_length = trajectory.points[N - 1].time_from_start.sec + 1e-9F *
     trajectory.points[N - 1].time_from_start.nanosec;
-  EXPECT_EQ(std::chrono::duration<float32_t>(trajectory_time_length),
-    1.0F * (N - 1) * time_increment);
+  float64_t endpoint_sec = (1.0F * (N - 1) * time_increment).count() * 1.0e-3;
+  float64_t ep = 1.0e-5;
+  EXPECT_NEAR(trajectory_time_length, endpoint_sec, ep);
 }
 
 INSTANTIATE_TEST_CASE_P(

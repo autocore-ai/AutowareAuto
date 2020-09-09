@@ -24,6 +24,7 @@
 
 #include <deque>
 #include <string>
+#include <map>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;

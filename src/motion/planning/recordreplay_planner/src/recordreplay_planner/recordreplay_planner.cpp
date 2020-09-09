@@ -27,18 +27,87 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
-#include "rcl/types.h"
-#include "rosidl_typesupport_cpp/message_type_support.hpp"
-#include "rmw/rmw.h"
-#include "rmw/serialized_message.h"
 #include "recordreplay_planner/vehicle_bounding_box.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
 using autoware::common::types::uchar8_t;
+using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
+using Csv = std::vector<std::vector<std::string>>;
+using Association = std::map<std::string /* label */, int32_t /* row */>;
+namespace
+{
+std::vector<std::string> split(const std::string & input, char delimiter)
+{
+  std::istringstream stream(input);
+  std::string field;
+  std::vector<std::string> result;
+  while (std::getline(stream, field, delimiter)) {
+    result.push_back(field);
+  }
+  return result;
+}
 
+void deleteHeadSpace(std::string & string)
+{
+  while (string.find_first_of(' ') == 0) {
+    string.erase(string.begin());
+    if (string.empty()) {
+      break;
+    }
+  }
+}
+
+void deleteUnit(std::string & string)
+{
+  size_t start_pos, end_pos;
+  start_pos = string.find_first_of('[');
+  end_pos = string.find_last_of(']');
+  if (start_pos != std::string::npos && end_pos != std::string::npos && start_pos < end_pos) {
+    string.erase(start_pos, (end_pos + 1) - start_pos);
+  }
+}
+
+bool loadData(
+  const std::string & file_name, Association & label_row_association_map,
+  Csv & file_data)
+{
+  file_data.clear();
+  label_row_association_map.clear();
+  std::ifstream ifs(file_name);
+
+  // open file
+  if (!ifs) {
+    std::cerr << "Could not load " << file_name << std::endl;
+    return false;
+  }
+
+  // create label-row association map
+  std::string line;
+  if (std::getline(ifs, line)) {
+    std::vector<std::string> str_vec = split(line, ',');
+    for (size_t i = 0; i < str_vec.size(); ++i) {
+      deleteUnit(str_vec.at(i));
+      deleteHeadSpace(str_vec.at(i));
+      label_row_association_map[str_vec.at(i)] = static_cast<int>(i);
+    }
+  } else {
+    std::cerr << "cannot create association map" << std::endl;
+    return false;
+  }
+
+  // create file data
+  while (std::getline(ifs, line)) {
+    std::vector<std::string> str_vec = split(line, ',');
+    file_data.push_back(str_vec);
+  }
+
+  return true;
+}
+}  // namespace
 namespace motion
 {
 namespace planning
@@ -48,6 +117,7 @@ namespace recordreplay_planner
 using geometry_msgs::msg::Point32;
 using motion::motion_common::to_angle;
 using autoware::common::geometry::intersect;
+using autoware::common::geometry::dot_2d;
 
 RecordReplayPlanner::RecordReplayPlanner(const VehicleConfig & vehicle_param)
 : m_vehicle_param(vehicle_param)
@@ -250,13 +320,27 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   const auto publication_len = m_traj_end_idx - m_traj_start_idx;
   trajectory.points.resize(publication_len);
 
-
   const auto t0 = time_utils::from_message(m_record_buffer[m_traj_start_idx].header.stamp);
   for (std::size_t i = {}; i < publication_len; ++i) {
     // Make the time spacing of the points match the recorded timing
     trajectory.points[i] = m_record_buffer[m_traj_start_idx + i].state;
     trajectory.points[i].time_from_start = time_utils::to_message(
       time_utils::from_message(m_record_buffer[m_traj_start_idx + i].header.stamp) - t0);
+  }
+
+  // Adjust time stamp from velocity
+  float32_t t = 0.0;
+  for (std::size_t i = 1; i < publication_len; ++i) {
+    auto & p0 = trajectory.points[i - 1];
+    auto & p1 = trajectory.points[i];
+    auto dx = p1.x - p0.x;
+    auto dy = p1.y - p0.y;
+    auto v = 0.5f * (p0.longitudinal_velocity_mps + p1.longitudinal_velocity_mps);
+    t += std::sqrt(dx * dx + dy * dy) / std::max(std::fabs(v), 1.0e-5f);
+    float32_t t_s = 0;
+    float32_t t_ns = std::modf(t, &t_s) * 1.0e9f;
+    trajectory.points[i].time_from_start.sec = static_cast<int32_t>(t_s);
+    trajectory.points[i].time_from_start.nanosec = static_cast<uint32_t>(t_ns);
   }
 
   // Mark the last point along the trajectory as "stopping" by setting all rates,
@@ -280,41 +364,24 @@ void RecordReplayPlanner::writeTrajectoryBufferToFile(const std::string & record
     throw std::runtime_error("record_path cannot be empty");
   }
 
-  rcl_serialized_message_t serialized_msg_;
-
-  serialized_msg_ = rmw_get_zero_initialized_serialized_message();
-  auto allocator = rcutils_get_default_allocator();
-  auto initial_capacity = 0u;
-  auto ret = rmw_serialized_message_init(
-    &serialized_msg_,
-    initial_capacity,
-    &allocator);
-  if (ret != RCL_RET_OK) {
-    throw std::runtime_error("failed to initialize serialized message");
+  std::ofstream ofs;
+  ofs.open(record_path, std::ios::trunc);
+  if (!ofs.is_open()) {
+    throw std::runtime_error("Could not open file.");
   }
+  ofs << "t_sec, t_nanosec, x, y, heading_real, heading_imag, longitudinal_velocity_mps, " <<
+    "lateral_velocity_mps, acceleration_mps2, heading_rate_rps, front_wheel_angle_rad, " <<
+    "rear_wheel_angle_rad" << std::endl;
 
-  std::ofstream file;
-  file.open(record_path, std::fstream::binary);
-
-  if (file.is_open()) {
-    for (auto msg : m_record_buffer) {
-      auto state_msg = std::make_shared<State>(msg);
-
-      auto state_ts =
-        rosidl_typesupport_cpp::get_message_type_support_handle<State>();
-
-      auto ret = rmw_serialize(state_msg.get(), state_ts, &serialized_msg_);
-      if (ret != RMW_RET_OK) {
-        throw std::runtime_error("failed to serialize message");
-      } else {
-        const char8_t * ref(reinterpret_cast<char8_t *>(serialized_msg_.buffer));
-        file.write(ref, static_cast<std::streamsize>(serialized_msg_.buffer_length));
-      }
-    }
-  } else {
-    throw std::runtime_error("failed to open file for writing");
+  for (const auto & trajectory_point : m_record_buffer) {
+    const auto & s = trajectory_point.state;
+    const auto & t = s.time_from_start;
+    ofs << t.sec << ", " << t.nanosec << ", " << s.x << ", " << s.y << ", " << s.heading.real <<
+      ", " << s.heading.imag << ", " << s.longitudinal_velocity_mps << ", " <<
+      s.lateral_velocity_mps << ", " << s.acceleration_mps2 << ", " << s.heading_rate_rps <<
+      ", " << s.front_wheel_angle_rad << ", " << s.rear_wheel_angle_rad << std::endl;
   }
-  file.close();
+  ofs.close();
 }
 
 void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & replay_path)
@@ -323,81 +390,48 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
     throw std::runtime_error("replay_path cannot be empty");
   }
 
-  // Init serialized message buffer
-  rcl_serialized_message_t serialized_state_msg =
-    rmw_get_zero_initialized_serialized_message();
-  auto allocator = rcutils_get_default_allocator();
-  auto initial_capacity = 0u;
-  auto ret = rmw_serialized_message_init(
-    &serialized_state_msg,
-    initial_capacity,
-    &allocator);
-  if (ret != RCL_RET_OK) {
-    throw std::runtime_error("failed to initialize serialized message");
-  }
-
   // Clear current trajectory deque
   clear_record();
 
-  // Open file
-  std::ifstream file;
-  file.open(replay_path, std::fstream::binary);
+  Csv file_data;
+  Association map;  // row labeled Association map
+  if (!loadData(replay_path, map, file_data)) {
+    std::cerr << "failed to open file : " << replay_path << std::endl;
+    return;
+  }
 
-  // Should be enough - long frame names might need a larger buffer size
-  auto upper_bound_buffer_length = 200;
-  auto current_read_buffer_length = upper_bound_buffer_length;
-  char8_t serialized_msg_buffer[200];
-
-  rmw_serialized_message_t serialized_message_struct;
-  serialized_message_struct.buffer =
-    reinterpret_cast<uchar8_t *>(serialized_msg_buffer);
-  serialized_message_struct.buffer_length = static_cast<std::size_t>(upper_bound_buffer_length);
-  serialized_message_struct.buffer_capacity = static_cast<std::size_t>(upper_bound_buffer_length);
-  serialized_message_struct.allocator = rcutils_get_default_allocator();
-
-  if (file.is_open()) {
-    // Save end of file ptr
-    file.seekg(0, std::ios::end);
-    auto file_end = file.tellg();
-    file.seekg(0, std::ios::beg);
-    // Read from file
-    while (file.read(serialized_msg_buffer, current_read_buffer_length)) {
-      // Deserialize data
-      auto state_msg = std::make_shared<State>();
-      auto state_ts =
-        rosidl_typesupport_cpp::get_message_type_support_handle<State>();
-      ret = rmw_deserialize(&serialized_message_struct, state_ts,
-          state_msg.get());
-      if (ret != RMW_RET_OK) {
-        throw std::runtime_error("failed to deserialize message");
-      }
-
-      // Fill deque buffer
-      record_state(*state_msg.get());
-
-      // Reserialize data to get its length in binary file
-      ret = rmw_serialize(state_msg.get(), state_ts, &serialized_state_msg);
-      if (ret != RMW_RET_OK) {
-        throw std::runtime_error("failed to serialize message");
-      }
-
-      // Move filestream ptr to start of next message
-      int32_t offset =
-        static_cast<int32_t>(serialized_state_msg.buffer_length) - current_read_buffer_length;
-      file.seekg(offset, std::ios_base::cur);
-
-      // We have to resize the buffer to read the whole file
-      auto file_remaining = file_end - file.tellg();
-      if (file_remaining == 0) {
-        break;
-      } else if (file_remaining < current_read_buffer_length) {
-        current_read_buffer_length = static_cast<int32_t>(file_remaining);
+  for (size_t i = 0; i < file_data.size(); ++i) {
+    State s;
+    for (size_t j = 0; j < file_data.at(i).size(); ++j) {
+      const int _j = static_cast<int>(j);
+      if (map.at("t_sec") == _j) {
+        s.state.time_from_start.sec = std::stoi(file_data.at(i).at(j));
+      } else if (map.at("t_nanosec") == _j) {
+        s.state.time_from_start.nanosec = static_cast<uint32_t>(std::stoi(file_data.at(i).at(j)));
+      } else if (map.at("x") == _j) {
+        s.state.x = std::stof(file_data.at(i).at(j));
+      } else if (map.at("y") == _j) {
+        s.state.y = std::stof(file_data.at(i).at(j));
+      } else if (map.at("heading_real") == _j) {
+        s.state.heading.real = std::stof(file_data.at(i).at(j));
+      } else if (map.at("heading_imag") == _j) {
+        s.state.heading.imag = std::stof(file_data.at(i).at(j));
+      } else if (map.at("longitudinal_velocity_mps") == _j) {
+        s.state.longitudinal_velocity_mps = std::stof(file_data.at(i).at(j));
+      } else if (map.at("lateral_velocity_mps") == _j) {
+        s.state.lateral_velocity_mps = std::stof(file_data.at(i).at(j));
+      } else if (map.at("acceleration_mps2") == _j) {
+        s.state.acceleration_mps2 = std::stof(file_data.at(i).at(j));
+      } else if (map.at("heading_rate_rps") == _j) {
+        s.state.heading_rate_rps = std::stof(file_data.at(i).at(j));
+      } else if (map.at("front_wheel_angle_rad") == _j) {
+        s.state.front_wheel_angle_rad = std::stof(file_data.at(i).at(j));
+      } else if (map.at("rear_wheel_angle_rad") == _j) {
+        s.state.rear_wheel_angle_rad = std::stof(file_data.at(i).at(j));
       }
     }
-  } else {
-    throw std::runtime_error("failed to open file for reading");
+    record_state(s);
   }
-  file.close();
 }
 
 void RecordReplayPlanner::update_bounding_boxes(const BoundingBoxArray & bounding_boxes)
