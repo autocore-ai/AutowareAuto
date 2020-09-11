@@ -98,4 +98,7 @@ target_compile_options(${NDT_MAP_PUBLISHER_NODE_LIB} PRIVATE -Wno-sign-conversio
 target_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
-ament_auto_package()
+ament_auto_package(INSTALL_TO_SHARE
+  launch
+  param
+)
