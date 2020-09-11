@@ -12,7 +12,7 @@
       sample_tolerance_ms: 20
       control_lookahead_ms: 100
       limits:
-        min_longitudinal_velocity_mps: 0.00
+        min_longitudinal_velocity_mps: -5.00
         max_longitudinal_velocity_mps: 35.0
         min_lateral_velocity_mps: -3.0
         max_lateral_velocity_mps: 3.0
