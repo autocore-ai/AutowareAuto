@@ -55,6 +55,7 @@ protected:
   const std::string m_observation_topic{"test_obs"};
   const std::string m_map_topic{"test_map"};
   const std::string m_out_topic{"test_pose_out"};
+  const std::string m_init_pose_topic{"test_pose_init"};
   const uint32_t m_history_depth{10U};
   const std::string m_map_frame{"map"};
   const std::string m_obs_frame{"obs"};
@@ -98,6 +99,7 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
       TopicQoS{m_observation_topic, rclcpp::SystemDefaultsQoS{}},
       TopicQoS{m_map_topic, rclcpp::SystemDefaultsQoS{}},
       TopicQoS{m_out_topic, rclcpp::SystemDefaultsQoS{}},
+      TopicQoS{m_init_pose_topic, rclcpp::SystemDefaultsQoS{}},
       MockInitializer{});
 
   localizer_node->set_localizer_(std::move(localizer_ptr));
@@ -202,6 +204,7 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
       TopicQoS{m_observation_topic, rclcpp::SystemDefaultsQoS{}},
       TopicQoS{m_map_topic, rclcpp::SystemDefaultsQoS{}},
       TopicQoS{m_out_topic, rclcpp::SystemDefaultsQoS{}},
+      TopicQoS{m_init_pose_topic, rclcpp::SystemDefaultsQoS{}},
       MockInitializer{});
 
   localizer_node->set_localizer_(std::move(localizer_ptr));

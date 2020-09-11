@@ -22,6 +22,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/buffer_core.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <time_utils/time_utils.hpp>
 #include <helper_functions/message_adapters.hpp>
@@ -78,6 +79,7 @@ public:
   /// \param observation_sub_config topic and QoS setting for the observation subscription.
   /// \param map_sub_config topic and QoS setting for the map subscription.
   /// \param pose_pub_config topic and QoS setting for the output pose publisher.
+  /// \param initial_pose_sub_config topic and QoS setting for the initialpose subscription.
   /// \param pose_initializer Pose initializer.
   /// \param publish_tf Whether to publish to the `tf` topic. This can be used to publish transform
   /// messages when the relative localizer is the only source of localization.
@@ -86,6 +88,7 @@ public:
     const TopicQoS & observation_sub_config,
     const TopicQoS & map_sub_config,
     const TopicQoS & pose_pub_config,
+    const TopicQoS & initial_pose_sub_config,
     const PoseInitializerT & pose_initializer,
     LocalizerPublishMode publish_tf = LocalizerPublishMode::NO_PUBLISH_TF)
   : Node(node_name, name_space),
@@ -97,7 +100,12 @@ public:
     m_map_sub(create_subscription<MapMsgT>(map_sub_config.topic, map_sub_config.qos,
       [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
     m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
-      pose_pub_config.qos)) {
+      pose_pub_config.qos)),
+    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+        initial_pose_sub_config.topic, initial_pose_sub_config.qos,
+        [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
+          initial_pose_callback(msg);
+        })) {
     if (publish_tf == LocalizerPublishMode::PUBLISH_TF) {
       m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf", pose_pub_config.qos);
     }
@@ -128,7 +136,13 @@ public:
         "ndt_pose",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
-              "pose_pub.history_depth").template get<size_t>())}}))
+              "pose_pub.history_depth").template get<size_t>())}})),
+    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+        "initialpose",
+        rclcpp::QoS{rclcpp::KeepLast{10}},
+        [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
+          initial_pose_callback(msg);
+        }))
   {
     init();
   }
@@ -159,7 +173,13 @@ public:
         "ndt_pose",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
-              "pose_pub.history_depth").template get<size_t>())}}))
+              "pose_pub.history_depth").template get<size_t>())}})),
+    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+        "initialpose",
+        rclcpp::QoS{rclcpp::KeepLast{10}},
+        [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
+          initial_pose_callback(msg);
+        }))
   {
     init();
   }
@@ -244,22 +264,24 @@ private:
           rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
     }
 
-    /////////////////////////////////////////////////
-    // TODO(yunus.caliskan): Remove in #425
-    // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
-    auto & tf = m_init_hack_transform.transform;
-    tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
-    tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
-    tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
-    tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
-    tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
-    tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
-    tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
-    m_init_hack_transform.header.frame_id = "map";
-    m_init_hack_transform.child_frame_id = "odom";
-    m_use_hack = true;  // On this constructor that is used by the executable,
-    // we currently need the hack for the AVP demo MS2.
-    ////////////////////////////////////////////////////
+    if (declare_parameter("init_hack.enabled", false)) {
+      /////////////////////////////////////////////////
+      // TODO(yunus.caliskan): Remove in #425
+      // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
+      auto & tf = m_init_hack_transform.transform;
+      tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
+      tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
+      tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
+      tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
+      tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
+      tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
+      tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
+      m_init_hack_transform.header.frame_id = "map";
+      m_init_hack_transform.child_frame_id = "odom";
+      m_use_hack = true;  // On this constructor that is used by the executable,
+      // we currently need the hack for the AVP demo MS2.
+      ////////////////////////////////////////////////////
+    }
   }
 
   /// Process the registration summary. By default does nothing.
@@ -304,7 +326,7 @@ private:
         }
       } catch (...) {
         // TODO(mitsudome-r) remove this hack in #458
-        if (m_tf_publisher) {
+        if (m_tf_publisher && m_use_hack) {
           republish_tf(get_stamp(*msg_ptr));
         }
         on_bad_registration(std::current_exception());
@@ -396,6 +418,36 @@ private:
     }
   }
 
+  void initial_pose_callback(const typename PoseWithCovarianceStamped::ConstSharedPtr msg_ptr)
+  {
+    const std::string & map_frame = m_localizer_ptr->map_frame_id();
+
+    //  project intial pose into map frame
+    if (!m_tf_buffer.canTransform(map_frame, msg_ptr->header.frame_id, tf2::TimePointZero)) {
+      RCLCPP_ERROR(get_logger(),
+        "Failed to find transform from %s to %s frame. Failed to give initial pose.",
+        msg_ptr->header.frame_id, map_frame);
+      return;
+    }
+    const auto transform = m_tf_buffer.lookupTransform(map_frame, msg_ptr->header.frame_id,
+        tf2::TimePointZero);
+
+    // convert to PoseStamped Message to match with argument to doTransform()
+    geometry_msgs::msg::PoseStamped input_pose_stamped, transformed_pose_stamped;
+    input_pose_stamped.header = msg_ptr->header;
+    input_pose_stamped.pose = msg_ptr->pose.pose;
+    tf2::doTransform(input_pose_stamped, transformed_pose_stamped, transform);
+
+    PoseWithCovarianceStamped transformed_pose = *msg_ptr;
+    transformed_pose.header.frame_id = map_frame;
+    transformed_pose.pose.pose = transformed_pose_stamped.pose;
+
+    //  update tf with transformed initial pose
+    if (m_tf_publisher) {
+      publish_tf(transformed_pose);
+    }
+  }
+
   LocalizerBasePtr m_localizer_ptr;
   PoseInitializerT m_pose_initializer;
   tf2::BufferCore m_tf_buffer;
@@ -404,6 +456,10 @@ private:
   typename rclcpp::Subscription<MapMsgT>::SharedPtr m_map_sub;
   typename rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr m_pose_publisher;
   typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher{nullptr};
+
+  // Receive updates from "/initialpose" (e.g. rviz2)
+  typename rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr m_initial_pose_sub;
+
   // TODO(yunus.caliskan): Remove hack variables below in #425
   bool m_use_hack{false};
   bool m_hack_initialized{false};

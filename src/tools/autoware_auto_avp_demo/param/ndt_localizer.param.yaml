@@ -30,6 +30,7 @@
         y: 0.0
         z: 0.0
         w: 1.0
+      enabled: true
     # localizer specific configuration
     localizer:
       #underlying voxel grid configuration of the map

@@ -219,7 +219,8 @@ def generate_launch_description():
         node_executable='rviz2',
         node_name='rviz2',
         arguments=['-d', str(rviz_cfg_path)],
-        condition=IfCondition(LaunchConfiguration('with_rviz'))
+        condition=IfCondition(LaunchConfiguration('with_rviz')),
+        remappings=[("initialpose", "/localization/initialpose")]
     )
     urdf_publisher = Node(
         package='robot_state_publisher',
