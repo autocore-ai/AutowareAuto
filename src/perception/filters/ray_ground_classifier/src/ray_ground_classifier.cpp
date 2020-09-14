@@ -42,8 +42,8 @@ RayGroundClassifier::RayGroundClassifier(const Config & cfg)
 : m_sort_array(autoware::common::types::POINT_BLOCK_CAPACITY),
   m_ray_sorter(autoware::common::types::POINT_BLOCK_CAPACITY),
   m_point_classifier(cfg),
-  m_min_height_m(cfg.get_min_height()),
-  m_max_height_m(cfg.get_max_height())
+  m_min_height_m(cfg.m_min_height_m),
+  m_max_height_m(cfg.m_max_height_m)
 {
   m_sort_array.clear();
 }

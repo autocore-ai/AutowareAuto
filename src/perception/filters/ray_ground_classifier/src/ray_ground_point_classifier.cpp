@@ -46,10 +46,10 @@ RayGroundPointClassifier::RayGroundPointClassifier(
 void RayGroundPointClassifier::reset()
 {
   m_prev_radius_m = 0.0F;
-  m_prev_height_m = m_config.get_ground_z();
+  m_prev_height_m = m_config.m_ground_z_m;
   m_last_was_ground = true;
   m_prev_ground_radius_m = 0.0F;
-  m_prev_ground_height_m = m_config.get_ground_z();
+  m_prev_ground_height_m = m_config.m_ground_z_m;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,11 +68,11 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
   }
 
   const float32_t dh_m = fabsf(height_m - m_prev_height_m);
-  const bool8_t is_local = (dh_m < clamp(m_config.get_max_local_slope() * dr_m,
-    m_config.get_min_height_thresh(), m_config.get_max_global_height_thresh()));
+  const bool8_t is_local = (dh_m < clamp(m_config.m_max_local_slope * dr_m,
+    m_config.m_min_height_thresh_m, m_config.m_max_global_height_thresh_m));
   const float32_t global_height_thresh_m =
-    std::min(m_config.get_max_global_slope() * radius_m, m_config.get_max_global_height_thresh());
-  const bool8_t has_vertical_structure = (dh_m > (dr_m * m_config.get_nonground_retro_thresh()));
+    std::min(m_config.m_max_global_slope * radius_m, m_config.m_max_global_height_thresh_m);
+  const bool8_t has_vertical_structure = (dh_m > (dr_m * m_config.m_nonground_retro_thresh));
   if (m_last_was_ground) {
     if (is_local) {
       // local in height, so ground
@@ -82,9 +82,9 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
       ret = PointLabel::RETRO_NONGROUND;
     } else {
       // check global cone
-      ret = (fabsf(height_m - m_config.get_ground_z()) < global_height_thresh_m) ?
+      ret = (fabsf(height_m - m_config.m_ground_z_m) < global_height_thresh_m) ?
         PointLabel::GROUND :
-        (dr_m < m_config.get_max_provisional_ground_distance()) ?
+        (dr_m < m_config.m_max_provisional_ground_distance_m) ?
         PointLabel::NONGROUND :
         PointLabel::NONLOCAL_NONGROUND;
     }
@@ -92,8 +92,8 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
     const float32_t drg_m = (radius_m - m_prev_ground_radius_m);
     const float32_t dhg_m = fabsf(height_m - m_prev_ground_height_m);
     const bool8_t is_local_to_last_ground =
-      (dhg_m <= clamp(m_config.get_max_local_slope() * drg_m, m_config.get_min_height_thresh(),
-      m_config.get_max_last_local_ground_thresh()));
+      (dhg_m <= clamp(m_config.m_max_local_slope * drg_m, m_config.m_min_height_thresh_m,
+      m_config.m_max_last_local_ground_thresh_m));
     if (is_local_to_last_ground) {
       // local to last ground: provisional ground
       ret = PointLabel::PROVISIONAL_GROUND;
@@ -102,7 +102,7 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
       ret = PointLabel::NONGROUND;
     } else {
       // global ground: provisionally ground
-      ret = ((fabsf(height_m - m_config.get_ground_z()) < global_height_thresh_m)) ?
+      ret = ((fabsf(height_m - m_config.m_ground_z_m) < global_height_thresh_m)) ?
         PointLabel::PROVISIONAL_GROUND :
         PointLabel::NONGROUND;
     }

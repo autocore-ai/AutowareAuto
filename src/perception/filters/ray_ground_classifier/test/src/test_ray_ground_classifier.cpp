@@ -39,23 +39,23 @@ TEST_F(ray_ground_classifier, point_classification)
   PointXYZIF pt;
   // close to ground: GROUND
   pt.x = 1.0F;
-  pt.z = cfg.get_ground_z();
+  pt.z = cfg.m_ground_z_m;
   EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::GROUND);
   // exhibit vertical structure: RETRO_NONGROUND
   pt.x += 0.1F;
-  pt.z = cfg.get_ground_z() + 1.0F;
+  pt.z = cfg.m_ground_z_m + 1.0F;
   EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::RETRO_NONGROUND);
   // near last nonground point: NONGROUND
   pt.x += 1.0F;
   EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::NONGROUND);
   // back to ground: PROVISIONAL_GROUND
   pt.x += 0.1F;
-  pt.z = cfg.get_ground_z();
+  pt.z = cfg.m_ground_z_m;
   EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}),
     RayGroundPointClassifier::PointLabel::PROVISIONAL_GROUND);
   // distant nonground: NONLOCAL_NONGROUND
   pt.x += 10.1F;
-  pt.z = cfg.get_ground_z() + 2.0F;
+  pt.z = cfg.m_ground_z_m + 2.0F;
   EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}),
     RayGroundPointClassifier::PointLabel::NONLOCAL_NONGROUND);
   // bad case: go backwards
@@ -364,7 +364,7 @@ TEST_F(ray_ground_classifier, plateau_ground)
     -1.0F,         // min_height_m,
     2.5F           // max_height_m
   };
-  ASSERT_LT(fabsf(cfg2.get_max_local_slope() - tanf(10.0F * 3.14159F / 180.0F)), 0.001F);
+  ASSERT_LT(fabsf(cfg2.m_max_local_slope - tanf(10.0F * 3.14159F / 180.0F)), 0.001F);
   dat =
   {
     std::tuple<float32_t, float32_t, uint8_t>(1.0F, 0.0F, 0),
@@ -407,8 +407,8 @@ TEST_F(ray_ground_classifier, provisional_ground)
     -1.0F,         // min_height_m,
     1.5F           // max_height_m
   };
-  ASSERT_LT(fabsf(cfg2.get_nonground_retro_thresh() - tanf(70.0F * 3.14159F / 180.0F)), 0.001F);
-  ASSERT_LT(fabsf(cfg2.get_max_last_local_ground_thresh() - 5.0F), 0.001F);
+  ASSERT_LT(fabsf(cfg2.m_nonground_retro_thresh - tanf(70.0F * 3.14159F / 180.0F)), 0.001F);
+  ASSERT_LT(fabsf(cfg2.m_max_last_local_ground_thresh_m - 5.0F), 0.001F);
   dat =
   {
     std::tuple<float32_t, float32_t, uint8_t>(1.0F, 0.0F, 0),
@@ -431,15 +431,15 @@ TEST_F(ray_ground_classifier, provisional_ground)
 // Test height filtering
 TEST_F(ray_ground_classifier, height_filter)
 {
-  EXPECT_FLOAT_EQ(cfg.get_min_height(), -1.0F);
-  EXPECT_FLOAT_EQ(cfg.get_max_height(), 1.5F);
+  EXPECT_FLOAT_EQ(cfg.m_min_height_m, -1.0F);
+  EXPECT_FLOAT_EQ(cfg.m_max_height_m, 1.5F);
   autoware::perception::filters::ray_ground_classifier::RayGroundClassifier filter(cfg);
   autoware::common::types::PointXYZIF pt1, pt2;
   pt1.x = 1.0F;
-  pt1.z = cfg.get_max_height() + 0.00001F;
+  pt1.z = cfg.m_max_height_m + 0.00001F;
   filter.insert(pt1);
   pt2.x = 2.0F;
-  pt2.z = cfg.get_min_height() - 0.00001F;
+  pt2.z = cfg.m_min_height_m - 0.00001F;
   filter.insert(pt2);
   autoware::perception::filters::ray_ground_classifier::PointBlock blk1, blk2;
   blk1.clear();
@@ -491,14 +491,14 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
     // hack due to knowledge that they should be roughly ordered in radius, then height
     if ((idx != 15U) && (idx != 30U)) {
       EXPECT_LT(ground_pt.z,
-        cfg.get_ground_z() + 0.1F) << idx << ", " << ground_pt.x << ", " << ground_pt.id;
+        cfg.m_ground_z_m + 0.1F) << idx << ", " << ground_pt.x << ", " << ground_pt.id;
     }
   }
   for (uint32_t idx = 0U; idx < nonground_points.size(); ++idx) {
     const auto & nonground_pt = nonground_points[idx];
     EXPECT_GT(nonground_pt.x, 19.0F);
     if ((idx != 0U) && (idx != 17U)) {
-      EXPECT_GT(nonground_pt.z, cfg.get_ground_z()) << idx;
+      EXPECT_GT(nonground_pt.z, cfg.m_ground_z_m) << idx;
     }
   }
   // test bad insert
@@ -735,7 +735,7 @@ TEST_F(ray_ground_classifier, benchmark)
           mode = 0;
           last_dr = 1.0F;
           pt.x = 0.0F;
-          pt.z = cfg.get_ground_z();
+          pt.z = cfg.m_ground_z_m;
         }
         // check state transition
         const float32_t r = mode_samp(gen);

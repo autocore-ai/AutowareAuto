@@ -69,9 +69,8 @@ inline float64_t deg2rad(float64_t degrees)
 }
 
 /// \brief A struct that holds configuration parameters for the ground filter
-class RAY_GROUND_CLASSIFIER_PUBLIC Config
+struct RAY_GROUND_CLASSIFIER_PUBLIC Config
 {
-public:
   /// \brief Constructor
   /// \param[in] sensor_height_m How high the sensor is off the ground
   /// \param[in] max_local_slope_deg Maximum permissible slope for two ground points within
@@ -105,49 +104,40 @@ public:
   /// \brief Get height of sensor off of ground, in meters
   /// \return The value in meters
   float32_t get_sensor_height() const;
-  /// \brief Get z value of the ground in sensor frame, -sensor_height
-  /// \return The value in meters
-  float32_t get_ground_z() const;
-  /// \brief Get maximum allowed slope between two nearby points that are both ground
-  /// \return The value as a nondimensionalized ratio, rise / run
-  float32_t get_max_local_slope() const;
-  /// \brief Get maximum allowed slope between a ground point  and the sensor
-  /// \return The value as a nondimensionalized ratio, rise / run
-  float32_t get_max_global_slope() const;
-  /// \brief Get minimum slope at which vertical structure is assumed
-  /// \return The value as a nondimensionalized ratio, rise / run
-  float32_t get_nonground_retro_thresh() const;
-  /// \brief Get minimum value for local height threshold
-  /// \return The value in meters
-  float32_t get_min_height_thresh() const;
-  /// \brief Get maximum value for global height threshold
-  /// \return The value in meters
-  float32_t get_max_global_height_thresh() const;
-  /// \brief Get maximum value for local heigh threshold
-  /// \return The value in meters
-  float32_t get_max_last_local_ground_thresh() const;
-  /// \brief Get maximum influence distance for provisional ground point label
-  /// \return The value in meters
-  float32_t get_max_provisional_ground_distance() const;
-  /// \brief Get minimum height (in sensor frame) of points to classify, points lower than this are
-  ///        ignored
-  /// \return The value in meters
-  float32_t get_min_height() const;
-  /// \brief Get maximum height (in sensor frame) of points to classify, points higher than this are
-  ///        ignored
-  /// \return The value in meters
-  float32_t get_max_height() const;
 
-private:
+  /// \brief Get z value (meters) of the ground in sensor frame, -sensor_height
   const float32_t m_ground_z_m;
+
+  /// \brief Get maximum allowed slope between two nearby points that are both ground,
+  /// the value is a nondimensionalized ratio, rise / run
   const float32_t m_max_local_slope;
+
+  /// \brief Get maximum allowed slope between a ground point  and the sensor,
+  /// the value is a nondimensionalized ratio, rise / run
   const float32_t m_max_global_slope;
+
+  /// \brief Get minimum slope at which vertical structure is assumed,
+  /// the value is a nondimensionalized ratio, rise / run
   const float32_t m_nonground_retro_thresh;
+
+  /// \brief Get minimum value for local height threshold
   const float32_t m_min_height_thresh_m;
+
+  /// \brief The maximum value for global height threshold
   const float32_t m_max_global_height_thresh_m;
+
+  /// \brief The maximum value for local heigh threshold
   const float32_t m_max_last_local_ground_thresh_m;
+
+  /// \brief The maximum influence distance for provisional ground point label
   const float32_t m_max_provisional_ground_distance_m;
+
+  /// \brief The minimum height (in sensor frame) of points to classify, points lower than this are
+  ///        ignored
   const float32_t m_min_height_m;
+
+  /// \brief The maximum height (in sensor frame) of points to classify, points higher than this are
+  ///        ignored
   const float32_t m_max_height_m;
 };  // class Config
 
