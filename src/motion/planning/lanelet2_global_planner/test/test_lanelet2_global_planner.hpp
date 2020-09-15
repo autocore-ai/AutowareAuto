@@ -135,25 +135,6 @@ TEST_F(TestGlobalPlannerBasicMap, test_find_parking)
   EXPECT_EQ(near_road, 479054);
 }
 
-TEST_F(TestGlobalPlannerBasicMap, test_find_route)
-{
-  // find lane cad_id to lane id
-  // id:6895 -> cad_id 445864
-  // id:6944 -> cad_id 448826
-  lanelet::Id lane_cad_id_start = 445864;
-  lanelet::Id lane_cad_id_end = 448826;
-  lanelet::Id expect_id_start = 6895;
-  lanelet::Id expect_id_end = 6944;
-  lanelet::Id lane_start = node_ptr->find_lane_id(lane_cad_id_start);
-  lanelet::Id lane_end = node_ptr->find_lane_id(lane_cad_id_end);
-  EXPECT_EQ(lane_start, expect_id_start);
-  EXPECT_EQ(lane_end, expect_id_end);
-
-  // plan a route from start to end lane id
-  std::vector<lanelet::Id> route_id = node_ptr->get_lane_route(lane_start, lane_end);
-  EXPECT_GT(route_id.size(), 0u);
-}
-
 TEST_F(TestGlobalPlannerBasicMap, test_p2p_distance)
 {
   lanelet::Point3d p1(lanelet::utils::getId(), 1.0, 2.0, 3.0);
@@ -182,6 +163,7 @@ TEST_F(TestGlobalPlannerBasicMap, test_lanes_str2num)
   ASSERT_EQ(num[1], 4258);
   ASSERT_EQ(num[2], 3798);
 }
+
 
 TEST_F(TestGlobalPlannerFullMap, test_find_parkingaccess)
 {
@@ -214,47 +196,59 @@ TEST_F(TestGlobalPlannerFullMap, test_find_no_parkingaccess)
 TEST_F(TestGlobalPlannerFullMap, test_find_lane)
 {
   lanelet::Id parking_access_id = 7849;
-  lanelet::Id expect_lane_id = 6518;
-  lanelet::Id lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
-  EXPECT_EQ(lane_id, expect_lane_id);
+  std::vector<lanelet::Id> lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
+  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6518, 6525}));
+
   parking_access_id = 10140;
-  expect_lane_id = 6399;
   lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
-  EXPECT_EQ(lane_id, expect_lane_id);
+  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6399}));
+
   parking_access_id = 10150;
-  expect_lane_id = 6392;
   lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
-  EXPECT_EQ(lane_id, expect_lane_id);
+  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6392}));
 }
 
-TEST_F(TestGlobalPlannerFullMap, test_find_route)
+// test find route giving a single lane option
+TEST_F(TestGlobalPlannerFullMap, test_find_route_single_lane)
 {
-  lanelet::Id start_lane_id;
-  lanelet::Id end_lane_id;
+  std::vector<lanelet::Id> start_lane_id;
+  std::vector<lanelet::Id> end_lane_id;
   std::vector<lanelet::Id> route_id;
   // entry route
-  start_lane_id = 6714;
-  end_lane_id = 6546;
+  start_lane_id = std::vector<lanelet::Id>{6714};
+  end_lane_id = std::vector<lanelet::Id>{6546};
   route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
   EXPECT_GT(route_id.size(), 0u);
 
   // designate drop-off 1 to parking route
-  start_lane_id = 6392;
-  end_lane_id = 6518;
+  start_lane_id = std::vector<lanelet::Id>{6392};
+  end_lane_id = std::vector<lanelet::Id>{6518};
   // result: 6392, 7319, 6686, 6672, 6504, 6560, 6742, 7387, 6518
   route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
   EXPECT_GT(route_id.size(), 0u);
 
   // designate drop-off 2 to parking route
-  start_lane_id = 6399;
-  end_lane_id = 6490;
+  start_lane_id = start_lane_id = std::vector<lanelet::Id>{6399};
+  end_lane_id = start_lane_id = std::vector<lanelet::Id>{6490};
   // result: 6399, 6826, 6616, 6618, 6546, 6378, 6280, 6490
   route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
 
   // parking to designate pick_up 1 route
-  start_lane_id = 6525;
-  end_lane_id = 6399;
+  start_lane_id = start_lane_id = std::vector<lanelet::Id>{6525};
+  end_lane_id = start_lane_id = std::vector<lanelet::Id>{6399};
   // 6525, 7251, 6749, 6567, 6511, 6679, 6693, 7013, 6399
+  route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
+  EXPECT_GT(route_id.size(), 0u);
+}
+
+// test find route giving a multiple lane option (so can find route any direction)
+TEST_F(TestGlobalPlannerFullMap, test_find_route_mutiple_lanes)
+{
+  std::vector<lanelet::Id> start_lane_id;
+  std::vector<lanelet::Id> end_lane_id;
+  std::vector<lanelet::Id> route_id;
+  start_lane_id = std::vector<lanelet::Id>{6546, 6553};
+  end_lane_id = std::vector<lanelet::Id>{6518, 6525};
   route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
   EXPECT_GT(route_id.size(), 0u);
 }
@@ -276,6 +270,7 @@ TEST_F(TestGlobalPlannerFullMap, test_find_parking_from_point)
 
 TEST_F(TestGlobalPlannerFullMap, test_plan_full_route)
 {
+  // take the parking spot from previous test
   lanelet::Point3d from_point(lanelet::utils::getId(), -25.97, 102.12, -1.74);
   lanelet::Point3d to_point(lanelet::utils::getId(), -12.53, 67.69, -1.34);
   std::vector<lanelet::Id> route;

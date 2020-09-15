@@ -62,11 +62,11 @@ public:
   lanelet::Id find_nearparking_from_point(const lanelet::Point3d & point) const;
   lanelet::Id find_nearroute_from_parking(const lanelet::Id & park_id) const;
   lanelet::Id find_parkingaccess_from_parking(const lanelet::Id & park_id) const;
-  lanelet::Id find_lane_from_parkingaccess(const lanelet::Id & parkaccess_id) const;
+  std::vector<lanelet::Id> find_lane_from_parkingaccess(const lanelet::Id & parkaccess_id) const;
   lanelet::Id find_lane_id(const lanelet::Id & cad_id) const;
   std::vector<lanelet::Id> get_lane_route(
-    const lanelet::Id & from_id,
-    const lanelet::Id & to) const;
+    const std::vector<lanelet::Id> & from_id,
+    const std::vector<lanelet::Id> & to) const;
   bool8_t compute_parking_center(lanelet::Id & parking_id, lanelet::Point3d & parking_center) const;
   float64_t p2p_euclidean(const lanelet::Point3d & p1, const lanelet::Point3d & p2) const;
   std::vector<lanelet::Id> lanelet_chr2num(const std::string & str) const;

@@ -103,7 +103,6 @@ void Lanelet2GlobalPlanner::parse_lanelet_element()
       // Map version 2 (with parking access element):
       // mapping a parking spot to parking accesses
       if (linestring.hasAttribute("subtype") &&
-        linestring.hasAttribute("cad_id") &&
         linestring.hasAttribute("parking_accesses") &&
         (linestring.attribute("subtype") == "parking_spot" ||
         linestring.attribute("subtype") == "parking_spot,drop_off,pick_up"))
@@ -123,7 +122,6 @@ void Lanelet2GlobalPlanner::parse_lanelet_element()
 
       // mapping a parking access to lanes
       if (linestring.hasAttribute("subtype") &&
-        linestring.hasAttribute("cad_id") &&
         linestring.hasAttribute("ref_lanelet") &&
         linestring.attribute("subtype") == "parking_access")
       {
@@ -152,9 +150,9 @@ bool8_t Lanelet2GlobalPlanner::plan_route(
   lanelet::Id parkingaccess_start = find_parkingaccess_from_parking(near_parking_start);
   lanelet::Id parkingaccess_end = find_parkingaccess_from_parking(near_parking_end);
   // find connecting a lane from a parking access
-  lanelet::Id lane_start = find_lane_from_parkingaccess(parkingaccess_start);
-  lanelet::Id lane_end = find_lane_from_parkingaccess(parkingaccess_end);
-  // plan a route using lanelet2 lib: vector lane id
+  std::vector<lanelet::Id> lane_start = find_lane_from_parkingaccess(parkingaccess_start);
+  std::vector<lanelet::Id> lane_end = find_lane_from_parkingaccess(parkingaccess_end);
+  // plan a route using lanelet2 lib
   route = get_lane_route(lane_start, lane_end);
   if (route.size() > 0) {
     // parking, parking access, routes, parking access, parking
@@ -221,24 +219,25 @@ const
     // search the map
     auto it_parking = parking2access_map.find(park_id);
     if (it_parking != parking2access_map.end()) {
-      // could be more than one id in the vector<Id>
+      // just in case if there is more than one id in the vector<Id>
       // pick the first parking access for now
+      // it should be one-to-one anyway
       parking_access_id = it_parking->second.at(0);
     }
   }
   return parking_access_id;
 }
 
-lanelet::Id Lanelet2GlobalPlanner::find_lane_from_parkingaccess(const lanelet::Id & parkaccess_id)
-const
+std::vector<lanelet::Id> Lanelet2GlobalPlanner::find_lane_from_parkingaccess(
+  const lanelet::Id & parkaccess_id) const
 {
-  lanelet::Id lane_id = -1;
+  std::vector<lanelet::Id> lane_id{};
   if (osm_map->lineStringLayer.exists(parkaccess_id)) {
     // search the map
     auto it_lane = access2lane_map.find(parkaccess_id);
     if (it_lane != access2lane_map.end()) {
-      // pick the first leane (this version only give the first one for now)
-      lane_id = it_lane->second.at(0);
+      // return available lane ids
+      lane_id = it_lane->second;
     }
   }
   return lane_id;
@@ -257,33 +256,43 @@ lanelet::Id Lanelet2GlobalPlanner::find_lane_id(const lanelet::Id & cad_id) cons
 }
 
 std::vector<lanelet::Id> Lanelet2GlobalPlanner::get_lane_route(
-  const lanelet::Id & from_id, const lanelet::Id & to_id) const
+  const std::vector<lanelet::Id> & from_id, const std::vector<lanelet::Id> & to_id) const
 {
   std::vector<lanelet::Id> lane_ids;
+  std::vector<std::vector<lanelet::Id>> routes;
   lanelet::traffic_rules::TrafficRulesPtr trafficRules =
     lanelet::traffic_rules::TrafficRulesFactory::create(lanelet::Locations::Germany,
       lanelet::Participants::Vehicle);
   lanelet::routing::RoutingGraphUPtr routingGraph =
     lanelet::routing::RoutingGraph::build(*osm_map, *trafficRules);
 
-  // plan a shortest path without a lane change
-  lanelet::ConstLanelet fromLanelet = osm_map->laneletLayer.get(from_id);
-  lanelet::ConstLanelet toLanelet = osm_map->laneletLayer.get(to_id);
-  lanelet::Optional<lanelet::routing::Route> route = routingGraph->getRoute(
-    fromLanelet, toLanelet, 0);
+  // plan a shortest path without a lane change from the given from:to combination
+  for (auto start_id : from_id) {
+    for (auto end_id : to_id) {
+      lanelet::ConstLanelet fromLanelet = osm_map->laneletLayer.get(start_id);
+      lanelet::ConstLanelet toLanelet = osm_map->laneletLayer.get(end_id);
+      lanelet::Optional<lanelet::routing::Route> route = routingGraph->getRoute(
+        fromLanelet, toLanelet, 0);
 
-  // check route validity before continue further
-  if (!route) {
-    // return empty lane ids to be catch by the caller
-    return lane_ids;
+      // check route validity before continue further
+      if (route) {
+        // op for the use of shortest path in this implementation
+        lanelet::routing::LaneletPath shortestPath = route->shortestPath();
+        lanelet::LaneletSequence fullLane = route->fullLane(fromLanelet);
+        if (!shortestPath.empty() && !fullLane.empty()) {
+          // add to the list
+          routes.emplace_back(fullLane.ids());
+        }
+      }
+    }
   }
 
-  // op for the use of shortest path in this implementation
-  lanelet::routing::LaneletPath shortestPath = route->shortestPath();
-  lanelet::LaneletSequence fullLane = route->fullLane(fromLanelet);
-  if (!shortestPath.empty() && !fullLane.empty()) {
-    lane_ids = fullLane.ids();
+  // Get the route: for now take the first one
+  // Improvement: add via lane_ids or shortest path or lowest cost
+  if (routes.size() > 0) {
+    lane_ids = routes.at(0);
   }
+  // done: return lane ids in the route (empty if find no route)
   return lane_ids;
 }
 
