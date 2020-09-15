@@ -12,6 +12,51 @@ area defined in the map.
 
 
 # Design
+**General lanelet2 data structure**
+```
+
+			1532 <-----------------
+       			lanelet: 1531 
+			1535 <-----------------> 1528
+       			lanelet: 1524
+			1525 ----------------->
+     			ref_lanelet: 1524
+                  
+     			PARKING_ACCESS(2894) 
+
+   			parking_spots: 2941, 3739
+
+     			\----------------/
+
+        			PARKING_SPOT
+
+     			|  3739 |  2941 | 
+    			parking_access: 2894
+
+```
+
+**Route planner**
+```
+(Parking spot) ----+
+                   |
+                   |
+                 (Parking access: first in the list) --------+ 
+ 															 |
+															 |	
+
+                                                        (start lanes: first in the list)  ---+ 
+																							 |
+																							 | (plan route: graph search)
+																							 |
+ 														(end lanes: first in the list) ------+
+															 |
+															 |
+                 (Parking access: first in the list) --------+ 
+				   |	
+                   |
+(Parking spot) ----+
+
+```
 
 The path(lane) planning utilised the lanelet2 api to get the shortest path from given the starting and  
 the goal location (x,y,z). The planning steps include,

@@ -27,17 +27,14 @@
 
 using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
-using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlannerNode;
+using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
 
-class TestGlobalPlanner : public ::testing::Test
+class TestGlobalPlannerBasicMap : public ::testing::Test
 {
-protected:
-  void SetUp()
+public:
+  TestGlobalPlannerBasicMap()
   {
-    rclcpp::init(0, nullptr);
-    rclcpp::NodeOptions node_options;
-
-    node_ptr = std::make_shared<Lanelet2GlobalPlannerNode>(node_options);
+    node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
     std::string root_folder = std::string(std::experimental::filesystem::current_path());
     std::string file_path = std::string("/test/map_data/mapping_example_pk.osm");
     std::string file = root_folder + file_path;
@@ -47,12 +44,26 @@ protected:
     node_ptr->load_osm_map(file, lat, lon, alt);
     node_ptr->parse_lanelet_element();
   }
-  void TearDown()
-  {
-    rclcpp::shutdown();
-  }
+  std::shared_ptr<Lanelet2GlobalPlanner> node_ptr;
+};
 
-  std::shared_ptr<Lanelet2GlobalPlannerNode> node_ptr;
+class TestGlobalPlannerFullMap : public ::testing::Test
+{
+public:
+  TestGlobalPlannerFullMap()
+  {
+    node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
+    std::string root_folder = std::string(std::experimental::filesystem::current_path());
+    std::string file_path =
+      std::string("/test/map_data/AStuff_test_map.osm");
+    std::string file = root_folder + file_path;
+    float64_t lat = 37.380811523812845;
+    float64_t lon = -121.90840595108715;
+    float64_t alt = 11.0;
+    node_ptr->load_osm_map(file, lat, lon, alt);
+    node_ptr->parse_lanelet_element();
+  }
+  std::shared_ptr<Lanelet2GlobalPlanner> node_ptr;
 };
 
 TEST(TestFunction, Point3d_copy)
@@ -105,7 +116,7 @@ TEST(TestFunction, Point3d_mean)
   ASSERT_DOUBLE_EQ(8.0, mean_z);
 }
 
-TEST_F(TestGlobalPlanner, test_find_parking)
+TEST_F(TestGlobalPlannerBasicMap, test_find_parking)
 {
   // Find parking id from point
   // parking id: 5830 location: 20.7607, -10.2697, 15.6 near_roads: 479054
@@ -124,7 +135,7 @@ TEST_F(TestGlobalPlanner, test_find_parking)
   EXPECT_EQ(near_road, 479054);
 }
 
-TEST_F(TestGlobalPlanner, test_find_route)
+TEST_F(TestGlobalPlannerBasicMap, test_find_route)
 {
   // find lane cad_id to lane id
   // id:6895 -> cad_id 445864
@@ -143,19 +154,7 @@ TEST_F(TestGlobalPlanner, test_find_route)
   EXPECT_GT(route_id.size(), 0u);
 }
 
-TEST_F(TestGlobalPlanner, test_plan_route)
-{
-  // from bay 5830: (20.7607, -10.2697, 15.6)
-  // to bay: 6139: (29.0561, 5.7876, 16.9)
-  // lane id: 7455, 8389, 7441, 8626, 7539, 8413, 7504
-  lanelet::Point3d start(lanelet::utils::getId(), 20.76, -10.26, 15.60);
-  lanelet::Point3d end(lanelet::utils::getId(), 29.05, 5.78, 16.90);
-  std::vector<lanelet::Id> route;
-  bool8_t ret = node_ptr->plan_route(start, end, route);
-  EXPECT_TRUE(ret);
-}
-
-TEST_F(TestGlobalPlanner, test_p2p_distance)
+TEST_F(TestGlobalPlannerBasicMap, test_p2p_distance)
 {
   lanelet::Point3d p1(lanelet::utils::getId(), 1.0, 2.0, 3.0);
   lanelet::Point3d p2(lanelet::utils::getId(), 4.0, 5.0, 6.0);
@@ -166,11 +165,122 @@ TEST_F(TestGlobalPlanner, test_p2p_distance)
   ASSERT_DOUBLE_EQ(actual, dist);
 }
 
-TEST_F(TestGlobalPlanner, test_lanes_str2num)
+TEST_F(TestGlobalPlannerBasicMap, test_lanes_chr2num)
 {
   std::string str = "[u'429933', u'430462']";
-  std::vector<lanelet::Id> num = node_ptr->str2num_lanes(str);
+  std::vector<lanelet::Id> num = node_ptr->lanelet_chr2num(str);
   ASSERT_EQ(num[0], 429933);
   ASSERT_EQ(num[1], 430462);
 }
+
+TEST_F(TestGlobalPlannerBasicMap, test_lanes_str2num)
+{
+  std::string str = "1258,4258,3798";
+  std::vector<lanelet::Id> num = node_ptr->lanelet_str2num(str);
+  ASSERT_EQ(num.size(), 3U);
+  ASSERT_EQ(num[0], 1258);
+  ASSERT_EQ(num[1], 4258);
+  ASSERT_EQ(num[2], 3798);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_find_parkingaccess)
+{
+  lanelet::Id parking_id = 8008;
+  lanelet::Id expect_parking_access_id = 9538;
+  lanelet::Id parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
+  EXPECT_EQ(parking_access_id, expect_parking_access_id);
+  parking_id = 8663;
+  expect_parking_access_id = 10140;
+  parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
+  EXPECT_EQ(parking_access_id, expect_parking_access_id);
+  parking_id = 8664;
+  expect_parking_access_id = 10150;
+  parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
+  EXPECT_EQ(parking_access_id, expect_parking_access_id);
+  parking_id = 101930;
+  expect_parking_access_id = 9140;
+  parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
+  EXPECT_EQ(parking_access_id, expect_parking_access_id);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_find_no_parkingaccess)
+{
+  lanelet::Id parking_id = 8220;
+  lanelet::Id expect_parking_access_id = -1;
+  lanelet::Id parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
+  EXPECT_EQ(parking_access_id, expect_parking_access_id);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_find_lane)
+{
+  lanelet::Id parking_access_id = 7849;
+  lanelet::Id expect_lane_id = 6518;
+  lanelet::Id lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
+  EXPECT_EQ(lane_id, expect_lane_id);
+  parking_access_id = 10140;
+  expect_lane_id = 6399;
+  lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
+  EXPECT_EQ(lane_id, expect_lane_id);
+  parking_access_id = 10150;
+  expect_lane_id = 6392;
+  lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
+  EXPECT_EQ(lane_id, expect_lane_id);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_find_route)
+{
+  lanelet::Id start_lane_id;
+  lanelet::Id end_lane_id;
+  std::vector<lanelet::Id> route_id;
+  // entry route
+  start_lane_id = 6714;
+  end_lane_id = 6546;
+  route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
+  EXPECT_GT(route_id.size(), 0u);
+
+  // designate drop-off 1 to parking route
+  start_lane_id = 6392;
+  end_lane_id = 6518;
+  // result: 6392, 7319, 6686, 6672, 6504, 6560, 6742, 7387, 6518
+  route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
+  EXPECT_GT(route_id.size(), 0u);
+
+  // designate drop-off 2 to parking route
+  start_lane_id = 6399;
+  end_lane_id = 6490;
+  // result: 6399, 6826, 6616, 6618, 6546, 6378, 6280, 6490
+  route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
+
+  // parking to designate pick_up 1 route
+  start_lane_id = 6525;
+  end_lane_id = 6399;
+  // 6525, 7251, 6749, 6567, 6511, 6679, 6693, 7013, 6399
+  route_id = node_ptr->get_lane_route(start_lane_id, end_lane_id);
+  EXPECT_GT(route_id.size(), 0u);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_find_parking_from_point)
+{
+  // Vehicle location in the map frame: -25.9749 102.129 -1.74268
+  // parking id: 101930
+  lanelet::Point3d position_1(lanelet::utils::getId(), -25.97, 102.12, -1.74);
+  lanelet::Id parking_id_1 = node_ptr->find_nearparking_from_point(position_1);
+  EXPECT_EQ(parking_id_1, 101930);
+
+  // Vehicle location in the map frame: -12.5381 67.6976 -1.34077
+  // parking id: 8113
+  lanelet::Point3d position_2(lanelet::utils::getId(), -12.53, 67.69, -1.34);
+  lanelet::Id parking_id_2 = node_ptr->find_nearparking_from_point(position_2);
+  EXPECT_EQ(parking_id_2, 8113);
+}
+
+TEST_F(TestGlobalPlannerFullMap, test_plan_full_route)
+{
+  lanelet::Point3d from_point(lanelet::utils::getId(), -25.97, 102.12, -1.74);
+  lanelet::Point3d to_point(lanelet::utils::getId(), -12.53, 67.69, -1.34);
+  std::vector<lanelet::Id> route;
+  bool8_t result = node_ptr->plan_route(from_point, to_point, route);
+  EXPECT_TRUE(result);
+}
+
 #endif  // TEST_LANELET2_GLOBAL_PLANNER_HPP_

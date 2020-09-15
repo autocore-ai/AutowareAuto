@@ -16,17 +16,11 @@ find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
 
 # build
-set(GB_PLANNER_LIB lanelet2_global_planner_node)
+set(GB_PLANNER_LIB lanelet2_global_planner)
 ament_auto_add_library(${GB_PLANNER_LIB} SHARED
   include/lanelet2_global_planner/lanelet2_global_planner.hpp
   src/lanelet2_global_planner.cpp
   include/lanelet2_global_planner/visibility_control.hpp
-)
-
-set(GB_PLANNER_EXE ${GB_PLANNER_LIB}_exe)
-rclcpp_components_register_node(${GB_PLANNER_LIB}
-  PLUGIN "autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlannerNode"
-  EXECUTABLE ${GB_PLANNER_EXE}
 )
 
 if(BUILD_TESTING)
@@ -52,8 +46,6 @@ endif()
 
 # Ament Exporting
 target_compile_options(${GB_PLANNER_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
-target_compile_options(${GB_PLANNER_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
 ament_auto_package()

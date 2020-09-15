@@ -16,10 +16,6 @@
 
 #ifndef  LANELET2_GLOBAL_PLANNER__LANELET2_GLOBAL_PLANNER_HPP_
 #define  LANELET2_GLOBAL_PLANNER__LANELET2_GLOBAL_PLANNER_HPP_
-// ros2
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
-#include <std_msgs/msg/string.hpp>
 
 // lanelet2
 #include <lanelet2_core/primitives/Lanelet.h>
@@ -40,6 +36,7 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
+#include <regex>
 
 using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
@@ -52,10 +49,10 @@ namespace planning
 {
 namespace lanelet2_global_planner
 {
-class LANELET2_GLOBAL_PLANNER_PUBLIC Lanelet2GlobalPlannerNode : public rclcpp::Node
+class LANELET2_GLOBAL_PLANNER_PUBLIC Lanelet2GlobalPlanner
 {
 public:
-  explicit Lanelet2GlobalPlannerNode(const rclcpp::NodeOptions & node_options);
+  explicit Lanelet2GlobalPlanner();
 
   void load_osm_map(const std::string & file, float64_t lat, float64_t lon, float64_t alt);
   void parse_lanelet_element();
@@ -64,18 +61,23 @@ public:
     std::vector<lanelet::Id> & route) const;
   lanelet::Id find_nearparking_from_point(const lanelet::Point3d & point) const;
   lanelet::Id find_nearroute_from_parking(const lanelet::Id & park_id) const;
+  lanelet::Id find_parkingaccess_from_parking(const lanelet::Id & park_id) const;
+  lanelet::Id find_lane_from_parkingaccess(const lanelet::Id & parkaccess_id) const;
   lanelet::Id find_lane_id(const lanelet::Id & cad_id) const;
   std::vector<lanelet::Id> get_lane_route(
     const lanelet::Id & from_id,
     const lanelet::Id & to) const;
   bool8_t compute_parking_center(lanelet::Id & parking_id, lanelet::Point3d & parking_center) const;
   float64_t p2p_euclidean(const lanelet::Point3d & p1, const lanelet::Point3d & p2) const;
-  std::vector<lanelet::Id> str2num_lanes(const std::string & str) const;
+  std::vector<lanelet::Id> lanelet_chr2num(const std::string & str) const;
+  std::vector<lanelet::Id> lanelet_str2num(const std::string & str) const;
+  std::shared_ptr<lanelet::LaneletMap> osm_map;
 
 private:
-  std::unique_ptr<lanelet::LaneletMap> osm_map;
   std::vector<lanelet::Id> parking_id_list;
   std::unordered_map<lanelet::Id, std::vector<lanelet::Id>> parking_lane_map;
+  std::unordered_map<lanelet::Id, std::vector<lanelet::Id>> parking2access_map;
+  std::unordered_map<lanelet::Id, std::vector<lanelet::Id>> access2lane_map;
   std::unordered_map<lanelet::Id, lanelet::Id> near_road_map;
 };
 }  // namespace lanelet2_global_planner

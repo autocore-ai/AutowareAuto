@@ -18,15 +18,12 @@
 
 import launch.substitutions
 import launch_ros.actions
-
+from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    """Launch LaneLet2 Global Path Planner nodes."""
     # execution definition.
     global_planner_node_runner = launch_ros.actions.Node(
-        package='lanelet2_global_planner',
-        node_executable='lanelet2_global_planner_exe',
-        output='screen',
-        )
-
+        package='lanelet2_global_planner_node',
+        node_executable='lanelet2_global_planner_node_exe',
+        output='screen')
     return launch.LaunchDescription([global_planner_node_runner])

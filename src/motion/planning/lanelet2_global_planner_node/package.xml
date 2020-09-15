@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>lanelet2_global_planner</name>
+  <name>lanelet2_global_planner_node</name>
   <version>0.0.1</version>
-  <description>lanelet2 global path planner</description>
+  <description>lanelet2 global path planner node</description>
   <maintainer email="punnu@parkopedia.com">Punnu Pahiratt</maintainer>
   <license>Apache License 2.0</license>
   <author>Punnu Phairatt</author>
@@ -11,15 +11,19 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>autoware_auto_msgs</depend>
+  <depend>lanelet2_global_planner</depend>
   <depend>lanelet2_core</depend>
-  <depend>lanelet2_io</depend>
-  <depend>lanelet2_projection</depend>
-  <depend>lanelet2_traffic_rules</depend>
-  <depend>lanelet2_routing</depend>
+  <depend>had_map_utils</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>time_utils</depend>
 
   <build_depend>autoware_auto_common</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_export_depend>eigen</build_export_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
