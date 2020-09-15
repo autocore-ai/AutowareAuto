@@ -1,4 +1,5 @@
 stages:
+  - gen-dependencies
   - ade
   - build
   - deploy
@@ -11,6 +12,7 @@ stages:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - apk add --update-cache git
+    - mv ros-deps tools/ade_image
     - cd tools/ade_image
     - 'export LAST_CHANGE=$(git log -1 --pretty=%H .)'
     - '
@@ -42,6 +44,9 @@ stages:
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
+  after_script:
+    - docker container rm -f $(docker container ls --filter "status=exited" -q)
+    - docker image rm $(docker image ls -q)
 
 .build_barebones_base: &build_barebones_base
   stage: build
@@ -147,11 +152,28 @@ stages:
     - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
     - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
+  after_script:
+    - docker container rm -f $(docker container ls --filter "status=exited" -q)
+    - docker image rm $(docker image ls -q)
+
+generate_ros_deps:
+  stage: gen-dependencies
+  image: ros:dashing
+  script:
+    - rosdep update
+    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src >> ros-deps
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - ros-deps
 
 ade:
   variables:
     ARCH: ""
   <<: *ade_base
+  needs:
+    - job: generate_ros_deps
+      artifacts: true
 
 ade_arm64:
   variables:
@@ -159,6 +181,9 @@ ade_arm64:
   tags:
     - arm64
   <<: *ade_base
+  needs:
+    - job: generate_ros_deps
+      artifacts: true
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
