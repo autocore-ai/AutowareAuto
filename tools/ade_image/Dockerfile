@@ -35,7 +35,7 @@ RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key 1655A0AB6
 COPY ros-deps /tmp/
 RUN apt-get update && \
     /bin/bash /tmp/ros-deps && \
-    rm -rf /var/lib/apt/lists/* /tmp/apt-packages
+    rm -rf /var/lib/apt/lists/* /tmp/ros-deps
 
 COPY apt-packages /tmp/
 RUN apt-get update && \
