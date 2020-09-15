@@ -11,10 +11,12 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <build_depend>autoware_auto_common</build_depend>
+    <build_depend>autoware_auto_geometry</build_depend>
     <build_depend>autoware_auto_algorithm</build_depend>
     <build_depend>lidar_utils</build_depend>
 
     <exec_depend>autoware_auto_common</exec_depend>
+    <exec_depend>autoware_auto_geometry</exec_depend>
     <exec_depend>autoware_auto_algorithm</exec_depend>
     <exec_depend>lidar_utils</exec_depend>
 

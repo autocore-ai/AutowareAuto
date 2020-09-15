@@ -48,12 +48,6 @@ using autoware::common::types::float64_t;
 ///        ground filtering in point clouds
 namespace ray_ground_classifier
 {
-template<typename T>
-inline T clamp(const T val, const T min, const T max)
-{
-  return (val < min) ? min : ((val > max) ? max : val);
-}
-
 /// \brief th_rad - phi_rad, normalized to +/- pi
 /// \param[in] th_rad the reference angle
 /// \param[in] phi_rad the test angle

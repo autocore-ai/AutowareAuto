@@ -20,10 +20,12 @@
 #include <stdexcept>
 
 #include "common/types.hpp"
+#include "geometry/interval.hpp"
 #include "ray_ground_classifier/ray_ground_point_classifier.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
+using autoware::common::geometry::Interval_f;
 
 namespace autoware
 {
@@ -68,8 +70,9 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
   }
 
   const float32_t dh_m = fabsf(height_m - m_prev_height_m);
-  const bool8_t is_local = (dh_m < clamp(m_config.m_max_local_slope * dr_m,
-    m_config.m_min_height_thresh_m, m_config.m_max_global_height_thresh_m));
+  const Interval_f range(m_config.m_min_height_thresh_m, m_config.m_max_global_height_thresh_m);
+  const auto dr_m_clamped = Interval_f::clamp_to(range, m_config.m_max_local_slope * dr_m);
+  const bool8_t is_local = (dh_m < dr_m_clamped);
   const float32_t global_height_thresh_m =
     std::min(m_config.m_max_global_slope * radius_m, m_config.m_max_global_height_thresh_m);
   const bool8_t has_vertical_structure = (dh_m > (dr_m * m_config.m_nonground_retro_thresh));
@@ -91,9 +94,11 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
   } else {
     const float32_t drg_m = (radius_m - m_prev_ground_radius_m);
     const float32_t dhg_m = fabsf(height_m - m_prev_ground_height_m);
-    const bool8_t is_local_to_last_ground =
-      (dhg_m <= clamp(m_config.m_max_local_slope * drg_m, m_config.m_min_height_thresh_m,
-      m_config.m_max_last_local_ground_thresh_m));
+    const Interval_f range(
+      m_config.m_min_height_thresh_m, m_config.m_max_last_local_ground_thresh_m);
+    const auto drg_m_clamped =
+      Interval_f::clamp_to(range, m_config.m_max_local_slope * drg_m);
+    const bool8_t is_local_to_last_ground = (dhg_m <= drg_m_clamped);
     if (is_local_to_last_ground) {
       // local to last ground: provisional ground
       ret = PointLabel::PROVISIONAL_GROUND;
