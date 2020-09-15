@@ -23,6 +23,7 @@
 #include <common/types.hpp>
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 #include "object_collision_estimator/visibility_control.hpp"
 
@@ -61,7 +62,7 @@ public:
     // Generate a gaussian filter kernel
     for (std::size_t i = 0; i < config.kernel_size; ++i) {
       int32_t x = static_cast<int32_t>(i - config.kernel_size / 2);
-      float32_t value = static_cast<float32_t>(exp(static_cast<float32_t>(-(x * x)) / s));
+      float32_t value = std::exp(static_cast<float32_t>(-(x * x)) / s);
       m_kernel.push_back(value);
       sum += value;
     }
