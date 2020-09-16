@@ -124,7 +124,7 @@ TEST(object_collision_estimator, sanity) {
   object_collision_estimator_test(100, 40);
 }
 
-TEST(object_collision_estimator, short_trajectory) {
+TEST(object_collision_estimator, DISABLED_short_trajectory) {
   object_collision_estimator_test(3, 1);
   object_collision_estimator_test(3, 2);
 
