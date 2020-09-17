@@ -22,10 +22,10 @@
         max_yaw_rate_rps: 3.0
         min_jerk_mps3: -10.0
         max_jerk_mps3: 10.0
-        min_steer_angle_rad: -0.331
-        max_steer_angle_rad: 0.331
-        min_steer_angle_rate_rps: -0.331
-        max_steer_angle_rate_rps: 0.331
+        min_steer_angle_rad: -0.6
+        max_steer_angle_rad: 0.6
+        min_steer_angle_rate_rps: -0.6
+        max_steer_angle_rate_rps: 0.6
       vehicle:
         cg_to_front_m: 1.228
         cg_to_rear_m: 1.5618
@@ -52,12 +52,12 @@
           steer_angle: 10.0
           steer_angle_rate: 10.0
         terminal:
-          pose: 1000.0
-          heading: 1000.0
-          longitudinal_velocity: 1000.0
-          lateral_velocity: 1000.0
-          yaw_rate: 1000.0
-          acceleration: 1000.0
-          jerk: 1000.0
-          steer_angle: 1000.0
-          steer_angle_rate: 1000.0
+          pose: 10000.0
+          heading: 10000.0
+          longitudinal_velocity: 100.0
+          lateral_velocity: 10.0
+          yaw_rate: 10.0
+          acceleration: 0.0
+          jerk: 0.0
+          steer_angle: 0.0
+          steer_angle_rate: 0.0
