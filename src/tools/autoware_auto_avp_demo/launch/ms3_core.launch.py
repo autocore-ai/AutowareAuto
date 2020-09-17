@@ -51,6 +51,8 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/scan_downsampler_ms3.param.yaml')
     recordreplay_planner_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/recordreplay_planner.param.yaml')
+    lanelet2_map_provider_param_file = os.path.join(
+        avp_demo_pkg_prefix, "param/lanelet2_map_provider.param.yaml")
 
     pc_filter_transform_pkg_prefix = get_package_share_directory(
         'point_cloud_filter_transform_nodes')
@@ -98,6 +100,11 @@ def generate_launch_description():
         'point_cloud_fusion_param_file',
         default_value=point_cloud_fusion_param_file,
         description='Path to config file for point cloud fusion'
+    )
+    lanelet2_map_provider_param = DeclareLaunchArgument(
+        'lanelet2_map_provider_param_file',
+        default_value=lanelet2_map_provider_param_file,
+        description='Path to parameter file for Lanelet2 Map Provider'
     )
 
     # Nodes
@@ -177,6 +184,17 @@ def generate_launch_description():
             ('obstacle_bounding_boxes', '/perception/lidar_bounding_boxes'),
         ]
     )
+    lanelet2_map_provider = Node(
+        package='lanelet2_map_provider',
+        node_executable='lanelet2_map_provider_exe',
+        node_namespace='had_maps',
+        parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
+    )
+    lanelet2_map_visualizer = Node(
+        package='lanelet2_map_provider',
+        node_executable='lanelet2_map_visualizer_exe',
+        node_namespace='had_maps'
+    )
 
     return LaunchDescription([
         euclidean_cluster_param,
@@ -186,6 +204,7 @@ def generate_launch_description():
         with_rviz_param,
         recordreplay_planner_param,
         point_cloud_fusion_param,
+        lanelet2_map_provider_param,
         euclidean_clustering,
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
@@ -193,5 +212,7 @@ def generate_launch_description():
         scan_downsampler,
         recordreplay_planner,
         point_cloud_fusion,
+        lanelet2_map_provider,
+        lanelet2_map_visualizer,
         rviz2
     ])
