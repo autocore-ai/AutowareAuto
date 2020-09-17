@@ -14,7 +14,7 @@ stages:
     - apk add --update-cache git
     - mv ros-deps tools/ade_image
     - cd tools/ade_image
-    - 'export LAST_CHANGE=$(git log -1 --pretty=%H .)'
+    - export ADE_SHA=$(find . -type f | sort | xargs sha256sum | sha256sum | rev | cut -c 4- | rev)
     - '
       if [[ -n "$FORCE" ]]; then
           chmod og-w . -R;
@@ -24,11 +24,8 @@ stages:
               -t image .;
       else
           (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA image
-          ) || (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE image
+              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA &&
+              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA image
           ) || (
               chmod og-w . -R;
               docker build
@@ -38,10 +35,10 @@ stages:
           );
       fi
       '
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
+    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
     - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
     - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$LAST_CHANGE
+    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
   after_script:
@@ -161,7 +158,7 @@ generate_ros_deps:
   image: ros:dashing
   script:
     - rosdep update
-    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src >> ros-deps
+    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
