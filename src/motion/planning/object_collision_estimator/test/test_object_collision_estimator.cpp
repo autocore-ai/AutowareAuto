@@ -116,7 +116,9 @@ void object_collision_estimator_test(std::size_t trajectory_length, std::size_t 
   } else {
     // no obstacle
     EXPECT_EQ(trajectory.points.size(), trajectory_length);
-    EXPECT_NE(trajectory.points[trajectory.points.size() - 1].longitudinal_velocity_mps, 0);
+    if (trajectory_length != 0) {
+      EXPECT_NE(trajectory.points[trajectory.points.size() - 1].longitudinal_velocity_mps, 0);
+    }
   }
 }
 
@@ -124,7 +126,7 @@ TEST(object_collision_estimator, sanity) {
   object_collision_estimator_test(100, 40);
 }
 
-TEST(object_collision_estimator, DISABLED_short_trajectory) {
+TEST(object_collision_estimator, short_trajectory) {
   object_collision_estimator_test(3, 1);
   object_collision_estimator_test(3, 2);
 
