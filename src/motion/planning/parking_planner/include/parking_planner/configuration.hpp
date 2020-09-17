@@ -33,7 +33,7 @@ using autoware::common::types::float64_t;
 constexpr std::size_t HORIZON_LENGTH = 20;
 
 /// Maximum number of obstacles supported by the NLP planner
-constexpr std::size_t MAX_NUMBER_OF_OBSTACLES = 5;
+constexpr std::size_t MAX_NUMBER_OF_OBSTACLES = 8;
 
 /// Maximum number of hyperplanes per obstacle supported by the NLP planner
 constexpr std::size_t MAX_HYPERPLANES_PER_OBSTACLE = 4;
@@ -44,8 +44,7 @@ constexpr std::size_t MAX_EGO_HYPERPLANES = 4;
 /// Step size (in seconds) for the RK4 integration
 constexpr float64_t INTEGRATION_STEP_SIZE = 0.2;
 
-/// \brief Number of steps performed (each of length of INTEGRATION_STEP_SIZE) for
-///        the RK4 integration.
+/// \brief Number of (sub-)steps performed INTEGRATION_STEP_SIZE for the RK4 integration.
 constexpr std::size_t NUMBER_OF_INTEGRATION_STEPS = 4;
 
 }  // namespace parking_planner

@@ -100,6 +100,12 @@ static NLPObstacle<double> create_nlpobstacle(
   halfplanes.insert(halfplanes.end(), polytope_halfplanes.begin(),
     polytope_halfplanes.end());
 
+  // Make sure we don't attempt to solve a problem we cannot solve
+  if (MAX_HYPERPLANES_PER_OBSTACLE < polytope_halfplanes.size() ) {
+    throw std::domain_error{"Cannot handle this many halfplanes"};
+  }
+
+  // Fill the remaining halfplanes with copies of the first one
   for (std::size_t k = {}; k < (MAX_HYPERPLANES_PER_OBSTACLE - polytope_halfplanes.size()); ++k) {
     halfplanes.push_back(polytope_halfplanes[0]);
   }
