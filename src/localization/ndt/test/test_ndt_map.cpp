@@ -237,7 +237,7 @@ TEST_F(DenseNDTMapTest, map_lookup) {
     0.0, 0.0, 0.03;
 
   for (const auto & voxel_it : ndt_map) {
-    Eigen::Vector3d center;
+    Eigen::Vector3d center{0.0, 0.0, 0.0};
     // Each voxel has 7 points
     EXPECT_EQ(voxel_it.second.count(), 7U);
     EXPECT_NO_THROW(center = voxel_it.second.centroid());

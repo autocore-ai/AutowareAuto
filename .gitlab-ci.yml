@@ -243,6 +243,7 @@ coverage:
     name: "$CI_JOB_NAME"
     paths:
       - coverage
+      - log
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
   needs:
     - ade
