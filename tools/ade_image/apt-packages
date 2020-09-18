@@ -26,3 +26,9 @@ vim
 # DDS Dependencies
 ros-dashing-cyclonedds
 ros-dashing-rmw-cyclonedds-cpp
+
+# ROSBAG tools
+ros-dashing-ros2bag
+ros-dashing-rosbag2
+ros-dashing-rosbag2-storage-default-plugins
+ros-dashing-rosbag2-transport
