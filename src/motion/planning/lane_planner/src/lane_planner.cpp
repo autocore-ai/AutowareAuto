@@ -123,6 +123,11 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
     }
   }
 
+  // return empty trajectory if there are no lanes
+  if (lanelets.empty()) {
+    return TrajectoryPoints();
+  }
+
   TrajectoryPoints trajectory_points;
 
   // using Germany Location since it is default location for Lanelet2
@@ -132,6 +137,7 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
       lanelet::Participants::Vehicle);
 
   // set position and velocity
+  trajectory_points.push_back(route.start_point);
   for (const auto & lanelet : lanelets) {
     const auto & centerline = lanelet.centerline();
     const auto speed_limit =
@@ -152,7 +158,6 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
 
     float64_t accumulated_length = 0;
     // skip first point to avoid inserting overlaps
-    trajectory_points.push_back(route.start_point);
     for (size_t i = 1; i < centerline.size(); i++) {
       const auto llt_prev_pt = centerline[i - 1];
       const auto llt_pt = centerline[i];
@@ -161,8 +166,8 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
       if (accumulated_length > end_length) {break;}
       trajectory_points.push_back(convertToTrajectoryPoint(llt_pt, speed_limit));
     }
-    trajectory_points.push_back(route.goal_point);
   }
+  trajectory_points.push_back(route.goal_point);
   return trajectory_points;
 }
 
