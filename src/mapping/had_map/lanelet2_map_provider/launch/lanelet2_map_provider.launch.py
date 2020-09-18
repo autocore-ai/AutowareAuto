@@ -19,8 +19,8 @@ import os
 from ament_index_python import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
+from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
-import launch_ros.actions
 
 
 def generate_launch_description():
@@ -28,38 +28,28 @@ def generate_launch_description():
     map_data_prefix = get_package_share_directory('lanelet2_map_provider')
 
     # map_provider parameter file definition
-    lanelet2_map_provider_file_path = os.path.join(
+    lanelet2_map_provider_param_file = os.path.join(
         map_data_prefix,
         "param",
         "lanelet2_map_provider.param.yaml")
-    map_provider_param_file = LaunchConfiguration(
-        "params", default=[lanelet2_map_provider_file_path])
-
-    # map provide map file arguments
-    map_osm_file_path = os.path.join(
-        map_data_prefix, "data/autonomoustuff_parking_lot_lgsvl.osm"
+    map_provider_param = DeclareLaunchArgument(
+        'lanelet2_map_provider_param_file',
+        default_value=lanelet2_map_provider_param_file,
+        description='Path to parameter file for map provider'
     )
-    map_osm_file_param = DeclareLaunchArgument(
-        'map_osm_file_arg',
-        default_value=map_osm_file_path,
-        description='OSM file describing semantic map'
+    # map_provider and visualizer node execution definition
+    lanelet2_map_provider = Node(
+        package='lanelet2_map_provider',
+        node_executable='lanelet2_map_provider_exe',
+        node_namespace='had_maps',
+        parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
     )
-
-    # map_provide node execution definition
-    lanelet2_map_provider_node_runner = launch_ros.actions.Node(
-        package="lanelet2_map_provider",
-        node_executable="lanelet2_map_provider_exe",
-        node_namespace="had_maps",
-        parameters=[map_provider_param_file,
-                    {"map_osm_file": LaunchConfiguration('map_osm_file_arg')}])
-
-    had_map_visualizer_runner = launch_ros.actions.Node(
-        package="lanelet2_map_provider",
-        node_executable="had_map_visualizer_exe",
-        node_namespace="had_maps")
-
-    # require a map file location
+    lanelet2_map_visualizer = Node(
+        package='lanelet2_map_provider',
+        node_executable='lanelet2_map_visualizer_exe',
+        node_namespace='had_maps')
+    # launch nodes
     return launch.LaunchDescription([
-        map_osm_file_param,
-        lanelet2_map_provider_node_runner,
-        had_map_visualizer_runner])
+        map_provider_param,
+        lanelet2_map_provider,
+        lanelet2_map_visualizer])
