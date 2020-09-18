@@ -49,12 +49,26 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/ndt_localizer_vehicle.param.yaml')
     mpc_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/mpc_vehicle.param.yaml')
+    vlp16_front_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/vlp16_front_vehicle.param.yaml')
+    vlp16_rear_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/vlp16_rear_vehicle.param.yaml')
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
 
     # Arguments
 
+    vlp16_front_param = DeclareLaunchArgument(
+        'vlp16_front_param_file',
+        default_value=vlp16_front_param_file,
+        description='Path to config file for front Velodyne'
+    )
+    vlp16_rear_param = DeclareLaunchArgument(
+        'vlp16_rear_param_file',
+        default_value=vlp16_rear_param_file,
+        description='Path to config file for rear Velodyne'
+    )
     map_publisher_param = DeclareLaunchArgument(
         'map_publisher_param_file',
         default_value=map_publisher_param_file,
@@ -73,6 +87,20 @@ def generate_launch_description():
 
     # Nodes
 
+    vlp16_front = Node(
+        package='velodyne_node',
+        node_executable='velodyne_cloud_node_exe',
+        node_namespace='lidar_front',
+        parameters=[LaunchConfiguration('vlp16_front_param_file')],
+        arguments=["--model", "vlp16"]
+    )
+    vlp16_rear = Node(
+        package='velodyne_node',
+        node_executable='velodyne_cloud_node_exe',
+        node_namespace='lidar_rear',
+        parameters=[LaunchConfiguration('vlp16_rear_param_file')],
+        arguments=["--model", "vlp16"]
+    )
     map_publisher = Node(
         package='ndt_nodes',
         node_executable='ndt_map_publisher_exe',
@@ -108,9 +136,13 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        vlp16_front_param,
+        vlp16_rear_param,
         map_publisher_param,
         ndt_localizer_param,
         mpc_param,
+        vlp16_front,
+        vlp16_rear,
         urdf_publisher,
         map_publisher,
         ndt_localizer,
