@@ -179,6 +179,9 @@ void Lanelet2MapProviderNode::handle_request(
       lanelet::LineStrings3d parking_access_linestrings =
         autoware::common::had_map_utils::subtypeLineStrings(
         linestrings, "parking_access");
+      lanelet::LineStrings3d pickup_dropoff_linestrings =
+        autoware::common::had_map_utils::subtypeLineStrings(
+        linestrings, "parking_spot,drop_off,pick_up");
       requested_linestrings.insert(
         requested_linestrings.end(),
         parking_linestrings.begin(),
@@ -187,6 +190,10 @@ void Lanelet2MapProviderNode::handle_request(
         requested_linestrings.end(),
         parking_access_linestrings.begin(),
         parking_access_linestrings.end());
+      requested_linestrings.insert(
+        requested_linestrings.end(),
+        pickup_dropoff_linestrings.begin(),
+        pickup_dropoff_linestrings.end());
     }
   }
   requested_map = lanelet::utils::createMap({requested_lanelets}, {requested_areas});

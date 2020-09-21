@@ -67,7 +67,8 @@ void Lanelet2MapVisualizer::visualize_map_callback(
 
   std_msgs::msg::ColorRGBA color_lane_bounds, color_parking_bounds,
     color_parking_access_bounds, color_geom_bounds,
-    color_lanelets, color_parking, color_parking_access;
+    color_lanelets, color_parking, color_parking_access,
+    color_pickup_dropoff;
   autoware::common::had_map_utils::setColor(
     &color_lane_bounds, 1.0f, 1.0f, 1.0f, 1.0f);
   autoware::common::had_map_utils::setColor(
@@ -82,6 +83,8 @@ void Lanelet2MapVisualizer::visualize_map_callback(
     &color_parking, 0.3f, 0.3f, 0.7f, 0.5f);
   autoware::common::had_map_utils::setColor(
     &color_parking_access, 0.3f, 0.7f, 0.3f, 0.5f);
+  autoware::common::had_map_utils::setColor(
+    &color_pickup_dropoff, 0.9f, 0.2f, 0.1f, 0.7f);
 
   visualization_msgs::msg::MarkerArray map_marker_array;
 
@@ -103,6 +106,8 @@ void Lanelet2MapVisualizer::visualize_map_callback(
       ll_linestrings, "parking_spot");
     auto ll_parking_access_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
       ll_linestrings, "parking_access");
+    auto ll_pickup_dropoff_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
+      ll_linestrings, "parking_spot,drop_off,pick_up");
 
     insertMarkerArray(map_marker_array,
       autoware::common::had_map_utils::lineStringsAsMarkerArray(
@@ -116,6 +121,9 @@ void Lanelet2MapVisualizer::visualize_map_callback(
     insertMarkerArray(map_marker_array,
       autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(marker_t,
       "parking_access_triangles", ll_parking_access_linestrings, color_parking_access));
+    insertMarkerArray(map_marker_array,
+      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(marker_t,
+      "pickup_dropoff_triangles", ll_pickup_dropoff_linestrings, color_pickup_dropoff));
   } else {
     // for parking spots defined as areas (LaneletOSM definition)
     auto ll_areas = autoware::common::had_map_utils::getAreaLayer(sub_map);
