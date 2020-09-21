@@ -1,4 +1,4 @@
-// Copyright 2019 Christopher Ho
+// Copyright 2019-2020 Christopher Ho, Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ int32_t main(int32_t argc, char ** argv)
 
   rclcpp::spin(nd);
 
-  if (!rclcpp::shutdown()) {
-    throw std::runtime_error{"rclcpp shutdown failed"};
-  }
+  rclcpp::shutdown();
   return 0;
 }

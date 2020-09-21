@@ -33,7 +33,6 @@ int32_t main(const int32_t argc, char ** const argv)
 
     map_node_ptr->load_map();
     rclcpp::spin(map_node_ptr);
-    rclcpp::shutdown();
 
 
     ret = 0;
@@ -46,5 +45,6 @@ int32_t main(const int32_t argc, char ** const argv)
   }
 
 
+  rclcpp::shutdown();
   return ret;
 }

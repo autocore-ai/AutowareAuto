@@ -69,7 +69,6 @@ int32_t main(const int32_t argc, char ** const argv)
     } else {
       std::cerr << "Failure\n";
     }
-    rclcpp::shutdown();
 
     std::shared_ptr<lanelet::LaneletMap> sub_map = std::make_shared<lanelet::LaneletMap>();
 
@@ -84,5 +83,6 @@ int32_t main(const int32_t argc, char ** const argv)
     std::cerr << "Unknown error occured" << "\n";
     ret = 255;
   }
+  rclcpp::shutdown();
   return ret;
 }

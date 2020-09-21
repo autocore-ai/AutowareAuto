@@ -1,4 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
+// Copyright 2018-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ int32_t main(const int32_t argc, char ** const argv)
       "xsens_imu_driver_node");
 
     vptr->run();
-
-    rclcpp::shutdown();
   } catch (const std::exception & err) {
     // RCLCPP logging macros are not used in error handling because they would depend on vptr's
     // logger. This dependency would result in a crash when vptr is a nullptr
@@ -48,5 +46,6 @@ int32_t main(const int32_t argc, char ** const argv)
     std::cerr << "Unknown error encountered, exiting..." << std::endl;
     ret = -1;
   }
+  rclcpp::shutdown();
   return ret;
 }

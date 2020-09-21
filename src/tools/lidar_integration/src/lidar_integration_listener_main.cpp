@@ -1,4 +1,4 @@
-// Copyright 2017-2020 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -192,8 +192,6 @@ int32_t main(const int32_t argc, char8_t ** const argv)
       std::this_thread::sleep_for(std::chrono::seconds(1));
       printf("failure\n");
     }
-    // Logging relies on DDS: Shutdown should happen last
-    (void)rclcpp::shutdown();
   } catch (const std::exception & e) {
     LIDAR_INTEGRATION_FATAL("Listener: Got error: %s", e.what());
     ret = __LINE__;
@@ -202,5 +200,7 @@ int32_t main(const int32_t argc, char8_t ** const argv)
     ret = __LINE__;
   }
 
+  // Logging relies on DDS: Shutdown should happen last
+  (void)rclcpp::shutdown();
   return ret;
 }
