@@ -1,7 +1,0 @@
-/**:
-    ros__parameters:
-        target_speed: 5.5
-        num_of_points: 100
-        trajectory_type: 'straight'  # straight or circle
-        length: 100.0  # only used for straight
-        radius: 25.0  # only used for circle

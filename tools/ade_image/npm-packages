@@ -1,3 +1,0 @@
-# ROS 2 web bridge, needed for LGSVL
-# Pinned to version 0.2.7 for Dashing compatibility - See #362
-ros2-web-bridge@0.2.7

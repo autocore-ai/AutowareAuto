@@ -1,9 +1,0 @@
-
----
-/**:
-  ros__parameters:
-    # Specifies the number of source topics to be fused.
-    # Topic names are "input_topic1, input_topic2, ...".
-    number_of_sources: 2
-    output_frame_id:  "/base_link"
-    cloud_size:       55000

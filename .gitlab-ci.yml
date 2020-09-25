@@ -1,306 +1,80 @@
 stages:
-  - gen-dependencies
-  - ade
   - build
-  - deploy
-
-.ade_base: &ade_base
-  stage: ade
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - apk add --update-cache git
-    - mv ros-deps tools/ade_image
-    - cd tools/ade_image
-    - export ADE_SHA=$(find . -type f | sort | xargs sha256sum | sha256sum | rev | cut -c 4- | rev)
-    - '
-      if [[ -n "$FORCE" ]]; then
-          chmod og-w . -R;
-          docker build
-              --label ade_image_commit_sha="$CI_COMMIT_SHA"
-              --label ade_image_commit_tag="$CI_COMMIT_TAG"
-              -t image .;
-      else
-          (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA image
-          ) || (
-              chmod og-w . -R;
-              docker build
-                  --label ade_image_commit_sha="$CI_COMMIT_SHA"
-                  --label ade_image_commit_tag="$CI_COMMIT_TAG"
-                  -t image .;
-          );
-      fi
-      '
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
-  after_script:
-    - docker container rm -f $(docker container ls --filter "status=exited" -q)
-    - docker image rm $(docker image ls -q)
-
-.build_barebones_base: &build_barebones_base
-  stage: build
-  image: ubuntu:bionic
-  script:
-    - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-          tzdata
-          gnupg
-      '
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          sudo
-          curl
-          gnupg2
-          lsb-release
-          ca-certificates
-      '
-    - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
-    - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          python3-colcon-common-extensions
-          cmake
-          build-essential
-          python-rosdep
-          git
-          clang-tidy
-          ros-dashing-cyclonedds
-          ros-dashing-rmw-cyclonedds-cpp
-      '
-    - 'rosdep init && rosdep update'
-    - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
-    - 'source /opt/ros/dashing/setup.bash'
-    - 'colcon build
-           --merge-install
-           --install-base /opt/AutowareAuto
-      '
-
-.build_base: &build_base
-  stage: build
-  image: $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-  script:
-    - 'apt-get update && apt-get -y --no-install-recommends install
-          git
-          clang-tidy
-      '
-    - 'git lfs pull --include="*" --exclude=""'
-    # build and test
-    - 'colcon build
-           --merge-install
-           --install-base /opt/AutowareAuto
-      '
-    - 'colcon test
-           --merge-install
-           --install-base /opt/AutowareAuto
-           --return-code-on-test-failure
-      '
-    - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
-
-    # Test package
-    - source /opt/AutowareAuto/setup.bash
-    - 'ros2 run autoware_auto_create_pkg main.py
-          --pkg-name my_cool_pkg
-          --destination /tmp/tmp_ws/src
-          --description "My cool package does cool stuff"
-          --maintainer "Jane Doe"
-          --email "jane.doe@awesome-company.com"
-      '
-    - cd /tmp/tmp_ws
-    - colcon build --packages-select my_cool_pkg
-    - colcon test --packages-select my_cool_pkg
-    - colcon test-result --verbose
-    - cd -
-
-    # prepare volume artifact
-    - mkdir /opt/AutowareAuto/src
-    - '(cd src && git archive --format=tar HEAD | (cd /opt/AutowareAuto/src && tar xf -))'
-    - cp -a LICENSE /opt/AutowareAuto
-    - chmod -R og-w /opt/AutowareAuto
-    - tar cfz opt.tar.gz /opt/AutowareAuto
-  after_script:
-    - colcon test-result --verbose
-
-.volume_base: &volume_base
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
-    - |
-      cat >Dockerfile <<EOF
-      FROM alpine
-      ADD opt.tar.gz /
-      VOLUME /opt/AutowareAuto
-      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
-      EOF
-    - 'docker build
-          --label ade_image_commit_sha="$CI_COMMIT_SHA"
-          --label ade_image_commit_tag="$CI_COMMIT_TAG"
-          -t image .
-      '
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
-  after_script:
-    - docker container rm -f $(docker container ls --filter "status=exited" -q)
-    - docker image rm $(docker image ls -q)
-
-generate_ros_deps:
-  stage: gen-dependencies
-  image: ros:dashing
-  script:
-    - rosdep update
-    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - ros-deps
-
-ade:
-  variables:
-    ARCH: ""
-  <<: *ade_base
-  needs:
-    - job: generate_ros_deps
-      artifacts: true
-
-ade_arm64:
-  variables:
-    ARCH: "/arm64"
-  tags:
-    - arm64
-  <<: *ade_base
-  needs:
-    - job: generate_ros_deps
-      artifacts: true
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-
-build_barebones:
-  variables:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-  <<: *build_barebones_base
-  needs:
-    - ade
-
-build_barebones_arm64:
-  tags:
-    - arm64
-  variables:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-  <<: *build_barebones_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - ade_arm64
+  - test
+#  - deploy
 
 build:
-  variables:
-    ARCH: ""
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-  <<: *build_base
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - log
-      - opt.tar.gz
-    reports:
-      junit: test-results.xml
-  needs:
-    - ade
-
-build_arm64:
-  variables:
-    ARCH: "/arm64"
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-  tags:
-    - arm64
-  <<: *build_base
-  artifacts:
-    name: "$CI_JOB_NAME$ARCH"
-    paths:
-      - log
-      - opt.tar.gz
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - ade_arm64
-
-coverage:
   stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  image: osrf/ros:dashing-desktop
   script:
-    - './tools/coverage/coverage.sh -u'
+    - apt-get update
+    - rosdep update
+    - rosdep install --from autoware_auto_msgs --ignore-src -y
+    - mkdir -p /opt/autoware_auto_msgs
+    - '
+      colcon build
+          --install-base /opt/autoware_auto_msgs
+          --merge-install
+          --cmake-args
+            -DCMAKE_BUILD_TYPE=Release
+          --base-path autoware_auto_msgs
+      '
+    - cp LICENSE /opt/autoware_auto_msgs
+    - tar cfz opt.tar.gz /opt/autoware_auto_msgs
   artifacts:
-    name: "$CI_JOB_NAME"
+    expire_in: 1 day
+    when: always
     paths:
-      - coverage
       - log
-  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
-  needs:
-    - ade
+      - build
+      - opt.tar.gz
 
-docs:
-  stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+test:
+  stage: test
+  image: osrf/ros:dashing-desktop
+  dependencies:
+    - build
   script:
-    - docs/.doxygen/build.py
+    - tar xf opt.tar.gz -C /
+    - '
+      colcon test
+          --install-base /opt/autoware_auto_msgs
+          --merge-install
+          --base-path autoware_auto_msgs
+      '
+    - 'colcon test-result --verbose'
   artifacts:
-    name: "$CI_JOB_NAME"
+    expire_in: 1 day
+    when: always
     paths:
-      - docs/_build/html
-  needs:
-    - ade
+      - log
 
-pages:
-  stage: deploy
-  image: alpine
-  script:
-    - mv docs/_build/html public
-    - mv coverage public
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - public
-  only:
-    - master
-  needs:
-    - coverage
-    - docs
-
-volume:
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  variables:
-    ARCH: ""
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-  <<: *volume_base
-  needs:
-    - job: build
-      artifacts: true
-
-volume_arm64:
-  stage: deploy
-  image: docker
-  services:
-    - docker:19.03.5-dind
-  tags:
-    - arm64
-  variables:
-    ARCH: "/arm64"
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-  <<: *volume_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - build_arm64
+#volume:
+#  stage: deploy
+#  image: docker
+#  services:
+#    - docker:dind
+#  dependencies:
+#    - build
+#  before_script:
+#    - ''
+#  script:
+#    - 'echo -e "*\n!opt.tar.gz" > .dockerignore'
+#    - |
+#      cat >Dockerfile <<EOF
+#      FROM alpine
+#      ADD opt.tar.gz /
+#      VOLUME /opt/autoware_auto_msgs
+#      CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
+#      EOF
+#    - '
+#      docker build
+#          --label ade_image_commit_sha="$CI_COMMIT_SHA"
+#          --label ade_image_commit_tag="$CI_COMMIT_TAG"
+#          -t image .
+#      '
+#    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+#    - docker tag image $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
+#    - docker tag image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+#    - docker push $CI_REGISTRY_IMAGE:commit-$CI_COMMIT_SHA
+#    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG

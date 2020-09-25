@@ -1,6 +1,0 @@
-# params/lanelet2_map_publisher.param.yaml
----
-
-/**:
-   ros__parameters:
-     map_osm_file: "/opt/AutowareAuto/share/autoware_auto_avp_demo/data/autonomoustuff_parking_lot.osm"
