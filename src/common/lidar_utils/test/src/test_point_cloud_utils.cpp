@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,6 +54,37 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
   EXPECT_FALSE(has_intensity_and_throw_if_no_xyz(three_fields_pc));
   EXPECT_TRUE(has_intensity_and_throw_if_no_xyz(correct_pc));
   EXPECT_TRUE(has_intensity_and_throw_if_no_xyz(five_fields_pc));
+}
+
+TEST(point_cloud_utils, add_point_to_cloud_raw_is_correct)
+{
+  // this test if add_point_to_cloud_raw's results are the same than the safer add_point_to_cloud
+  const uint32_t max_cloud_size = 10;
+
+  sensor_msgs::msg::PointCloud2 reference_msg;
+  sensor_msgs::msg::PointCloud2 test_msg;
+  init_pcl_msg(reference_msg, "dummy_frame", max_cloud_size);
+  init_pcl_msg(test_msg, "dummy_frame", max_cloud_size);
+
+  // fill the reference cloud
+  PointCloudIts reference_msg_it;
+  reference_msg_it.reset(reference_msg, 0, current_cloud_size);
+  for (uint32_t i = 0; i < max_cloud_size; i++) {
+    autoware::common::types::PointXYZIF pt{i, 256 * i, 0};
+    add_point_to_cloud(reference_msg_it, pt, current_cloud_size);
+  }
+
+  ASSERT_EQ(test_msg.data.size(), 10U);
+  // fill the tested cloud
+  for (uint32_t i = 0; i < max_cloud_size; i++) {
+    autoware::common::types::PointXYZIF pt{i, 256 * i, 0};
+    add_point_to_cloud_raw(test_msg, pt, current_cloud_size);
+  }
+
+  EXPECT_EQ(reference_msg.data, test_msg.data);
+  autoware::common::types::PointXYZIF pt{0, 0, 0};
+  EXPECT_FALSE(add_point_to_cloud_raw(test_msg, pt, current_cloud_size)) <<
+    "add_point_to_cloud_raw wrote a point outsize of the cloud's data bounds";
 }
 
 TEST(fast_atan2, max_error)

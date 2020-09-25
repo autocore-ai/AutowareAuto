@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -155,7 +155,38 @@ void init_pcl_msg(
     "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+bool8_t add_point_to_cloud_raw(
+  sensor_msgs::msg::PointCloud2 & cloud,
+  const autoware::common::types::PointXYZIF & pt,
+  uint32_t point_cloud_idx)
+{
+  bool8_t ret = false;
+
+  // Actual size is 20 due to padding by compilers for the memory alignment boundary.
+  // This check is to make sure that when we do a insert of 16 bytes, we will not stride
+  // past the bounds of the structure.
+  static_assert(
+    sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
+    "PointXYZF is not expected size: ");
+  static_assert(std::is_trivially_copyable<autoware::common::types::PointXYZIF>::value,
+    "PointXYZF is not trivial, add_point_to_cloud instead of add_point_to_cloud_raw");
+
+  const uint8_t * const casted_point_ptr = reinterpret_cast<const uint8_t * const>(&pt);
+  uint8_t * const cloud_insertion_slot = &cloud.data[cloud.point_step * point_cloud_idx];
+  std::size_t copy_size = std::min(static_cast<std::size_t>(cloud.point_step), sizeof(pt));
+
+  // make sure we don't overflow
+  uint8_t * const one_past_last_modified_address = &(cloud_insertion_slot[copy_size]);
+  uint8_t * const vector_one_past_last_address = &(*cloud.data.end());
+
+  if (one_past_last_modified_address <= vector_one_past_last_address) {
+    // add the point data
+    std::copy(casted_point_ptr, casted_point_ptr + copy_size, cloud_insertion_slot);
+    ret = true;
+  }
+  return ret;
+}
+
 bool8_t add_point_to_cloud(
   PointCloudIts & cloud_its,
   const autoware::common::types::PointXYZIF & pt,
@@ -173,7 +204,7 @@ bool8_t add_point_to_cloud(
   // past the bounds of the structure.
   static_assert(
     sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
-    "PointXYZIF is not expected size: ");
+    "PointXYZF is not expected size: ");
 
   if (x_it != x_it.end() &&
     y_it != y_it.end() &&
@@ -220,7 +251,7 @@ bool8_t add_point_to_cloud(
   // past the bounds of the structure.
   static_assert(
     sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
-    "PointXYZIF is not expected size: ");
+    "PointXYZF is not expected size: ");
 
   if (x_it != x_it.end() &&
     y_it != y_it.end() &&
@@ -232,6 +263,47 @@ bool8_t add_point_to_cloud(
     *y_it = pt.y;
     *z_it = pt.z;
     *intensity_it = pt.intensity;
+
+    // increment the index to keep track of the pointcloud's size
+    ++point_cloud_idx;
+    ret = true;
+  }
+  return ret;
+}
+
+/// \brief Copy a point with no intensity into a pointcloud_msg
+/// \param[inout] cloud Cloud_msg receiving the point
+/// \param[in] pt Point to insert.
+/// \param[inout] point_cloud_idx Indice at which the insertion must be
+///               done. It will be incremented by one by the function.
+/// \return true if the insertion was successful
+bool8_t add_point_to_cloud(
+  sensor_msgs::msg::PointCloud2 & cloud,
+  const autoware::common::types::PointXYZF & pt,
+  uint32_t & point_cloud_idx)
+{
+  bool8_t ret = false;
+
+  sensor_msgs::PointCloud2Iterator<float32_t> x_it(cloud, "x");
+  sensor_msgs::PointCloud2Iterator<float32_t> y_it(cloud, "y");
+  sensor_msgs::PointCloud2Iterator<float32_t> z_it(cloud, "z");
+
+  x_it += point_cloud_idx;
+  y_it += point_cloud_idx;
+  z_it += point_cloud_idx;
+
+  static_assert(
+    sizeof(autoware::common::types::PointXYZIF) >= ((3U * sizeof(float32_t)) + sizeof(uint16_t)),
+    "PointXYZF is not expected size: ");
+
+  if (x_it != x_it.end() &&
+    y_it != y_it.end() &&
+    z_it != z_it.end())
+  {
+    // add the point data
+    *x_it = pt.x;
+    *y_it = pt.y;
+    *z_it = pt.z;
 
     // increment the index to keep track of the pointcloud's size
     ++point_cloud_idx;

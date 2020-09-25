@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ using autoware::common::types::POINT_BLOCK_CAPACITY;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::perception::filters::ray_ground_classifier::Config;
-using autoware::perception::filters::ray_ground_classifier::PointBlock;
+using autoware::perception::filters::ray_ground_classifier::PointPtrBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 
 class ray_ground_classifier : public ::testing::Test
@@ -112,37 +112,44 @@ void label_and_check(
   RayGroundClassifier filter(cfg);
 
   // insert points in reverse order to exercise sorting
+  // pts is read only so I can't use it as the buffer for the pointers because
+  // we need to change the id field. I have to use this vector as a new buffer.
+  std::vector<PointXYZIF> all_points;
+  all_points.reserve(pts.size());
   if (do_reverse) {
+    // This looks wrong at first but it's actually correct : unsigned underflow
     for (size_t idx = pts.size() - 1U; idx < pts.size(); --idx) {
       PointXYZIF pt = pts[idx];
       pt.id = idx;
-      filter.insert(pt);
+      all_points.push_back(pt);
+      filter.insert(&all_points.back());
     }
   } else {
     for (size_t idx = 0U; idx < pts.size(); ++idx) {
       PointXYZIF pt = pts[idx];
       pt.id = idx;
-      filter.insert(pt);
+      all_points.push_back(pt);
+      filter.insert(&all_points.back());
     }
   }
 
   // filter
-  PointBlock ground_blk;
-  PointBlock nonground_blk;
+  PointPtrBlock ground_blk;
+  PointPtrBlock nonground_blk;
   EXPECT_TRUE(filter.can_fit_result(ground_blk, nonground_blk));
   filter.partition(ground_blk, nonground_blk, !do_reverse);
 
   // check result
   size_t num_wrong = 0U;
-  for (const PointXYZIF & pt : ground_blk) {
-    if (!label[pt.id]) {  // true <--> ground
-      std::cerr << pt.id << " expected " << (label[pt.id] ? "ground" : "nonground") << "\n";
+  for (const PointXYZIF * pt : ground_blk) {
+    if (!label[pt->id]) {  // true <--> ground
+      std::cerr << pt->id << " expected " << (label[pt->id] ? "ground" : "nonground") << "\n";
       ++num_wrong;
     }
   }
-  for (const PointXYZIF & pt : nonground_blk) {
-    if (label[pt.id]) {  // true <--> ground
-      std::cerr << pt.id << " expected " << (label[pt.id] ? "ground" : "nonground") << "\n";
+  for (const PointXYZIF * pt : nonground_blk) {
+    if (label[pt->id]) {  // true <--> ground
+      std::cerr << pt->id << " expected " << (label[pt->id] ? "ground" : "nonground") << "\n";
       ++num_wrong;
     }
   }

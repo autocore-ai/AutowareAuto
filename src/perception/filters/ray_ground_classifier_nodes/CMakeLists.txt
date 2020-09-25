@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Apex.AI, Inc.
+# Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 # All rights reserved.
 cmake_minimum_required(VERSION 3.5)
 
@@ -12,6 +12,15 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+set(use_OMP TRUE)
+if(use_OMP)
+  find_package(OpenMP REQUIRED)
+  set(OpenMP_LIBS gomp)
+  set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})
+else()
+  set(OpenMP_FLAGS "-Wno-unknown-pragmas")
 endif()
 
 ## dependencies
@@ -31,8 +40,14 @@ rclcpp_components_register_node(${CLOUD_NODE_LIB}
   EXECUTABLE ${CLOUD_NODE_LIB}_exe
 )
 
+target_link_libraries(${CLOUD_NODE_LIB} ${OpenMP_LIBS})
+
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
-target_compile_options(${CLOUD_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
+target_compile_options(${CLOUD_NODE_LIB} PRIVATE
+  -Wno-sign-conversion
+  -Wno-conversion
+  ${OpenMP_FLAGS}
+)
 
 if(BUILD_TESTING)
   # run linters
@@ -46,7 +61,9 @@ if(BUILD_TESTING)
     PRIVATE "test/include" "include"
   )
   target_link_libraries(test_ray_ground_classifier_nodes_gtest
-    ${CLOUD_NODE_LIB})
+    ${CLOUD_NODE_LIB}
+    ${OpenMP_LIBS}
+  )
   ament_target_dependencies(test_ray_ground_classifier_nodes_gtest
     "autoware_auto_common"
     "rclcpp"

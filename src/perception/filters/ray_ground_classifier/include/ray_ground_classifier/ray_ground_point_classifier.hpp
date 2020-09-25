@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public:
   PointXYZIFR() = default;
   /// \brief Conversion constructor
   /// \param[in] pt The point to convert into a 2D view
-  explicit PointXYZIFR(const PointXYZIF & pt);
+  explicit PointXYZIFR(const PointXYZIF * pt);
   /// \brief Getter for radius
   /// \return The projected radial distance
   float32_t get_r() const;
@@ -159,9 +159,7 @@ public:
   const PointXYZIF * get_point_pointer() const;
 
 private:
-  // This could instead be a pointer; I'm pretty sure ownership would work out, but I'm
-  // uncomfortable doing it that way (12 vs 22 bytes)
-  PointXYZIF m_point;
+  const PointXYZIF * m_point;
   float32_t m_r_xy;
 };  // class PointXYZIFR
 
@@ -172,7 +170,7 @@ private:
 inline bool8_t operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept
 {
   return (fabsf(lhs.m_r_xy - rhs.m_r_xy) > autoware::common::types::FEPS) ?
-         (lhs.m_r_xy < rhs.m_r_xy) : (lhs.m_point.z < rhs.m_point.z);
+         (lhs.m_r_xy < rhs.m_r_xy) : (lhs.m_point->z < rhs.m_point->z);
 }
 
 using Ray = std::vector<PointXYZIFR>;
@@ -203,6 +201,9 @@ public:
   /// \param[in] config The configuration struct for the filter
   /// \throw std::runtime_error if the configuration is invalid
   explicit RayGroundPointClassifier(const Config & config);
+
+  /// \brief Copy constructor
+  explicit RayGroundPointClassifier(const RayGroundPointClassifier & original);
 
   /// \brief Reinitializes state of filter, should be run before scanning through a ray
   void reset();

@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,9 +95,9 @@ float32_t Config::get_sensor_height() const
   return -m_ground_z_m;
 }
 ////////////////////////////////////////////////////////////////////////////////
-PointXYZIFR::PointXYZIFR(const PointXYZIF & pt)
+PointXYZIFR::PointXYZIFR(const PointXYZIF * pt)
 : m_point(pt),
-  m_r_xy(sqrtf((pt.x * pt.x) + (pt.y * pt.y)))
+  m_r_xy(sqrtf((pt->x * pt->x) + (pt->y * pt->y)))
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,12 +108,12 @@ float32_t PointXYZIFR::get_r() const
 ////////////////////////////////////////////////////////////////////////////////
 float32_t PointXYZIFR::get_z() const
 {
-  return m_point.z;
+  return m_point->z;
 }
 ////////////////////////////////////////////////////////////////////////////////
 const PointXYZIF * PointXYZIFR::get_point_pointer() const
 {
-  return &m_point;
+  return m_point;
 }
 
 }  // namespace ray_ground_classifier

@@ -36,31 +36,36 @@ TEST_F(ray_ground_classifier, point_classification)
 {
   using autoware::perception::filters::ray_ground_classifier::RayGroundPointClassifier;
   RayGroundPointClassifier cls{cfg};
-  PointXYZIF pt;
+  PointXYZIF pt_g, pt_rng, pt_ng, pt_pg, pt_nlng, bad_pt;
   // close to ground: GROUND
-  pt.x = 1.0F;
-  pt.z = cfg.m_ground_z_m;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::GROUND);
+  pt_g.x = 1.0F;
+  pt_g.z = cfg.m_ground_z_m;
+  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_g}),
+    RayGroundPointClassifier::PointLabel::GROUND);
   // exhibit vertical structure: RETRO_NONGROUND
-  pt.x += 0.1F;
-  pt.z = cfg.m_ground_z_m + 1.0F;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::RETRO_NONGROUND);
+  pt_rng.x = pt_g.x + 0.1F;
+  pt_rng.z = cfg.m_ground_z_m + 1.0F;
+  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_rng}),
+    RayGroundPointClassifier::PointLabel::RETRO_NONGROUND);
   // near last nonground point: NONGROUND
-  pt.x += 1.0F;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}), RayGroundPointClassifier::PointLabel::NONGROUND);
+  pt_ng.x += pt_rng.x + 1.0F;
+  pt_ng.z = pt_rng.z;
+  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_ng}),
+    RayGroundPointClassifier::PointLabel::NONGROUND);
   // back to ground: PROVISIONAL_GROUND
-  pt.x += 0.1F;
-  pt.z = cfg.m_ground_z_m;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}),
+  pt_pg.x = pt_ng.x + 0.1F;
+  pt_pg.z = cfg.m_ground_z_m;
+  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_pg}),
     RayGroundPointClassifier::PointLabel::PROVISIONAL_GROUND);
   // distant nonground: NONLOCAL_NONGROUND
-  pt.x += 10.1F;
-  pt.z = cfg.m_ground_z_m + 2.0F;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{pt}),
+  pt_nlng.x += pt_pg.x + 10.1F;
+  pt_nlng.z = cfg.m_ground_z_m + 2.0F;
+  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_nlng}),
     RayGroundPointClassifier::PointLabel::NONLOCAL_NONGROUND);
   // bad case: go backwards
-  pt.x -= 1.0F;
-  EXPECT_THROW(cls.is_ground(PointXYZIFR{pt}), std::runtime_error);
+  bad_pt.x = pt_nlng.x - 1.0F;
+  bad_pt.z = pt_nlng.z;
+  EXPECT_THROW(cls.is_ground(PointXYZIFR{&bad_pt}), std::runtime_error);
 }
 
 /*
@@ -437,11 +442,11 @@ TEST_F(ray_ground_classifier, height_filter)
   autoware::common::types::PointXYZIF pt1, pt2;
   pt1.x = 1.0F;
   pt1.z = cfg.m_max_height_m + 0.00001F;
-  filter.insert(pt1);
+  filter.insert(&pt1);
   pt2.x = 2.0F;
   pt2.z = cfg.m_min_height_m - 0.00001F;
-  filter.insert(pt2);
-  autoware::perception::filters::ray_ground_classifier::PointBlock blk1, blk2;
+  filter.insert(&pt2);
+  autoware::perception::filters::ray_ground_classifier::PointPtrBlock blk1, blk2;
   blk1.clear();
   blk2.clear();
   filter.partition(blk1, blk2, false);
@@ -464,19 +469,23 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   }
   reverse(std::begin(dat), std::end(dat));
   generate_points(cfg, dat, pts, labels);
-  PointBlock raw_points, ground_points, nonground_points;
+  PointPtrBlock raw_points, ground_points, nonground_points;
   raw_points.clear();
   // initialize weird numbers
   ground_points.resize(3U);
   nonground_points.resize(5U);
+  std::vector<PointXYZIF> all_points;
+  all_points.reserve(2 * pts.size());
   for (PointXYZIF & pt : pts) {
     pt.id = 0U;
-    raw_points.push_back(pt);
+    all_points.push_back(pt);
+    raw_points.push_back(&all_points.back());
   }
   // add second ray
   for (PointXYZIF & pt : pts) {
     pt.id = 1U;
-    raw_points.push_back(pt);
+    all_points.push_back(pt);
+    raw_points.push_back(&all_points.back());
   }
   autoware::perception::filters::ray_ground_classifier::RayGroundClassifier cls{cfg};
   cls.structured_partition(raw_points, ground_points, nonground_points);
@@ -487,18 +496,18 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   // check individual points
   for (uint32_t idx = 0U; idx < ground_points.size(); ++idx) {
     const auto & ground_pt = ground_points[idx];
-    EXPECT_LT(ground_pt.x, 20.0F);
+    EXPECT_LT(ground_pt->x, 20.0F);
     // hack due to knowledge that they should be roughly ordered in radius, then height
     if ((idx != 15U) && (idx != 30U)) {
-      EXPECT_LT(ground_pt.z,
-        cfg.m_ground_z_m + 0.1F) << idx << ", " << ground_pt.x << ", " << ground_pt.id;
+      EXPECT_LT(ground_pt->z,
+        cfg.m_ground_z_m + 0.1F) << idx << ", " << ground_pt->x << ", " << ground_pt->id;
     }
   }
   for (uint32_t idx = 0U; idx < nonground_points.size(); ++idx) {
     const auto & nonground_pt = nonground_points[idx];
-    EXPECT_GT(nonground_pt.x, 19.0F);
+    EXPECT_GT(nonground_pt->x, 19.0F);
     if ((idx != 0U) && (idx != 17U)) {
-      EXPECT_GT(nonground_pt.z, cfg.m_ground_z_m) << idx;
+      EXPECT_GT(nonground_pt->z, cfg.m_ground_z_m) << idx;
     }
   }
   // test bad insert
@@ -508,9 +517,10 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
     static_cast<uint32_t>(POINT_BLOCK_CAPACITY);
     ++idx)
   {
-    cls.insert(pt);
+    // we don't care about the data in those points,so we can use the same pointer all the while
+    cls.insert(&pt);
   }
-  EXPECT_THROW(cls.insert(pt), std::runtime_error);
+  EXPECT_THROW(cls.insert(&pt), std::runtime_error);
   // test bad partition due to not being able to fit result
   ground_points.resize(1U);
   nonground_points.clear();
@@ -535,12 +545,14 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   EXPECT_EQ(nonground_points.size(), 0UL);
   // add end of scan
   raw_points.resize(1);
-  raw_points[0U].id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
+  PointXYZIF eos_pt;
+  eos_pt.id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
+  raw_points[0U] = &eos_pt;
   cls.structured_partition(raw_points, ground_points, nonground_points);
   EXPECT_EQ(ground_points.size(), 1UL);
   EXPECT_EQ(nonground_points.size(), 1UL);
-  EXPECT_EQ(ground_points[0U].id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
-  EXPECT_EQ(nonground_points[0U].id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
+  EXPECT_EQ(ground_points[0U]->id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
+  EXPECT_EQ(nonground_points[0U]->id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
 }
 /////
 TEST_F(ray_ground_classifier, bad_cases)
@@ -704,7 +716,7 @@ TEST_F(ray_ground_classifier, bad_cases)
 TEST_F(ray_ground_classifier, benchmark)
 {
   // Generate simulated data for rays of size 8, 16, 32, 64, 128, 256, and 512
-  PointBlock raw_points, ground_points, nonground_points;
+  PointPtrBlock raw_points, ground_points, nonground_points;
   autoware::perception::filters::ray_ground_classifier::RayGroundClassifier cls{cfg};
   std::mt19937 gen(1338U);  // Standard mersenne_twister_engine seeded with value
   using unif_distr = std::uniform_real_distribution<float32_t>;
@@ -725,6 +737,8 @@ TEST_F(ray_ground_classifier, benchmark)
       //                     3 = veritcal structure nonground->ground
       float32_t last_dr = 1.0F;
       PointXYZIF pt;
+      std::vector<PointXYZIF> all_points;
+      all_points.reserve(static_cast<uint32_t>(POINT_BLOCK_CAPACITY));
       for (uint32_t idx = 0U;
         idx <
         static_cast<uint32_t>(POINT_BLOCK_CAPACITY);
@@ -790,7 +804,8 @@ TEST_F(ray_ground_classifier, benchmark)
         pt.x += dr;
         pt.z += dh;
         // insert point
-        raw_points.push_back(pt);
+        all_points.push_back(pt);
+        raw_points.push_back(&all_points.back());
       }
       // start timer
       const auto start = std::chrono::steady_clock::now();

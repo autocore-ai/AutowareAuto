@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,17 @@ RayGroundClassifier::RayGroundClassifier(const Config & cfg)
   m_sort_array.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayGroundClassifier::insert(const PointXYZIF & pt)
+RayGroundClassifier::RayGroundClassifier(const RayGroundClassifier & original)
+: m_sort_array(original.m_sort_array),
+  m_ray_sorter(original.m_ray_sorter.capacity()),
+  m_point_classifier(original.m_point_classifier),
+  m_min_height_m(original.m_min_height_m),
+  m_max_height_m(original.m_max_height_m)
+{
+  m_sort_array.clear();
+}
+////////////////////////////////////////////////////////////////////////////////
+void RayGroundClassifier::insert(const PointXYZIF * pt)
 {
   insert(PointXYZIFR{pt});
 }
@@ -63,23 +73,23 @@ void RayGroundClassifier::insert(const PointXYZIFR & pt)
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t RayGroundClassifier::can_fit_result(
   const Ray & ray,
-  const PointBlock & ground_block,
-  const PointBlock & nonground_block) const
+  const PointPtrBlock & ground_block,
+  const PointPtrBlock & nonground_block) const
 {
   return (ray.size() + std::max(ground_block.size(), nonground_block.size())) <=
          autoware::common::types::POINT_BLOCK_CAPACITY;
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t RayGroundClassifier::can_fit_result(
-  const PointBlock & ground_block,
-  const PointBlock & nonground_block) const
+  const PointPtrBlock & ground_block,
+  const PointPtrBlock & nonground_block) const
 {
   return can_fit_result(m_sort_array, ground_block, nonground_block);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifier::partition(
-  PointBlock & ground_block,
-  PointBlock & nonground_block,
+  PointPtrBlock & ground_block,
+  PointPtrBlock & nonground_block,
   const bool8_t presorted)
 {
   if (!presorted) {
@@ -89,17 +99,17 @@ void RayGroundClassifier::partition(
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifier::structured_partition(
-  const PointBlock & raw_block,
-  PointBlock & ground_block,
-  PointBlock & nonground_block)
+  const PointPtrBlock & raw_block,
+  PointPtrBlock & ground_block,
+  PointPtrBlock & nonground_block)
 {
   // reset blocks
   ground_block.clear();
   nonground_block.clear();
   // insert points and segment rays
-  uint16_t last_id = raw_block[0U].id;
-  for (const PointXYZIF & pt : raw_block) {
-    const uint16_t id = pt.id;
+  uint16_t last_id = raw_block[0U]->id;
+  for (const PointXYZIF * pt : raw_block) {
+    const uint16_t id = pt->id;
     // terminal scan, add to both
     if (static_cast<uint16_t>(autoware::common::types::PointXYZIF::END_OF_SCAN_ID) == id) {
       insert(ground_block, pt);
@@ -127,12 +137,12 @@ void RayGroundClassifier::sort_ray()
   m_ray_sorter.sort(m_sort_array.begin(), m_sort_array.end());
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayGroundClassifier::insert(PointBlock & block, const PointXYZIF & pt)
+void RayGroundClassifier::insert(PointPtrBlock & block, const PointXYZIF * pt)
 {
   block.push_back(pt);
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayGroundClassifier::segment_ray(PointBlock & ground_block, PointBlock & nonground_block)
+void RayGroundClassifier::segment_ray(PointPtrBlock & ground_block, PointPtrBlock & nonground_block)
 {
   partition(m_sort_array, ground_block, nonground_block);
   // reset internal array
@@ -141,8 +151,8 @@ void RayGroundClassifier::segment_ray(PointBlock & ground_block, PointBlock & no
 ////////////////////////////////////////////////////////////////////////////////
 void RayGroundClassifier::partition(
   const Ray & ray,
-  PointBlock & ground_block,
-  PointBlock & nonground_block)
+  PointPtrBlock & ground_block,
+  PointPtrBlock & nonground_block)
 {
   // Make sure result can fit
   if (!can_fit_result(ray, ground_block, nonground_block)) {
@@ -170,9 +180,9 @@ void RayGroundClassifier::partition(
       // push last point accordingly
       if (last_point_ptr != nullptr) {
         if (RayGroundPointClassifier::label_is_ground(last_label)) {
-          insert(ground_block, *last_point_ptr);
+          insert(ground_block, last_point_ptr);
         } else {
-          insert(nonground_block, *last_point_ptr);
+          insert(nonground_block, last_point_ptr);
         }
       }
       // update state
@@ -183,9 +193,9 @@ void RayGroundClassifier::partition(
   // push trailing point
   if (last_point_ptr != nullptr) {
     if (RayGroundPointClassifier::label_is_ground(last_label)) {
-      insert(ground_block, *last_point_ptr);
+      insert(ground_block, last_point_ptr);
     } else {
-      insert(nonground_block, *last_point_ptr);
+      insert(nonground_block, last_point_ptr);
     }
   }
 }

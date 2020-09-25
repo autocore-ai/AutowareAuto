@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -101,43 +101,62 @@ RayAggregator::RayAggregator(const Config & cfg)
   m_ready_start_idx{},  // zero initialization
   m_num_ready{},  // zero initialization
   m_ray_state(m_cfg.get_num_rays())
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  , m_ray_locks(m_cfg.get_num_rays()),
+  m_get_next_ray_lock(ATOMIC_FLAG_INIT)
+  #endif
 {
   m_rays.clear();  // capacity unchanged
   const std::size_t ray_size =
     std::max(m_cfg.get_min_ray_points(), static_cast<std::size_t>(POINT_BLOCK_CAPACITY));
-  m_ray_sorter.reserve(ray_size);
   for (std::size_t idx = 0U; idx < m_cfg.get_num_rays(); ++idx) {
     m_rays.emplace_back(ray_size);
     m_rays.back().clear();
     m_ray_state.push_back(RayState::NOT_READY);
   }
   m_ready_indices.resize(m_ready_indices.capacity());
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  m_num_ready = {0};
+  for (std::size_t idx = 0U; idx < m_cfg.get_num_rays(); ++idx) {
+    m_ray_locks[idx].clear();
+  }
+  #endif
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayAggregator::insert(const PointXYZIFR & pt)
+void RayAggregator::end_of_scan()
 {
-  if (static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID) == pt.get_point_pointer()->id) {
-    // all rays ready
-    m_ready_start_idx = 0U;
-    m_num_ready = 0U;
-    for (std::size_t idx = 0U; idx < m_rays.size(); ++idx) {
-      const std::size_t jdx = idx;  // Fix for MISRA Fp, idx modified in loop
-      // Add all non empty "NOT_READY" rays to the ready list since the end of scan in reached.
-      if (RayState::RESET != m_ray_state[jdx]) {
-        if (!m_rays[jdx].empty()) {
-          m_ready_indices[m_num_ready] = idx;
-          ++m_num_ready;
-        }
+  // all rays ready
+  m_ready_start_idx = 0U;
+  m_num_ready = 0U;
+  for (std::size_t idx = 0U; idx < m_rays.size(); ++idx) {
+    // Add all non empty "NOT_READY" rays to the ready list since the end of scan is reached.
+    if (RayState::RESET != m_ray_state[idx]) {
+      if (!m_rays[idx].empty()) {
+        m_ready_indices[m_num_ready] = idx;
+        ++m_num_ready;
       }
     }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+bool8_t RayAggregator::insert(const PointXYZIFR & pt)
+{
+  if (static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID) == pt.get_point_pointer()->id) {
+    return false;
   } else {
     const std::size_t idx = bin(pt);
+    #ifdef RAY_AGGREGATOR_PARALLEL
+    while (m_ray_locks[idx].test_and_set()) {}  // busy wait
+    #endif
     Ray & ray = m_rays[idx];
     if (RayState::RESET == m_ray_state[idx]) {
       ray.clear();  // capacity unchanged
       m_ray_state[idx] = RayState::NOT_READY;
     }
     if (ray.size() >= ray.capacity()) {
+      #ifdef RAY_AGGREGATOR_PARALLEL
+      m_ray_locks[idx].clear();
+      #endif
       throw std::runtime_error("RayAggregator: Ray capacity overrun! Use smaller bins");
     }
     // insert point to ray, do some presorting
@@ -147,27 +166,40 @@ void RayAggregator::insert(const PointXYZIFR & pt)
     if ((RayState::READY != m_ray_state[idx]) && (m_cfg.get_min_ray_points() <= ray.size())) {
       m_ray_state[idx] = RayState::READY;
       // "push" to ring buffer
-      const std::size_t jdx = (m_ready_start_idx + m_num_ready) % m_ready_indices.size();
+      // so long we don't fill the buffer, change m_ready_start_idx or pop, reserving m_num_ready
+      // is enough to make the push thread safe
+      std::size_t used_num;
+      #ifdef RAY_AGGREGATOR_PARALLEL
+      used_num = m_num_ready.fetch_add(1, std::memory_order_relaxed);
+      #else
+      used_num = m_num_ready++;
+      #endif
+      const std::size_t jdx = (m_ready_start_idx + used_num) % m_ready_indices.size();
       m_ready_indices[jdx] = idx;
-      ++m_num_ready;
       // TODO(c.ho) bounds check?
     }
+    #ifdef RAY_AGGREGATOR_PARALLEL
+    m_ray_locks[idx].clear();
+    #endif
   }
+  return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayAggregator::insert(const PointXYZIF & pt)
+bool8_t RayAggregator::insert(const PointXYZIF * pt)
 {
-  insert(PointXYZIFR{pt});
+  return insert(PointXYZIFR{pt});
 }
 ////////////////////////////////////////////////////////////////////////////////
-void RayAggregator::insert(const PointBlock & blk)
+bool8_t RayAggregator::insert(const PointPtrBlock & blk)
 {
-  for (const PointXYZIF & pt : blk) {
-    insert(pt);
-    if (static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID) == pt.id) {
+  bool8_t ret = true;
+  for (const PointXYZIF * pt : blk) {
+    ret = insert(pt);
+    if (!ret || (static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID) == pt->id)) {
       break;
     }
   }
+  return ret;
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t RayAggregator::is_ray_ready() const
@@ -175,23 +207,57 @@ bool8_t RayAggregator::is_ray_ready() const
   return m_num_ready != 0U;
 }
 ////////////////////////////////////////////////////////////////////////////////
+std::size_t RayAggregator::get_ready_ray_count() const
+{
+  return m_num_ready;
+}
+////////////////////////////////////////////////////////////////////////////////
 const Ray & RayAggregator::get_next_ray()
 {
-  if (0U == m_num_ready) {
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  while (m_get_next_ray_lock.test_and_set()) {}  // busy wait
+  #endif
+  // move the if out from the sequential section by nullifying the operations if false
+  bool8_t is_ready = is_ray_ready();
+  const std::size_t local_start_idx = m_ready_start_idx;
+  m_ready_start_idx = (local_start_idx + is_ready) % m_ready_indices.size();
+  m_num_ready -= is_ready;
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  m_get_next_ray_lock.clear();
+  #endif
+
+  if (!is_ready) {
     throw std::runtime_error("RayAggregator: no rays ready");
   }
-  const std::size_t idx = m_ready_indices[m_ready_start_idx];
+
+  const std::size_t idx = m_ready_indices[local_start_idx];
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  while (m_ray_locks[idx].test_and_set()) {}  // busy wait
+  #endif
+
   Ray & ret = m_rays[idx];
   // Sort ray
-  m_ray_sorter.sort(ret.begin(), ret.end());
+  std::sort(ret.begin(), ret.end());
   // ready to be reset on next insertion to this item
   m_ray_state[idx] = RayState::RESET;
-  // "pop" from ring buffer
-  m_ready_start_idx = (m_ready_start_idx + 1U) % m_ready_indices.size();
-  --m_num_ready;
+
+  #ifdef RAY_AGGREGATOR_PARALLEL
+  m_ray_locks[idx].clear();
+  #endif
   return ret;
 }
-
+////////////////////////////////////////////////////////////////////////////////
+void RayAggregator::reset()
+{
+  while (is_ray_ready()) {
+    const std::size_t idx = m_ready_indices[m_ready_start_idx];
+    // "pop" from ring buffer
+    m_ready_start_idx = (m_ready_start_idx + 1U) % m_ready_indices.size();
+    --m_num_ready;
+    // ready to be reset on next insertion to this item
+    m_ray_state[idx] = RayState::RESET;
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
 {
@@ -199,23 +265,18 @@ std::size_t RayAggregator::bin(const PointXYZIFR & pt) const
   const float32_t y = pt.get_point_pointer()->y;
   // (0, 0) is always bin 0
   float32_t idx = 0.0F;
-  if ((fabsf(x) > autoware::common::types::FEPS) ||
-    (fabsf(y) > autoware::common::types::FEPS))
-  {
-    const float32_t th = autoware::common::lidar_utils::fast_atan2(y, x);
-    idx = th - m_cfg.get_min_angle();
-    if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
-      // Case where receptive field crosses the +PI/-PI singularity
-      // [-PI, max_angle) domain
-      idx = idx + autoware::common::types::TAU;
-    }
-    // Avoid underflow
-    idx = std::max(0.0F, idx);
+  const float32_t th = autoware::common::lidar_utils::fast_atan2(y, x);
+  idx = th - m_cfg.get_min_angle();
+  if (m_cfg.domain_crosses_180() && (idx < 0.0F)) {
+    // Case where receptive field crosses the +PI/-PI singularity
+    // [-PI, max_angle) domain
+    idx = idx + autoware::common::types::TAU;
   }
   // [min_angle, +PI) domain: normal calculation
   // normal case, no wraparound
   idx = std::floor(idx / m_cfg.get_ray_width());
-  return static_cast<std::size_t>(idx);
+  // Avoid underflow
+  return std::max(0, static_cast<int32_t>(idx));
 }
 }  // namespace ray_ground_classifier
 }  // namespace filters

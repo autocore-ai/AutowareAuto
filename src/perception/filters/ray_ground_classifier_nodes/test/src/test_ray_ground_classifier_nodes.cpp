@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cmath>
 
 #include "lidar_utils/point_cloud_utils.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 
 using autoware::common::types::float32_t;
 using autoware::common::lidar_utils::create_custom_pcl;
+using autoware::common::lidar_utils::add_point_to_cloud;
 
 class RayGroundPclValidationTester : public rclcpp::Node
 {
@@ -55,6 +57,11 @@ public:
       std::cout << "expected num of pcl not matched" << std::endl;
       std::cout << "actual num = " << m_ground_points.size() << std::endl;
       std::cout << "expected num = " << expected_num << std::endl;
+      if (m_ground_points.size() > expected_num) {
+        std::cout << "It may just a timing issue so test again to see if it persist" << std::endl;
+        // It is possible that the test object doesn't receive the message before timing out,
+        // consider the message lost and send another, but then receive both message at once
+      }
       return false;
     }
     for (std::size_t i = 0; i < m_ground_points.size(); i++) {
@@ -71,6 +78,11 @@ public:
       std::cout << "expected num of pcl not matched" << std::endl;
       std::cout << "actual num = " << m_nonground_points.size() << std::endl;
       std::cout << "expected num = " << expected_num << std::endl;
+      if (m_nonground_points.size() > expected_num) {
+        std::cout << "It may just a timing issue so test again to see if it persist" << std::endl;
+        // It is possible that the test object doesn't receive the message before timing out,
+        // consider the message lost and send another, but then receive both message at once
+      }
       return false;
     }
     for (std::size_t i = 0; i < m_nonground_points.size(); i++) {
@@ -78,6 +90,12 @@ public:
       std::cout << "nonground pc actual size = " << m_nonground_points[i].data.size() << std::endl;
     }
     return ret;
+  }
+
+  void reset()
+  {
+    m_nonground_points.clear();
+    m_ground_points.clear();
   }
 
   std::vector<PointCloud2> m_nonground_points;
@@ -140,6 +158,20 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
   const auto three_fields_pc = create_custom_pcl<float32_t>(three_field_names, mini_cloud_size);
   const auto five_fields_pc = create_custom_pcl<float32_t>(five_field_names, mini_cloud_size);
 
+  // set all the points so they are valid ground
+  for (uint32_t i = 0; i < mini_cloud_size; i++) {
+    float32_t angle = (i * autoware::common::types::TAU) / mini_cloud_size;
+    const float32_t radius_ring_1 = 0.5;
+    float32_t x = std::cos(angle) * radius_ring_1;
+    float32_t y = std::sin(angle) * radius_ring_1;
+    float32_t z = 0;
+    autoware::common::types::PointXYZF pt{x, y, z};
+    uint32_t tmp_i = i;
+    add_point_to_cloud(*three_fields_pc, pt, tmp_i);
+    tmp_i = i;
+    add_point_to_cloud(*five_fields_pc, pt, tmp_i);
+  }
+
   // expected size = 4 bytes * 4 fields * cloud_size
   uint32_t expected_gnd_pcl_size = 4U * 4U * mini_cloud_size;
   uint32_t expected_nongnd_pcl_size = 0U;  // no points will be classified as nonground
@@ -149,31 +181,37 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
     std::this_thread::sleep_for(std::chrono::milliseconds{1LL});
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-
-  while (ray_gnd_validation_tester->m_nonground_points.size() < (expected_num_of_pcl - 1) &&
-    ray_gnd_validation_tester->m_ground_points.size() < (expected_num_of_pcl - 1))
-  {
-    ray_gnd_validation_tester->m_pub_raw_points->publish(*five_fields_pc);
-    // wait for ray_gnd_filter to process 1st pc and publish data
+  // Try it several times in case there is a random issue with the
+  // parallelism to have more chances to catch it
+  for (uint32_t i = 0; i < 10; i++) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-    exec.spin_some();  // for tester to collect data
-  }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+    while (ray_gnd_validation_tester->m_nonground_points.size() < (expected_num_of_pcl - 1) &&
+      ray_gnd_validation_tester->m_ground_points.size() < (expected_num_of_pcl - 1))
+    {
+      ray_gnd_validation_tester->m_pub_raw_points->publish(*five_fields_pc);
+      // wait for ray_gnd_filter to process 1st pc and publish data
+      std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+      exec.spin_some();  // for tester to collect data
+    }
 
-  while (ray_gnd_validation_tester->m_nonground_points.size() < expected_num_of_pcl &&
-    ray_gnd_validation_tester->m_ground_points.size() < expected_num_of_pcl)
-  {
-    ray_gnd_validation_tester->m_pub_raw_points->publish(*three_fields_pc);
-    // wait for ray_gnd_filter to process 2nd pc and publish data
     std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-    exec.spin_some();  // for tester to collect data
-  }
 
-  // Check all published nonground / ground pointclouds have the expected sizes
-  EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_ground_pcls(
-      expected_gnd_pcl_size, expected_num_of_pcl));
-  EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_nonground_pcls(
-      expected_nongnd_pcl_size, expected_num_of_pcl));
+    while (ray_gnd_validation_tester->m_nonground_points.size() < expected_num_of_pcl &&
+      ray_gnd_validation_tester->m_ground_points.size() < expected_num_of_pcl)
+    {
+      ray_gnd_validation_tester->m_pub_raw_points->publish(*three_fields_pc);
+      // wait for ray_gnd_filter to process 2nd pc and publish data
+      std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+      exec.spin_some();  // for tester to collect data
+    }
+
+    // Check all published nonground / ground pointclouds have the expected sizes
+    EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_ground_pcls(
+        expected_gnd_pcl_size, expected_num_of_pcl));
+    EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_nonground_pcls(
+        expected_nongnd_pcl_size, expected_num_of_pcl));
+
+    ray_gnd_validation_tester->reset();
+  }
 }

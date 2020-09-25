@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,11 +20,18 @@
 #ifndef RAY_GROUND_CLASSIFIER__RAY_AGGREGATOR_HPP_
 #define RAY_GROUND_CLASSIFIER__RAY_AGGREGATOR_HPP_
 
+#ifdef _OPENMP
+#define RAY_AGGREGATOR_PARALLEL
+#endif
+
 #include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstdint>
 #include <vector>
+#ifdef RAY_AGGREGATOR_PARALLEL
+#include <atomic>
+#endif
 
 #include "autoware_auto_algorithm/algorithm.hpp"
 #include "common/types.hpp"
@@ -39,7 +46,7 @@ namespace filters
 namespace ray_ground_classifier
 {
 
-using autoware::common::types::PointBlock;
+using autoware::common::types::PointPtrBlock;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
@@ -92,35 +99,75 @@ private:
   /// \brief Constructor
   /// \param[in] cfg Configuration class
   explicit RayAggregator(const Config & cfg);
-
-  /// \brief Insert point into set of rays
+  /// \brief Ready all the non empty rays. To be called once all insertions are done.
+  /// not thread safe
+  void end_of_scan();
+  /// \brief Insert point into set of rays. Concurrent inserts are safe
   /// \param[in] pt Point to be inserted
-  void insert(const PointXYZIFR & pt);
-  /// \brief Insert point into set of rays
+  /// \return true if the insertion suceeded and false if an end of scan is detected
+  bool8_t insert(const PointXYZIFR & pt);
+  /// \brief Insert point into set of rays. Concurrent inserts are safe
   /// \param[in] pt Point to be inserted
-  void insert(const PointXYZIF & pt);
-  /// \brief Insert points associated with blk into the ray set
+  /// \return true if the insertion suceeded and false if an end of scan is detected
+  bool8_t insert(const PointXYZIF * pt);
+  /// \brief Insert points associated with blk into the ray set. Concurrent inserts are safe
   /// \param[in] blk Block of points to be added
-  void insert(const PointBlock & blk);
-  /// \brief Insert points from an iterator
+  /// \return true if the insertion suceeded and false if an end of scan is detected
+  bool8_t insert(const PointPtrBlock & blk);
+  /// \brief Insert points from an iterator. Concurrent inserts are safe
   /// \param[in] first Beginning of iterator
   /// \param[in] last One past the last element of the iterator
-  template<typename InputIT>
-  void insert(const InputIT first, const InputIT last)
+  /// \return true if the insertion suceeded and false if an end of scan is detected
+  bool8_t insert(const PointXYZIF * first, const PointXYZIF * last)
   {
-    // TODO(c.ho) static asserts on declytype(*it) for friendlier error messages
-    for (InputIT it = first; it != last; ++it) {
-      insert(*it);
+    bool8_t ret = true;
+    for (const PointXYZIF * it = first; it != last; ++it) {
+      ret = ret && insert(it);
+      if (!ret) {
+        break;
+      }
     }
+    return ret;
+  }
+  bool8_t insert(PointXYZIF * first, PointXYZIF * last)
+  {
+    bool8_t ret = true;
+    for (PointXYZIF * it = first; it != last; ++it) {
+      ret = ret && insert(it);
+      if (!ret) {
+        break;
+      }
+    }
+    return ret;
+  }
+  template<typename InputIT>
+  bool8_t insert(InputIT first, InputIT last)
+  {
+    static_assert(std::is_pointer<InputIT>::value,
+      "insert(first,last) must be called on an iterable pointer");
+    bool8_t ret = true;
+    for (InputIT it = first; it != last; ++it) {
+      ret = ret && insert(*it);
+      if (!ret) {
+        break;
+      }
+    }
+    return ret;
   }
 
   /// \brief Whether a ray is ready for processing
   /// \return Value
   bool8_t is_ray_ready() const;
+  /// \brief How many rays are ready for processing
+  /// \return Value
+  std::size_t get_ready_ray_count() const;
   /// \brief Get next ray that is ready for partitioning
+  /// Concurrent calls are thread safe
   /// \return Const reference to next ray ready for processing
   /// \throw std::runtime_error If no ray is ready
   const Ray & get_next_ray();
+  /// \brief Clear all the ready rays so that is_ray_ready() return false
+  void reset();
 
 private:
   enum class RayState : uint8_t
@@ -134,16 +181,23 @@ private:
   };  // enum class RayState
 
   /// \brief Compute which bin a point belongs to
-  std::size_t RAY_GROUND_CLASSIFIER_LOCAL bin(const PointXYZIFR & pt) const;
+  inline std::size_t RAY_GROUND_CLASSIFIER_LOCAL bin(const PointXYZIFR & pt) const;
   const Config m_cfg;
   std::vector<Ray> m_rays;
-  autoware::common::algorithm::QuickSorter<Ray> m_ray_sorter;
   // simple index ring buffer
   std::vector<std::size_t> m_ready_indices;
   std::size_t m_ready_start_idx;
+#ifdef RAY_AGGREGATOR_PARALLEL
+  std::atomic<std::size_t> m_num_ready;
+#else
   std::size_t m_num_ready;
+#endif
   // which rays are ready to be reset etc. TODO(c.ho) fold this into an internal ray class
   std::vector<RayState> m_ray_state;
+#ifdef RAY_AGGREGATOR_PARALLEL
+  std::vector<std::atomic_flag> m_ray_locks;
+  std::atomic_flag m_get_next_ray_lock;
+#endif
 };  // class RayAggregator
 }  // namespace ray_ground_classifier
 }  // namespace filters

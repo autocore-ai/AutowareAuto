@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
@@ -60,7 +61,11 @@ private:
   /// \brief Resets state of ray aggregator and messages
   RAY_GROUND_CLASSIFIER_NODES_LOCAL void reset();
   // Algorithmic core
+#ifdef _OPENMP
+  std::vector<ray_ground_classifier::RayGroundClassifier> m_classifiers;
+#else
   ray_ground_classifier::RayGroundClassifier m_classifier;
+#endif
   ray_ground_classifier::RayAggregator m_aggregator;
   // preallocated message
   PointCloud2 m_ground_msg;
@@ -77,9 +82,7 @@ private:
   /// \brief Read samples from the subscription
   void callback(const PointCloud2::SharedPtr msg);
   uint32_t m_ground_pc_idx;
-  autoware::common::lidar_utils::PointCloudIts m_ground_pc_its;
   uint32_t m_nonground_pc_idx;
-  autoware::common::lidar_utils::PointCloudIts m_nonground_pc_its;
 };  // class RayGroundFilterDriverNode
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters

@@ -18,10 +18,11 @@
 #include <ray_ground_classifier/ray_aggregator.hpp>
 #include <ray_ground_classifier/ray_ground_point_classifier.hpp>
 #include <common/types.hpp>
+#include <vector>
 
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::float32_t;
-using autoware::perception::filters::ray_ground_classifier::PointBlock;
+using autoware::perception::filters::ray_ground_classifier::PointPtrBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 using autoware::perception::filters::ray_ground_classifier::Ray;
 using autoware::perception::filters::ray_ground_classifier::RayAggregator;
@@ -59,18 +60,22 @@ TEST(ray_aggregator, basic) {
   // Do this twice, expect same result to exercise internal reset logic
   for (uint32_t jdx = 0U; jdx < 3U; ++jdx) {
     // insert points along one ray
+    std::vector<PointXYZIF> all_points;
+    all_points.reserve(min_ray_points);
     for (uint32_t idx = 0U; idx < min_ray_points - 1U; ++idx) {
       PointXYZIF pt;
       pt.x = static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F;
       pt.y = static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F;
-      agg.insert(pt);
+      all_points.push_back(pt);
+      EXPECT_TRUE(agg.insert(&(all_points.back())));
       EXPECT_FALSE(agg.is_ray_ready()) << idx;
     }
     // insert one more
     PointXYZIF pt;
     pt.x = static_cast<float32_t>(min_ray_points - 1U);
     pt.y = static_cast<float32_t>(min_ray_points - 1U);
-    agg.insert(pt);
+    all_points.push_back(pt);
+    EXPECT_TRUE(agg.insert(&(all_points.back())));
     // ready
     EXPECT_TRUE(agg.is_ray_ready());
     // ray should be in sorted order
@@ -78,6 +83,7 @@ TEST(ray_aggregator, basic) {
     check_ray(ray, atan2f(1.0F, 1.0F));
     EXPECT_EQ(ray.size(), min_ray_points);
     EXPECT_FALSE(agg.is_ray_ready());
+    all_points.clear();
   }
   EXPECT_THROW(agg.get_next_ray(), std::runtime_error);
 }
@@ -88,9 +94,11 @@ TEST(ray_aggregator, multi_flipped)
   const std::size_t min_ray_points = 50U;
   RayAggregator::Config cfg{1.14159F, -1.14159F, 0.2F, min_ray_points};
   RayAggregator agg{cfg};
-  PointBlock blk;
+  PointPtrBlock blk;
   const std::size_t num_points = 32U;
   // fill out a couple of rays in the point block
+  std::vector<PointXYZIF> all_points;
+  all_points.reserve(num_points + 1);
   for (uint32_t idx = 0U; idx < num_points; ++idx) {
     PointXYZIF pt;
     // .. generate points ..
@@ -111,14 +119,15 @@ TEST(ray_aggregator, multi_flipped)
     }
     pt.x = u * (static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F);
     pt.y = v * (static_cast<float32_t>(idx % 3U) + (0.1F * static_cast<float32_t>(idx)) + 0.1F);
-    blk.push_back(pt);
+    all_points.push_back(pt);
+    blk.push_back(&(all_points.back()));
   }
-  agg.insert(blk);
+  if (!agg.insert(blk)) {
+    agg.end_of_scan();
+  }
   EXPECT_FALSE(agg.is_ray_ready());
   // End of scan
-  blk.resize(1U);
-  blk[0U].id = static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID);
-  agg.insert(blk);
+  agg.end_of_scan();
   EXPECT_TRUE(agg.is_ray_ready());
   // .. check rays ..
   std::size_t total_points = 0U;
@@ -148,31 +157,48 @@ TEST(ray_aggregator, multi_insert)
   pts[0U].x = 0.0F; pts[0U].y = 1.0F;
   pts[1U].x = 0.0F; pts[1U].y = 5.0F;
   pts[2U].x = 0.0F; pts[2U].y = 2.0F;
-  std::array<PointXYZIFR, 3U> pts_r{PointXYZIFR{pts[0U]}, PointXYZIFR{pts[1U]},
-    PointXYZIFR{pts[2U]}};
-  std::array<PointBlock, 2U> blks;
+  std::array<PointXYZIFR, 3U> pts_r{PointXYZIFR{&pts[0U]}, PointXYZIFR{&pts[1U]},
+    PointXYZIFR{&pts[2U]}};
+  std::array<PointPtrBlock, 2U> blks;
+  PointXYZIF pt0_0, pt0_1, pt1_0, pt1_1;
+  pt0_0.x = 0.0F; pt0_0.y = -1.0F;
+  pt0_1.x = 0.0F; pt0_1.y = -2.0F;
+  pt1_0.x = 1.0F; pt1_0.y = 0.0F;
+  pt1_1.x = 2.0F; pt1_1.y = 0.0F;
   blks[0U].resize(2U);
-  blks[0U][0U].x = 0.0F; blks[0U][0U].y = -1.0F;
-  blks[0U][1U].x = 0.0F; blks[0U][1U].y = -2.0F;
+  blks[0U][0U] = &pt0_0;
+  blks[0U][1U] = &pt0_1;
   blks[1U].resize(2U);
-  blks[1U][0U].x = 1.0F; blks[1U][0U].y = 0.0F;
-  blks[1U][1U].x = 2.0F; blks[1U][1U].y = 0.0F;
+  blks[1U][0U] = &pt1_0;
+  blks[1U][1U] = &pt1_1;
   const std::size_t min_ray_points = 4U;
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.2F, min_ray_points};
   RayAggregator agg{cfg};
   // const insertion
-  agg.insert(pts.cbegin(), pts.cend());
+  if (!agg.insert(pts.cbegin(), pts.cend())) {
+    agg.end_of_scan();
+  }
   EXPECT_FALSE(agg.is_ray_ready());
-  agg.insert(blks.cbegin(), blks.cend());
+  if (!agg.insert(blks.cbegin(), blks.cend())) {
+    agg.end_of_scan();
+  }
   EXPECT_FALSE(agg.is_ray_ready());
-  agg.insert(pts_r.cbegin(), pts_r.cend());
+  if (!agg.insert(pts_r.cbegin(), pts_r.cend())) {
+    agg.end_of_scan();
+  }
   EXPECT_TRUE(agg.is_ray_ready());
   // nonconst
-  agg.insert(pts.begin(), pts.end());
+  if (!agg.insert(pts.begin(), pts.end())) {
+    agg.end_of_scan();
+  }
   EXPECT_TRUE(agg.is_ray_ready());
-  agg.insert(pts_r.begin(), pts_r.end());
+  if (!agg.insert(pts_r.begin(), pts_r.end())) {
+    agg.end_of_scan();
+  }
   EXPECT_TRUE(agg.is_ray_ready());
-  agg.insert(blks.begin(), blks.end());
+  if (!agg.insert(blks.begin(), blks.end())) {
+    agg.end_of_scan();
+  }
   EXPECT_TRUE(agg.is_ray_ready());
   // check result: (0, +y) was init'd first
   std::size_t total_points = 0U;
@@ -205,16 +231,22 @@ TEST(ray_aggregator, bad_cases)
   // insert past capacity
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.2F, 10U};
   RayAggregator agg{cfg};
+  std::vector<PointXYZIF> all_points;
+  all_points.reserve(capacity + 1);
   for (uint32_t idx = 0U; idx < capacity; ++idx) {
     PointXYZIF pt;
     pt.x = 0.1F + static_cast<float32_t>(idx);
     pt.y = 0.1F + static_cast<float32_t>(idx);
-    agg.insert(pt);
+    all_points.push_back(pt);
+    if (!agg.insert(&(all_points.back()))) {
+      agg.end_of_scan();
+    }
   }
   PointXYZIF pt2;
   pt2.x = 1.5;
   pt2.y = 1.5;
-  EXPECT_THROW(agg.insert(pt2), std::runtime_error);
+  all_points.push_back(pt2);
+  EXPECT_THROW(agg.insert(&(all_points.back())), std::runtime_error);
 }
 
 TEST(ray_aggregator, segfault)
@@ -242,7 +274,7 @@ TEST(ray_aggregator, segfault)
   pt.intensity = 13;
   pt.id = 0;
 
-  EXPECT_NO_THROW(agg.insert(pt));
+  EXPECT_NO_THROW(agg.insert(&pt));
 }
 
 // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/217
@@ -257,7 +289,9 @@ TEST(ray_aggregator, reset_bug) {
   // contains the given points.
   const auto check_one_ray_fn = [&agg, kNumPoints](const std::array<PointXYZIF, kNumPoints> & pts)
     -> void {
-      agg.insert(pts.cbegin(), pts.cend());
+      if (!agg.insert(pts.cbegin(), pts.cend())) {
+        agg.end_of_scan();
+      }
       EXPECT_TRUE(agg.is_ray_ready());
 
       while (agg.is_ray_ready()) {
