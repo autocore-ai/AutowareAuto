@@ -50,7 +50,7 @@ public:
   {
   }
 
-  bool8_t receive_correct_ground_pcls(uint32_t expected_gounrd_pcl_size, uint32_t expected_num)
+  bool8_t receive_correct_ground_pcls(uint32_t expected_ground_pcl_size, uint32_t expected_num)
   {
     bool8_t ret = true;
     if (m_ground_points.size() != expected_num) {
@@ -65,7 +65,7 @@ public:
       return false;
     }
     for (std::size_t i = 0; i < m_ground_points.size(); i++) {
-      ret = (m_ground_points[i].data.size() == expected_gounrd_pcl_size) && ret;
+      ret = (m_ground_points[i].data.size() == expected_ground_pcl_size) && ret;
       std::cout << "ground pc actual size = " << m_ground_points[i].data.size() << std::endl;
     }
     return ret;

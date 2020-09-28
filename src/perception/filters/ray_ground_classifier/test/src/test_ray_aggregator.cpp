@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -214,7 +214,7 @@ TEST(ray_aggregator, multi_insert)
   total_points += ray3.size();
   EXPECT_EQ(ray3.size(), 4U);
   check_ray(ray3, atan2f(0.0F, 1.0F));
-  EXPECT_EQ(total_points, 2 * (3 + 3 + 2 + 2));
+  EXPECT_EQ(total_points, 2U * (3U + 3U + 2U + 2U));
 }
 
 // bad cases: fill out MC/DC for error handling
@@ -260,8 +260,8 @@ TEST(ray_aggregator, segfault)
   // $4 = {m_min_ray_points = 512, m_num_rays = 1257, m_ray_width_rad = 0.00499999989,
   //  m_min_angle_rad = -3.14159012, m_domain_crosses_180 = false}
 
-  EXPECT_EQ(cfg.get_num_rays(), 1257);
-  EXPECT_EQ(cfg.get_min_ray_points(), 512);
+  EXPECT_EQ(cfg.get_num_rays(), 1257U);
+  EXPECT_EQ(cfg.get_min_ray_points(), 512U);
   EXPECT_FLOAT_EQ(cfg.get_ray_width(), 0.00499999989);
   EXPECT_FLOAT_EQ(cfg.get_min_angle(), -3.14159012);
   EXPECT_FALSE(cfg.domain_crosses_180());

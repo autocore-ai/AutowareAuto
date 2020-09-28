@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Apex.AI, Inc.
+// Copyright 2017-2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ n = not ground point
 TEST_F(ray_ground_classifier, flat_ground)
 {
   generate_groundspace(5.0F, 35.0F, 32U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   generate_points(cfg, dat, pts, labels);
 
@@ -109,7 +109,7 @@ TEST_F(ray_ground_classifier, wall)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
   float32_t height = 0.0F, dh = 0.5F;
@@ -137,7 +137,7 @@ TEST_F(ray_ground_classifier, wall2)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
   const float32_t dr = 1.0F;
@@ -166,7 +166,7 @@ TEST_F(ray_ground_classifier, ditch)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
   const float32_t w = 5.0F;
@@ -195,7 +195,7 @@ TEST_F(ray_ground_classifier, gap)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
   const float32_t w = 1.0F;
@@ -324,7 +324,7 @@ TEST_F(ray_ground_classifier, driveway)
 {
   // driveway itself
   const float32_t ro = 5.0F, rf = 10.0F;
-  generate_groundspace(ro, rf, 12U, [](float32_t r) {return 0.0F;}, dat);
+  generate_groundspace(ro, rf, 12U, [](float32_t r) {(void)r; return 0.0F;}, dat);
   const float32_t W = 1.5F;
   const float32_t dr = 1.0F;
   const float32_t H = 0.25F;  // 10-20 cm curb + dip
@@ -342,7 +342,7 @@ TEST_F(ray_ground_classifier, driveway)
       return (r - r1) * (H / W);
     }, dat);
   // road
-  generate_groundspace(r2 + dr, r2 + dr + 10, 12U, [](float32_t r) {return 0.0F;}, dat);
+  generate_groundspace(r2 + dr, r2 + dr + 10, 12U, [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   generate_points(cfg, dat, pts, labels);
 
@@ -459,7 +459,7 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(ro, rf, 16U,
-    [](float32_t r) {return 0.0F;}, dat);
+    [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
   float32_t height = 0.0F, dh = 0.1F;
