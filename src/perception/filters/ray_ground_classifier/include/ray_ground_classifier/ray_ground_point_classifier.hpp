@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "common/types.hpp"
+#include "helper_functions/float_comparisons.hpp"
 #include "ray_ground_classifier/visibility_control.hpp"
 
 namespace autoware
@@ -39,10 +40,12 @@ namespace filters
 {
 using autoware::common::types::PI;
 using autoware::common::types::TAU;
+using autoware::common::types::FEPS;
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
+using autoware::common::helper_functions::comparisons::abs_eq;
 
 /// \brief Resources for the ray ground filter algorithm used for
 ///        ground filtering in point clouds
@@ -169,8 +172,8 @@ private:
 /// \return True if lhs < rhs: if lhs.r < rhs.r, if nearly same radius then lhs.z < rhs.z
 inline bool8_t operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept
 {
-  return (fabsf(lhs.m_r_xy - rhs.m_r_xy) > autoware::common::types::FEPS) ?
-         (lhs.m_r_xy < rhs.m_r_xy) : (lhs.m_point->z < rhs.m_point->z);
+  const auto same_radius = abs_eq(lhs.m_r_xy, rhs.m_r_xy, FEPS);
+  return same_radius ? (lhs.m_point->z < rhs.m_point->z) : (lhs.m_r_xy < rhs.m_r_xy);
 }
 
 using Ray = std::vector<PointXYZIFR>;
