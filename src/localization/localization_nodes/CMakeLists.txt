@@ -44,7 +44,7 @@ if(BUILD_TESTING)
   target_link_libraries(${LOCALIZATION_NOTE_TEST} ${PROJECT_NAME})
 endif()
 
-
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 

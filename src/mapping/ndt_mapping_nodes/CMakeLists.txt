@@ -35,6 +35,7 @@ rclcpp_components_register_node(${PROJECT_NAME}
 )
 
 # turn off warnings to be able to successfully compile upstream ros packages
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 set(ROS_NO_WARN_LIST
         -Wno-sign-conversion
         -Wno-conversion

@@ -45,6 +45,7 @@ if(BUILD_TESTING)
 endif()
 
 # Ament Exporting
+target_include_directories(${GB_PLANNER_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_compile_options(${GB_PLANNER_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 

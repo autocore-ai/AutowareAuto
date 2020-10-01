@@ -38,8 +38,11 @@ rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "autoware::behavior_planner_node::BehaviorPlannerNode"
   EXECUTABLE ${PROJECT_NAME}_exe
 )
+
+# required for tf2
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 
 # Testing
 if(BUILD_TESTING)
