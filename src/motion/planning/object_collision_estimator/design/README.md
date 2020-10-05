@@ -1,17 +1,15 @@
-# Object Collision Estimator {#object-collision-estimator}
+Object Collision Estimator {#object-collision-estimator}
 =========================
 
-# Object Collision Estimator Design
-
-## Purpose / Use cases
+# Purpose / Use cases
 
 The collision estimator takes a list of objects detected by the perception stack and the local path produced by the local planner as inputs.
 It then predicts any collisions between the ego vehicle and static obstacles.
 Finally the local path is modified to avoid any potential collisions.
 
-## Design
+# Design
 
-### Inputs / Outputs
+## Inputs / Outputs
 
 Inputs:
 
@@ -28,7 +26,7 @@ Outputs:
   - Modified Local Path
   - Modified to avoid any collisions
 
-### Algorithms
+## Algorithms
 
 This is the workflow of the estimator:
 
@@ -42,17 +40,17 @@ This is the workflow of the estimator:
 - The smoother sets the velocity of the last few points to zero.
 - Then it passes the velocity profile through a gaussian filter thus ending up with a velocity profile that gradually ramps down to zero.
 
-### Assumptions / Known limits
+## Assumptions / Known limits
 
 - The obstacles are in the same coordinate frame as the trajectory.
 - The bounding boxes are assumed to be parallel to the ground and is represented by the rectangle of the bottom surface and z = 0. Hence the collision detection only happens in 2d.
 
-### Error detection and handling
+## Error detection and handling
 
 All API should not emit exceptions.
 If collision detection algorithm fail in any way, an empty trajectory should be returned and the behavior planner should perform emergency stop.
 
-## Related issues
+# Related issues
 
 - #474: Estimate collisions based on detected objects and vehicle path (Object Collision Estimator)
 - #447: Implement Semantic-Map-Based Navigation and Planning

@@ -1,4 +1,4 @@
-behavior_planner {#behavior_planner-package-design}
+Behavior planner node {#behavior-planner-node}
 ===========
 
 This is the design document for the `behavior_planner` package.

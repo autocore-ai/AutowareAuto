@@ -1,25 +1,24 @@
-# Object Collision Estimator Node {#object-collision-estimator-node}
+Object Collision Estimator Node {#object-collision-estimator-node}
+===========
 
-# Object Collision Estimator Node Design
-
-## Purpose / Use cases
+# Purpose / Use cases
 
 The collision estimator node is the interface for detecting collisions.
 The behavior planner delegates the task of estimating if any collision is likely on a planned path to this node.
 
-## Design
+# Design
 
 The node implements a ROS2 interface to Object Collision Estimator Library. It has 2 main external interfaces:
 
 1. Subscribe to a topic to obtain obstacle bounding boxes from perception stack.
 1. Present as a service to the behavior planner. This service takes a trajectory as an input and outputs another trajectory modified to avoiding collisions.
 
-### Assumptions / Known limits
+## Assumptions / Known limits
 
 - The trajectory is published in map frame.
 - A transform between the perception bounding box frame and map exists
 
-### Inputs / Outputs / API
+## Inputs / Outputs / API
 
 Inputs:
 
@@ -36,7 +35,7 @@ Outputs:
   - Modified local path to avoid any collisions
   - Returned on the service interface
 
-### Inner-workings / Algorithms
+## Inner-workings / Algorithms
 
 - Obstacle Subscriber
   - Subscribes to the obstacle topic which gives a list of bounding boxes representing obstacles detected by the perception pipeline.
@@ -47,13 +46,13 @@ Outputs:
   - Pass this trajectory to ObjectCollisionEstimator who modifies it to avoid any collision.
   - Return the modified trajectory to caller of the service.
 
-## Future extensions / Unimplemented parts
+# Future extensions / Unimplemented parts
 
 - If a transform between bounding box and map does not exist, the estimator should return empty trajectory and the vehicle should stop.
 - Test tf transform code paths.
 - Vary collision detection method and tolerances based on vehicle operation mode.
 
-## Related issues
+# Related issues
 
 - #474: Estimate collisions based on detected objects and vehicle path (Object Collision Estimator)
 - #447: Implement Semantic-Map-Based Navigation and Planning

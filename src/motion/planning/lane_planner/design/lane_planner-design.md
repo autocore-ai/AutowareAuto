@@ -1,4 +1,4 @@
-lane_planner {#lane_planner-package-design}
+Lane planner {#lane-planner}
 ===========
 
 This is the design document for the `lane_planner` package.

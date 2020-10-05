@@ -1,4 +1,4 @@
-lanelet2_map_provider {#lanelet2_map_provider-package-design}
+Lanelet2 map provider {#lanelet2-map-provider}
 ===========
 
 This is the design document for the `lanelet2_map_provider` package.

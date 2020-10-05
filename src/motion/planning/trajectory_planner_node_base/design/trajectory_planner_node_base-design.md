@@ -1,4 +1,4 @@
-trajectory_planner_node_base {#trajectory_planner_node_base-package-design}
+TrajectoryPlannerNodeBase {#trajectory-planner-node-base}
 ===========
 
 This is the design document for the `trajectory_planner_node_base` package.

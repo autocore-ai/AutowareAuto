@@ -1,4 +1,4 @@
-Parking Planner Design {#parking-planner-design}
+Parking Planner Design {#parking-planner}
 ================================================
 
 # Purpose
