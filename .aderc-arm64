@@ -3,6 +3,6 @@ export ADE_GITLAB=gitlab.com
 export ADE_REGISTRY=registry.gitlab.com
 export ADE_DISABLE_NVIDIA_DOCKER=true
 export ADE_IMAGES="
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/arm64/ade:master
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/arm64:master
+  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/arm64/ade-dashing:master
+  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/arm64/binary-dashing:master
 "

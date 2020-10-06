@@ -19,28 +19,32 @@ stages:
       if [[ -n "$FORCE" ]]; then
           chmod og-w . -R;
           docker build
+              --build-arg ROS_DISTRO=${ROS_DISTRO}
+              --build-arg CODENAME=${UBUNTU_DISTRO}
               --label ade_image_commit_sha="$CI_COMMIT_SHA"
               --label ade_image_commit_tag="$CI_COMMIT_TAG"
               -t image .;
       else
           (
-              docker pull $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA &&
-              docker tag $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA image
+              docker pull $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:change-$ADE_SHA &&
+              docker tag $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:change-$ADE_SHA image
           ) || (
               chmod og-w . -R;
               docker build
+                  --build-arg ROS_DISTRO=${ROS_DISTRO}
+                  --build-arg CODENAME=${UBUNTU_DISTRO}
                   --label ade_image_commit_sha="$CI_COMMIT_SHA"
                   --label ade_image_commit_tag="$CI_COMMIT_TAG"
                   -t image .;
           );
       fi
       '
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:change-$ADE_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH/ade:$CI_COMMIT_REF_NAME
+    - docker tag image $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:change-$ADE_SHA
+    - docker tag image $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:$CI_COMMIT_REF_NAME
+    - docker push $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:change-$ADE_SHA
+    - docker push $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:$CI_COMMIT_REF_NAME
   after_script:
     - docker container rm -f $(docker container ls --filter "status=exited" -q)
     - docker image rm $(docker image ls -q)
@@ -82,7 +86,7 @@ stages:
 
 .build_base: &build_base
   stage: build
-  image: $CI_REGISTRY_IMAGE$ARCH/ade:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
   script:
     - 'apt-get update && apt-get -y --no-install-recommends install
           git
@@ -125,6 +129,16 @@ stages:
   after_script:
     - colcon test-result --verbose
 
+.gen_deps_base: &gen_deps_base
+  stage: gen-dependencies
+  script:
+    - rosdep update
+    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - ros-deps
+
 .volume_base: &volume_base
   stage: deploy
   image: docker
@@ -140,58 +154,85 @@ stages:
       CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & wait ${!}"]
       EOF
     - 'docker build
+          --build-arg ROS_DISTRO=${ROS_DISTRO}
+          --build-arg CODENAME=${UBUNTU_DISTRO}
           --label ade_image_commit_sha="$CI_COMMIT_SHA"
           --label ade_image_commit_tag="$CI_COMMIT_TAG"
           -t image .
       '
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker tag image $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY_IMAGE$ARCH:commit-$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE$ARCH:$CI_COMMIT_REF_NAME
+    - docker tag image $CI_REGISTRY_IMAGE/$ARCH/binary-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+    - docker tag image $CI_REGISTRY_IMAGE/$ARCH/binary-$ROS_DISTRO:$CI_COMMIT_REF_NAME
+    - docker push $CI_REGISTRY_IMAGE/$ARCH/binary-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/$ARCH/binary-$ROS_DISTRO:$CI_COMMIT_REF_NAME
   after_script:
     - docker container rm -f $(docker container ls --filter "status=exited" -q)
     - docker image rm $(docker image ls -q)
 
-generate_ros_deps:
-  stage: gen-dependencies
+gen_ros_deps_dashing:
   image: ros:dashing
-  script:
-    - rosdep update
-    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - ros-deps
+  <<: *gen_deps_base
 
-ade:
+gen_ros_deps_foxy:
+  image: ros:foxy
+  <<: *gen_deps_base
+
+ade_amd64_dashing:
   variables:
-    ARCH: ""
+    ARCH: amd64
+    ROS_DISTRO: dashing
+    UBUNTU_DISTRO: bionic
   <<: *ade_base
   needs:
-    - job: generate_ros_deps
+    - job: gen_ros_deps_dashing
       artifacts: true
 
-ade_arm64:
+ade_amd64_foxy:
   variables:
-    ARCH: "/arm64"
+    ARCH: amd64
+    ROS_DISTRO: foxy
+    UBUNTU_DISTRO: focal
+  <<: *ade_base
+  needs:
+    - job: gen_ros_deps_foxy
+      artifacts: true
+
+ade_arm64_dashing:
+  variables:
+    ARCH: arm64
+    ROS_DISTRO: dashing
+    UBUNTU_DISTRO: bionic
   tags:
     - arm64
   <<: *ade_base
   needs:
-    - job: generate_ros_deps
+    - job: gen_ros_deps_dashing
       artifacts: true
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
-build_barebones:
+ade_arm64_foxy:
+  variables:
+    ARCH: arm64
+    ROS_DISTRO: foxy
+    UBUNTU_DISTRO: focal
+  tags:
+    - arm64
+  <<: *ade_base
+  needs:
+    - job: gen_ros_deps_foxy
+      artifacts: true
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+
+build_barebones_amd64_dashing:
   variables:
     RMW_IMPLEMENTATION: rmw_fastrtps_cpp
   <<: *build_barebones_base
   needs:
-    - ade
+    - gen_ros_deps_dashing
 
-build_barebones_arm64:
+build_barebones_arm64_dashing:
   tags:
     - arm64
   variables:
@@ -200,12 +241,13 @@ build_barebones_arm64:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
-    - ade_arm64
+    - gen_ros_deps_dashing
 
-build:
+build_amd64_dashing:
   variables:
-    ARCH: ""
+    ARCH: amd64
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
   <<: *build_base
   artifacts:
     name: "$CI_JOB_NAME"
@@ -215,28 +257,29 @@ build:
     reports:
       junit: test-results.xml
   needs:
-    - ade
+    - ade_amd64_dashing
 
-build_arm64:
+build_arm64_dashing:
   variables:
-    ARCH: "/arm64"
+    ARCH: arm64
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
   tags:
     - arm64
   <<: *build_base
   artifacts:
-    name: "$CI_JOB_NAME$ARCH"
+    name: "$CI_JOB_NAME"
     paths:
       - log
       - opt.tar.gz
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
-    - ade_arm64
+    - ade_arm64_dashing
 
 coverage:
   stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
   script:
     - './tools/coverage/coverage.sh -u'
   artifacts:
@@ -246,11 +289,11 @@ coverage:
       - log
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
   needs:
-    - ade
+    - ade_amd64_dashing
 
 docs:
   stage: build
-  image: $CI_REGISTRY_IMAGE/ade:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
   script:
     - docs/.doxygen/build.py
   artifacts:
@@ -258,7 +301,7 @@ docs:
     paths:
       - docs/_build/html
   needs:
-    - ade
+    - ade_amd64_dashing
 
 pages:
   stage: deploy
@@ -282,25 +325,30 @@ volume:
   services:
     - docker:dind
   variables:
-    ARCH: ""
+    ARCH: amd64
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
+    UBUNTU_DISTRO: bionic
   <<: *volume_base
   needs:
-    - job: build
+    - job: build_amd64_dashing
       artifacts: true
 
 volume_arm64:
   stage: deploy
   image: docker
   services:
-    - docker:19.03.5-dind
+    - docker:dind
   tags:
     - arm64
   variables:
-    ARCH: "/arm64"
+    ARCH: arm64
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
+    UBUNTU_DISTRO: bionic
   <<: *volume_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
-    - build_arm64
+    - job: build_arm64_dashing
+      artifacts: true

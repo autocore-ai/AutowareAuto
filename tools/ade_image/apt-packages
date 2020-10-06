@@ -24,11 +24,11 @@ strace
 vim
 
 # DDS Dependencies
-ros-dashing-cyclonedds
-ros-dashing-rmw-cyclonedds-cpp
+ros-$ROS_DISTRO-cyclonedds
+ros-$ROS_DISTRO-rmw-cyclonedds-cpp
 
 # ROSBAG tools
-ros-dashing-ros2bag
-ros-dashing-rosbag2
-ros-dashing-rosbag2-storage-default-plugins
-ros-dashing-rosbag2-transport
+ros-$ROS_DISTRO-ros2bag
+ros-$ROS_DISTRO-rosbag2
+ros-$ROS_DISTRO-rosbag2-storage-default-plugins
+ros-$ROS_DISTRO-rosbag2-transport

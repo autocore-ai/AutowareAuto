@@ -1,6 +1,7 @@
-FROM ros:dashing
-ARG CODENAME=bionic
+ARG ROS_DISTRO=dashing
 
+FROM ros:$ROS_DISTRO
+ARG CODENAME=bionic
 
 # Disable non-free repositories
 RUN if [ "$(uname -m)" = "x86_64" ]; then \
@@ -21,9 +22,11 @@ deb http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME}-security main universe\n\
 
 
 RUN apt-get update && \
-    apt-get install -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        gettext-base \
         locales \
-    && rm -rf /var/lib/apt/lists/*
+        keyboard-configuration && \
+    rm -rf /var/lib/apt/lists/*
 RUN locale-gen en_US.UTF-8; dpkg-reconfigure -f noninteractive locales
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
@@ -34,13 +37,16 @@ RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key 1655A0AB6
 
 COPY ros-deps /tmp/
 RUN apt-get update && \
+    apt-get install -y \
+      ros-$ROS_DISTRO-cyclonedds \
+      ros-$ROS_DISTRO-rmw-cyclonedds-cpp && \
     /bin/bash /tmp/ros-deps && \
     rm -rf /var/lib/apt/lists/* /tmp/ros-deps
 
 COPY apt-packages /tmp/
 RUN apt-get update && \
     apt-get install -y \
-        $(cut -d# -f1 </tmp/apt-packages) \
+        $(cat /tmp/apt-packages | cut -d# -f1 | envsubst) \
     && rm -rf /var/lib/apt/lists/* /tmp/apt-packages
 
 RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
@@ -84,12 +90,6 @@ RUN apt-get update \
 
 ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/master/nvidia_icd.json" /etc/vulkan/icd.d/nvidia_icd.json
 RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
-
-COPY npm-packages /tmp/
-RUN . /opt/ros/dashing/setup.sh && \
-    npm install -g --unsafe \
-        $(cut -d# -f1 </tmp/npm-packages) && \
-    rm -rf /tmp/npm-packages
 
 # ===================== END OF CLEAN UP ZONE ===================== #
 
