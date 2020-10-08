@@ -17,13 +17,10 @@
 #include <common/types.hpp>
 #include <motion_common/motion_common.hpp>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
-#include <pure_pursuit_nodes/pure_pursuit_node.hpp>
-
 #include <memory>
 #include <string>
+
+#include "pure_pursuit_nodes/pure_pursuit_node.hpp"
 
 using autoware::common::types::float64_t;
 using autoware::common::types::float32_t;
@@ -39,8 +36,9 @@ namespace control
 namespace pure_pursuit_nodes
 {
 PurePursuitNode::PurePursuitNode(
-  const rclcpp::NodeOptions & node_options)
-: ControllerBaseNode{"pure_pursuit_node", "", node_options, "ctrl_cmd", "current_pose",
+  const std::string & node_name,
+  const std::string & node_namespace)
+: ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
     "tf", "trajectory", "ctrl_diag"}
 {
   pure_pursuit::Config cfg{
@@ -60,9 +58,17 @@ PurePursuitNode::PurePursuitNode(
       "controller.dist_front_rear_wheels").get<float64_t>())};
   set_controller(std::make_unique<pure_pursuit::PurePursuit>(cfg));
 }
+////////////////////////////////////////////////////////////////////////////////
+PurePursuitNode::PurePursuitNode(
+  const std::string & node_name,
+  const pure_pursuit::Config & cfg,
+  const std::string & node_namespace)
+: ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
+    "tf", "trajectory", "ctrl_diag"}
+{
+  set_controller(std::make_unique<pure_pursuit::PurePursuit>(cfg));
+}
 }  // namespace pure_pursuit_nodes
 }  // namespace control
 }  // namespace motion
 }  // namespace autoware
-
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware::motion::control::pure_pursuit_nodes::PurePursuitNode)

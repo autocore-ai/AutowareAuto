@@ -55,7 +55,7 @@ using environment variables to define the configuration.
 
 ```
 $ cd adehome
-$ git clone --recurse-submodules git@gitlab.com:autowarefoundation/autoware.auto/AutowareAuto.git
+$ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
 
 
@@ -64,6 +64,7 @@ $ git clone --recurse-submodules git@gitlab.com:autowarefoundation/autoware.auto
 ```
 $ ade start --update --enter 
 ade$ cd AutowareAuto
+ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ade$ colcon build
 ade$ colcon test
 ade$ colcon test-result

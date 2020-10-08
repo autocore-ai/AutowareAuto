@@ -13,6 +13,8 @@ stages:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - apk add --update-cache git
     - mv ros-deps tools/ade_image
+    - cp autoware.auto.dashing.repos tools/ade_image
+    - cp autoware.auto.foxy.repos tools/ade_image
     - cd tools/ade_image
     - export ADE_SHA=$(find . -type f | sort | xargs sha256sum | sha256sum | rev | cut -c 4- | rev)
     - '
@@ -73,9 +75,12 @@ stages:
           python-rosdep
           git
           clang-tidy
+          python3-vcstool
           ros-dashing-cyclonedds
           ros-dashing-rmw-cyclonedds-cpp
       '
+    - 'source /opt/ros/dashing/setup.bash'
+    - 'vcs import < autoware.auto.dashing.repos'
     - 'rosdep init && rosdep update'
     - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
     - 'source /opt/ros/dashing/setup.bash'
@@ -93,6 +98,7 @@ stages:
           clang-tidy
       '
     - 'git lfs pull --include="*" --exclude=""'
+    - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
     # build and test
     - 'colcon build
            --merge-install
@@ -132,6 +138,8 @@ stages:
 .gen_deps_base: &gen_deps_base
   stage: gen-dependencies
   script:
+    - apt-get update && apt-get install python3-vcstool
+    - vcs import < autoware.auto.$ROS_DISTRO.repos
     - rosdep update
     - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
   artifacts:
@@ -281,6 +289,7 @@ coverage:
   stage: build
   image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
   script:
+    - vcs import < autoware.auto.$ROS_DISTRO.repos
     - './tools/coverage/coverage.sh -u'
   artifacts:
     name: "$CI_JOB_NAME"

@@ -39,10 +39,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 autoware_set_compile_options(${PROJECT_NAME})
 
 set(PURE_PURSUIT_NODE_EXE pure_pursuit_node_exe)
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "autoware::motion::control::pure_pursuit_nodes::PurePursuitNode"
-  EXECUTABLE ${PURE_PURSUIT_NODE_EXE}
-)
+ament_auto_add_executable(${PURE_PURSUIT_NODE_EXE} src/pure_pursuit_node_main.cpp)
+autoware_set_compile_options(${PURE_PURSUIT_NODE_EXE})
 
 if(BUILD_TESTING)
   # run common linters

@@ -38,6 +38,7 @@ RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key 1655A0AB6
 COPY ros-deps /tmp/
 RUN apt-get update && \
     apt-get install -y \
+      python3-vcstool \
       ros-$ROS_DISTRO-cyclonedds \
       ros-$ROS_DISTRO-rmw-cyclonedds-cpp && \
     /bin/bash /tmp/ros-deps && \

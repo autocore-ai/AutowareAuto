@@ -11,6 +11,8 @@
 __pycache__/
 .eggs/
 
+## VCS Location for External Repos
+src/external/
 
 ## Coverage and Doxygen Artifacts
 lcov/

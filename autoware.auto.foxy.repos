@@ -1,0 +1,17 @@
+repositories:
+  src/external/autoware_auto_msgs:
+    type: git
+    url: https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git
+    version: f40970ead34d36a695b432dc37accff9d67c17e2
+  src/external/mpc:
+    type: git
+    url: https://gitlab.com/aninnymouse/mpc.git
+    version: eaa5908bdd987051a9dcd9c505f99bfd7f028547
+  src/external/mrt_cmake_modules:
+    type: git
+    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
+    version: 1.0.8
+  src/external/lanelet2:
+    type: git
+    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
+    version: 1.1.1
