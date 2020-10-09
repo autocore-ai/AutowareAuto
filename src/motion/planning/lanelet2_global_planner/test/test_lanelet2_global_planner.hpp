@@ -20,10 +20,18 @@
 #include <gtest/gtest.h>
 #include <lanelet2_global_planner/lanelet2_global_planner.hpp>
 #include <common/types.hpp>
-#include <experimental/filesystem>
 #include <string>
 #include <memory>
 #include <vector>
+
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && \
+  __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <common/filesystem.hpp>
+namespace fs = ghc::filesystem;
+#endif
 
 using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
@@ -35,7 +43,7 @@ public:
   TestGlobalPlannerBasicMap()
   {
     node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
-    std::string root_folder = std::string(std::experimental::filesystem::current_path());
+    std::string root_folder = std::string(fs::current_path());
     std::string file_path = std::string("/test/map_data/mapping_example_pk.osm");
     std::string file = root_folder + file_path;
     float64_t lat = 51.502091;
@@ -53,7 +61,7 @@ public:
   TestGlobalPlannerFullMap()
   {
     node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
-    std::string root_folder = std::string(std::experimental::filesystem::current_path());
+    std::string root_folder = std::string(fs::current_path());
     std::string file_path =
       std::string("/test/map_data/AStuff_test_map.osm");
     std::string file = root_folder + file_path;
