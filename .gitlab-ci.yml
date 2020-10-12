@@ -1,5 +1,5 @@
 stages:
-  - gen-dependencies
+  - .pre
   - ade
   - build
   - test
@@ -54,37 +54,37 @@ stages:
 
 .build_barebones_base: &build_barebones_base
   stage: build
-  image: ubuntu:bionic
   script:
     - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-          tzdata
           gnupg
+          keyboard-configuration
+          tzdata
       '
     - 'apt-get update && apt-get -y --no-install-recommends install
-          sudo
+          ca-certificates
           curl
           gnupg2
           lsb-release
-          ca-certificates
+          sudo
       '
     - 'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -'
     - 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" | tee /etc/apt/sources.list.d/ros2-latest.list'
     - 'apt-get update && apt-get -y --no-install-recommends install
-          python3-colcon-common-extensions
-          cmake
           build-essential
-          python-rosdep
-          git
           clang-tidy
+          cmake
+          git
+          python3-colcon-common-extensions
+          python3-rosdep
           python3-vcstool
-          ros-dashing-cyclonedds
-          ros-dashing-rmw-cyclonedds-cpp
+          ros-$ROS_DISTRO-cyclonedds
+          ros-$ROS_DISTRO-rmw-cyclonedds-cpp
       '
-    - 'source /opt/ros/dashing/setup.bash'
-    - 'vcs import < autoware.auto.dashing.repos'
+    - 'source /opt/ros/$ROS_DISTRO/setup.bash'
+    - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
     - 'rosdep init && rosdep update'
-    - 'rosdep install -y --from . --ignore-src --rosdistro dashing'
-    - 'source /opt/ros/dashing/setup.bash'
+    - 'rosdep install -y --from . --ignore-src --rosdistro $ROS_DISTRO'
+    - 'source /opt/ros/$ROS_DISTRO/setup.bash'
     - 'colcon build
            --merge-install
            --install-base /opt/AutowareAuto
@@ -114,7 +114,7 @@ stages:
       - opt.tar.gz
 
 .gen_deps_base: &gen_deps_base
-  stage: gen-dependencies
+  stage: .pre
   script:
     - apt-get update && apt-get install python3-vcstool
     - vcs import < autoware.auto.$ROS_DISTRO.repos
@@ -215,8 +215,7 @@ ade_amd64_dashing:
     UBUNTU_DISTRO: bionic
   <<: *ade_base
   needs:
-    - job: gen_ros_deps_dashing
-      artifacts: true
+    - gen_ros_deps_dashing
 
 ade_arm64_dashing:
   variables:
@@ -228,8 +227,7 @@ ade_arm64_dashing:
     - arm64
   <<: *ade_base
   needs:
-    - job: gen_ros_deps_dashing
-      artifacts: true
+    - gen_ros_deps_dashing
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
@@ -241,8 +239,7 @@ ade_amd64_foxy:
     UBUNTU_DISTRO: focal
   <<: *ade_base
   needs:
-    - job: gen_ros_deps_foxy
-      artifacts: true
+    - gen_ros_deps_foxy
 
 ade_arm64_foxy:
   variables:
@@ -254,28 +251,55 @@ ade_arm64_foxy:
     - arm64
   <<: *ade_base
   needs:
-    - job: gen_ros_deps_foxy
-      artifacts: true
+    - gen_ros_deps_foxy
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
 build_barebones_amd64_dashing:
+  image: ubuntu:bionic
   variables:
     RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    ROS_DISTRO: dashing
   <<: *build_barebones_base
   needs:
     - gen_ros_deps_dashing
 
 build_barebones_arm64_dashing:
+  image: ubuntu:bionic
   tags:
     - arm64
   variables:
     RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    ROS_DISTRO: dashing
   <<: *build_barebones_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - gen_ros_deps_dashing
+
+build_barebones_amd64_foxy:
+  image: ubuntu:focal
+  variables:
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    ROS_DISTRO: foxy
+  <<: *build_barebones_base
+  needs:
+    - gen_ros_deps_foxy
+  allow_failure: true
+
+build_barebones_arm64_foxy:
+  image: ubuntu:focal
+  tags:
+    - arm64
+  variables:
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    ROS_DISTRO: foxy
+  <<: *build_barebones_base
+  needs:
+    - gen_ros_deps_foxy
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+  allow_failure: true
 
 build_amd64_dashing:
   variables:
@@ -298,6 +322,30 @@ build_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - ade_arm64_dashing
+
+build_amd64_foxy:
+  variables:
+    ARCH: amd64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+  <<: *build_base
+  needs:
+    - job: ade_amd64_foxy
+  allow_failure: true
+
+build_arm64_foxy:
+  variables:
+    ARCH: arm64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+  tags:
+    - arm64
+  <<: *build_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - job: ade_arm64_foxy
+  allow_failure: true
 
 test_amd64_dashing:
   variables:
@@ -325,6 +373,35 @@ test_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - build_arm64_dashing
+
+test_amd64_foxy:
+  variables:
+    ARCH: amd64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+  <<: *test_base
+  needs:
+    - build_amd64_foxy
+  allow_failure: true
+
+test_arm64_foxy:
+  variables:
+    ARCH: arm64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+  tags:
+    - arm64
+  <<: *test_base
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - log
+      - opt.tar.gz
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - build_arm64_foxy
+  allow_failure: true
 
 coverage:
   stage: build
@@ -402,3 +479,39 @@ volume_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - test_arm64_dashing
+
+volume_amd64_foxy:
+  stage: deploy
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    ARCH: amd64
+    DOCKER_DRIVER: overlay2
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+    UBUNTU_DISTRO: bionic
+  <<: *volume_base
+  needs:
+    - test_amd64_foxy
+  allow_failure: true
+
+volume_arm64_foxy:
+  stage: deploy
+  image: docker
+  services:
+    - docker:dind
+  tags:
+    - arm64
+  variables:
+    ARCH: arm64
+    DOCKER_DRIVER: overlay2
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: foxy
+    UBUNTU_DISTRO: bionic
+  <<: *volume_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - test_arm64_foxy
+  allow_failure: true
