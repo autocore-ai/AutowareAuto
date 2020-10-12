@@ -2,6 +2,7 @@ stages:
   - gen-dependencies
   - ade
   - build
+  - test
   - deploy
 
 .ade_base: &ade_base
@@ -104,6 +105,33 @@ stages:
            --merge-install
            --install-base /opt/AutowareAuto
       '
+    - chmod -R og-w /opt/AutowareAuto
+    - tar czf opt.tar.gz /opt/AutowareAuto
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - build/
+      - opt.tar.gz
+
+.gen_deps_base: &gen_deps_base
+  stage: gen-dependencies
+  script:
+    - apt-get update && apt-get install python3-vcstool
+    - vcs import < autoware.auto.$ROS_DISTRO.repos
+    - rosdep update
+    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - ros-deps
+
+.test_base: &test_base
+  stage: test
+  image: $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+  script:
+    - tar xzf opt.tar.gz -C /
+    - rm opt.tar.gz
+    - source /opt/AutowareAuto/setup.bash
     - 'colcon test
            --merge-install
            --install-base /opt/AutowareAuto
@@ -112,7 +140,6 @@ stages:
     - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
 
     # Test package
-    - source /opt/AutowareAuto/setup.bash
     - 'ros2 run autoware_auto_create_pkg main.py
           --pkg-name my_cool_pkg
           --destination /tmp/tmp_ws/src
@@ -134,18 +161,13 @@ stages:
     - tar cfz opt.tar.gz /opt/AutowareAuto
   after_script:
     - colcon test-result --verbose
-
-.gen_deps_base: &gen_deps_base
-  stage: gen-dependencies
-  script:
-    - apt-get update && apt-get install python3-vcstool
-    - vcs import < autoware.auto.$ROS_DISTRO.repos
-    - rosdep update
-    - rosdep install --as-root "apt:false pip:false" --simulate --reinstall --ignore-src -y --from-paths src | sort >> ros-deps
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
-      - ros-deps
+      - log
+      - opt.tar.gz
+    reports:
+      junit: test-results.xml
 
 .volume_base: &volume_base
   stage: deploy
@@ -188,6 +210,7 @@ gen_ros_deps_foxy:
 ade_amd64_dashing:
   variables:
     ARCH: amd64
+    DOCKER_DRIVER: overlay2
     ROS_DISTRO: dashing
     UBUNTU_DISTRO: bionic
   <<: *ade_base
@@ -195,19 +218,10 @@ ade_amd64_dashing:
     - job: gen_ros_deps_dashing
       artifacts: true
 
-ade_amd64_foxy:
-  variables:
-    ARCH: amd64
-    ROS_DISTRO: foxy
-    UBUNTU_DISTRO: focal
-  <<: *ade_base
-  needs:
-    - job: gen_ros_deps_foxy
-      artifacts: true
-
 ade_arm64_dashing:
   variables:
     ARCH: arm64
+    DOCKER_DRIVER: overlay2
     ROS_DISTRO: dashing
     UBUNTU_DISTRO: bionic
   tags:
@@ -219,9 +233,21 @@ ade_arm64_dashing:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
+ade_amd64_foxy:
+  variables:
+    ARCH: amd64
+    DOCKER_DRIVER: overlay2
+    ROS_DISTRO: foxy
+    UBUNTU_DISTRO: focal
+  <<: *ade_base
+  needs:
+    - job: gen_ros_deps_foxy
+      artifacts: true
+
 ade_arm64_foxy:
   variables:
     ARCH: arm64
+    DOCKER_DRIVER: overlay2
     ROS_DISTRO: foxy
     UBUNTU_DISTRO: focal
   tags:
@@ -257,13 +283,6 @@ build_amd64_dashing:
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DISTRO: dashing
   <<: *build_base
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - log
-      - opt.tar.gz
-    reports:
-      junit: test-results.xml
   needs:
     - ade_amd64_dashing
 
@@ -275,6 +294,28 @@ build_arm64_dashing:
   tags:
     - arm64
   <<: *build_base
+  only:
+    - branches@autowarefoundation/autoware.auto/AutowareAuto
+  needs:
+    - ade_arm64_dashing
+
+test_amd64_dashing:
+  variables:
+    ARCH: amd64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
+  <<: *test_base
+  needs:
+    - build_amd64_dashing
+
+test_arm64_dashing:
+  variables:
+    ARCH: arm64
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DISTRO: dashing
+  tags:
+    - arm64
+  <<: *test_base
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
@@ -283,7 +324,7 @@ build_arm64_dashing:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
-    - ade_arm64_dashing
+    - build_arm64_dashing
 
 coverage:
   stage: build
@@ -328,22 +369,22 @@ pages:
     - coverage
     - docs
 
-volume:
+volume_amd64_dashing:
   stage: deploy
   image: docker
   services:
     - docker:dind
   variables:
     ARCH: amd64
+    DOCKER_DRIVER: overlay2
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DISTRO: dashing
     UBUNTU_DISTRO: bionic
   <<: *volume_base
   needs:
-    - job: build_amd64_dashing
-      artifacts: true
+    - test_amd64_dashing
 
-volume_arm64:
+volume_arm64_dashing:
   stage: deploy
   image: docker
   services:
@@ -352,6 +393,7 @@ volume_arm64:
     - arm64
   variables:
     ARCH: arm64
+    DOCKER_DRIVER: overlay2
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DISTRO: dashing
     UBUNTU_DISTRO: bionic
@@ -359,5 +401,4 @@ volume_arm64:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
-    - job: build_arm64_dashing
-      artifacts: true
+    - test_arm64_dashing
