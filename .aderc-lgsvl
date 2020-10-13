@@ -1,8 +1,1 @@
-export ADE_DOCKER_RUN_ARGS="--cap-add=SYS_PTRACE --net=host --privileged --add-host ade:127.0.0.1 -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp"
-export ADE_GITLAB=gitlab.com
-export ADE_REGISTRY=registry.gitlab.com
-export ADE_IMAGES="
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/ade-dashing:master
-  registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/binary-dashing:master
-  registry.gitlab.com/apexai/ade-lgsvl:2020.08-native-bridge
-"
+.aderc-amd64-dashing-lgsvl
