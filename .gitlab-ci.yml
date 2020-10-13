@@ -285,7 +285,6 @@ build_barebones_amd64_foxy:
   <<: *build_barebones_base
   needs:
     - gen_ros_deps_foxy
-  allow_failure: true
 
 build_barebones_arm64_foxy:
   image: ubuntu:focal
@@ -299,7 +298,6 @@ build_barebones_arm64_foxy:
     - gen_ros_deps_foxy
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-  allow_failure: true
 
 build_amd64_dashing:
   variables:
@@ -331,7 +329,6 @@ build_amd64_foxy:
   <<: *build_base
   needs:
     - job: ade_amd64_foxy
-  allow_failure: true
 
 build_arm64_foxy:
   variables:
@@ -345,7 +342,6 @@ build_arm64_foxy:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - job: ade_arm64_foxy
-  allow_failure: true
 
 test_amd64_dashing:
   variables:
