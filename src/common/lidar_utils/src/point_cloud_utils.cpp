@@ -171,7 +171,7 @@ bool8_t add_point_to_cloud_raw(
   static_assert(std::is_trivially_copyable<autoware::common::types::PointXYZIF>::value,
     "PointXYZF is not trivial, add_point_to_cloud instead of add_point_to_cloud_raw");
 
-  const uint8_t * const casted_point_ptr = reinterpret_cast<const uint8_t * const>(&pt);
+  const uint8_t * casted_point_ptr = reinterpret_cast<const uint8_t *>(&pt);
   uint8_t * const cloud_insertion_slot = &cloud.data[cloud.point_step * point_cloud_idx];
   std::size_t copy_size = std::min(static_cast<std::size_t>(cloud.point_step), sizeof(pt));
 

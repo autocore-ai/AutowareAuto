@@ -39,6 +39,10 @@ public:
   /// \param[in] rhs Object to copy
   /// \return reference to this object
   ConstantAcceleration & operator=(const ConstantAcceleration & rhs);
+  ConstantAcceleration & operator=(ConstantAcceleration && rhs) noexcept = default;
+  ConstantAcceleration(const ConstantAcceleration & rhs) = default;
+  ConstantAcceleration(ConstantAcceleration && rhs) noexcept = default;
+  ConstantAcceleration() = default;
   /// \brief This state gives named handles for state indexing
   struct States
   {

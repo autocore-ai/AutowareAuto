@@ -67,9 +67,9 @@ public:
     const char8_t * const driver_action_topic = "lidar_driver_action";
     const char8_t * const fuser_action_topic = "lidar_fuser_action";
     driver_action_pub_ptr =
-      this->create_publisher<std_msgs::msg::UInt8MultiArray>(driver_action_topic);
+      this->create_publisher<std_msgs::msg::UInt8MultiArray>(driver_action_topic, 10);
     fuser_action_pub_ptr =
-      this->create_publisher<std_msgs::msg::UInt8MultiArray>(fuser_action_topic);
+      this->create_publisher<std_msgs::msg::UInt8MultiArray>(fuser_action_topic, 10);
   }
   uint8_t get_state()
   {

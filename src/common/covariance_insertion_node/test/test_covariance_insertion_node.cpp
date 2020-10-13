@@ -29,9 +29,9 @@ class CovarianceInsertionNodeTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    ASSERT_FALSE(rclcpp::is_initialized());
+    ASSERT_FALSE(rclcpp::ok());
     rclcpp::init(0, nullptr);
-    ASSERT_TRUE(rclcpp::is_initialized());
+    ASSERT_TRUE(rclcpp::ok());
     m_fake_node = std::make_shared<rclcpp::Node>("fake_node");
   }
 

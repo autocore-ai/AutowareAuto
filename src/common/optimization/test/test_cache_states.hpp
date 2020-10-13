@@ -67,14 +67,16 @@ class CacheStateMachineTest : public ::testing::Test
 public:
   CacheStateMachineTest()
   {
-    m_mode_map.emplace(ExpressionTerm::SCORE,
+    m_mode_map.emplace(
+      ExpressionTerm::SCORE,
       std::vector<ComputeMode>{
             ComputeMode{}.set_score(),
             ComputeMode{}.set_score().set_jacobian(),
             ComputeMode{}.set_score().set_hessian(),
             ComputeMode{}.set_score().set_jacobian().set_hessian(),
           });
-    m_mode_map.emplace(ExpressionTerm::JACOBIAN,
+    m_mode_map.emplace(
+      ExpressionTerm::JACOBIAN,
       std::vector<ComputeMode>{
             ComputeMode{}.set_jacobian(),
             ComputeMode{}.set_jacobian().set_score(),
@@ -82,7 +84,8 @@ public:
             ComputeMode{}.set_jacobian().set_score().set_hessian(),
           });
 
-    m_mode_map.emplace(ExpressionTerm::HESSIAN,
+    m_mode_map.emplace(
+      ExpressionTerm::HESSIAN,
       std::vector<ComputeMode>{
             ComputeMode{}.set_hessian(),
             ComputeMode{}.set_hessian().set_score(),

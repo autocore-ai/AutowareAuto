@@ -79,9 +79,6 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})
-
-  ament_target_dependencies(${PC_MAPPING_TEST} ${PROJECT_NAME})
-
   autoware_set_compile_options(${PC_MAPPING_TEST})
   # turn off warnings to be able to successfully compile upstream ros packages
   target_compile_options(${PC_MAPPING_TEST} PRIVATE ${ROS_NO_WARN_LIST})

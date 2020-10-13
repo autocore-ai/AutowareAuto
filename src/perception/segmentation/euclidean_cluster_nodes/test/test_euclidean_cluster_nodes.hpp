@@ -27,9 +27,9 @@ class EuclideanClusterNodesTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    ASSERT_FALSE(rclcpp::is_initialized());
+    ASSERT_FALSE(rclcpp::ok());
     rclcpp::init(0, nullptr);
-    ASSERT_TRUE(rclcpp::is_initialized());
+    ASSERT_TRUE(rclcpp::ok());
   }
 
   void TearDown() override

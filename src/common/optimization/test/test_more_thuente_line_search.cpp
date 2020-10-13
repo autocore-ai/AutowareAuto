@@ -245,9 +245,11 @@ TEST(MoreThuenteLineSearchTest, wrong_initialization) {
     std::domain_error);
 
   // Check that number of iterations less than 1 is not allowed.
-  EXPECT_NO_THROW(MoreThuenteLineSearch(
+  EXPECT_NO_THROW(
+    MoreThuenteLineSearch(
       100.0F, 1.0F, MoreThuenteLineSearch::OptimizationDirection::kMinimization, 0.1F, 0.1F));
-  EXPECT_THROW(MoreThuenteLineSearch(
+  EXPECT_THROW(
+    MoreThuenteLineSearch(
       100.0F, 1.0F, MoreThuenteLineSearch::OptimizationDirection::kMinimization, 0.1F, 0.1F, 0),
     std::domain_error);
 }

@@ -120,8 +120,9 @@ public:
       // computeStepLengthMT (x0, x_delta, x_delta_norm, transformation_epsilon_/2, ...
       // and would pre-compute score/jacobian/hessian as during init in evaluate!
       // also needs the sign to know the direction of optimization?
-      const auto step = m_line_searcher.compute_next_step(x_out, opt_direction,
-          optimization_problem);
+      const auto step = m_line_searcher.compute_next_step(
+        x_out, opt_direction,
+        optimization_problem);
       const auto prev_x_norm = x_out.norm();
       x_out += step;
 

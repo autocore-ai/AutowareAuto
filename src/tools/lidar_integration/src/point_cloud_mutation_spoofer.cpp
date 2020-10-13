@@ -43,7 +43,7 @@ PointCloudMutationSpooferNode::PointCloudMutationSpooferNode(
   m_running(false)
 {
   m_mt.seed(m_rd());
-  m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(topic);
+  m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(topic, 10);
 
   std::string frame_id("frameid");
   m_msg.header.frame_id = frame_id;

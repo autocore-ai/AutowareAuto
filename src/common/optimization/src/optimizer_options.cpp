@@ -47,7 +47,8 @@ OptimizationOptions::OptimizationOptions(
     (m_parameter_tolerance <= 0.0) &&
     (m_gradient_tolerance <= 0.0))
   {
-    throw std::domain_error("OptimizationOptions: "
+    throw std::domain_error(
+            "OptimizationOptions: "
             "There should at least be one positive tolerance value "
             "for convergence.");
   }

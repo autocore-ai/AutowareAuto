@@ -82,9 +82,6 @@ if(BUILD_TESTING)
           test/test_ndt_localizer.cpp)
 
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
-
-  ament_target_dependencies(${NDT_TEST} ${PROJECT_NAME})
-
   autoware_set_compile_options(${NDT_TEST})
   # turn off warnings to be able to successfully compile upstream ros packages
   target_compile_options(${NDT_TEST} PRIVATE ${ROS_NO_WARN_LIST})

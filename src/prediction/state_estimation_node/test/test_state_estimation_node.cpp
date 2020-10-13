@@ -48,9 +48,9 @@ class DISABLED_StateEstimationNodeTest : public ::testing::TestWithParam<bool>
 protected:
   void SetUp() override
   {
-    ASSERT_FALSE(rclcpp::is_initialized());
+    ASSERT_FALSE(rclcpp::ok());
     rclcpp::init(0, nullptr);
-    ASSERT_TRUE(rclcpp::is_initialized());
+    ASSERT_TRUE(rclcpp::ok());
     m_fake_odometry_node = std::make_shared<rclcpp::Node>("fake_odometry_node");
     m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
       m_tf_buffer, m_fake_odometry_node, false);

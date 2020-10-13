@@ -45,7 +45,8 @@ TEST_F(CacheStateMachineTest, numeric_test) {
       do_test(mode, 1.5F, 2.7F, term);  // float
       do_test(mode, 1.5, 2.7, term);  // double
       do_test(mode, false, true, term);  // bool
-      do_test(mode, Eigen::Vector3d{1.2, 2.5, 3.6},
+      do_test(
+        mode, Eigen::Vector3d{1.2, 2.5, 3.6},
         Eigen::Vector3d{7.9, 12.6, 100.9}, term, eigen_comparator);  // eigen vector
     }
   }

@@ -14,8 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <common/types.hpp>
 #include "motion_model/constant_acceleration.hpp"
+#include <common/types.hpp>
+
+#include <utility>
 
 using autoware::common::types::float32_t;
 

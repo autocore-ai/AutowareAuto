@@ -403,7 +403,7 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
   constexpr auto kStepEps = 0.00001F;
   // A lambda to calculate the minimizer of the cubic that interpolates f_a, f_a_derivative, f_b and
   // f_b_derivative on [a, b]. Equation 2.4.52 [Sun, Yuan 2006]
-  const auto find_cubic_minimizer = [](const auto & f_a, const auto & f_b) -> StepT {
+  const auto find_cubic_minimizer = [kStepEps](const auto & f_a, const auto & f_b) -> StepT {
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
@@ -416,7 +416,8 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f_a, f_b and f'_a
-  const auto find_a_q = [](const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
+  const auto find_a_q = [kStepEps](
+    const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
@@ -426,7 +427,8 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f'_a, and f'_b
-  const auto find_a_s = [](const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
+  const auto find_a_s = [kStepEps](
+    const FunctionValueT & f_a, const FunctionValueT & f_b) -> StepT {
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
@@ -456,11 +458,13 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
     const auto a_c = find_cubic_minimizer(f_l, f_t);
     const auto a_s = find_a_s(f_l, f_t);
     if (std::fabs(a_c - f_t.argument) < std::fabs(a_s - f_t.argument)) {
-      return std::min(f_t.argument + detail::kDelta * (f_u.argument - f_t.argument),
-               static_cast<StepT>(a_c));
+      return std::min(
+        f_t.argument + detail::kDelta * (f_u.argument - f_t.argument),
+        static_cast<StepT>(a_c));
     } else {
-      return std::max(f_t.argument + detail::kDelta * (f_u.argument - f_t.argument),
-               static_cast<StepT>(a_s));
+      return std::max(
+        f_t.argument + detail::kDelta * (f_u.argument - f_t.argument),
+        static_cast<StepT>(a_s));
     }
   } else {  // Case 4 from section 4.
     return find_cubic_minimizer(f_t, f_u);

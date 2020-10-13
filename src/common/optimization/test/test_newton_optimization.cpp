@@ -81,7 +81,7 @@ INSTANTIATE_TEST_CASE_P(
   FixedLineSearch(0.2),
   TerminationType::CONVERGENCE
 }
-  ),
+  )
 );
 
 // since the convex polynomial objective will have a zero gradient solution,
@@ -143,7 +143,7 @@ INSTANTIATE_TEST_CASE_P(
   FixedLineSearch(0.5),
   TerminationType::CONVERGENCE
 }
-  ),
+  )
 );
 
 constexpr auto inf = std::numeric_limits<float64_t>::infinity();
@@ -196,7 +196,7 @@ INSTANTIATE_TEST_CASE_P(
   FixedLineSearch(max),
   TerminationType::FAILURE
 }
-  ),
+  )
 );
 
 TEST(TestFixedLineSearch, fixed_line_search_validation) {

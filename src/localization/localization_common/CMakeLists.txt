@@ -44,8 +44,7 @@ if(BUILD_TESTING)
     test/test_relative_localizer.cpp)
 
   target_link_libraries(${LOCALIZATION_COMMON_TEST} ${PROJECT_NAME})
-
-  ament_target_dependencies(${LOCALIZATION_COMMON_TEST} ${PROJECT_NAME} "time_utils")
+  ament_target_dependencies(${LOCALIZATION_COMMON_TEST} "time_utils")
 endif()
 
 ament_auto_package()
