@@ -79,9 +79,7 @@ public:
 protected:
 };  // class velodyne_node_integration
 
-// FIXME(esteve): Reenable
-// https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/388
-TEST_P(velodyne_node_integration, DISABLED_test)
+TEST_P(velodyne_node_integration, test)
 {
   rclcpp::init(0, nullptr);
 
@@ -94,7 +92,6 @@ TEST_P(velodyne_node_integration, DISABLED_test)
   const auto frame_id = "base_link";
   const auto sensor_id = 0U;
   const auto runtime = std::chrono::seconds(10);
-  std::string topic = "velodyne_test_topic_cloud";
   using autoware::drivers::velodyne_driver::Vlp16Translator;
   const auto config = Vlp16Translator::Config{600.0F};
 
@@ -114,7 +111,7 @@ TEST_P(velodyne_node_integration, DISABLED_test)
   std::shared_ptr<LidarIntegrationListener> listen_ptr;
   using lidar_integration::LidarIntegrationPclListener;
   listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-    topic,
+    "points_raw",
     param.expected_period_ms,
     param.expected_size,
     0.7,  // period tolerance
@@ -155,11 +152,9 @@ TEST_P(velodyne_node_integration, DISABLED_test)
 INSTANTIATE_TEST_CASE_P(
   cloud,
   velodyne_node_integration,
-  ::testing::Values(VelodyneNodeTestParam{55000U, 21350, 100.0F, true}));
+  ::testing::Values(VelodyneNodeTestParam{55000U, 30000U, 100.0F, true}));
 
-// Doesn't work on this stuff!
-// QUARANTINE(4937, "10/29/2019")
-// INSTANTIATE_TEST_CASE_P(
-//   half_cloud,
-//   velodyne_node_integration,
-//   ::testing::Values(VelodyneNodeTestParam{10700U, 10700U, 50.0F, true}));
+INSTANTIATE_TEST_CASE_P(
+  half_cloud,
+  velodyne_node_integration,
+  ::testing::Values(VelodyneNodeTestParam{10700U, 10700U, 50.0F, true}));

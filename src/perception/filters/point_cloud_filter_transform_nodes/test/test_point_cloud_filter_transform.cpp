@@ -32,6 +32,26 @@ using autoware::common::types::char8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
+struct TestFilterTransformPC2FilterTransformMode
+  : public autoware::perception::filters::point_cloud_filter_transform_nodes
+  ::PointCloud2FilterTransformNode
+{
+  using PointCloud2 = sensor_msgs::msg::PointCloud2;
+
+  TestFilterTransformPC2FilterTransformMode(
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions{})
+  : PointCloud2FilterTransformNode
+    (
+      node_options
+    )
+  {}
+
+  const PointCloud2 & test_filter_and_transform(const PointCloud2 & msg)
+  {
+    return filter_and_transform(msg);
+  }
+};
+
 // FIXME(esteve): this function is copied from test_point_cloud_fusion.hpp
 builtin_interfaces::msg::Time to_msg_time(
   const std::chrono::system_clock::time_point time_point)
@@ -110,267 +130,223 @@ protected:
   const Transform m_tf = create_transform(m_quaternion, m_translation);
 };
 
-class PointCloudFilterPclValidationTester : public rclcpp::Node
+bool check_filtered_points(
+  const std::vector<sensor_msgs::msg::PointCloud2> points,
+  const std::vector<std::vector<autoware::common::types::PointXYZIF>> expected_points,
+  const std::string expected_frame_id)
 {
-  using PointCloud2 = sensor_msgs::msg::PointCloud2;
-
-public:
-//   PointCloudFilterPclValidationTester(
-//     const std::string & publish_topic_name, const std::string &
-//     subscribe_topic_name)
-//   : Node("pcl_listener"),
-//     m_sub_filtered_points
-//       {create_subscription<PointCloud2>(subscribe_topic_name, rclcpp::QoS{10})},
-//     m_pub_raw_points{create_publisher<PointCloud2>(publish_topic_name, rclcpp::QoS{50})}
-//   {
-//   }
-
-//   bool check_filtered_points(
-//     std::vector<std::vector<autoware::common::types::PointXYZIF>> expected_points,
-//     const std::string expected_frame_id)
-//   {
-//     if (m_filtered_pcl_msgs.size() != expected_points.size()) {
-//       std::cout << "Did not receive expected number of filtered point cloud msgs" << std::endl;
-//       std::cout << "Expected: " << expected_points.size() << " Actual: " <<
-//         m_filtered_pcl_msgs.size() << std::endl;
-//       return false;
-//     }
-//     for (std::size_t i = 0; i < m_filtered_pcl_msgs.size(); ++i) {
-//       if (m_filtered_pcl_msgs[i].header.frame_id != expected_frame_id) {
-//         std::cout << "Expected frame id " << expected_frame_id << " actual frame id " <<
-//           m_filtered_pcl_msgs[i].header.frame_id << std::endl;
-//         return false;
-//       }
-//       const uint32_t actual_num_points = m_filtered_pcl_msgs[i].data.size() /
-//         m_filtered_pcl_msgs[i].point_step;
-//       if (actual_num_points != expected_points[i].size()) {
-//         std::cout << "Filtered point cloud msg does not have expected number of points" <<
-//           std::endl;
-//         std::cout << "Expected: " << expected_points[i].size() << " Actual: " <<
-//           actual_num_points << std::endl;
-//         return false;
-//       }
-//       for (uint32_t pc_idx = 0, pt_cnt = 0; pc_idx < m_filtered_pcl_msgs[i].data.size();
-//            pc_idx += m_filtered_pcl_msgs[i].point_step, ++pt_cnt)
-//       {
-//         autoware::common::types::PointXYZIF pt;
-//         //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
-//         (void)memmove(
-//           static_cast<void *>(&pt.x),
-//           static_cast<const void *>(&m_filtered_pcl_msgs[i].data[pc_idx]),
-//           m_filtered_pcl_msgs[i].point_step);
-//         if (pt.x != expected_points[i][pt_cnt].x || pt.y != expected_points[i][pt_cnt].y ||
-//             pt.z != expected_points[i][pt_cnt].z)
-//         {
-//           std::cout << "Unexpected point in filtered output" << std::endl;
-//           return false;
-//         }
-//       }
-//     }
-//     return true;
-//   }
-
-  void process_pcl_data()
-  {
+  if (points.size() != expected_points.size()) {
+    std::cout << "Did not receive expected number of filtered point cloud msgs" << std::endl;
+    std::cout << "Expected: " << expected_points.size() << " Actual: " <<
+      points.size() << std::endl;
+    return false;
   }
+  for (std::size_t i = 0; i < points.size(); ++i) {
+    if (points[i].header.frame_id != expected_frame_id) {
+      std::cout << "Expected frame id " << expected_frame_id << " actual frame id " <<
+        points[i].header.frame_id << std::endl;
+      return false;
+    }
+    const uint32_t actual_num_points = points[i].data.size() /
+      points[i].point_step;
+    if (actual_num_points != expected_points[i].size()) {
+      std::cout << "Filtered point cloud msg does not have expected number of points" <<
+        std::endl;
+      std::cout << "Expected: " << expected_points[i].size() << " Actual: " <<
+        actual_num_points << std::endl;
+      return false;
+    }
+    for (uint32_t pc_idx = 0, pt_cnt = 0; pc_idx < points[i].data.size(); pc_idx +=
+      points[i].point_step, ++pt_cnt)
+    {
+      autoware::common::types::PointXYZIF pt;
+      //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
+      (void)memmove(
+        static_cast<void *>(&pt.x),
+        static_cast<const void *>(&points[i].data[pc_idx]),
+        points[i].point_step);
+      if (pt.x != expected_points[i][pt_cnt].x || pt.y != expected_points[i][pt_cnt].y || pt.z !=
+        expected_points[i][pt_cnt].z)
+      {
+        std::cout << "Unexpected point in filtered output" << std::endl;
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-  // bool collect_pcl_data(
-  //   const std::chrono::milliseconds timeout,
-  //   const uint32_t expected_num_of_msgs)
-  // {
-  //   bool retval = true;
-  //   const auto start = std::chrono::steady_clock::now();
-
-  //   while (m_filtered_pcl_msgs.size() < expected_num_of_msgs) {
-  //     try {
-  //       (void) m_waitset.wait(std::chrono::milliseconds(1000));
-  //       const auto recv1 = m_sub_filtered_points->take();
-  //       for (const auto msg : recv1) {
-  //         // Workaround for https://github.com/ros2/rcl/pull/356
-  //         if (msg.info().valid()) {
-  //           m_filtered_pcl_msgs.emplace_back(msg.data());
-  //         }
-  //       }
-  //     } catch (const std::exception & e) {
-  //       std::cout << "waitset timedout" << std::endl;
-  //     }
-
-  //     if (std::chrono::steady_clock::now() - start >= timeout) {
-  //       retval = false;
-  //       break;
-  //     }
-  //   }
-  //   return retval;
-  // }
-
-  std::vector<PointCloud2> m_filtered_pcl_msgs;
-  std::shared_ptr<rclcpp::Subscription<PointCloud2>> m_sub_filtered_points;
-  std::shared_ptr<rclcpp::Publisher<PointCloud2>> m_pub_raw_points;
-  // rclcpp::Waitset<1> m_waitset;
-};
-
-
-// TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
-// {
-//   // Configuration
-//   const auto timeout = std::chrono::milliseconds(10);
-//   const auto max_cycle_time = std::chrono::milliseconds(11);
-//   const auto port_num = 3445U;
-//   // Node
-//   using autoware::drivers::velodyne_node::VelodyneCloudNode;
-//   const auto velodyne_ptr = std::make_shared<VelodyneCloudNode>(
-//     "velodyne_cloud_node",
-//     m_ip,
-//     port_num,
-//     timeout,
-//     m_init_timeout,
-//     max_cycle_time,
-//     m_frame_id,
-//     m_cloud_size,
-//     m_vlp_config,
-//     1U);
-
-//   // Node under test
-//   const auto period = std::chrono::milliseconds(200);
-//   using autoware::perception::filters::point_cloud_filter_transform_nodes
-//   ::PointCloud2FilterTransformNode;
-//   const auto pc2_filter_ptr = std::make_shared<PointCloud2FilterTransformNode>(
-//     "point_cloud_filter_transform_node",
-//     std::chrono::milliseconds{200},
-//     "",
-//     m_init_timeout,
-//     std::chrono::milliseconds(110),
-//     m_frame_id,
-//     m_frame_id,
-//     "points_raw",
-//     "points_filtered",
-//     m_start_angle,
-//     m_end_angle,
-//     m_min_radius,
-//     m_max_radius,
-//     m_tf,
-//     "PointCloud2FilterTransformNode_logger",
-//     55000U,
-//     0U,
-//     0U);
-
-//   // Listener
-//   using lidar_integration::LidarIntegrationPclListener;
-//   const auto pcl_listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-//     "points_filtered",
-//     100,
-//     29000,
-//     0.7,  // period tolerance
-//     0.1F  // size tolerance
-//   );
-//   const auto raw_listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-//     "points_raw",
-//     100,
-//     29000,
-//     0.7,  // period tolerance
-//     0.1F  // size tolerance
-//   );
-
-//   // Spoofer
-//   const auto spoofer_ptr = std::make_shared<lidar_integration::Vlp16IntegrationSpoofer>(
-//     m_ip, port_num, m_vlp_config.get_rpm());
-
-//   // ===== Run ====== //
-//   EXPECT_TRUE(
-//     lidar_integration::lidar_integration_test(
-//       {velodyne_ptr, pc2_filter_ptr},
-//       {spoofer_ptr},
-//       {pcl_listen_ptr, raw_listen_ptr}
-//     )
-//   );
-// }
-
-// // Add 5 points but 2 of them are outside the desired angle/distance.
-// TEST_F(point_cloud_filter_transform_integration, filter_270_radius_10) {
-//   using PointXYZIF = autoware::common::types::PointXYZIF;
-//   using PointCloud2 = sensor_msgs::msg::PointCloud2;
-
-//   std::vector<std::vector<PointXYZIF>> expected_filter_output_points(1);
-//   PointCloud2 raw_msg;
-//   autoware::common::lidar_utils::init_pcl_msg(raw_msg, "lidar_front", 5);
-
-//   PointXYZIF pt;
-//   pt.x = 1.; pt.y = 2.; pt.z = 3.;
-//   (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt);
-//   expected_filter_output_points[0].push_back(pt);
-//   pt.x = -1.; pt.y = 2.; pt.z = 3.;
-//   (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt);
-//   expected_filter_output_points[0].push_back(pt);
-//   pt.x = -1.; pt.y = -2.; pt.z = 3.;
-//   (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt);
-//   expected_filter_output_points[0].push_back(pt);
-//   pt.x = 1.; pt.y = -2.; pt.z = 3.;  // not within angle_filter
-//   (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt);
-//   pt.x = -1.; pt.y = -11.; pt.z = 3.;  // not within distance filter
-//   (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt);
-
-//   raw_msg.row_step = raw_msg.width * raw_msg.point_step;
-
-//   const std::string raw_topic_name{"points_raw"};
-//   const std::string filtered_topic_name{"points_filtered"};
-//   PointCloudFilterPclValidationTester tester(raw_topic_name, filtered_topic_name);
-
-//   using autoware::perception::filters::point_cloud_filter_transform_nodes
-//   ::PointCloud2FilterTransformNode;
-//   const float32_t start_angle = 0.;
-//   const float32_t end_angle = 4.712;
-//   const float32_t min_radius = 0.;
-//   const float32_t max_radius = 10.;
-//   const auto pc2_filter_ptr = std::make_shared<PointCloud2FilterTransformNode>(
-//     "point_cloud_filter_transform_node",
-//     std::chrono::milliseconds{200},
-//     "",
-//     m_init_timeout,
-//     std::chrono::milliseconds(110),
-//     "lidar_front",
-//     "base_link",
-//     raw_topic_name,
-//     filtered_topic_name,
-//     start_angle,
-//     end_angle,
-//     min_radius,
-//     max_radius,
-//     m_tf,
-//     "PointCloud2FilterTransformNode_logger",
-//     50U,
-//     1U,
-//     1U);
-//   pc2_filter_ptr->run();
-
-//   tester.m_pub_raw_points->wait_for_matched(1U, std::chrono::milliseconds(500U));
-//   tester.m_sub_filtered_points->wait_for_matched(1U, std::chrono::milliseconds(500U));
-//   tester.m_pub_raw_points->publish(raw_msg);
-
-//   const auto time_out = std::chrono::milliseconds(3000);
-//   EXPECT_TRUE(tester.collect_pcl_data(time_out, 1));
-
-//   pc2_filter_ptr->stop();
-//   pc2_filter_ptr->join();
-
-//   EXPECT_TRUE(tester.check_filtered_points(expected_filter_output_points, "base_link"));
-// }
-
-struct TestFilterTransformPC2FilterTransformMode
-  : public autoware::perception::filters::point_cloud_filter_transform_nodes
-  ::PointCloud2FilterTransformNode
+TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
 {
-  using PointCloud2 = sensor_msgs::msg::PointCloud2;
+  using VelodyneCloudNode = autoware::drivers::velodyne_node::VLP16DriverNode;
+  using autoware::perception::filters::point_cloud_filter_transform_nodes
+  ::PointCloud2FilterTransformNode;
+  using lidar_integration::LidarIntegrationPclListener;
 
-  explicit TestFilterTransformPC2FilterTransformMode(
-    const rclcpp::NodeOptions & node_options)
-  : PointCloud2FilterTransformNode(node_options)
-  {}
+  rclcpp::init(0, nullptr);
 
-  const PointCloud2 & test_filter_and_transform(const PointCloud2 & msg)
-  {
-    return filter_and_transform(msg);
+  // Configuration
+  const auto timeout = std::chrono::milliseconds(10);
+  const auto max_cycle_time = std::chrono::milliseconds(11);
+  const auto port_num = 3445U;
+  // Node
+  std::shared_ptr<VelodyneCloudNode> velodyne_ptr = std::make_shared<VelodyneCloudNode>(
+    "velodyne_cloud_node",
+    m_ip,
+    port_num,
+    m_frame_id,
+    m_cloud_size,
+    m_vlp_config);
+  std::thread velodyne_node_thread;
+
+  // Node under test
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("start_angle", m_start_angle);
+  params.emplace_back("end_angle", m_end_angle);
+  params.emplace_back("min_radius", m_min_radius);
+  params.emplace_back("max_radius", m_max_radius);
+  params.emplace_back("input_frame_id", m_frame_id);
+  params.emplace_back("output_frame_id", m_frame_id);
+  params.emplace_back("static_transformer.quaternion.x", m_tf.rotation.x);
+  params.emplace_back("static_transformer.quaternion.y", m_tf.rotation.y);
+  params.emplace_back("static_transformer.quaternion.z", m_tf.rotation.z);
+  params.emplace_back("static_transformer.quaternion.w", m_tf.rotation.w);
+  params.emplace_back("static_transformer.translation.x", m_tf.translation.x);
+  params.emplace_back("static_transformer.translation.y", m_tf.translation.y);
+  params.emplace_back("static_transformer.translation.z", m_tf.translation.z);
+  params.emplace_back("init_timeout_ms", std::chrono::milliseconds{m_init_timeout}.count());
+  params.emplace_back("timeout_ms", 110);
+  params.emplace_back("expected_num_publishers", 0);
+  params.emplace_back("expected_num_subscribers", 0);
+  params.emplace_back("pcl_size", 55000);
+
+  rclcpp::NodeOptions options = rclcpp::NodeOptions().arguments({"points_in:=points_raw"});
+  options.parameter_overrides(params);
+  const auto pc2_filter_ptr = std::make_shared<PointCloud2FilterTransformNode>(options);
+
+  // Listener
+  const auto pcl_listen_ptr = std::make_shared<LidarIntegrationPclListener>(
+    "points_filtered",
+    100,
+    29000,
+    0.7,  // period tolerance
+    0.1F  // size tolerance
+  );
+  const auto raw_listen_ptr = std::make_shared<LidarIntegrationPclListener>(
+    "points_raw",
+    100,
+    29000,
+    0.7,  // period tolerance
+    0.1F  // size tolerance
+  );
+
+  // Spoofer
+  const auto spoofer_ptr = std::make_shared<lidar_integration::Vlp16IntegrationSpoofer>(
+    m_ip, port_num, m_vlp_config.get_rpm());
+
+  // ===== Run ====== //
+  EXPECT_TRUE(
+    lidar_integration::lidar_integration_test(
+      [&velodyne_node_thread, velodyne_ptr] {
+        // Create thread to
+        velodyne_node_thread = std::thread {
+          [velodyne_ptr] {
+            velodyne_ptr->run();
+          }
+        };
+      },
+      [] { /* UdpDriverNode does not allow us to stop it, we need to shutdown */},
+      {spoofer_ptr},
+      {pcl_listen_ptr, raw_listen_ptr},
+      std::chrono::seconds{10},
+      {pc2_filter_ptr}
+    )
+  );
+
+  rclcpp::shutdown();
+
+  // FIXME As mentioned above the UdpDriverNode does not allow us to stop it.
+  // Additionally the UdpDriverNode is likely to be blocked in a recvfrom call
+  // in UdpDriverNode::get_packet. The easiest way to unblock the node is to
+  // send a UDP packet to the given address.
+  UdpSender<char> kill_velodyne(m_ip, port_num);
+  kill_velodyne.send('D');
+  kill_velodyne.send('I');
+  kill_velodyne.send('E');
+
+  if (velodyne_node_thread.joinable()) {
+    velodyne_node_thread.join();
   }
-};
+}
+
+// Add 5 points but 2 of them are outside the desired angle/distance.
+TEST_F(point_cloud_filter_transform_integration, filter_270_radius_10) {
+  using PointXYZIF = autoware::common::types::PointXYZIF;
+  using PointCloud2 = sensor_msgs::msg::PointCloud2;
+  using autoware::perception::filters::point_cloud_filter_transform_nodes
+  ::PointCloud2FilterTransformNode;
+  using lidar_integration::LidarIntegrationPclListener;
+
+  rclcpp::init(0, nullptr);
+
+  std::vector<std::vector<PointXYZIF>> expected_filter_output_points(1);
+  PointCloud2 raw_msg;
+  autoware::common::lidar_utils::init_pcl_msg(raw_msg, "lidar_front", 5);
+
+  uint32_t pidx = 0;
+  PointXYZIF pt;
+  pt.x = 1.; pt.y = 2.; pt.z = 3.;
+  (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt, pidx);
+  expected_filter_output_points[0].push_back(pt);
+  pt.x = -1.; pt.y = 2.; pt.z = 3.;
+  (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt, pidx);
+  expected_filter_output_points[0].push_back(pt);
+  pt.x = -1.; pt.y = -2.; pt.z = 3.;
+  (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt, pidx);
+  expected_filter_output_points[0].push_back(pt);
+  pt.x = 1.; pt.y = -2.; pt.z = 3.;  // not within angle_filter
+  (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt, pidx);
+  pt.x = -1.; pt.y = -11.; pt.z = 3.;  // not within distance filter
+  (void)autoware::common::lidar_utils::add_point_to_cloud(raw_msg, pt, pidx);
+
+  raw_msg.row_step = raw_msg.width * raw_msg.point_step;
+
+  std::vector<rclcpp::Parameter> params;
+
+  params.emplace_back("start_angle", 0.);
+  params.emplace_back("end_angle", 4.712);
+  params.emplace_back("min_radius", 0.);
+  params.emplace_back("max_radius", 10.);
+  params.emplace_back("input_frame_id", "lidar_front");
+  params.emplace_back("output_frame_id", "base_link");
+  params.emplace_back("static_transformer.quaternion.x", m_tf.rotation.x);
+  params.emplace_back("static_transformer.quaternion.y", m_tf.rotation.y);
+  params.emplace_back("static_transformer.quaternion.z", m_tf.rotation.z);
+  params.emplace_back("static_transformer.quaternion.w", m_tf.rotation.w);
+  params.emplace_back("static_transformer.translation.x", m_tf.translation.x);
+  params.emplace_back("static_transformer.translation.y", m_tf.translation.y);
+  params.emplace_back("static_transformer.translation.z", m_tf.translation.z);
+  params.emplace_back("init_timeout_ms", std::chrono::milliseconds{m_init_timeout}.count());
+  params.emplace_back("timeout_ms", 110);
+  params.emplace_back("expected_num_publishers", 1);
+  params.emplace_back("expected_num_subscribers", 1);
+  params.emplace_back("pcl_size", 50);
+
+  rclcpp::NodeOptions options;
+  options.parameter_overrides(params);
+
+  const auto pc2_filter_ptr = std::make_shared<TestFilterTransformPC2FilterTransformMode>(options);
+
+  auto time0 = std::chrono::system_clock::now();
+  raw_msg.header.stamp = to_msg_time(time0);
+  raw_msg.header.frame_id = "lidar_front";
+
+  std::vector<PointCloud2> output_points(1);
+  output_points[0] = pc2_filter_ptr->test_filter_and_transform(raw_msg);
+  EXPECT_TRUE(check_filtered_points(output_points, expected_filter_output_points, "base_link"));
+  rclcpp::shutdown();
+}
 
 // regression test for bug 419
 // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/419
@@ -413,6 +389,7 @@ TEST_F(point_cloud_filter_transform_integration, filter_and_transform_bug419)
   pc1.header.frame_id = input_frame_id;
 
   pc2_filter_ptr->test_filter_and_transform(pc1);
+  rclcpp::shutdown();
 }
 
 int32_t main(int32_t argc, char ** argv)

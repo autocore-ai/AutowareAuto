@@ -1,7 +1,7 @@
 # config/test.param.yaml
 ---
 lidar_front:
-  vlp16_front_filter_transform_node:
+  point_cloud_filter_transform_node:
     ros__parameters:
       timeout_ms:       110
       pcl_size:         55000

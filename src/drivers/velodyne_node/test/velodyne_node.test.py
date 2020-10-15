@@ -33,8 +33,8 @@ def generate_test_description(ready_fn):
         node_namespace="lidar_front",
         parameters=[
             "{}/param/vlp16_test.param.yaml".format(
-                ament_index_python.get_package_share_directory(
-                    "velodyne_node")),
+                ament_index_python.get_package_share_directory("velodyne_node")
+            ),
             {
                 "port": PORT,
                 "expected_num_subscribers": 1,
@@ -46,19 +46,20 @@ def generate_test_description(ready_fn):
 
     pcl_checker = lidar_integration.make_pcl_checker(
         topic=test_topic,
-        size=21350,
+        size=55000,
         period=100,
+        period_tolerance=2.2,
+        size_tolerance=1.4,
     )
 
-    ld, context = lidar_integration.get_lidar_launch_description(
+    return lidar_integration.get_lidar_launch_description(
         test_nodes=[velodyne_cloud_node],
         checkers=[pcl_checker],
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())
         ],
-        port=PORT)
-
-    return ld, context
+        port=PORT
+    )
 
 
 # Test cases are created automatically by the lidar_integration package.  We just need to

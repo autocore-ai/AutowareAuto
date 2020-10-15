@@ -60,7 +60,7 @@ TransformStamped get_transform(
 
 PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
   const rclcpp::NodeOptions & node_options)
-: Node("point_cloud2_filter_transform_node", node_options),
+: Node("point_cloud_filter_transform_node", node_options),
   m_angle_filter{
     static_cast<float32_t>(declare_parameter("start_angle").get<float64_t>()),
     static_cast<float32_t>(declare_parameter("end_angle").get<float64_t>())},
@@ -114,11 +114,11 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
   m_filtered_transformed_msg.header.stamp = msg.header.stamp;
 
-  while (x_it != x_it.end() &&
-    y_it != y_it.end() &&
-    z_it != z_it.end() &&
-    !intensity_it.eof())
-  {
+  // while (x_it != x_it.end() &&
+  // y_it != y_it.end() &&
+  // z_it != z_it.end() &&
+  // !intensity_it.eof())
+  for (size_t it = 0; it < (msg.data.size() / 16); it++) {
     PointXYZIF pt;
     pt.x = *x_it;
     pt.y = *y_it;

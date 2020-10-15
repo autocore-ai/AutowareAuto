@@ -38,8 +38,7 @@ def generate_test_description(ready_fn):
                 "test.param.yaml"
             ),
             {
-                "expected_num_ground_subscribers": 1,
-                "expected_num_nonground_subscribers": 1,
+                "expected_num_subscribers": 1,
                 "input_frame_id": "frameid",
                 "output_frame_id": "frameid",
             }
@@ -56,13 +55,25 @@ def generate_test_description(ready_fn):
         runtime=10.0,
     )
 
+    spoofer_ = launch_ros.actions.Node(
+        package="lidar_integration",
+        node_executable="point_cloud_mutation_spoofer_exe",
+        arguments=[
+            "--topic", "/lidar_front/points_raw",
+            "--freq", "10",
+            "--runtime", "10",
+            "--mean", "30000",
+            "--std", "5000",
+        ],
+    )
+
     return lidar_integration.get_point_cloud_mutation_launch_description(
-        topic="points_raw",
         test_nodes=[point_cloud_filter_transform_node],
         checkers=[filtered_points_checker],
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())
         ],
+        spoofer=spoofer_
     )
 
 
