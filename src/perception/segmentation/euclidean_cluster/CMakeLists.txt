@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Apex.AI, Inc.
+# Copyright 2017-2019 the Autoware Foundation
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

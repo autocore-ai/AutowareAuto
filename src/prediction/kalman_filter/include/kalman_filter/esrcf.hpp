@@ -1,4 +1,4 @@
-// Copyright 2018 Apex.AI, Inc.
+// Copyright 2018 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-/// \copyright Copyright 2018 Apex.AI, Inc.
+/// \copyright Copyright 2018 the Autoware Foundation
 /// All rights reserved.
 /// \file
 /// \brief This file defines a class for extended square root covariance filter
