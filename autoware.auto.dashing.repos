@@ -7,11 +7,3 @@ repositories:
     type: git
     url: https://gitlab.com/aninnymouse/mpc.git
     version: eaa5908bdd987051a9dcd9c505f99bfd7f028547
-  src/external/mrt_cmake_modules:
-    type: git
-    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
-    version: 1.0.8
-  src/external/lanelet2:
-    type: git
-    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
-    version: 2bd4faf6baff4bcc0fc1718f1578c6e01ddcced2
