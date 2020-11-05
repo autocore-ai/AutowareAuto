@@ -217,6 +217,12 @@ const SafetyStateMachine::Reports & SafetyStateMachine::reports() const noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+const StateMachineConfig & SafetyStateMachine::get_config() const noexcept
+{
+  return m_config;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 SafetyStateMachine::MaybeEnum SafetyStateMachine::headlights_on_if_wipers_on(const VSC & in)
 {
   MaybeEnum ret{};

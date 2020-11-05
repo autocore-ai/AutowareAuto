@@ -53,6 +53,8 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/vlp16_front_vehicle.param.yaml')
     vlp16_rear_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/vlp16_rear_vehicle.param.yaml')
+    ssc_interface_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/ssc_interface.param.yaml')
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
@@ -83,6 +85,11 @@ def generate_launch_description():
         'mpc_param_file',
         default_value=mpc_param_file,
         description='Path to config file for MPC'
+    )
+    ssc_interface_param = DeclareLaunchArgument(
+        'ssc_interface_param_file',
+        default_value=ssc_interface_param_file,
+        description='Path to config file for SSC interface'
     )
 
     # Nodes
@@ -130,6 +137,25 @@ def generate_launch_description():
         node_namespace='control',
         parameters=[LaunchConfiguration('mpc_param_file')]
     )
+    ssc_interface = Node(
+        package='ssc_interface',
+        node_executable='ssc_interface_node_exe',
+        node_name='ssc_interface',
+        node_namespace='vehicle',
+        parameters=[LaunchConfiguration('ssc_interface_param_file')],
+        remappings=[
+            ('gear_select', '/ssc/gear_select'),
+            ('arbitrated_speed_commands', '/ssc/arbitrated_speed_commands'),
+            ('arbitrated_steering_commands', '/ssc/arbitrated_steering_commands'),
+            ('turn_signal_command', '/ssc/turn_signal_command'),
+            ('dbw_enabled_feedback', '/ssc/dbw_enabled_feedback'),
+            ('gear_feedback', '/ssc/gear_feedback'),
+            ('velocity_accel_cov', '/ssc/velocity_accel_cov'),
+            ('state_report_out', 'state_report'),
+            ('steering_feedback', '/ssc/steering_feedback'),
+            ('vehicle_kinematic_state_cog', 'vehicle_kinematic_state')
+        ]
+    )
 
     core_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([avp_demo_pkg_prefix, '/launch/ms3_core.launch.py'])
@@ -141,11 +167,13 @@ def generate_launch_description():
         map_publisher_param,
         ndt_localizer_param,
         mpc_param,
+        ssc_interface_param,
         vlp16_front,
         vlp16_rear,
         urdf_publisher,
         map_publisher,
         ndt_localizer,
         mpc,
+        ssc_interface,
         core_launch
     ])

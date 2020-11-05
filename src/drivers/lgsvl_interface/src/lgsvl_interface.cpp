@@ -207,6 +207,15 @@ bool8_t LgsvlInterface::send_control_command(const autoware_auto_msgs::msg::RawC
   return true;
 }
 
+bool8_t LgsvlInterface::handle_mode_change_request(
+  autoware_auto_msgs::srv::AutonomyModeChange_Request::SharedPtr request)
+{
+  // TODO(JWhitleyWork) Actually enable/disable this internally to
+  // mimic a real vehicle and allow commanding the vehicle to be disabled
+  (void)request;
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
 {

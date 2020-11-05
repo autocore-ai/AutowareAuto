@@ -125,6 +125,11 @@ void VehicleInterfaceNode::set_interface(std::unique_ptr<PlatformInterface> && i
 
 rclcpp::Logger VehicleInterfaceNode::logger() const noexcept {return get_logger();}
 
+const SafetyStateMachine VehicleInterfaceNode::get_state_machine() const noexcept
+{
+  return *m_state_machine;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // 9073 appears to be a false positive, or the compiler being overly pedantic for templates
 // specializations
@@ -185,8 +190,6 @@ void VehicleInterfaceNode::on_command_message(
       on_control_send_failure();
     }
     send_state_command(commands.state());
-    state_machine_report();
-
   } else {
     RCLCPP_WARN(logger(), "Vehicle interface time did not increase, skipping");
   }
@@ -203,6 +206,19 @@ void VehicleInterfaceNode::on_command_message(
 }
 /*lint -restore*/
 
+////////////////////////////////////////////////////////////////////////////////
+void VehicleInterfaceNode::on_mode_change_request(
+  ModeChangeRequest::SharedPtr request,
+  ModeChangeResponse::SharedPtr response)
+{
+  // Response is std_msgs::msg::Empty because changing the autonomy state
+  // takes a non-trivial amount of time and the current state should be
+  // reported via the VehicleStateReport
+  (void)response;
+  if (!m_interface->handle_mode_change_request(request)) {
+    on_mode_change_failure();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void VehicleInterfaceNode::init(
@@ -269,6 +285,14 @@ void VehicleInterfaceNode::init(
   } else {
     throw std::domain_error{"Vehicle interface must have exactly one command subscription"};
   }
+  // Create services
+  m_mode_service = create_service<autoware_auto_msgs::srv::AutonomyModeChange>(
+    "autonomy_mode", [this](
+      ModeChangeRequest::SharedPtr request,
+      ModeChangeResponse::SharedPtr response) -> void
+    {
+      on_mode_change_request(request, response);
+    });
   // Make filters
   const auto create_filter = [](const auto & config) -> auto {
       using common::signal_filters::FilterFactory;
@@ -369,6 +393,12 @@ void VehicleInterfaceNode::on_read_timeout()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VehicleInterfaceNode::on_mode_change_failure()
+{
+  throw std::runtime_error{"Changing autonomy mode failed"};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void VehicleInterfaceNode::on_error(std::exception_ptr eptr)
 {
   try {
@@ -423,7 +453,9 @@ void VehicleInterfaceNode::state_machine_report()
         }
         break;
       case StateMachineReport::STATE_TRANSITION_TIMEOUT:
-        RCLCPP_ERROR(logger(), "State transition timed out");
+        // TODO(JWhitleyWork) Re-enable this error when we can
+        // get it under control.
+        // RCLCPP_ERROR(logger(), "State transition timed out");
         break;
       default:
         throw std::logic_error{"Bad state machine report"};

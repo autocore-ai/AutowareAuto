@@ -24,6 +24,7 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <autoware_auto_msgs/srv/autonomy_mode_change.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -105,6 +106,9 @@ public:
   /// Send control data with whatever state data came along last; applies scaling here too.
   /// If both brake and throttle is nonzero, decide based on config
   bool send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg) override;
+  /// Respond to request for changing autonomy mode. For LGSVL, this means nothing.
+  bool handle_mode_change_request(
+    autoware_auto_msgs::srv::AutonomyModeChange_Request::SharedPtr request) override;
 
 private:
   // Mapping from Autoware Gear to LGSVL Gear values

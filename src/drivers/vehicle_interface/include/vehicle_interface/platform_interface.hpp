@@ -24,6 +24,7 @@
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <autoware_auto_msgs/srv/autonomy_mode_change.hpp>
 #include <vehicle_interface/visibility_control.hpp>
 
 #include <chrono>
@@ -35,6 +36,8 @@ using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
 using autoware_auto_msgs::msg::VehicleStateReport;
 using autoware_auto_msgs::msg::VehicleOdometry;
+using ModeChangeRequest = autoware_auto_msgs::srv::AutonomyModeChange_Request;
+using ModeChangeResponse = autoware_auto_msgs::srv::AutonomyModeChange_Response;
 
 namespace autoware
 {
@@ -80,6 +83,12 @@ public:
   /// \param[in] msg The control command to send to the vehicle
   /// \return false if sending failed in some way, true otherwise
   virtual bool8_t send_control_command(const RawControlCommand & msg) = 0;
+  /// Respond to a request to change the autonomy mode. This should only fail if
+  /// changing the mode on the actual low-level autonomy interface fails.
+  /// Exceptions may be thrown on errors
+  /// \param[in] request The requested mode
+  /// \return false If changing the mode failed in some way, true otherwise
+  virtual bool8_t handle_mode_change_request(ModeChangeRequest::SharedPtr request) = 0;
 
   /// Get the most recent state of the vehicle. The State should be assumed to be constant unless
   /// data from the vehicle platform implies a state should be changed. For example, if the gear

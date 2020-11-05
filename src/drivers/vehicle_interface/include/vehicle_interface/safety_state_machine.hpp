@@ -190,6 +190,8 @@ public:
   Command timeout_commands() const noexcept;
   /// Get list of warnings state machine saw and adjusted
   const Reports & reports() const noexcept;
+  /// Get config object
+  const StateMachineConfig & get_config() const noexcept;
 
 private:
   using VSC = autoware_auto_msgs::msg::VehicleStateCommand;

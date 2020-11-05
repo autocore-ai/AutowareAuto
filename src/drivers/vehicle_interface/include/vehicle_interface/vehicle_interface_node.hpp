@@ -33,6 +33,7 @@
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
+#include <autoware_auto_msgs/srv/autonomy_mode_change.hpp>
 
 #include <experimental/optional>
 #include <chrono>
@@ -77,6 +78,9 @@ protected:
   using ControllerBasePtr =
     std::unique_ptr<common::reference_tracking_controller::ReferenceTrackerBase<Real>>;
   using FilterBasePtr = std::unique_ptr<common::signal_filters::FilterBase<Real>>;
+  using ModeChangeRequest = autoware_auto_msgs::srv::AutonomyModeChange_Request;
+  using ModeChangeResponse = autoware_auto_msgs::srv::AutonomyModeChange_Response;
+
   struct VehicleFilter
   {
     FilterBasePtr longitudinal;
@@ -92,6 +96,8 @@ protected:
   void set_interface(std::unique_ptr<PlatformInterface> && interface) noexcept;
   /// Get access to logger
   rclcpp::Logger logger() const noexcept;
+  /// Get access to Safety State Machine
+  const SafetyStateMachine get_state_machine() const noexcept;
 
   /// Error handling behavior for when sending a control command has failed, default is throwing an
   /// exception, which is caught and turned into a change in the NodeState to ERROR
@@ -101,6 +107,9 @@ protected:
   /// exception, which is caught and turned into a change in the NodeState to ERROR
   /// TODO(c.ho) add command which failed to send as an argument
   virtual void on_state_send_failure();
+  /// Error handling behavior for when changing the autonomy mode has failed. Default is throwing
+  /// an exception
+  virtual void on_mode_change_failure();
   /// Error handling behavior for when receiving data from the vehicle platform has timed out,
   /// default is throwing an exception, which is caught and turned into a change in the NodeState to
   /// ERROR
@@ -132,6 +141,9 @@ private:
   // Core loop for different input commands. Specialized differently for each topic type
   template<typename T>
   VEHICLE_INTERFACE_LOCAL void on_command_message(const T & msg);
+  // Callback for requests to change autonomoy mode
+  VEHICLE_INTERFACE_LOCAL void on_mode_change_request(
+    ModeChangeRequest::SharedPtr request, ModeChangeResponse::SharedPtr response);
   /// Log a warning from the safety state machine: transition node state and/or log
   VEHICLE_INTERFACE_LOCAL void state_machine_report();
 
@@ -139,6 +151,7 @@ private:
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleOdometry>::SharedPtr m_odom_pub{nullptr};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_pub{nullptr};
   rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_sub{};
+  rclcpp::Service<autoware_auto_msgs::srv::AutonomyModeChange>::SharedPtr m_mode_service{nullptr};
 
   using BasicSub = rclcpp::Subscription<BasicControlCommand>::SharedPtr;
   using RawSub = rclcpp::Subscription<autoware_auto_msgs::msg::RawControlCommand>::SharedPtr;

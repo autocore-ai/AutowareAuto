@@ -41,6 +41,8 @@ using autoware::drivers::vehicle_interface::TopicNumMatches;
 using autoware_auto_msgs::msg::RawControlCommand;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
+using ModeChangeRequest = autoware_auto_msgs::srv::AutonomyModeChange_Request;
+using ModeChangeResponse = autoware_auto_msgs::srv::AutonomyModeChange_Response;
 
 /// Fake instantiation of interface, only checks that certain things were ever called
 /// Each of the overloaded functions fails in a rotating manner. After 5 iterations, the
@@ -86,16 +88,25 @@ public:
     m_raw_called = true;
     return (m_count % 5) != 1;
   }
+  bool8_t handle_mode_change_request(ModeChangeRequest::SharedPtr request) override
+  {
+    // TODO(JWhitleyWork) Actually do some testing on this
+    m_mode_request = *request;
+    m_mode_change_called = true;
+    return true;
+  }
 
   const RawControlCommand & msg() const noexcept {return m_msg;}
   const VehicleControlCommand & control() const noexcept {return m_control;}
   const VehicleStateCommand & state() const noexcept {return m_state;}
+  const ModeChangeRequest & mode_request() const noexcept {return m_mode_request;}
   const std::vector<VehicleControlCommand> & controls() const noexcept {return m_controls;}
 
   bool8_t update_called() const noexcept {return m_update_called;}
   bool8_t state_called() const noexcept {return m_state_called;}
   bool8_t basic_called() const noexcept {return m_basic_called;}
   bool8_t raw_called() const noexcept {return m_raw_called;}
+  bool8_t mode_change_called() const noexcept {return m_mode_change_called;}
   int32_t count() const noexcept {return m_count;}
 
 private:
@@ -103,9 +114,11 @@ private:
   std::atomic<bool8_t> m_state_called{false};
   std::atomic<bool8_t> m_basic_called{false};
   std::atomic<bool8_t> m_raw_called{false};
+  std::atomic<bool8_t> m_mode_change_called{false};
   RawControlCommand m_msg{};
   VehicleControlCommand m_control{};
   VehicleStateCommand m_state{};
+  ModeChangeRequest m_mode_request{};
   std::vector<VehicleControlCommand> m_controls{};
   int32_t m_count{};
   bool8_t m_fail;

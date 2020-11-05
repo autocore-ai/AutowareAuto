@@ -8,3 +8,4 @@ This section contains design documents for Autoware.Auto device drivers.
 - @subpage socket_can
 - @subpage spinnaker-camera-driver
 - @subpage spinnaker-camera-node
+- @subpage ssc_interface-package-design
