@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>avp_web_interface</name>
+  <version>0.0.1</version>
+  <description>Hold a web interface to interact with the vehicle in the autonomous-valet-parking demonstration</description>
+  <maintainer email="Frederik.Beaujean@apex.ai">Frederik Beaujean</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+
+  <exec_depend>rosbridge_suite</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

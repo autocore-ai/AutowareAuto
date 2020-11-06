@@ -142,5 +142,5 @@ def generate_launch_description():
         map_publisher,
         ndt_localizer,
         mpc,
-        core_launch
+        core_launch,
     ])

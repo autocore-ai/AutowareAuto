@@ -1,0 +1,40 @@
+body {
+    font-family: Verdana, sans-serif;
+    font-weight: lighter;
+    margin: 0;
+}
+
+header {
+    background-color: rgb(10, 10, 40);
+    color: #F5AF00;
+    padding: 2rem 5rem;
+    font-size: 300%;
+    line-height: 1.5;
+}
+
+h2 {
+    color: rgb(240, 240, 240);
+}
+
+main {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.button {
+    font-size: 300%;
+    background-color: rgb(85, 160, 240);
+    display: inline-block;
+    cursor: pointer;
+    padding: 2.5rem;
+    margin-top: 3rem;
+    border: 1px solid black;
+    user-select: none;
+}
+
+.button[name = "return"] {
+    margin-top: 5rem;
+    background-color: rgb(75, 215, 130);
+}
