@@ -51,7 +51,7 @@ if(BUILD_TESTING)
   ament_auto_add_executable(${PURE_PURSUIT_NODE_TEST} test/src/pure_pursuit_integration_test.cpp)
   autoware_set_compile_options(${PURE_PURSUIT_NODE_TEST})
 
-  # add_ros_test(test/src/pure_pursuit_node.test.py)
+  add_ros_test(test/src/pure_pursuit_node.test.py)
 endif()
 
 ## install stuff

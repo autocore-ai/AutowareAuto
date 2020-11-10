@@ -63,17 +63,19 @@ class TestWaitForEnd(unittest.TestCase):
 @launch_testing.post_shutdown_test()
 class TestCheckerOutput(unittest.TestCase):
 
-    def test_checker_outputs_success(self, _checkers):
-        for checker in _checkers:
-            try:
-                launch_testing.asserts.assertInStdout(self.proc_output, "success", checker)
-            except AssertionError:
-                # For a failure, print a little more info before we re-raise the failure
-                # exception
-                print("\nFailed checker output:")
-                for line in self.proc_output[checker]:
-                    print(line.text.decode(), end='')
-                raise
+    # TODO(Takamasa Horibe) Replace this test with one in the MPC.
+
+    # def test_checker_outputs_success(self, _checkers):
+    #     for checker in _checkers:
+    #         try:
+    #             launch_testing.asserts.assertInStdout(self.proc_output, "success", checker)
+    #         except AssertionError:
+    #             # For a failure, print a little more info before we re-raise the failure
+    #             # exception
+    #             print("\nFailed checker output:")
+    #             for line in self.proc_output[checker]:
+    #                 print(line.text.decode(), end='')
+    #             raise
 
     def test_checker_exit_code_ok(self, _checkers):
         # Also check the exit code of the checker as a belt-and-suspenders approach
