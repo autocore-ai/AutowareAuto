@@ -14,6 +14,8 @@
 
 #include <autoware_auto_msgs/srv/modify_trajectory.hpp>
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <rclcpp/rclcpp.hpp>
@@ -35,6 +37,8 @@ namespace object_collision_estimator_node
 
 using motion::planning::object_collision_estimator::ObjectCollisionEstimator;
 using autoware_auto_msgs::msg::BoundingBoxArray;
+using visualization_msgs::msg::MarkerArray;
+using visualization_msgs::msg::Marker;
 
 
 /// \brief ROS2 interface to Object Collision Estimator Library. It has 2 main interfaces:
@@ -61,6 +65,9 @@ private:
   /// \brief Pointer to the subscriber listening for a list of obstacles
   rclcpp::Subscription<BoundingBoxArray>::SharedPtr m_obstacles_sub{nullptr};
 
+  /// \brief Pointer to the publisher for bounding boxes of the target trajectory
+  rclcpp::Publisher<MarkerArray>::SharedPtr m_trajectory_bbox_pub{nullptr};
+
   /// \brief Callback function for the obstacles topic
   /// \param[in] msg ROS2 message from the obstacle topic containing an array of bounding boxes
   ///                representing obstacles found by the perception pipeline.
@@ -81,6 +88,17 @@ private:
 
   /// \brief Pointer to the tf interface used to transform obstacle bounding box coordinates.
   std::shared_ptr<tf2_ros::Buffer> m_tf_buffer;
+
+  /// \brief Pointer to the tf listener which listens for transforms published in the system and
+  ///        stores them in the node for use.
+  std::shared_ptr<tf2_ros::TransformListener> m_tf_listener;
+
+  /// \brief Pointer to the wall timer used to periodically check if transforms have become
+  ///        available.
+  rclcpp::TimerBase::SharedPtr m_wall_timer{nullptr};
+
+  /// \brief The time stamp of the last obstacle message received by the node
+  rclcpp::Time m_last_obstacle_msg_time {};
 
   /// \brief Hard coded node name
   static constexpr const char * OBJECT_COLLISION_ESTIMATOR_NODE_NAME =

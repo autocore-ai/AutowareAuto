@@ -127,6 +127,7 @@ typedef struct
   // safety factor to artificially inflate the size of the vehicle to prevent ego vehicle getting
   // too close to any obstacles
   float32_t safety_factor;
+  float32_t stop_margin;
 } ObjectCollisionEstimatorConfig;
 
 /// \brief Given a trajectory and a list of obstacles, detect possible collision points between the
@@ -157,9 +158,14 @@ public:
   ///               detected, this variable is modified in place.
   void updatePlan(Trajectory & trajectory) noexcept;
 
+  /// \brief Get the latest bounding box of target trajectory
+  /// \returns The latest bounding box of the target trajectory
+  BoundingBoxArray getTrajectoryBoundingBox() const {return m_trajectory_bboxes;}
+
 private:
   ObjectCollisionEstimatorConfig m_config;
   BoundingBoxArray m_obstacles{};
+  BoundingBoxArray m_trajectory_bboxes{};
   TrajectorySmoother m_smoother;
 };
 

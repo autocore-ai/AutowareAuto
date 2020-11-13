@@ -123,13 +123,15 @@ bool8_t isTooFarAway(
 /// \param vehicle_param Configuration regarding the dimensions of the ego vehicle
 /// \param safety_factor A factor to inflate the size of the vehicle so to avoid getting too close
 ///                      to obstacles.
+/// \param waypoint_bboxes A list of bounding boxes around each waypoint in the trajectory
 /// \return int32_t The index into the trajectory points where the first collision happens. If no
 ///         collision is detected, -1 is returned.
 int32_t detectCollision(
   const Trajectory & trajectory,
   const BoundingBoxArray & obstacles,
   const VehicleConfig & vehicle_param,
-  const float32_t safety_factor)
+  const float32_t safety_factor,
+  BoundingBoxArray & waypoint_bboxes)
 {
   // find the dimension of the ego vehicle.
   const auto vehicle_length =
@@ -144,9 +146,14 @@ int32_t detectCollision(
 
   int32_t collision_index = -1;
 
+  waypoint_bboxes.boxes.clear();
+  for (std::size_t i = 0; i < trajectory.points.size(); ++i) {
+    waypoint_bboxes.boxes.push_back(
+      waypointToBox(trajectory.points[i], vehicle_param, safety_factor));
+  }
   for (std::size_t i = 0; (i < trajectory.points.size()) && (collision_index == -1); ++i) {
     // calculate a bounding box given a trajectory point
-    const auto & waypoint_bbox = waypointToBox(trajectory.points[i], vehicle_param, safety_factor);
+    const auto & waypoint_bbox = waypoint_bboxes.boxes.at(i);
 
     // Check for collisions with all perceived obstacles
     for (const auto & obstacle_bbox : obstacles.boxes) {
@@ -166,6 +173,38 @@ int32_t detectCollision(
   return collision_index;
 }
 
+/// \brief Returns the index that vehicle should stop when the object colliding index
+///        and stop distance is given
+/// \param trajectory Planned trajectory of ego vehicle.
+/// \param collision_index Index of trajectory point that collides with and obstacle
+/// \param stop_margin Distance between the control point of vehicle (CoG or base_link) and obstacle
+/// \return int32_t The index into the trajectory points where vehicle should stop.
+int32_t getStopIndex(
+  const Trajectory & trajectory,
+  const int32_t collision_index,
+  const float32_t stop_margin) noexcept
+{
+  if (collision_index < 0) {
+    return collision_index;
+  }
+  int32_t stop_index = collision_index;
+  float32_t accumulated_distance = 0;
+
+  for (int32_t i = collision_index; i >= 1; i--) {
+    const auto & prev_pt = trajectory.points.at(static_cast<std::size_t>(i - 1));
+    const auto & pt = trajectory.points.at(static_cast<std::size_t>(i));
+
+    const auto dx = prev_pt.x - pt.x;
+    const auto dy = prev_pt.y - pt.y;
+    accumulated_distance += std::hypot(dx, dy);
+    if (accumulated_distance >= stop_margin) {
+      stop_index = i;
+      break;
+    }
+  }
+  return stop_index;
+}
+
 ObjectCollisionEstimator::ObjectCollisionEstimator(
   ObjectCollisionEstimatorConfig config,
   TrajectorySmoother smoother) noexcept
@@ -180,9 +219,11 @@ ObjectCollisionEstimator::ObjectCollisionEstimator(
 void ObjectCollisionEstimator::updatePlan(Trajectory & trajectory) noexcept
 {
   // Collision detection
-  auto trajectory_end_idx = detectCollision(
+  auto collision_index = detectCollision(
     trajectory, m_obstacles, m_config.vehicle_config,
-    m_config.safety_factor);
+    m_config.safety_factor, m_trajectory_bboxes);
+
+  auto trajectory_end_idx = getStopIndex(trajectory, collision_index, m_config.stop_margin);
 
   if (trajectory_end_idx >= 0) {
     // Cut trajectory short to just before the collision point

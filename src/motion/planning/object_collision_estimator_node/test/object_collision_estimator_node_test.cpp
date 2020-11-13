@@ -92,7 +92,9 @@ void object_collision_estimator_node_test(
   node_options.append_parameter_override(
     "trajectory_smoother.kernel_size",
     25);
-
+  node_options.append_parameter_override(
+    "stop_margin",
+    0.0);
   // create collision estimator node
   auto estimator_node = std::make_shared<ObjectCollisionEstimatorNode>(node_options);
 

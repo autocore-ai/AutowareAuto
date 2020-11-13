@@ -22,6 +22,7 @@
 #include <memory>
 
 #include "object_collision_estimator_node/object_collision_estimator_node.hpp"
+#include "object_collision_estimator_node/visualize.hpp"
 #include "object_collision_estimator/object_collision_estimator.hpp"
 
 namespace motion
@@ -31,6 +32,7 @@ namespace planning
 namespace object_collision_estimator_node
 {
 
+using namespace std::chrono_literals;
 using motion::planning::object_collision_estimator::ObjectCollisionEstimatorConfig;
 using motion::planning::object_collision_estimator::ObjectCollisionEstimator;
 using motion::planning::object_collision_estimator::TrajectorySmootherConfig;
@@ -42,7 +44,7 @@ using autoware::common::types::float32_t;
 using rclcpp::QoS;
 
 ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOptions & node_options)
-: Node{OBJECT_COLLISION_ESTIMATOR_NODE_NAME, node_options}
+: Node(OBJECT_COLLISION_ESTIMATOR_NODE_NAME, node_options)
 {
   // Declare node parameters. See ObjectCollisionEstimator Class for details of the functions of
   // these parameters.
@@ -80,6 +82,10 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     static_cast<float32_t>(declare_parameter(
       "safety_factor"
     ).get<float32_t>());
+  const auto stop_margin =
+    static_cast<float32_t>(declare_parameter(
+      "stop_margin"
+    ).get<float32_t>());
   const TrajectorySmootherConfig smoother_config {
     static_cast<float32_t>(declare_parameter(
       "trajectory_smoother.kernel_std"
@@ -96,7 +102,7 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     ).get<std::string>());
 
   // Create an object collision estimator
-  const ObjectCollisionEstimatorConfig config {vehicle_param, safety_factor};
+  const ObjectCollisionEstimatorConfig config {vehicle_param, safety_factor, stop_margin};
   const TrajectorySmoother smoother{smoother_config};
   m_estimator = std::make_unique<ObjectCollisionEstimator>(config, smoother);
 
@@ -113,9 +119,14 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     OBSTACLE_TOPIC, QoS{10},
     [this](const BoundingBoxArray::SharedPtr msg) {this->on_bounding_box(msg);});
 
+  m_trajectory_bbox_pub =
+    create_publisher<MarkerArray>("debug/trajectory_bounding_boxes", QoS{10});
+
   // Create a tf interface to perform transforms on obstacle bounding boxes
-  rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
-  m_tf_buffer = std::make_shared<tf2_ros::Buffer>(clock);
+  m_tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+  m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
+    *m_tf_buffer,
+    std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
 }
 
 void ObjectCollisionEstimatorNode::on_bounding_box(const BoundingBoxArray::SharedPtr & msg)
@@ -124,20 +135,51 @@ void ObjectCollisionEstimatorNode::on_bounding_box(const BoundingBoxArray::Share
   if (msg->header.frame_id == m_target_frame_id) {
     // No transform needed, update bounding boxes directly
     m_estimator->updateObstacles(*msg);
+
+    // keep track of the timestamp of the lastest successful obstacle message
+    m_last_obstacle_msg_time = msg->header.stamp;
   } else {
-    // Transform the coordinates into map frame
-    tf2::Duration timeout = tf2::durationFromSec(0.2);
-    if (m_tf_buffer->canTransform(
-        m_target_frame_id, msg->header.frame_id,
-        tf2_ros::fromMsg(msg->header.stamp), timeout) )
-    {
-      auto msg_tansformed = m_tf_buffer->transform(*msg, m_target_frame_id, timeout);
-      m_estimator->updateObstacles(msg_tansformed);
-    } else {
+    // clean up any existing timer
+    if (m_wall_timer != nullptr) {
+      m_wall_timer->cancel();
+      m_wall_timer = nullptr;
+
       RCLCPP_WARN(
-        this->get_logger(), "on_bounding_box cannot transform %s to %s",
-        msg->header.frame_id.c_str(), m_target_frame_id.c_str());
+        this->get_logger(),
+        "Unable to get a valid transform before a new obstacle message arrived");
     }
+
+    // create a new timer with timeout to check periodically if a valid transform for that timestamp
+    // is available.
+    const auto start_time = this->now();
+    m_wall_timer = create_wall_timer(
+      0.02s, [this, msg, start_time]() {
+        auto elapsed_time = this->now() - start_time;
+        const auto timeout = 0.1s;
+
+        if (elapsed_time < timeout) {
+          if (this->m_tf_buffer->canTransform(
+            m_target_frame_id, msg->header.frame_id,
+            tf2_ros::fromMsg(msg->header.stamp)))
+          {
+            // a valid transform is aviable, perform transform
+            this->m_wall_timer->cancel();
+            this->m_wall_timer = nullptr;
+            auto msg_transformed = this->m_tf_buffer->transform(*msg, m_target_frame_id);
+            this->m_estimator->updateObstacles(msg_transformed);
+
+            // keep track of the timestamp of the lastest successful obstacle message
+            this->m_last_obstacle_msg_time = msg_transformed.header.stamp;
+          }
+        } else {
+          // timeout occurred, clean up timer
+          this->m_wall_timer->cancel();
+          this->m_wall_timer = nullptr;
+          RCLCPP_WARN(
+            this->get_logger(), "on_bounding_box cannot transform %s to %s.",
+            msg->header.frame_id.c_str(), m_target_frame_id.c_str());
+        }
+      });
   }
 }
 
@@ -145,13 +187,37 @@ void ObjectCollisionEstimatorNode::estimate_collision(
   const std::shared_ptr<autoware_auto_msgs::srv::ModifyTrajectory::Request> request,
   std::shared_ptr<autoware_auto_msgs::srv::ModifyTrajectory::Response> response)
 {
+  rclcpp::Time request_time{request->original_trajectory.header.stamp};
+  auto elapsed_time = request_time - m_last_obstacle_msg_time;
+  if (m_last_obstacle_msg_time.seconds() == 0) {
+    RCLCPP_WARN(
+      this->get_logger(),
+      "No obstacle information has been received. Collision estimation will have no effect");
+  } else if (elapsed_time > 500ms) {
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Outdated obstacle information."
+      " Collision estimation will be based on old obstacle positions");
+  }
+
   // copy the input trajectory into the output variable
   response->modified_trajectory = request->original_trajectory;
 
   // m_estimator performs the collision estimation and the trajectory will get updated inside
   m_estimator->updatePlan(response->modified_trajectory);
+
+  // publish trajectory bounding box for visualization
+  auto trajectory_bbox = m_estimator->getTrajectoryBoundingBox();
+  trajectory_bbox.header = response->modified_trajectory.header;
+  auto marker = toVisualizationMarkerArray(
+    trajectory_bbox, response->modified_trajectory.points.size());
+  m_trajectory_bbox_pub->publish(marker);
 }
 
 }  // namespace object_collision_estimator_node
 }  // namespace planning
 }  // namespace motion
+
+#include <rclcpp_components/register_node_macro.hpp>  // NOLINT
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  motion::planning::object_collision_estimator_node::ObjectCollisionEstimatorNode)

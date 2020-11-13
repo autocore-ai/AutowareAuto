@@ -53,7 +53,8 @@ void object_collision_estimator_test(std::size_t trajectory_length, std::size_t 
       0.5,  // front_overhang_m,
       0.5,  // rear_overhang_m);
     },
-    1.1  // safety factor
+    1.1,  // safety factor
+    0.0  // stop_margin
   };
   TrajectorySmoother smoother{{5, 25}};
 

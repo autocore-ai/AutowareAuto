@@ -37,6 +37,7 @@ set(OBJECT_COLLISION_ESTIMATOR_NODE_SRC
 set(OBJECT_COLLISION_ESTIMATOR_NODE_HEADERS
   include/object_collision_estimator_node/object_collision_estimator_node.hpp
   include/object_collision_estimator_node/visibility_control.hpp
+  include/object_collision_estimator_node/visualize.hpp
 )
 
 # Create a library

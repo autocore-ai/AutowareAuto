@@ -25,6 +25,7 @@
       front_overhang_m: 0.5
       rear_overhang_m: 0.5
     safety_factor: 1.1
+    stop_margin: 12.5  # distance between control point (e.g. CoG/base_link) and obstacle
     trajectory_smoother:
       kernel_std: 5.0
       kernel_size: 25

@@ -25,7 +25,6 @@ pose. The communication is handled in javascript through `roslibjs`.
 
 ## Assumptions / Known limits
 <!-- Required -->
-The web page does not use any CSS to look pretty.
 
 ## Inputs / Outputs / API
 <!-- Required -->
