@@ -1,4 +1,4 @@
-// Copyright 2020 the Autoware Foundation
+// Copyright 2020-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,21 +14,22 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #include <common/types.hpp>
-#include <joystick_vehicle_interface/joystick_vehicle_interface_node.hpp>
+#include <joystick_vehicle_interface_nodes/joystick_vehicle_interface_node.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
+#include <memory>
 #include <string>
 #include <type_traits>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 
-namespace joystick_vehicle_interface
+namespace joystick_vehicle_interface_nodes
 {
 
 JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   const rclcpp::NodeOptions & node_options)
-: Node{"joystick_vehicle_interface", node_options}
+: Node{"joystick_vehicle_interface_nodes", node_options}
 {
   // topics
   const auto control_command =
@@ -105,7 +106,8 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
       rclcpp::QoS{10U}.reliable().durability_volatile());
   } else {
     throw std::domain_error
-          {"JoystickVehicleInterface does not support " + control_command + "command control mode"};
+          {"JoystickVehicleInterfaceNode does not support " + control_command +
+            "command control mode"};
   }
   // State commands
   m_state_cmd_pub =
@@ -123,53 +125,11 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
     "joy", rclcpp::SensorDataQoS{},
     [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
   // Maps
-  m_axis_map = axis_map;
-  m_axis_scale_map = axis_scale_map;
-  m_axis_offset_map = axis_offset_map;
-  m_button_map = button_map;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template<>
-JoystickVehicleInterfaceNode::HighLevelControl
-JoystickVehicleInterfaceNode::compute_command(const sensor_msgs::msg::Joy & msg)
-{
-  HighLevelControl ret{};
-  {
-    ret.stamp = msg.header.stamp;
-    ret.velocity_mps = m_velocity;
-    axis_value(msg, Axes::CURVATURE, ret.curvature);
-  }
-  return ret;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template<>
-JoystickVehicleInterfaceNode::RawControl
-JoystickVehicleInterfaceNode::compute_command(const sensor_msgs::msg::Joy & msg)
-{
-  RawControl ret{};
-  ret.stamp = msg.header.stamp;
-  axis_value(msg, Axes::BRAKE, ret.brake);
-  axis_value(msg, Axes::THROTTLE, ret.throttle);
-  axis_value(msg, Axes::FRONT_STEER, ret.front_steer);
-  axis_value(msg, Axes::REAR_STEER, ret.rear_steer);
-  return ret;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template<>
-JoystickVehicleInterfaceNode::BasicControl
-JoystickVehicleInterfaceNode::compute_command(const sensor_msgs::msg::Joy & msg)
-{
-  BasicControl ret{};
-  {
-    ret.stamp = msg.header.stamp;
-    axis_value(msg, Axes::ACCELERATION, ret.long_accel_mps2);
-    axis_value(msg, Axes::FRONT_STEER, ret.front_wheel_angle_rad);
-    axis_value(msg, Axes::REAR_STEER, ret.rear_wheel_angle_rad);
-  }
-  return ret;
+  m_core = std::make_unique<joystick_vehicle_interface::JoystickVehicleInterface>(
+    axis_map,
+    axis_scale_map,
+    axis_offset_map,
+    button_map);
 }
 
 
@@ -177,121 +137,26 @@ JoystickVehicleInterfaceNode::compute_command(const sensor_msgs::msg::Joy & msg)
 void JoystickVehicleInterfaceNode::on_joy(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
   // State command: modify state first
-  if (update_state_command(*msg)) {
-    m_state_cmd_pub->publish(m_state_command);
+  if (m_core->update_state_command(*msg)) {
+    auto state_command = m_core->get_state_command();
+    m_state_cmd_pub->publish(state_command);
   }
   // Command publish
   const auto compute_publish_command = [this, &msg](auto && pub) -> void {
       using MessageT =
         typename std::decay_t<decltype(pub)>::element_type::MessageUniquePtr::element_type;
-      const auto cmd = compute_command<MessageT>(*msg);
+      const auto cmd = m_core->compute_command<MessageT>(*msg);
       pub->publish(cmd);
     };
   mpark::visit(compute_publish_command, m_cmd_pub);
 
-  if (m_recordreplay_cmd_pub != nullptr && m_recordreplay_command.data > 0u) {
-    m_recordreplay_cmd_pub->publish(m_recordreplay_command);
-    m_recordreplay_command.data =
-      static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::NOOP);
+  auto recordreplay_command = m_core->get_recordreplay_command();
+  if (m_recordreplay_cmd_pub != nullptr && recordreplay_command.data > 0u) {
+    m_recordreplay_cmd_pub->publish(recordreplay_command);
+    m_core->reset_recordplay();
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-bool8_t JoystickVehicleInterfaceNode::update_state_command(const sensor_msgs::msg::Joy & msg)
-{
-  auto ret = false;
-  m_state_command = decltype(m_state_command) {};
-  m_state_command.stamp = msg.header.stamp;
-  for (const auto & button_idx : m_button_map) {
-    const auto idx = button_idx.second;
-    // Check if button is in range and active
-    if (idx < msg.buttons.size()) {
-      if (1 == msg.buttons[idx]) {
-        ret = handle_active_button(button_idx.first) || ret;
-      }
-    }
-  }
-  if (ret) {
-    m_state_command.hand_brake = m_hand_brake_on;
-    m_state_command.horn = m_horn_on;
-  }
-  return ret;
-}
+}  // namespace joystick_vehicle_interface_nodes
 
-////////////////////////////////////////////////////////////////////////////////
-bool8_t JoystickVehicleInterfaceNode::handle_active_button(Buttons button)
-{
-  auto ret = true;
-  using VSC = decltype(m_state_command);
-  switch (button) {
-    case Buttons::VELOCITY_UP:  ///< For high level control
-      ret = false;
-      m_velocity += VELOCITY_INCREMENT;
-      break;
-    case Buttons::VELOCITY_DOWN:   ///< For high level control
-      ret = false;
-      m_velocity -= VELOCITY_INCREMENT;
-      break;
-    case Buttons::AUTONOMOUS_TOGGLE:
-      m_state_command.mode = m_autonomous ? VSC::MODE_MANUAL : VSC::MODE_AUTONOMOUS;
-      m_autonomous = !m_autonomous;
-      break;
-    case Buttons::HEADLIGHTS_TOGGLE:
-      m_state_command.headlight = m_headlights_on ? VSC::HEADLIGHT_OFF : VSC::HEADLIGHT_ON;
-      m_headlights_on = !m_headlights_on;
-      break;
-    case Buttons::WIPER_TOGGLE:
-      m_state_command.wiper = m_wipers_on ? VSC::WIPER_OFF : VSC::WIPER_LOW;
-      m_wipers_on = !m_wipers_on;
-      break;
-    case Buttons::HAND_BRAKE_TOGGLE:
-      m_hand_brake_on = !m_hand_brake_on;
-      break;
-    case Buttons::HORN_TOGGLE:
-      m_horn_on = !m_horn_on;
-      break;
-    case Buttons::GEAR_DRIVE:
-      m_state_command.gear = VSC::GEAR_DRIVE;
-      break;
-    case Buttons::GEAR_REVERSE:
-      m_state_command.gear = VSC::GEAR_REVERSE;
-      break;
-    case Buttons::GEAR_PARK:
-      m_state_command.gear = VSC::GEAR_PARK;
-      break;
-    case Buttons::GEAR_NEUTRAL:
-      m_state_command.gear = VSC::GEAR_NEUTRAL;
-      break;
-    case Buttons::GEAR_LOW:
-      m_state_command.gear = VSC::GEAR_LOW;
-      break;
-    case Buttons::BLINKER_LEFT:
-      m_state_command.blinker = VSC::BLINKER_LEFT;
-      break;
-    case Buttons::BLINKER_RIGHT:
-      m_state_command.blinker = VSC::BLINKER_RIGHT;
-      break;
-    case Buttons::BLINKER_HAZARD:
-      m_state_command.blinker = VSC::BLINKER_HAZARD;
-      break;
-    case Buttons::RECORDREPLAY_START_RECORD:
-      m_recordreplay_command.data =
-        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::START_RECORD);
-      break;
-    case Buttons::RECORDREPLAY_START_REPLAY:
-      m_recordreplay_command.data =
-        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::START_REPLAY);
-      break;
-    case Buttons::RECORDREPLAY_STOP:
-      m_recordreplay_command.data =
-        static_cast<decltype(std_msgs::msg::UInt8::data)>(Recordreplay::STOP);
-      break;
-    default:
-      throw std::logic_error{"Impossible button was pressed"};
-  }
-  return ret;
-}
-
-}  // namespace joystick_vehicle_interface
-
-RCLCPP_COMPONENTS_REGISTER_NODE(joystick_vehicle_interface::JoystickVehicleInterfaceNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(joystick_vehicle_interface_nodes::JoystickVehicleInterfaceNode)

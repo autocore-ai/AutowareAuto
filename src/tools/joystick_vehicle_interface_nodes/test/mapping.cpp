@@ -1,4 +1,4 @@
-// Copyright 2020 the Autoware Foundation
+// Copyright 2020-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 #include <experimental/optional>
 #include <gtest/gtest.h>
-#include <joystick_vehicle_interface/joystick_vehicle_interface_node.hpp>
+#include <joystick_vehicle_interface/joystick_vehicle_interface.hpp>
+#include <joystick_vehicle_interface_nodes/joystick_vehicle_interface_node.hpp>
 #include <common/types.hpp>
 
 #include <chrono>
@@ -30,7 +31,7 @@
 
 using joystick_vehicle_interface::Axes;
 using joystick_vehicle_interface::Buttons;
-using joystick_vehicle_interface::JoystickVehicleInterfaceNode;
+using joystick_vehicle_interface_nodes::JoystickVehicleInterfaceNode;
 using autoware::common::types::bool8_t;
 
 enum class PubType
@@ -43,10 +44,10 @@ enum class PubType
 struct JoyMapping
 {
   PubType pub_type;
-  JoystickVehicleInterfaceNode::AxisMap axis_map;
-  JoystickVehicleInterfaceNode::AxisScaleMap axis_scale_map;
-  JoystickVehicleInterfaceNode::AxisScaleMap axis_offset_map;
-  JoystickVehicleInterfaceNode::ButtonMap button_map;
+  joystick_vehicle_interface::AxisMap axis_map;
+  joystick_vehicle_interface::AxisScaleMap axis_scale_map;
+  joystick_vehicle_interface::AxisScaleMap axis_offset_map;
+  joystick_vehicle_interface::ButtonMap button_map;
 };  // struct JoyMapping
 
 class joy_vi_test : public ::testing::TestWithParam<JoyMapping>
@@ -269,10 +270,10 @@ TEST_P(joy_vi_test, basic_mapping)
       if ((param.axis_map.end() != it) && (it->second < joy_msg.axes.size())) {
         const auto scale_it = param.axis_scale_map.find(axis);
         const auto scale = param.axis_scale_map.end() == scale_it ?
-          JoystickVehicleInterfaceNode::DEFAULT_SCALE : scale_it->second;
+          joystick_vehicle_interface::DEFAULT_SCALE : scale_it->second;
         const auto offset_it = param.axis_offset_map.find(axis);
         const auto offset = param.axis_offset_map.end() == offset_it ?
-          JoystickVehicleInterfaceNode::DEFAULT_OFFSET : offset_it->second;
+          joystick_vehicle_interface::DEFAULT_OFFSET : offset_it->second;
         using ValT = decltype(value);
         const auto expect_val =
           static_cast<ValT>((scale * joy_msg.axes[it->second]) + offset);
@@ -330,7 +331,7 @@ TEST_P(joy_vi_test, basic_mapping)
     }
     // Must be modulo the increment
     EXPECT_LT(
-      std::fabs(std::fmod(velocity, JoystickVehicleInterfaceNode::VELOCITY_INCREMENT)),
+      std::fabs(std::fmod(velocity, joystick_vehicle_interface::VELOCITY_INCREMENT)),
       std::numeric_limits<decltype(velocity)>::epsilon());
     // Curvature
     EXPECT_TRUE(axis_check_fn(Axes::CURVATURE, high_level.msg_->curvature));

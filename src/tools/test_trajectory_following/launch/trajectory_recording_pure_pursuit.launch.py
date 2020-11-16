@@ -1,4 +1,4 @@
-# Copyright 2020 The Autoware Foundation.
+# Copyright 2020-2021 The Autoware Foundation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,8 +101,8 @@ def generate_launch_description():
     # -------------------------------- Nodes-----------------------------------
 
     joystick_launch_file_path = get_share_file(
-        package_name='joystick_vehicle_interface',
-        file_name='launch/joystick_vehicle_interface.launch.py')
+        package_name='joystick_vehicle_interface_nodes',
+        file_name='launch/joystick_vehicle_interface_node.launch.py')
     joystick = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(joystick_launch_file_path),
         launch_arguments=[

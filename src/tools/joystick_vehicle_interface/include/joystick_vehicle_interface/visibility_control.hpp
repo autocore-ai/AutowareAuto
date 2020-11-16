@@ -16,9 +16,6 @@
 #ifndef JOYSTICK_VEHICLE_INTERFACE__VISIBILITY_CONTROL_HPP_
 #define JOYSTICK_VEHICLE_INTERFACE__VISIBILITY_CONTROL_HPP_
 
-// This logic was borrowed (then namespaced) from the examples on the gcc wiki:
-//     https://gcc.gnu.org/wiki/Visibility
-
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef __GNUC__
     #define JOYSTICK_VEHICLE_INTERFACE_EXPORT __attribute__ ((dllexport))

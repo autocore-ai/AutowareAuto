@@ -1,4 +1,4 @@
-# Copyright 2020 the Autoware Foundation
+# Copyright 2020-2021 the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ def generate_launch_description():
     """
     Launch a minimal joystick + LGSVL demo.
 
-    The joystick_vehicle_interface and the lgsvl_interface
+    The joystick_vehicle_interface_nodes and the lgsvl_interface
     are modified via parameter remapping to use VehicleControlCommand as an output.
     The vehicle can be controlled by manipulating the left joystick of the gamepad.
     """
@@ -49,7 +49,7 @@ def generate_launch_description():
     joy_translator_param = DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
-            get_share_file('joystick_vehicle_interface',
+            get_share_file('joystick_vehicle_interface_nodes',
                            'param/logitech_f310.default.param.yaml')
         ],
         description='Path to config file for joystick translator')
@@ -64,8 +64,8 @@ def generate_launch_description():
 
     # -------------------------------- Nodes-----------------------------------
     # Include Joystick launch
-    joystick_launch_file_path = get_share_file('joystick_vehicle_interface',
-                                               'launch/joystick_vehicle_interface.launch.py')
+    joystick_launch_file_path = get_share_file('joystick_vehicle_interface_nodes',
+                                               'launch/joystick_vehicle_interface_node.launch.py')
     joystick = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(joystick_launch_file_path),
         launch_arguments={

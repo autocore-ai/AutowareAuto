@@ -1,4 +1,4 @@
-# Copyright 2019 Apex.AI, Inc.
+# Copyright 2019-2021 Apex.AI, Inc., Arm Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ def generate_launch_description():
     joy_translator_param = DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
-            get_share_file('joystick_vehicle_interface', 'param/logitech_f310.default.param.yaml')
+            get_share_file('joystick_vehicle_interface_nodes',
+                           'param/logitech_f310.default.param.yaml')
         ],
         description='Path to config file for joystick translator')
 
@@ -54,8 +55,8 @@ def generate_launch_description():
     # -------------------------------- Nodes-----------------------------------
 
     # Include Joystick launch
-    joystick_launch_file_path = get_share_file('joystick_vehicle_interface',
-                                               'launch/joystick_vehicle_interface.launch.py')
+    joystick_launch_file_path = get_share_file('joystick_vehicle_interface_nodes',
+                                               'launch/joystick_vehicle_interface_node.launch.py')
     joystick = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(joystick_launch_file_path),
         launch_arguments=[

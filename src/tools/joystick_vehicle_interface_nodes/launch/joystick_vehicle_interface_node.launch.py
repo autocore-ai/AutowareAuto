@@ -1,4 +1,4 @@
-# Copyright 2020 the Autoware Foundation
+# Copyright 2020-2021 the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ def generate_launch_description():
     joy_translator_param = DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
-            get_param('joystick_vehicle_interface', 'param/logitech_f310.default.param.yaml')
+            get_param('joystick_vehicle_interface_nodes', 'param/logitech_f310.default.param.yaml')
         ],
         description='Path to config file for joystick translator')
 
@@ -56,7 +56,7 @@ def generate_launch_description():
 
     # joystick translator node
     joy_translator = launch_ros.actions.Node(
-        package='joystick_vehicle_interface',
+        package='joystick_vehicle_interface_nodes',
         node_executable='joystick_vehicle_interface_node_exe',
         output='screen',
         parameters=[

@@ -14,28 +14,14 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 # Node library
-set(JOYSTICK_VEHICLE_INTERFACE_LIB_NODE joystick_vehicle_interface_node)
-ament_auto_add_library(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE} SHARED src/joystick_vehicle_interface_node.cpp)
-autoware_set_compile_options(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE})
-
-# Node executable
-rclcpp_components_register_node(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE}
-  PLUGIN "joystick_vehicle_interface::JoystickVehicleInterfaceNode"
-  EXECUTABLE ${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE}_exe
-)
+ament_auto_add_library(joystick_vehicle_interface SHARED
+  src/joystick_vehicle_interface.cpp
+  include/joystick_vehicle_interface/joystick_vehicle_interface.hpp)
+autoware_set_compile_options(joystick_vehicle_interface)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-
-  # Test
-  ament_add_gtest(joystick_vehicle_interface_test
-    test/gtest_main.cpp
-    test/mapping.cpp)
-  target_include_directories(joystick_vehicle_interface_test PUBLIC include)
-  target_link_libraries(joystick_vehicle_interface_test joystick_vehicle_interface_node)
-  ament_target_dependencies(joystick_vehicle_interface_test
-    "rclcpp" "autoware_auto_msgs" "sensor_msgs")
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE param launch)
+ament_auto_package()
