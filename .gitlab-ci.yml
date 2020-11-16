@@ -104,6 +104,7 @@ stages:
     - 'colcon build
            --merge-install
            --install-base /opt/AutowareAuto
+           --cmake-args -DCMAKE_BUILD_TYPE=Release
       '
     - chmod -R og-w /opt/AutowareAuto
     - tar czf opt.tar.gz /opt/AutowareAuto

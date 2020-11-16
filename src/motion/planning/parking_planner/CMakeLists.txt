@@ -21,6 +21,9 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(casadi REQUIRED)
 ament_auto_find_build_dependencies()
 
+# Temporarily override build type - See #696
+set(CMAKE_BUILD_TYPE "")
+
 # --- Add a solver generator executable
 # This has to be built first, then run, and only _then_ can the bicycle planner
 # library be built - due to the code generation. This is implemented by making it
