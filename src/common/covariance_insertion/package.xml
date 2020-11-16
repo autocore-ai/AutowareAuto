@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>covariance_insertion_nodes</name>
+  <name>covariance_insertion</name>
   <version>0.0.1</version>
   <description>A node that allows to republish messages with inserted covariance.</description>
   <maintainer email="opensource@apex.ai">Igor Bogoslavskyi</maintainer>
@@ -10,13 +10,9 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
-  <depend>covariance_insertion</depend>
-  <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
   <depend>autoware_auto_common</depend>
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>mpark_variant_vendor</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

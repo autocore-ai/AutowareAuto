@@ -1,4 +1,4 @@
-# Copyright 2020 Apex.AI, Inc.
+# Copyright 2020-2021 Apex.AI, Inc., Arm Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ set(MESSAGE_MODIFYING_NODE_LIB_SRC
 set(MESSAGE_MODIFYING_NODE_LIB_HEADERS
   include/covariance_insertion_nodes/covariance_insertion_node.hpp
   include/covariance_insertion_nodes/convert.hpp
-  include/covariance_insertion_nodes/add_covariance.hpp
-  include/covariance_insertion_nodes/output_type_trait.hpp
-  include/covariance_insertion_nodes/traits.hpp
   include/covariance_insertion_nodes/visibility_control.hpp
 )
 

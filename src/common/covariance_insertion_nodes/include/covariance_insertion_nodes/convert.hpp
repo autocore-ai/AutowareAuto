@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2020-2021 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #ifndef COVARIANCE_INSERTION_NODES__CONVERT_HPP_
 #define COVARIANCE_INSERTION_NODES__CONVERT_HPP_
 
-#include <covariance_insertion_nodes/output_type_trait.hpp>
+#include <covariance_insertion/output_type_trait.hpp>
 
 namespace autoware
 {

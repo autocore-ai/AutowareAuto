@@ -1,4 +1,4 @@
-// Copyright 2020 The Autoware Foundation
+// Copyright 2020-2021 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@
 
 #include <common/types.hpp>
 #include <mpark_variant_vendor/variant.hpp>
+#include <covariance_insertion/covariance_insertion.hpp>
 #include <covariance_insertion_nodes/visibility_control.hpp>
-#include <covariance_insertion_nodes/add_covariance.hpp>
 #include <covariance_insertion_nodes/convert.hpp>
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace autoware
@@ -75,13 +76,13 @@ private:
   // Create a message variant from the input message.
   MsgVariant fill_message_variant(const std::string & input_msg_type_name);
 
+  std::unique_ptr<covariance_insertion::CovarianceInsertion> m_core;
   rclcpp::SubscriptionBase::SharedPtr m_subscription{};
   rclcpp::PublisherBase::SharedPtr m_publisher{};
   std::size_t m_history_size{};
   std::string m_input_topic{};
   std::string m_output_topic{};
   std::string m_input_msg_type_name{};
-  std::map<std::string, std::vector<common::types::float64_t>> m_covariances{};
 };
 }  // namespace covariance_insertion_nodes
 }  // namespace autoware

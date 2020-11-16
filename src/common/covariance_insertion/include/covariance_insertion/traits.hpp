@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 /// \copyright Copyright 2020 Apex.AI, Inc.
 /// All rights reserved.
 
-#ifndef COVARIANCE_INSERTION_NODES__TRAITS_HPP_
-#define COVARIANCE_INSERTION_NODES__TRAITS_HPP_
+#ifndef COVARIANCE_INSERTION__TRAITS_HPP_
+#define COVARIANCE_INSERTION__TRAITS_HPP_
 
 #include <type_traits>
 
 namespace autoware
 {
-namespace covariance_insertion_nodes
+namespace covariance_insertion
 {
 
 template<typename T, typename = void>
@@ -49,7 +49,7 @@ struct has_twist_member<T, decltype((void)T::twist, void())>: std::true_type
 {
 };
 
-}  // namespace covariance_insertion_nodes
+}  // namespace covariance_insertion
 }  // namespace autoware
 
-#endif  // COVARIANCE_INSERTION_NODES__TRAITS_HPP_
+#endif  // COVARIANCE_INSERTION__TRAITS_HPP_

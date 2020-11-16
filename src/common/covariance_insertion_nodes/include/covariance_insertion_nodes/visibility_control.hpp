@@ -18,7 +18,6 @@
 #ifndef COVARIANCE_INSERTION_NODES__VISIBILITY_CONTROL_HPP_
 #define COVARIANCE_INSERTION_NODES__VISIBILITY_CONTROL_HPP_
 
-////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32)
   #if defined(MESSAGE_MODIFYING_NODE_BUILDING_DLL) || defined(MESSAGE_MODIFYING_NODE_EXPORTS)
     #define COVARIANCE_INSERTION_NODES_PUBLIC __declspec(dllexport)

@@ -52,21 +52,8 @@ static constexpr auto kTwistWithCovarianceMsgType = "TwistWithCovariance";
 static constexpr auto kTwistWithCovarianceStampedMsgType = "TwistWithCovarianceStamped";
 
 static constexpr std::array<const char *, 3> kPossibleOverrideFieldNames{
-  detail::kDirectlyTag, detail::kPoseTag, detail::kTwistTag};
-
-template<typename MsgT>
-void set_all_covariances(
-  MsgT * msg,
-  const std::map<std::string, std::vector<common::types::float64_t>> & covariances)
-{
-  if (!msg) {return;}
-  for (const auto & kv : covariances) {
-    const auto & field = kv.first;
-    const auto & covariance = kv.second;
-    add_covariance(msg, covariance, field);
-  }
-}
-
+  covariance_insertion::detail::kDirectlyTag, covariance_insertion::detail::kPoseTag,
+  covariance_insertion::detail::kTwistTag};
 }  // namespace
 
 CovarianceInsertionNode::CovarianceInsertionNode(const rclcpp::NodeOptions & options)
@@ -77,13 +64,14 @@ CovarianceInsertionNode::CovarianceInsertionNode(const rclcpp::NodeOptions & opt
   m_history_size = static_cast<std::size_t>(history_size);
   m_input_topic = kInputTopic;
   m_output_topic = m_input_topic + kOutputTopicSuffix;
+  m_core = std::make_unique<covariance_insertion::CovarianceInsertion>();
 
   const auto input_msg_type_name{declare_parameter(kInputMsgTypeTag).get<std::string>()};
   for (const auto & field : kPossibleOverrideFieldNames) {
     const auto full_field{std::string{kOverrideCovariancesPrefix} + '.' + field};
     const auto covariance{declare_parameter(full_field, std::vector<common::types::float64_t>{})};
     if (!covariance.empty()) {
-      m_covariances[field] = covariance;
+      m_core->insert_covariance(field, covariance);
     }
   }
   const auto msg_variant = fill_message_variant(input_msg_type_name);
@@ -119,7 +107,7 @@ CovarianceInsertionNode::MsgVariant CovarianceInsertionNode::fill_message_varian
 
 void CovarianceInsertionNode::validate(const MsgVariant & msg_variant)
 {
-  if (m_covariances.empty()) {
+  if (m_core->covariances_empty()) {
     throw std::runtime_error(
             "No overrides provided. Probably something is wrong with the provided parameters.");
   }
@@ -128,7 +116,7 @@ void CovarianceInsertionNode::validate(const MsgVariant & msg_variant)
       using InputMsgT = std::decay_t<decltype(msg)>;
       using OutputType = typename output<InputMsgT>::type;
       OutputType new_msg{};
-      set_all_covariances(&new_msg, m_covariances);
+      m_core->set_all_covariances(&new_msg);
     }, msg_variant);
 }
 
@@ -145,7 +133,7 @@ void CovarianceInsertionNode::create_pub_sub(const MsgVariant & msg_variant)
         [&](const typename InputMsgT::SharedPtr msg) {
           if (!msg) {return;}
           auto new_msg = convert(*msg);
-          set_all_covariances(&new_msg, m_covariances);
+          m_core->set_all_covariances(&new_msg);
           auto publisher = std::static_pointer_cast<rclcpp::Publisher<OutputType>>(m_publisher);
           publisher->publish(new_msg);
         });

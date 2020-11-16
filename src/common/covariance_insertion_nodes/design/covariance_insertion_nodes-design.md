@@ -43,7 +43,7 @@ Most errors can step from a missing (not implemented) type trait or using the no
 
 # Future extensions / Unimplemented parts
 <!-- Optional -->
-The node can be extended to work with more types. See `convert.hpp`, `add_covariance.hpp`.
+The node can be extended to work with more types. See `covariance_insertion::convert.hpp`, `covariance_insertion::add_covariance.hpp`.
 
 # Related issues
 - #505 - Integrating a state estimator with NDT

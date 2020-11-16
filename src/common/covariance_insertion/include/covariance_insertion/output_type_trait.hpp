@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2020 Apex.AI, Inc., Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 /// \copyright Copyright 2020 Apex.AI, Inc.
 /// All rights reserved.
 
-#ifndef COVARIANCE_INSERTION_NODES__OUTPUT_TYPE_TRAIT_HPP_
-#define COVARIANCE_INSERTION_NODES__OUTPUT_TYPE_TRAIT_HPP_
+#ifndef COVARIANCE_INSERTION__OUTPUT_TYPE_TRAIT_HPP_
+#define COVARIANCE_INSERTION__OUTPUT_TYPE_TRAIT_HPP_
 
 
 #include <nav_msgs/msg/odometry.hpp>
@@ -64,4 +64,4 @@ struct output<geometry_msgs::msg::TwistStamped>
   using type = geometry_msgs::msg::TwistWithCovarianceStamped;
 };
 
-#endif  // COVARIANCE_INSERTION_NODES__OUTPUT_TYPE_TRAIT_HPP_
+#endif  // COVARIANCE_INSERTION__OUTPUT_TYPE_TRAIT_HPP_
