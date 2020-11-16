@@ -110,7 +110,7 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
   sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
   sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
 
-  auto && intensity_it = intensity_iterator_wrapper(msg);
+  auto && intensity_it = autoware::common::lidar_utils::IntensityIteratorWrapper(msg);
 
   auto point_cloud_idx = 0U;
   reset_pcl_msg(m_filtered_transformed_msg, m_pcl_size, point_cloud_idx);
@@ -153,54 +153,6 @@ PointCloud2FilterTransformNode::process_filtered_transformed_message(
 {
   const auto filtered_transformed_msg = filter_and_transform(*msg);
   m_pub_ptr->publish(filtered_transformed_msg);
-}
-
-bool8_t
-PointCloud2FilterTransformNode::intensity_iterator_wrapper::eof()
-{
-  switch (m_intensity_datatype) {
-    // For some reason, the equality operator (==) does not work with PointCloud2ConstIterator
-    case sensor_msgs::msg::PointField::UINT8:
-      return !(m_intensity_it_uint8 != m_intensity_it_uint8.end());
-    case sensor_msgs::msg::PointField::FLOAT32:
-      return !(m_intensity_it_float32 != m_intensity_it_float32.end());
-    default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-  }
-}
-
-void
-PointCloud2FilterTransformNode::intensity_iterator_wrapper::next()
-{
-  switch (m_intensity_datatype) {
-    case sensor_msgs::msg::PointField::UINT8:
-      ++m_intensity_it_uint8;
-      break;
-    case sensor_msgs::msg::PointField::FLOAT32:
-      ++m_intensity_it_float32;
-      break;
-    default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-  }
-}
-
-PointCloud2FilterTransformNode::intensity_iterator_wrapper::intensity_iterator_wrapper(
-  const PointCloud2 & msg)
-: m_intensity_it_uint8(msg, "intensity"),
-  m_intensity_it_float32(msg, "intensity")
-{
-  auto && intensity_field_it =
-    std::find_if(
-    std::cbegin(msg.fields), std::cend(msg.fields),
-    [](const sensor_msgs::msg::PointField & field) {return field.name == "intensity";});
-  m_intensity_datatype = (*intensity_field_it).datatype;
-  switch (m_intensity_datatype) {
-    case sensor_msgs::msg::PointField::UINT8:
-    case sensor_msgs::msg::PointField::FLOAT32:
-      break;
-    default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
-  }
 }
 
 }  // namespace point_cloud_filter_transform_nodes

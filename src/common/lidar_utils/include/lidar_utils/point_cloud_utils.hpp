@@ -403,6 +403,36 @@ private:
   float32_t m_threshold2;
 };
 
+class LIDAR_UTILS_PUBLIC IntensityIteratorWrapper
+{
+private:
+  sensor_msgs::PointCloud2ConstIterator<uint8_t> m_intensity_it_uint8;
+  sensor_msgs::PointCloud2ConstIterator<float32_t> m_intensity_it_float32;
+  decltype(sensor_msgs::msg::PointField::datatype) m_intensity_datatype;
+
+public:
+  explicit IntensityIteratorWrapper(const PointCloud2 & msg);
+
+  void next();
+
+  bool8_t eof();
+
+  template<typename PointFieldValueT>
+  void get_current_value(PointFieldValueT & point_field_value)
+  {
+    switch (m_intensity_datatype) {
+      case sensor_msgs::msg::PointField::UINT8:
+        point_field_value = *m_intensity_it_uint8;
+        break;
+      case sensor_msgs::msg::PointField::FLOAT32:
+        point_field_value = *m_intensity_it_float32;
+        break;
+      default:
+        throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+    }
+  }
+};
+
 }  // namespace lidar_utils
 }  // namespace common
 }  // namespace autoware

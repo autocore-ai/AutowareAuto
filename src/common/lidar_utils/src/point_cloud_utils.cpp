@@ -403,6 +403,52 @@ AngleFilter::AngleFilter(float32_t start_angle, float32_t end_angle)
   m_threshold2 = thresh * thresh;
 }
 
+bool8_t IntensityIteratorWrapper::eof()
+{
+  switch (m_intensity_datatype) {
+    // For some reason, the equality operator (==) does not work with PointCloud2ConstIterator
+    case sensor_msgs::msg::PointField::UINT8:
+      return !(m_intensity_it_uint8 != m_intensity_it_uint8.end());
+    case sensor_msgs::msg::PointField::FLOAT32:
+      return !(m_intensity_it_float32 != m_intensity_it_float32.end());
+    default:
+      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+  }
+}
+
+void IntensityIteratorWrapper::next()
+{
+  switch (m_intensity_datatype) {
+    case sensor_msgs::msg::PointField::UINT8:
+      ++m_intensity_it_uint8;
+      break;
+    case sensor_msgs::msg::PointField::FLOAT32:
+      ++m_intensity_it_float32;
+      break;
+    default:
+      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+  }
+}
+
+IntensityIteratorWrapper::IntensityIteratorWrapper(
+  const PointCloud2 & msg)
+: m_intensity_it_uint8(msg, "intensity"),
+  m_intensity_it_float32(msg, "intensity")
+{
+  auto && intensity_field_it =
+    std::find_if(
+    std::cbegin(msg.fields), std::cend(msg.fields),
+    [](const sensor_msgs::msg::PointField & field) {return field.name == "intensity";});
+  m_intensity_datatype = (*intensity_field_it).datatype;
+  switch (m_intensity_datatype) {
+    case sensor_msgs::msg::PointField::UINT8:
+    case sensor_msgs::msg::PointField::FLOAT32:
+      break;
+    default:
+      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+  }
+}
+
 }  // namespace lidar_utils
 }  // namespace common
 }  // namespace autoware
