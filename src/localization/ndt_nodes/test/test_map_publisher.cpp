@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2020 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@
 
 #include "test_map_publisher.hpp"
 
-using autoware::localization::ndt_nodes::read_from_pcd;
-using autoware::localization::ndt_nodes::geocentric_pose_t;
+using autoware::localization::ndt::read_from_pcd;
+using autoware::localization::ndt::geodetic_pose_t;
 using autoware::localization::ndt_nodes::NDTMapPublisherNode;
 using autoware::localization::ndt::DynamicNDTMap;
 using autoware::localization::ndt::StaticNDTMap;
@@ -112,7 +112,7 @@ TEST(YamlLoadTest, basics) {
   yaml_fout << yaml_string << std::endl;
   yaml_fout.close();
 
-  geocentric_pose_t gp{0, 0, 0, 0, 0, 0};
+  geodetic_pose_t gp{0, 0, 0, 0, 0, 0};
   ASSERT_TRUE(std::ifstream{test_fname}.good());
   ASSERT_FALSE(std::ifstream{non_existing_fname}.good());
   EXPECT_THROW(

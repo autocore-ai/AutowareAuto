@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2020 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #define NDT_NODES__MAP_PUBLISHER_HPP_
 
 #include <ndt_nodes/visibility_control.hpp>
+#include <ndt/ndt_map_publisher.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ndt/ndt_map.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -37,33 +38,6 @@ namespace localization
 {
 namespace ndt_nodes
 {
-
-/// struct to hold geocentric pose of map origin
-/// decribed as a latitude, longitude, and elevation
-/// along with an orientation: roll, pitch and yaw
-struct geocentric_pose_t
-{
-  float64_t latitude;
-  float64_t longitude;
-  float64_t elevation;
-  float64_t roll;
-  float64_t pitch;
-  float64_t yaw;
-};
-
-/// Read the map info from a yaml file. Throws if the file cannot be read.
-/// \param[in] yaml_file_name Name of the ymal file.
-/// \param[out] geo_pose Geocentric pose describing map orgin
-void NDT_NODES_PUBLIC read_from_yaml(
-  const std::string & yaml_file_name,
-  geocentric_pose_t * geo_pose);
-
-/// Read the pcd file into a PointCloud2 message. Throws if the file cannot be read.
-/// \param[in] file_name Name of the pcd file.
-/// \param[out] msg Pointer to PointCloud2 message
-void NDT_NODES_PUBLIC read_from_pcd(
-  const std::string & file_name,
-  sensor_msgs::msg::PointCloud2 * msg);
 
 /// Node to read pcd files, transform to ndt maps and publish the resulting maps in PointCloud2
 /// format
@@ -97,15 +71,7 @@ private:
     const std::string & map_topic,
     const std::string & viz_map_topic);
 
-  /// Read the pcd file with filename into a PointCloud2 message, transform it into an NDT
-  /// representation and then serialize the ndt representation back into a PointCloud2 message
-  /// that can be published.
-  /// \param fn File name of the pcd file.
-  void load_map();
-
-  void publish_earth_to_map_transform(
-    float64_t x, float64_t y, float64_t z,
-    float64_t roll, float64_t pitch, float64_t yaw);
+  void publish_earth_to_map_transform(ndt::geocentric_pose_t pose);
 
   /// Publish the loaded map file. If no new map is loaded, it will publish the
   /// previous map, or an empty map.
@@ -114,18 +80,10 @@ private:
   /// Reset the internal point clouds and the ndt map.
   void reset();
 
-  /// Iterate over the map representation and convert it into a PointCloud2 message where each voxel
-  /// in the map corresponds to a single point in the PointCloud2 field. See the documentation for
-  /// the specs and the format of the point cloud message.
-  void map_to_pc();
-
   /// Use a Voxel Grid filter to downsample the loaded map prior to publishing.
   void downsample_pc();
 
-  /// Convenience function to clear the contents of a pointcloud message.
-  /// Can be removed when #102 is merged in.
-  void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg);
-
+  std::unique_ptr<ndt::NDTMapPublisher> m_core;
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_pub_earth_map;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pub;
   std::unique_ptr<ndt::DynamicNDTMap> m_ndt_map_ptr;

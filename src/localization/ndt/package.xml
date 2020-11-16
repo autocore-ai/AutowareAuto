@@ -10,6 +10,9 @@
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
     <build_depend>eigen</build_depend>
+    <build_depend>geographiclib</build_depend>
+    <build_depend>libpcl-all-dev</build_depend>
+    <build_depend>yaml-cpp</build_depend>
 
     <depend>localization_common</depend>
     <depend>optimization</depend>
@@ -17,6 +20,7 @@
     <depend>sensor_msgs</depend>
     <depend>geometry_msgs</depend>
     <depend>voxel_grid</depend>
+    <depend>voxel_grid_nodes</depend>
     <depend>autoware_auto_geometry</depend>
     <depend>autoware_auto_common</depend>
     <depend>autoware_auto_msgs</depend>

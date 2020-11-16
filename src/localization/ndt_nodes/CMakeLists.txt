@@ -1,4 +1,4 @@
-# Copyright 2019 Apex.AI, Inc.
+# Copyright 2019-2020 Apex.AI, Inc., Arm Limited
 # All rights reserved.
 
 cmake_minimum_required(VERSION 3.5)
@@ -13,17 +13,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-find_package(GEOGRAPHICLIB REQUIRED)
 find_package(yaml-cpp REQUIRED)
-
 find_package(ament_cmake_auto REQUIRED)
 
 find_package(PCL 1.8 REQUIRED COMPONENTS io)
 
 ament_auto_find_build_dependencies()
-include_directories(SYSTEM ${PCL_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIRS})
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 
 set(NDT_MAP_PUBLISHER_NODE_LIB_SRC
   src/map_publisher.cpp
@@ -41,9 +37,7 @@ ament_auto_add_library(${NDT_MAP_PUBLISHER_NODE_LIB} SHARED
 autoware_set_compile_options(${NDT_MAP_PUBLISHER_NODE_LIB})
 
 target_link_libraries(${NDT_MAP_PUBLISHER_NODE_LIB}
-  ${PCL_LIBRARIES}
-  ${GeographicLib_LIBRARIES}
-  ${YAML_CPP_LIBRARIES})
+  ${PCL_LIBRARIES})
 
 rclcpp_components_register_node(${NDT_MAP_PUBLISHER_NODE_LIB}
   PLUGIN "autoware::localization::ndt_nodes::NDTMapPublisherNode"
@@ -66,9 +60,7 @@ ament_auto_add_library(${P2D_NDT_LOCALIZER_NODE_LIB} SHARED
 autoware_set_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB})
 
 target_link_libraries(${P2D_NDT_LOCALIZER_NODE_LIB}
-  ${PCL_LIBRARIES}
-  ${GeographicLib_LIBRARIES}
-  ${YAML_CPP_LIBRARIES})
+  ${PCL_LIBRARIES})
 
 rclcpp_components_register_node(${P2D_NDT_LOCALIZER_NODE_LIB}
   PLUGIN "autoware::localization::ndt_nodes::P2DNDTLocalizerNodeComponent"
@@ -87,7 +79,6 @@ if(BUILD_TESTING)
     WORKING_DIRECTORY /tmp)
   target_link_libraries(${NDT_NODES_TEST}
     ${NDT_MAP_PUBLISHER_NODE_LIB}
-    ${GeographicLib_LIBRARIES}
     ${YAML_CPP_LIBRARIES})
 endif()
 

@@ -1,4 +1,4 @@
-# Copyright 2019 Apex.AI, Inc.
+# Copyright 2019-2020 Apex.AI, Inc., Arm Limited
 # All rights reserved.
 
 cmake_minimum_required(VERSION 3.5)
@@ -13,17 +13,22 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #dependencies
 find_package(Eigen3 REQUIRED)
+find_package(GEOGRAPHICLIB REQUIRED)
+find_package(yaml-cpp REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
+find_package(PCL 1.8 REQUIRED COMPONENTS io)
 ament_auto_find_build_dependencies()
 
 # includes
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
 set(NDT_NODES_LIB_SRC
     src/ndt.cpp
     src/ndt_map.cpp
+    src/ndt_map_publisher.cpp
     src/ndt_voxel.cpp
     src/ndt_voxel_view.cpp
 )
@@ -36,6 +41,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_voxel.hpp
     include/ndt/ndt_voxel_view.hpp
     include/ndt/ndt_map.hpp
+    include/ndt/ndt_map_publisher.hpp
     include/ndt/ndt_scan.hpp
     include/ndt/ndt_localizer.hpp
     include/ndt/utils.hpp)
@@ -46,6 +52,10 @@ ${PROJECT_NAME} SHARED
 )
 
 autoware_set_compile_options(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}
+  ${GeographicLib_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+  ${PCL_LIBRARIES})
 # turn off warnings to be able to successfully compile upstream ros packages
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 set(ROS_NO_WARN_LIST
