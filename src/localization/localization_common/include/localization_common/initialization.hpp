@@ -22,7 +22,6 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <helper_functions/crtp.hpp>
 #include <tf2/buffer_core.h>
-#include <rclcpp/rclcpp.hpp>
 #include <string>
 // probably include the motion model
 
