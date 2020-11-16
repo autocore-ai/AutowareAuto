@@ -1,5 +1,4 @@
-
-# Copyright 2020, The Autoware Foundation
+# Copyright 2020-2021, The Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,17 +18,17 @@ from ament_index_python import get_package_share_directory
 
 import os
 
-point_cloud_fusion_pkg_prefix = get_package_share_directory('point_cloud_fusion')
-point_cloud_fusion_param_file = os.path.join(point_cloud_fusion_pkg_prefix,
-                                             'param/vlp16_sim_lexus_pc_fusion.param.yaml')
+point_cloud_fusion_node_pkg_prefix = get_package_share_directory('point_cloud_fusion_nodes')
+point_cloud_fusion_node_param_file = os.path.join(point_cloud_fusion_node_pkg_prefix,
+                                                  'param/vlp16_sim_lexus_pc_fusion.param.yaml')
 
 
 def generate_launch_description():
-    point_cloud_fusion = Node(
-        package='point_cloud_fusion',
+    point_cloud_fusion_nodes = Node(
+        package='point_cloud_fusion_nodes',
         node_executable='pointcloud_fusion_node_exe',
         node_namespace='lidars',
-        parameters=[point_cloud_fusion_param_file],
+        parameters=[point_cloud_fusion_node_param_file],
         remappings=[
             ("output_topic", "points_fused"),
             ("input_topic1", "/lidar_front/points_filtered"),
@@ -37,4 +36,4 @@ def generate_launch_description():
         ]
     )
 
-    return launch.LaunchDescription([point_cloud_fusion])
+    return launch.LaunchDescription([point_cloud_fusion_nodes])

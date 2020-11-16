@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,20 +17,11 @@
 #ifndef POINT_CLOUD_FUSION__POINT_CLOUD_FUSION_HPP_
 #define POINT_CLOUD_FUSION__POINT_CLOUD_FUSION_HPP_
 
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <lidar_utils/point_cloud_utils.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <rclcpp/rclcpp.hpp>
 #include <point_cloud_fusion/visibility_control.hpp>
-#include <common/types.hpp>
-#include <string>
-#include <memory>
-#include <vector>
 
-using autoware::common::types::bool8_t;
+#include <common/types.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
+#include <vector>
 
 namespace autoware
 {
@@ -40,59 +31,47 @@ namespace filters
 {
 namespace point_cloud_fusion
 {
-/// \brief Class that fuses multiple point clouds from different sources into one by concatanating
-/// them.
-class POINT_CLOUD_FUSION_PUBLIC PointCloudFusionNode : public rclcpp::Node
+class POINT_CLOUD_FUSION_PUBLIC PointCloudFusion
 {
 public:
-  /// \brief constructor
-  /// \param[in] node_options An rclcpp::NodeOptions object
-  explicit PointCloudFusionNode(
-    const rclcpp::NodeOptions & node_options);
-
-private:
-  using PointT = common::types::PointXYZIF;
+  enum class Error : uint8_t
+  {
+    NONE = 0U,
+    TOO_LARGE,
+    INSERT_FAILED
+  };  // enum class Error
   using PointCloudMsgT = sensor_msgs::msg::PointCloud2;
-  using PointCloudT = sensor_msgs::msg::PointCloud2;
-  using SyncPolicyT = message_filters::sync_policies::ApproximateTime<PointCloudMsgT,
-      PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT,
-      PointCloudMsgT, PointCloudMsgT>;
 
-  void init();
-
-  std::chrono::nanoseconds convert_msg_time(builtin_interfaces::msg::Time stamp);
-
-  void pointcloud_callback(
-    const PointCloudMsgT::ConstSharedPtr & msg1, const PointCloudMsgT::ConstSharedPtr & msg2,
-    const PointCloudMsgT::ConstSharedPtr & msg3, const PointCloudMsgT::ConstSharedPtr & msg4,
-    const PointCloudMsgT::ConstSharedPtr & msg5, const PointCloudMsgT::ConstSharedPtr & msg6,
-    const PointCloudMsgT::ConstSharedPtr & msg7, const PointCloudMsgT::ConstSharedPtr & msg8);
-
-  bool8_t concatenate_pointcloud(
-    const PointCloudMsgT & pc_in, PointCloudMsgT & pc_out,
-    uint32_t & concat_idx) const;
+  /// \brief     constructor
+  /// \param[in] cloud_capacity
+  /// \param[in] input_topics_size
+  explicit PointCloudFusion(
+    uint32_t cloud_capacity,
+    size_t input_topics_size);
 
   /// \brief This function goes through all of the messages and adds them to the concatenated
   /// point cloud. If a pointcloud cannot be transformed to the output frame, it's ignored. If
   /// concatenation exceeds the maximum capacity, fusion stops and the partially concatenated cloud
   /// is still published.
-  /// \param msgs msgs to be fused.
-  /// \return Size of the concatenated pointcloud.
-  uint32_t fuse_pc_msgs(const std::array<PointCloudMsgT::ConstSharedPtr, 8> & msgs);
+  /// \param[in]  msgs msgs to be fused.
+  /// \param[out] cloud_concatenated fused msgs.
+  /// \return     Size of the concatenated pointcloud.
+  uint32_t fuse_pc_msgs(
+    const std::array<PointCloudMsgT::ConstSharedPtr, 8> & msgs,
+    PointCloudMsgT & cloud_concatenated);
 
-  PointCloudT m_cloud_concatenated;
-  std::unique_ptr<message_filters::Subscriber<PointCloudMsgT>> m_cloud_subscribers[8];
-  std::unique_ptr<message_filters::Synchronizer<SyncPolicyT>> m_cloud_synchronizer;
-  rclcpp::Publisher<PointCloudMsgT>::SharedPtr m_cloud_publisher;
+private:
+  void concatenate_pointcloud(
+    const PointCloudMsgT & pc_in, PointCloudMsgT & pc_out,
+    uint32_t & concat_idx) const;
 
-  std::vector<std::string> m_input_topics;
-  std::string m_output_frame_id;
   uint32_t m_cloud_capacity;
+  size_t m_input_topics_size;
 };
+
 }  // namespace point_cloud_fusion
 }  // namespace filters
 }  // namespace perception
 }  // namespace autoware
-
 
 #endif  // POINT_CLOUD_FUSION__POINT_CLOUD_FUSION_HPP_

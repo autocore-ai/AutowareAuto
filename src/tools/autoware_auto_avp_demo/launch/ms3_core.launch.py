@@ -1,4 +1,4 @@
-# Copyright 2020, The Autoware Foundation
+# Copyright 2020-2021, The Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ def generate_launch_description():
     behavior_planner_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/behavior_planner.param.yaml')
 
-    point_cloud_fusion_pkg_prefix = get_package_share_directory(
-        'point_cloud_fusion')
+    point_cloud_fusion_node_pkg_prefix = get_package_share_directory(
+        'point_cloud_fusion_nodes')
 
     avp_web_interface_pkg_prefix = get_package_share_directory(
         'avp_web_interface')
@@ -138,9 +138,9 @@ def generate_launch_description():
     )
     # point cloud fusion runner to fuse front and rear lidar
 
-    point_cloud_fusion = IncludeLaunchDescription(
+    point_cloud_fusion_node = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(point_cloud_fusion_pkg_prefix,
+                os.path.join(point_cloud_fusion_node_pkg_prefix,
                              'launch/vlp16_sim_lexus_pc_fusion.launch.py'))
     )
     ray_ground_classifier = Node(
@@ -270,7 +270,7 @@ def generate_launch_description():
         ray_ground_classifier,
         scan_downsampler,
         recordreplay_planner,
-        point_cloud_fusion,
+        point_cloud_fusion_node,
         lanelet2_map_provider,
         lanelet2_map_visualizer,
         global_planner,

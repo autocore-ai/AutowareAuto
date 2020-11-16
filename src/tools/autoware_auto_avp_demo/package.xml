@@ -29,7 +29,7 @@
     <exec_depend>object_collision_estimator_nodes</exec_depend>
     <exec_depend>parking_planner_nodes</exec_depend>
     <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
-    <exec_depend>point_cloud_fusion</exec_depend>
+    <exec_depend>point_cloud_fusion_nodes</exec_depend>
     <exec_depend>ray_ground_classifier_nodes</exec_depend>
     <exec_depend>recordreplay_planner_nodes</exec_depend>
     <exec_depend>robot_localization</exec_depend>

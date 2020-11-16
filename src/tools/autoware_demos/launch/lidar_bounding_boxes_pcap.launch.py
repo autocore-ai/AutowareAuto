@@ -1,4 +1,4 @@
-# Copyright 2020 the Autoware Foundation
+# Copyright 2020-2021 the Autoware Foundation
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,10 +83,10 @@ def generate_launch_description():
 
     # point cloud fusion runner to fuse front and rear lidar
     fuser_runner = launch_ros.actions.Node(
-        package='point_cloud_fusion',
+        package='point_cloud_fusion_nodes',
         node_executable='pointcloud_fusion_node_exe',
         node_namespace='lidars',
-        parameters=[get_param_file('point_cloud_fusion',
+        parameters=[get_param_file('point_cloud_fusion_nodes',
             'vlp16_sim_lexus_pc_fusion.param.yaml')],
         remappings=[
             ("output_topic", "points_filtered"),

@@ -1,4 +1,4 @@
-# Copyright 2017-2018 the Autoware Foundation
+# Copyright 2017-2020 the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,45 +32,21 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-set(PC_FUSION_LIB pointcloud_fusion_node)
-ament_auto_add_library(${PC_FUSION_LIB} SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   include/point_cloud_fusion/point_cloud_fusion.hpp
   src/point_cloud_fusion.cpp
   include/point_cloud_fusion/visibility_control.hpp)
-autoware_set_compile_options(${PC_FUSION_LIB})
-
-rclcpp_components_register_node(${PC_FUSION_LIB}
-  PLUGIN "autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode"
-  EXECUTABLE ${PC_FUSION_LIB}_exe
-)
+autoware_set_compile_options(${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # run linters
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-
-  # gtest
-  set(PCF_GTEST pointcloud_fusion_gtest)
-  ament_add_gtest(${PCF_GTEST}
-          test/test_point_cloud_fusion.hpp
-          test/test_point_cloud_fusion.cpp)
-  target_link_libraries(${PCF_GTEST} ${PC_FUSION_LIB})
-  target_include_directories(${PCF_GTEST} PRIVATE "test/include" "include")
-  ament_target_dependencies(${PCF_GTEST} "rclcpp")
-
-  target_compile_options(${PCF_GTEST} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
 endif()
 
 # required by tf2, message_filters
-target_compile_options(${PC_FUSION_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
-
-target_include_directories(${PC_FUSION_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion
+    -Wno-old-style-cast -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
 
 # Ament Exporting
-ament_auto_package(
-    INSTALL_TO_SHARE
-    launch
-    param
-)
+ament_auto_package()

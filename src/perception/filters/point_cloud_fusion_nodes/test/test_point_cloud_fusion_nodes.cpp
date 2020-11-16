@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,10 +15,4 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "gtest/gtest.h"
-#include "test_point_cloud_fusion.hpp"
-
-int32_t main(int32_t argc, char ** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+#include "test_point_cloud_fusion_nodes.hpp"

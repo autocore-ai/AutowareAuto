@@ -1,4 +1,4 @@
-# Copyright 2020, The Autoware Foundation
+# Copyright 2020-2021, The Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,10 +68,10 @@ def generate_launch_description():
     pc_filter_transform_param_file = os.path.join(
         pc_filter_transform_pkg_prefix, 'param/vlp16_sim_lexus_filter_transform.param.yaml')
 
-    point_cloud_fusion_pkg_prefix = get_package_share_directory(
-        'point_cloud_fusion')
-    point_cloud_fusion_param_file = os.path.join(
-        point_cloud_fusion_pkg_prefix, 'param/vlp16_sim_lexus_pc_fusion.param.yaml')
+    point_cloud_fusion_node_pkg_prefix = get_package_share_directory(
+        'point_cloud_fusion_nodes')
+    point_cloud_fusion_node_param_file = os.path.join(
+        point_cloud_fusion_node_pkg_prefix, 'param/vlp16_sim_lexus_pc_fusion.param.yaml')
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
@@ -133,9 +133,9 @@ def generate_launch_description():
         default_value=recordreplay_planner_param_file,
         description='Path to config file for record/replay planner'
     )
-    point_cloud_fusion_param = DeclareLaunchArgument(
-        'point_cloud_fusion_param_file',
-        default_value=point_cloud_fusion_param_file,
+    point_cloud_fusion_node_param = DeclareLaunchArgument(
+        'point_cloud_fusion_node_param_file',
+        default_value=point_cloud_fusion_node_param_file,
         description='Path to config file for point cloud fusion'
     )
 
@@ -167,11 +167,11 @@ def generate_launch_description():
         remappings=[("points_in", "points_raw")]
     )
     # point cloud fusion runner to fuse front and rear lidar
-    point_cloud_fusion = Node(
-        package='point_cloud_fusion',
+    point_cloud_fusion_node = Node(
+        package='point_cloud_fusion_nodes',
         node_executable='pointcloud_fusion_node_exe',
         node_namespace='lidars',
-        parameters=[LaunchConfiguration('point_cloud_fusion_param_file')],
+        parameters=[LaunchConfiguration('point_cloud_fusion_node_param_file')],
         remappings=[
             ("output_topic", "points_fused"),
             ("input_topic1", "/lidar_front/points_filtered"),
@@ -283,7 +283,7 @@ def generate_launch_description():
         ndt_localizer,
         mpc,
         recordreplay_planner,
-        point_cloud_fusion,
+        point_cloud_fusion_node,
         rviz2
     ]
 
@@ -305,7 +305,7 @@ def generate_launch_description():
         with_rviz_param,
         mpc_param,
         recordreplay_planner_param,
-        point_cloud_fusion_param,
+        point_cloud_fusion_node_param,
         *nodes,
         *event_handlers
     ])

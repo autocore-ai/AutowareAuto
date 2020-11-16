@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef TEST_POINT_CLOUD_FUSION_HPP_
-#define TEST_POINT_CLOUD_FUSION_HPP_
+#ifndef TEST_POINT_CLOUD_FUSION_NODES_HPP_
+#define TEST_POINT_CLOUD_FUSION_NODES_HPP_
 
 #include <gtest/gtest.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-#include <point_cloud_fusion/point_cloud_fusion.hpp>
+#include <point_cloud_fusion_nodes/point_cloud_fusion_node.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <common/types.hpp>
 #include <memory>
@@ -147,7 +147,7 @@ TEST_F(TestPCF, test_basic_fusion) {
   node_options.parameter_overrides(params);
 
   auto pcf_node =
-    std::make_shared<autoware::perception::filters::point_cloud_fusion::PointCloudFusionNode>(
+    std::make_shared<autoware::perception::filters::point_cloud_fusion_nodes::PointCloudFusionNode>(
     node_options);
 
   bool8_t test_completed = false;
@@ -201,4 +201,4 @@ TEST_F(TestPCF, test_basic_fusion) {
   EXPECT_TRUE(test_completed);
 }
 
-#endif  // TEST_POINT_CLOUD_FUSION_HPP_
+#endif  // TEST_POINT_CLOUD_FUSION_NODES_HPP_

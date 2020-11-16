@@ -1,4 +1,4 @@
-point_cloud_fusion
+point_cloud_fusion_nodes
 =============
 
 # Purpose / Use cases

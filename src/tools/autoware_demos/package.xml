@@ -15,7 +15,7 @@
   <exec_depend>ndt_nodes</exec_depend>
   <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
   <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
-  <exec_depend>point_cloud_fusion</exec_depend>
+  <exec_depend>point_cloud_fusion_nodes</exec_depend>
   <exec_depend>ray_ground_classifier_nodes</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>state_estimation_nodes</exec_depend>
