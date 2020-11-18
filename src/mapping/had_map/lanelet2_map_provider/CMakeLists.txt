@@ -92,6 +92,9 @@ if(BUILD_TESTING)
     ${PROJECT_NAME}
   )
   add_dependencies(${TEST_LANELET2_MAP_PROVIDER_EXE} ${PROJECT_NAME})
+  target_include_directories(${TEST_LANELET2_MAP_PROVIDER_EXE} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
+  target_compile_options(${TEST_LANELET2_MAP_PROVIDER_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion
+  -Wno-old-style-cast -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 endif()
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
@@ -100,10 +103,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-convers
 
 target_include_directories(${LANELET2_MAP_NODES} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_compile_options(${LANELET2_MAP_NODES} PRIVATE -Wno-sign-conversion -Wno-conversion
-  -Wno-old-style-cast -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
-
-target_include_directories(${TEST_LANELET2_MAP_PROVIDER_EXE} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-target_compile_options(${TEST_LANELET2_MAP_PROVIDER_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion
   -Wno-old-style-cast -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
 # ament package generation and installing
