@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -52,6 +53,10 @@ EuclideanClusterNode::EuclideanClusterNode(
 m_box_pub_ptr{declare_parameter("use_box").get<bool8_t>() ?
   create_publisher<BoundingBoxArray>(
     "lidar_bounding_boxes", rclcpp::QoS{10}) :
+  nullptr},
+m_marker_pub_ptr{get_parameter("use_box").as_bool() ?
+  create_publisher<MarkerArray>(
+    "lidar_bounding_boxes_viz", rclcpp::QoS{10}) :
   nullptr},
 m_cluster_alg{
   euclidean_cluster::Config{
@@ -180,6 +185,39 @@ void EuclideanClusterNode::handle_clusters(
     // Frame id was reserved
     m_boxes.header.frame_id = header.frame_id;
     m_box_pub_ptr->publish(m_boxes);
+
+    // Also publish boxes for visualization
+    uint32_t id_counter = 0;
+    MarkerArray m_marker_array{};
+    for (const auto & box : m_boxes.boxes) {
+      Marker m{};
+      m.header.stamp = rclcpp::Time(0);
+      m.header.frame_id = header.frame_id;
+      m.ns = "bbox";
+      m.id = id_counter;
+      m.type = Marker::CUBE;
+      m.action = Marker::ADD;
+      m.pose.position.x = static_cast<float64_t>(box.centroid.x);
+      m.pose.position.y = static_cast<float64_t>(box.centroid.y);
+      m.pose.position.z = static_cast<float64_t>(box.centroid.z);
+      m.pose.orientation.x = static_cast<float64_t>(box.orientation.x);
+      m.pose.orientation.y = static_cast<float64_t>(box.orientation.y);
+      m.pose.orientation.z = static_cast<float64_t>(box.orientation.z);
+      m.pose.orientation.w = static_cast<float64_t>(box.orientation.w);
+      // X and Y scale are swapped between these two message types
+      m.scale.x = static_cast<float64_t>(box.size.y);
+      m.scale.y = static_cast<float64_t>(box.size.x);
+      m.scale.z = static_cast<float64_t>(box.size.z);
+      m.color.r = 1.0;
+      m.color.g = 0.5;
+      m.color.b = 0.0;
+      m.color.a = 0.75;
+      m.lifetime.sec = 0;
+      m.lifetime.nanosec = 500000000;
+      m_marker_array.markers.push_back(m);
+      id_counter++;
+    }
+    m_marker_pub_ptr->publish(m_marker_array);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////

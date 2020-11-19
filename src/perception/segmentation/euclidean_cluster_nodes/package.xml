@@ -15,12 +15,13 @@
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
     <depend>autoware_auto_geometry</depend>
-    <depend>rclcpp</depend>
     <depend>autoware_auto_msgs</depend>
     <depend>euclidean_cluster</depend>
-    <depend>sensor_msgs</depend>
-    <depend>voxel_grid_nodes</depend>
     <depend>lidar_utils</depend>
+    <depend>rclcpp</depend>
+    <depend>sensor_msgs</depend>
+    <depend>visualization_msgs</depend>
+    <depend>voxel_grid_nodes</depend>
 
     <build_depend>autoware_auto_common</build_depend>
 

@@ -25,6 +25,7 @@
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 #include <euclidean_cluster_nodes/details/common.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
 #include <common/types.hpp>
 #include <memory>
@@ -41,6 +42,8 @@ namespace euclidean_cluster_nodes
 {
 using autoware::common::types::bool8_t;
 using Clusters = euclidean_cluster::Clusters;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
 /// \brief Combined object detection node, primarily does clustering, can also do in-place
 ///        downsampling and bounding box formation
 class EUCLIDEAN_CLUSTER_NODES_PUBLIC EuclideanClusterNode : public rclcpp::Node
@@ -78,6 +81,7 @@ private:
   const rclcpp::Subscription<PointCloud2>::SharedPtr m_cloud_sub_ptr;
   const rclcpp::Publisher<Clusters>::SharedPtr m_cluster_pub_ptr;
   const rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_box_pub_ptr;
+  const rclcpp::Publisher<MarkerArray>::SharedPtr m_marker_pub_ptr;
   // algorithms
   euclidean_cluster::EuclideanCluster m_cluster_alg;
   Clusters m_clusters;
