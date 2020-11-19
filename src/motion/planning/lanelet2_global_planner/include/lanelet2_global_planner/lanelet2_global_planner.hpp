@@ -28,6 +28,7 @@
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 // autoware
 #include <lanelet2_global_planner/visibility_control.hpp>
+#include <autoware_auto_msgs/msg/trajectory_point.hpp>
 #include <common/types.hpp>
 // c++
 #include <chrono>
@@ -49,6 +50,9 @@ namespace planning
 {
 namespace lanelet2_global_planner
 {
+
+using autoware_auto_msgs::msg::TrajectoryPoint;
+
 class LANELET2_GLOBAL_PLANNER_PUBLIC Lanelet2GlobalPlanner
 {
 public:
@@ -57,8 +61,14 @@ public:
   void load_osm_map(const std::string & file, float64_t lat, float64_t lon, float64_t alt);
   void parse_lanelet_element();
   bool8_t plan_route(
-    const lanelet::Point3d & start, const lanelet::Point3d & end,
+    TrajectoryPoint & start, TrajectoryPoint & end,
     std::vector<lanelet::Id> & route) const;
+  TrajectoryPoint refine_pose_by_parking_spot(
+    const lanelet::Id & parking_id,
+    const TrajectoryPoint & input_point) const;
+  bool8_t point_in_parking_spot(
+    const lanelet::Point3d & point, const lanelet::Id & parking_id) const;
+  std::string get_primitive_type(const lanelet::Id & prim_id);
   lanelet::Id find_nearparking_from_point(const lanelet::Point3d & point) const;
   lanelet::Id find_nearroute_from_parking(const lanelet::Id & park_id) const;
   lanelet::Id find_parkingaccess_from_parking(const lanelet::Id & park_id) const;

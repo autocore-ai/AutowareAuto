@@ -279,8 +279,12 @@ TEST_F(TestGlobalPlannerFullMap, test_find_parking_from_point)
 TEST_F(TestGlobalPlannerFullMap, test_plan_full_route)
 {
   // take the parking spot from previous test
-  lanelet::Point3d from_point(lanelet::utils::getId(), -25.97, 102.12, -1.74);
-  lanelet::Point3d to_point(lanelet::utils::getId(), -12.53, 67.69, -1.34);
+  autoware_auto_msgs::msg::TrajectoryPoint from_point;
+  from_point.x = -25.97;
+  from_point.y = 102.12;
+  autoware_auto_msgs::msg::TrajectoryPoint to_point;
+  to_point.x = -12.53;
+  to_point.y = 67.69;
   std::vector<lanelet::Id> route;
   bool8_t result = node_ptr->plan_route(from_point, to_point, route);
   EXPECT_TRUE(result);

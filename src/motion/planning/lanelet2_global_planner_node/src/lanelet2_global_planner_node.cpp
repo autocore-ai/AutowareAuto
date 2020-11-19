@@ -17,24 +17,32 @@
 #include <rclcpp/node_options.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <tf2/buffer_core.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h>
 #include <time_utils/time_utils.hpp>
+#include <motion_common/motion_common.hpp>
 
+#include <autoware_auto_msgs/msg/complex32.hpp>
 #include <lanelet2_global_planner_node/lanelet2_global_planner_node.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <common/types.hpp>
 
 #include <chrono>
+#include <cmath>
 #include <string>
 #include <memory>
 #include <vector>
 #include <cmath>
 
 using namespace std::chrono_literals;
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
-using std::placeholders::_1;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
+using autoware::common::types::TAU;
 using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
+using autoware_auto_msgs::msg::Complex32;
+using std::placeholders::_1;
 
 namespace autoware
 {
@@ -44,6 +52,42 @@ namespace planning
 {
 namespace lanelet2_global_planner_node
 {
+
+autoware_auto_msgs::msg::TrajectoryPoint convertToTrajectoryPoint(
+  const geometry_msgs::msg::Pose & pose)
+{
+  autoware_auto_msgs::msg::TrajectoryPoint pt;
+  pt.x = pose.position.x;
+  pt.y = pose.position.y;
+  const auto angle = tf2::getYaw(pose.orientation);
+  pt.heading = ::motion::motion_common::from_angle(angle);
+  return pt;
+}
+
+Complex32 to_2d_quaternion(float64_t yaw_angle)
+{
+  Complex32 heading;
+  heading.real = static_cast<float32_t>(std::cos(yaw_angle / 2.0));
+  heading.imag = static_cast<float32_t>(std::sin(yaw_angle / 2.0));
+  return heading;
+}
+
+float64_t to_yaw_angle(const Complex32 & quat_2d)
+{
+  // theta = atan2(2qxqw, 1-2(qw)^2)
+  const float64_t sin_y =
+    2.0F * static_cast<float64_t>(quat_2d.real) * static_cast<float64_t>(quat_2d.imag);
+  const float64_t cos_y =
+    1.0F - 2.0F * static_cast<float64_t>(quat_2d.imag) * static_cast<float64_t>(quat_2d.imag);
+  const float64_t rad_quad = std::atan2(sin_y, cos_y);
+
+  if (rad_quad < 0) {
+    return rad_quad + TAU;
+  } else {
+    return rad_quad;
+  }
+}
+
 Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
   const rclcpp::NodeOptions & node_options)
 : Node("lanelet2_global_planner_node", node_options),
@@ -78,13 +122,13 @@ Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
 
 void Lanelet2GlobalPlannerNode::request_osm_binary_map()
 {
-  while (!map_client->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "Client interrupted while waiting for service to appear. Exiting.");
-    }
-    RCLCPP_WARN(this->get_logger(), "Service not available yet. Waiting...");
+  while (rclcpp::ok() && !map_client->wait_for_service(1s)) {
+    RCLCPP_WARN(this->get_logger(), "HAD map service not available yet. Waiting...");
+  }
+  if (!rclcpp::ok()) {
+    RCLCPP_ERROR(
+      this->get_logger(),
+      "Client interrupted while waiting for map service to appear. Exiting.");
   }
 
   auto request = std::make_shared<autoware_auto_msgs::srv::HADMapService_Request>();
@@ -131,10 +175,9 @@ void Lanelet2GlobalPlannerNode::goal_pose_cb(
     }
   }
 
-  lanelet::Point3d start(lanelet::utils::getId(), start_pose.pose.position.x,
-    start_pose.pose.position.y, start_pose.pose.position.z);
-  lanelet::Point3d end(lanelet::utils::getId(), goal_pose.pose.position.x,
-    goal_pose.pose.position.y, goal_pose.pose.position.z);
+  auto start = convertToTrajectoryPoint(start_pose.pose);
+  auto end = convertToTrajectoryPoint(goal_pose.pose);
+
   // get routes
   std::vector<lanelet::Id> route;
   if (lanelet2_global_planner->plan_route(start, end, route)) {
@@ -142,7 +185,7 @@ void Lanelet2GlobalPlannerNode::goal_pose_cb(
     std_msgs::msg::Header msg_header;
     msg_header.stamp = rclcpp::Clock().now();
     msg_header.frame_id = "map";
-    this->send_global_path(route, msg_header);
+    this->send_global_path(route, start, end, msg_header);
   } else {
     RCLCPP_ERROR(this->get_logger(), "Global route has not been found!");
   }
@@ -155,10 +198,16 @@ void Lanelet2GlobalPlannerNode::current_pose_cb(
   start_pose.pose.position.x = msg->state.x;
   start_pose.pose.position.y = msg->state.y;
   start_pose.pose.position.z = 0.0;
+  const auto yaw = to_yaw_angle(msg->state.heading);
+  tf2::Quaternion tf2_quat;
+  tf2_quat.setRPY(0.0, 0.0, yaw);
+  start_pose.pose.orientation = tf2::toMsg(tf2_quat);
   start_pose.header = msg->header;
-  geometry_msgs::msg::PoseStamped start_pose_map = start_pose;
+
   // transform to "map" frame if needed
   if (start_pose.header.frame_id != "map") {
+    geometry_msgs::msg::PoseStamped start_pose_map = start_pose;
+
     if (!transform_pose_to_map(start_pose, start_pose_map)) {
       // transform failed
       start_pose_init = false;
@@ -167,11 +216,16 @@ void Lanelet2GlobalPlannerNode::current_pose_cb(
       start_pose = start_pose_map;
       start_pose_init = true;
     }
+  } else {
+    // No transform required
+    start_pose_init = true;
   }
 }
 
 void Lanelet2GlobalPlannerNode::send_global_path(
-  const std::vector<lanelet::Id> & route, const std_msgs::msg::Header & header)
+  const std::vector<lanelet::Id> & route,
+  const autoware_auto_msgs::msg::TrajectoryPoint & start_point,
+  const autoware_auto_msgs::msg::TrajectoryPoint & end_point, const std_msgs::msg::Header & header)
 {
   // the maximum of PlanTrajectory message is 100
   if (route.size() > 100) {
@@ -185,19 +239,14 @@ void Lanelet2GlobalPlannerNode::send_global_path(
   // main route = other
   autoware_auto_msgs::msg::Route global_route;
   global_route.header = header;
-  for (size_t i = 0; i < route.size(); ++i) {
-    std::string route_type = "";
-    if (i == 0 || i == route.size() - 1) {
-      route_type = "parking";
-    } else if (i == 1 || i == route.size() - 2) {
-      route_type = "drivable_area";
-    } else {
-      route_type = "lane";
-    }
+  global_route.start_point = start_point;
+  global_route.goal_point = end_point;
+
+  for (const auto & route_id : route) {
     // add data to the global path
     autoware_auto_msgs::msg::MapPrimitive primitive;
-    primitive.id = route.at(i);
-    primitive.primitive_type = route_type;
+    primitive.id = route_id;
+    primitive.primitive_type = lanelet2_global_planner->get_primitive_type(route_id);
     global_route.primitives.push_back(primitive);
   }
   // publish the global path
@@ -205,8 +254,8 @@ void Lanelet2GlobalPlannerNode::send_global_path(
 }
 
 bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
-  const geometry_msgs::msg::PoseStamped& pose_in,
-  geometry_msgs::msg::PoseStamped& pose_out)
+  const geometry_msgs::msg::PoseStamped & pose_in,
+  geometry_msgs::msg::PoseStamped & pose_out)
 {
   std::string source_frame = pose_in.header.frame_id;
   // lookup transform validity
@@ -219,7 +268,7 @@ bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
   geometry_msgs::msg::TransformStamped tf_map;
   try {
     tf_map = tf_buffer.lookupTransform("map", source_frame,
-      time_utils::from_message(pose_in.header.stamp));
+        time_utils::from_message(pose_in.header.stamp));
   } catch (const tf2::ExtrapolationException &) {
     // currently falls back to retrive newest transform available for availability,
     // Do validation of time stamp in the future

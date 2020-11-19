@@ -18,9 +18,10 @@ ament_auto_find_build_dependencies()
 set(GB_PLANNER_NODE_LIB lanelet2_global_planner_node)
 ament_auto_add_library(${GB_PLANNER_NODE_LIB} SHARED
   include/lanelet2_global_planner_node/lanelet2_global_planner_node.hpp
-  src/lanelet2_global_planner_node.cpp
   include/lanelet2_global_planner_node/visibility_control.hpp
+  src/lanelet2_global_planner_node.cpp
 )
+target_include_directories(${GB_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 
 set(GB_PLANNER_NODE_EXE ${GB_PLANNER_NODE_LIB}_exe)
 rclcpp_components_register_node(${GB_PLANNER_NODE_LIB}
