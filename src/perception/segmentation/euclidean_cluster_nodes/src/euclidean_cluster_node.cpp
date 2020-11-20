@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2020 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -170,15 +170,15 @@ void EuclideanClusterNode::handle_clusters(
   if (m_box_pub_ptr) {
     if (m_use_lfit) {
       if (m_use_z) {
-        details::compute_eigenboxes_with_z(clusters, m_boxes);
+        euclidean_cluster::details::compute_eigenboxes_with_z(clusters, m_boxes);
       } else {
-        details::compute_eigenboxes(clusters, m_boxes);
+        euclidean_cluster::details::compute_eigenboxes(clusters, m_boxes);
       }
     } else {
       if (m_use_z) {
-        details::compute_lfit_bounding_boxes_with_z(clusters, m_boxes);
+        euclidean_cluster::details::compute_lfit_bounding_boxes_with_z(clusters, m_boxes);
       } else {
-        details::compute_lfit_bounding_boxes(clusters, m_boxes);
+        euclidean_cluster::details::compute_lfit_bounding_boxes(clusters, m_boxes);
       }
     }
     m_boxes.header.stamp = header.stamp;

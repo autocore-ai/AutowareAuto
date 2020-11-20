@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2020 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 //lint -e537 NOLINT Repeated include file: pclint vs cpplint
 #include <utility>
 #include "euclidean_cluster/euclidean_cluster.hpp"
+#include "geometry/bounding_box_2d.hpp"
 
 namespace autoware
 {
@@ -251,6 +252,117 @@ EuclideanCluster::PointXY EuclideanCluster::get_point(const Cluster & cls, const
     sizeof(ret));
   return ret;
 }
+
+namespace details
+{
+
+namespace
+{
+using euclidean_cluster::PointXYZI;
+std::pair<const PointXYZI *, const PointXYZI *> point_struct_iterators(
+  const euclidean_cluster::Cluster & cls)
+{
+  if (cls.data.empty()) {
+    throw std::runtime_error("PointCloud2 data is empty");
+  }
+  if (cls.data.size() != cls.row_step * cls.height) {
+    throw std::runtime_error("PointCloud2 data has invalid size");
+  }
+  if (cls.point_step != sizeof(PointXYZI)) {
+    throw std::runtime_error("PointCloud2 data has unexpected point_step");
+  }
+  if (reinterpret_cast<std::uintptr_t>(cls.data.data()) % alignof(PointXYZI) != 0) {
+    throw std::runtime_error("PointCloud2 data is not aligned like required by PointXYZI");
+  }
+  if ((__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) != cls.is_bigendian) {
+    throw std::runtime_error("PointCloud2 does not have native endianness");
+  }
+  //lint -e{826, 9176} NOLINT I claim this is ok and tested
+  const auto begin = reinterpret_cast<const PointXYZI *>(&cls.data[0]);
+  //lint -e{826, 9176} NOLINT I claim this is ok and tested
+  const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[cls.data.size() - 1]);
+  return std::make_pair(begin, end);
+}
+
+std::pair<PointXYZI *, PointXYZI *> point_struct_iterators(euclidean_cluster::Cluster & cls)
+{
+  auto iterators = point_struct_iterators(const_cast<const euclidean_cluster::Cluster &>(cls));
+  return std::make_pair(
+    const_cast<PointXYZI *>(iterators.first),
+    const_cast<PointXYZI *>(iterators.second));
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+BoundingBox compute_eigenbox(const euclidean_cluster::Cluster & cls)
+{
+  const auto iterators = point_struct_iterators(cls);
+  return common::geometry::bounding_box::eigenbox_2d(iterators.first, iterators.second);
+}
+////////////////////////////////////////////////////////////////////////////////
+BoundingBox compute_lfit_bounding_box(Cluster & cls)
+{
+  const auto iterators = point_struct_iterators(cls);
+  return common::geometry::bounding_box::lfit_bounding_box_2d(iterators.first, iterators.second);
+}
+////////////////////////////////////////////////////////////////////////////////
+void compute_eigenboxes(const Clusters & clusters, BoundingBoxArray & boxes)
+{
+  boxes.boxes.clear();
+  for (auto & cls : clusters.clusters) {
+    try {
+      boxes.boxes.push_back(compute_eigenbox(cls));
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << "\n";
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & boxes)
+{
+  boxes.boxes.clear();
+  for (auto & cls : clusters.clusters) {
+    try {
+      const auto iterators = point_struct_iterators(cls);
+      auto box = common::geometry::bounding_box::eigenbox_2d(iterators.first, iterators.second);
+      common::geometry::bounding_box::compute_height(iterators.first, iterators.second, box);
+      boxes.boxes.push_back(box);
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << "\n";
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes)
+{
+  boxes.boxes.clear();
+  for (auto & cls : clusters.clusters) {
+    try {
+      boxes.boxes.push_back(compute_lfit_bounding_box(cls));
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << "\n";
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void compute_lfit_bounding_boxes_with_z(Clusters & clusters, BoundingBoxArray & boxes)
+{
+  boxes.boxes.clear();
+  for (auto & cls : clusters.clusters) {
+    try {
+      boxes.boxes.push_back(autoware_auto_msgs::msg::BoundingBox{});
+      auto & box = boxes.boxes[boxes.boxes.size()];
+      const auto iterators = point_struct_iterators(cls);
+      box = common::geometry::bounding_box::lfit_bounding_box_2d(iterators.first, iterators.second);
+      common::geometry::bounding_box::compute_height(iterators.first, iterators.second, box);
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << "\n";
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+}  // namespace details
 }  // namespace euclidean_cluster
 }  // namespace segmentation
 }  // namespace perception

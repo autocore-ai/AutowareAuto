@@ -1,4 +1,4 @@
-# Copyright 2017-2019 the Autoware Foundation
+# Copyright 2017-2020 the Autoware Foundation
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,9 +33,7 @@ ament_auto_find_build_dependencies()
 # Library
 set(CLUSTER_NODE_LIB euclidean_cluster_node)
 ament_auto_add_library(${CLUSTER_NODE_LIB} SHARED
-  include/euclidean_cluster_nodes/details/common.hpp
   include/euclidean_cluster_nodes/euclidean_cluster_node.hpp
-  src/common.cpp
   src/euclidean_cluster_node.cpp)
 autoware_set_compile_options(${CLUSTER_NODE_LIB})
 target_compile_options(
