@@ -91,11 +91,13 @@ TEST_P(sanity_checks_axis_aligned_straight, basic)
   check_steer(cmd, guess, TOL);
 }
 
-INSTANTIATE_TEST_CASE_P(basic, sanity_checks_axis_aligned_straight,
+INSTANTIATE_TEST_CASE_P(
+  basic, sanity_checks_axis_aligned_straight,
   ::testing::Values(
     StraightTestParam{0.0F, 0.0F, false},
     StraightTestParam{3.0F, 4.0F, false},
     StraightTestParam{-5.0F, 12.0F, false}
+    // cppcheck-suppress syntaxError
   ), );
 
 // oriented_straight: exercise some basic transform stuff
@@ -129,7 +131,8 @@ TEST_P(sanity_checks_oriented_straight, basic)
   check_steer(cmd, guess, TOL);
 }
 
-INSTANTIATE_TEST_CASE_P(basic, sanity_checks_oriented_straight,
+INSTANTIATE_TEST_CASE_P(
+  basic, sanity_checks_oriented_straight,
   ::testing::Values(
     StraightTestParam{0.0F, 0.0F, false},
     StraightTestParam{3.0F, 4.0F, false},
@@ -168,7 +171,8 @@ TEST_P(sanity_checks_orthogonal_orientation, basic)
   check_steer(cmd, guess, TOL);
 }
 
-INSTANTIATE_TEST_CASE_P(basic, sanity_checks_orthogonal_orientation,
+INSTANTIATE_TEST_CASE_P(
+  basic, sanity_checks_orthogonal_orientation,
   ::testing::Values(
     StraightTestParam{0.0F, 5.0F, false},
     StraightTestParam{0.0F, 5.0F, true}

@@ -33,7 +33,8 @@ public:
   NDTScanTest()
   {
     for (auto i = 0U; i < m_num_points; i++) {
-      m_points.emplace_back(static_cast<float64_t>(i),
+      m_points.emplace_back(
+        static_cast<float64_t>(i),
         static_cast<float64_t>(i),
         static_cast<float64_t>(i));
     }

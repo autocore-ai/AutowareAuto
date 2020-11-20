@@ -19,7 +19,6 @@ import unittest
 import launch
 import launch.actions
 import launch_ros.actions
-from launch_ros.default_launch_description import ROSSpecificLaunchStartup
 
 import launch_testing.event_handlers
 
@@ -46,8 +45,6 @@ def get_point_cloud_mutation_launch_description(*,
         )
 
     ld = launch.LaunchDescription([
-        ROSSpecificLaunchStartup(),
-
         # Make sure the spoofer is up and running before launching the checker processes
         launch.actions.RegisterEventHandler(
             launch_testing.event_handlers.StdoutReadyListener(

@@ -168,8 +168,9 @@ void JoystickVehicleInterfaceNode::init(
   if (joy_topic.empty()) {
     throw std::domain_error{"JoystickVehicleInterface must have a joystick topic specified"};
   }
-  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>(joy_topic, rclcpp::SensorDataQoS{},
-      [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
+  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>(
+    joy_topic, rclcpp::SensorDataQoS{},
+    [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
   // Maps
   m_axis_map = axis_map;
   m_axis_scale_map = axis_scale_map;

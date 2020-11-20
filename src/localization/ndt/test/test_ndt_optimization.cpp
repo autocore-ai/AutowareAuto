@@ -52,9 +52,12 @@ protected:
       ASSERT_TRUE(static_vx.usable());
       ASSERT_TRUE(dynamic_vx.usable());
 
-      ASSERT_TRUE(static_vx.centroid().isApprox(dynamic_vx.centroid(),
-        std::numeric_limits<Real>::epsilon()));
-      ASSERT_TRUE(static_vx.inverse_covariance().isApprox(
+      ASSERT_TRUE(
+        static_vx.centroid().isApprox(
+          dynamic_vx.centroid(),
+          std::numeric_limits<Real>::epsilon()));
+      ASSERT_TRUE(
+        static_vx.inverse_covariance().isApprox(
           dynamic_vx.inverse_covariance(),
           std::numeric_limits<Real>::epsilon() * 1e2));
     }
@@ -132,7 +135,8 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
     P2DProblem problem{scan, m_static_map, P2DNDTOptimizationConfig{0.55}};
     // Solve the problem in 50 iterations:
     for (auto i = 0U; i < num_iters; ++i) {
-      problem.evaluate(guess,
+      problem.evaluate(
+        guess,
         autoware::common::optimization::ComputeMode{}.set_score().set_jacobian().set_hessian());
       P2DProblem::Jacobian jacobian;
       P2DProblem::Hessian hessian;
@@ -182,7 +186,8 @@ TEST_P(P2DOptimizationValidationTest, sanity_test) {
 
 // TODO(yunus.caliskan): Make the sample scan more 'featureful' so that ndt can match
 // and converge for larger drifts as well with a higher accuracy.
-INSTANTIATE_TEST_CASE_P(sanity_test, P2DOptimizationValidationTest,
+INSTANTIATE_TEST_CASE_P(
+  sanity_test, P2DOptimizationValidationTest,
   ::testing::Values(
     // TODO(yunus.caliskan): Make voxel grid configuration similar to that of PCL
     // to get results that are more comparable.
@@ -190,13 +195,16 @@ INSTANTIATE_TEST_CASE_P(sanity_test, P2DOptimizationValidationTest,
     OptTestParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0, true, true},
     OptTestParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0, false, false},
     OptTestParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0, false, false}
+    // cppcheck-suppress syntaxError
   ), );
 
-INSTANTIATE_TEST_CASE_P(numerical_analysis, P2DOptimizationNumericalTest,
+INSTANTIATE_TEST_CASE_P(
+  numerical_analysis, P2DOptimizationNumericalTest,
   ::testing::Values(
     OptTestParams{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, false},
     OptTestParams{0.5, 0.9, 0.1, 1.0, -3.1, 0.05, true, false},
     OptTestParams{2.5, -1.9, 0.1, -2.1, 0.1, 3.05, true, false}
+    // cppcheck-suppress syntaxError
   ), );
 
 

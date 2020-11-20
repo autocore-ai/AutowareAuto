@@ -97,9 +97,11 @@ TEST_F(CovarianceInsertionNodeTest, publish_and_receive_odom_message) {
 
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_msg_type", "Odometry");
-  node_options.append_parameter_override("override_covariance.pose",
+  node_options.append_parameter_override(
+    "override_covariance.pose",
     std::vector<autoware::common::types::float64_t>(36UL, 42.0));
-  node_options.append_parameter_override("override_covariance.twist",
+  node_options.append_parameter_override(
+    "override_covariance.twist",
     std::vector<autoware::common::types::float64_t>(36UL, 23.0));
   const auto node{std::make_shared<CovarianceInsertionNode>(node_options)};
 
@@ -141,7 +143,8 @@ TEST_F(CovarianceInsertionNodeTest, add_covariances_to_pose) {
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_topic", "messages");
   node_options.append_parameter_override("input_msg_type", "Pose");
-  node_options.append_parameter_override("override_covariance.directly",
+  node_options.append_parameter_override(
+    "override_covariance.directly",
     std::vector<autoware::common::types::float64_t>(36UL, 42.0));
   const auto node{std::make_shared<CovarianceInsertionNode>(node_options)};
 
@@ -178,7 +181,8 @@ TEST_F(CovarianceInsertionNodeTest, fail_setting_twist_to_pose) {
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_topic", "messages");
   node_options.append_parameter_override("input_msg_type", "Pose");
-  node_options.append_parameter_override("override_covariance.twist",
+  node_options.append_parameter_override(
+    "override_covariance.twist",
     std::vector<autoware::common::types::float64_t>(36UL, 42.0));
   // Throw because a pose has no ".twist" field.
   EXPECT_THROW(CovarianceInsertionNode{node_options}, std::runtime_error);
@@ -190,7 +194,8 @@ TEST_F(CovarianceInsertionNodeTest, fail_on_wrong_number_of_entries) {
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_topic", "messages");
   node_options.append_parameter_override("input_msg_type", "geometry_msgs/msg/Pose");
-  node_options.append_parameter_override("override_covariance.twist",
+  node_options.append_parameter_override(
+    "override_covariance.twist",
     std::vector<autoware::common::types::float64_t>(wrong_covariane_size, 42.0));
   EXPECT_THROW(CovarianceInsertionNode{node_options}, std::runtime_error);
 }

@@ -37,9 +37,11 @@ float32_t calculate_curvature(
   const TrajectoryPoint & p3)
 {
   const float32_t epsilon = std::numeric_limits<float32_t>::epsilon();
-  float32_t den = std::max(distance2d(p1, p2) * distance2d(p2,
+  float32_t den = std::max(
+    distance2d(p1, p2) * distance2d(
+      p2,
       p3) * distance2d(
-        p3, p1), epsilon);
+      p3, p1), epsilon);
   const float32_t curvature =
     2.0F * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
   return curvature;
@@ -133,8 +135,9 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
   // using Germany Location since it is default location for Lanelet2
   // TODO(mitsudome-r): create define default location for Autoware
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules_ptr =
-    lanelet::traffic_rules::TrafficRulesFactory::create(lanelet::Locations::Germany,
-      lanelet::Participants::Vehicle);
+    lanelet::traffic_rules::TrafficRulesFactory::create(
+    lanelet::Locations::Germany,
+    lanelet::Participants::Vehicle);
 
   // set position and velocity
   trajectory_points.push_back(route.start_point);

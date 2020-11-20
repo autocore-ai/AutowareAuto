@@ -36,25 +36,31 @@ TEST(BestEffortInitializationTest, bad_lookup) {
   ASSERT_NE(nonexisting_frame, target_frame);
   ASSERT_NE(nonexisting_frame, source_frame);
   tf2::BufferCore tf_graph;
-  EXPECT_THROW(initializer.guess(tf_graph, now, target_frame, source_frame),
+  EXPECT_THROW(
+    initializer.guess(tf_graph, now, target_frame, source_frame),
     tf2::LookupException);
   auto transform = make_transform(15.0F, 15.0F, 15.0F, 15.0F, 15.0F, 15.0F);
   transform.header.stamp = time_utils::to_message(now);
   tf_graph.setTransform(transform, "testauthority");
-  EXPECT_NO_THROW(check_transform_eq(
+  EXPECT_NO_THROW(
+    check_transform_eq(
       transform, initializer.guess(tf_graph, now, target_frame, source_frame)));
 
   // Extrapolation can be performed now that there's data in the tf graph.
-  EXPECT_NO_THROW(check_transform_eq(
+  EXPECT_NO_THROW(
+    check_transform_eq(
       transform, initializer.guess(tf_graph, now + dt, target_frame, source_frame)));
 
   // Backwards extrapolation is not supported.
-  EXPECT_THROW(check_transform_eq(
+  EXPECT_THROW(
+    check_transform_eq(
       transform, initializer.guess(tf_graph, now - dt, target_frame, source_frame)),
     std::domain_error);
 
-  EXPECT_THROW(initializer.guess(tf_graph, now,
-    nonexisting_frame, source_frame), tf2::LookupException);
+  EXPECT_THROW(
+    initializer.guess(
+      tf_graph, now,
+      nonexisting_frame, source_frame), tf2::LookupException);
 }
 
 TEST_P(BestEffortInitializationTest, basic) {
@@ -87,8 +93,9 @@ TEST_P(BestEffortInitializationTest, basic) {
   tf_interpolated.transform = get_interpolation(tf0.transform, tf1.transform, ratio);
 
   const auto tf0_guess = initializer.guess(tf_graph, t0, target_frame, source_frame);
-  const auto tf_interpolate_guess = initializer.guess(tf_graph, t_interpolate, target_frame,
-      source_frame);
+  const auto tf_interpolate_guess = initializer.guess(
+    tf_graph, t_interpolate, target_frame,
+    source_frame);
   const auto tf1_guess = initializer.guess(tf_graph, t1, target_frame, source_frame);
   const auto tf_extrapolate_guess =
     initializer.guess(tf_graph, t1 + dt, target_frame, source_frame);
@@ -99,7 +106,8 @@ TEST_P(BestEffortInitializationTest, basic) {
   check_transform_eq(tf1, tf_extrapolate_guess);
 }
 
-INSTANTIATE_TEST_CASE_P(sanity_test, BestEffortInitializationTest,
+INSTANTIATE_TEST_CASE_P(
+  sanity_test, BestEffortInitializationTest,
   ::testing::Values(
     BestEffortInitializerTestParams{
   make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),
@@ -125,7 +133,7 @@ INSTANTIATE_TEST_CASE_P(sanity_test, BestEffortInitializationTest,
   std::chrono::milliseconds{100},
   std::chrono::milliseconds{50}
 }
-  ), );
+));
 
 /////////// Helper function implementations:
 

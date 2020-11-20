@@ -154,8 +154,9 @@ TEST_F(LanePlannerTest, plan_simple_trajectory)
   ASSERT_FALSE(trajectory.points.empty());
 
   // start point of trajectory should be same as start point
-  const auto distance = autoware::lane_planner::distance2d(route.start_point,
-      trajectory.points.front());
+  const auto distance = autoware::lane_planner::distance2d(
+    route.start_point,
+    trajectory.points.front());
   ASSERT_DOUBLE_EQ(distance, 0.0);
 }
 

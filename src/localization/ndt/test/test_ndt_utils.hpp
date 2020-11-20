@@ -190,7 +190,8 @@ void set_RPY_XYZ(
   tf2Scalar cosRoll = tf2Cos(halfRoll);
   tf2Scalar sinRoll = tf2Sin(halfRoll);
   tf2::Quaternion quat_temp;
-  quat_temp.setValue(sinRoll * cosPitch * cosYaw + cosRoll * sinPitch * sinYaw,   // x
+  quat_temp.setValue(
+    sinRoll * cosPitch * cosYaw + cosRoll * sinPitch * sinYaw,                    // x
     -sinRoll * cosPitch * sinYaw + cosRoll * sinPitch * cosYaw,              // y
     sinRoll * sinPitch * cosYaw + cosRoll * cosPitch * sinYaw,             // z
     -sinRoll * sinPitch * sinYaw + cosRoll * cosPitch * cosYaw);              // w

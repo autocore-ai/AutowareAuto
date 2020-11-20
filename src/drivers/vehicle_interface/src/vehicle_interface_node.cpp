@@ -235,13 +235,14 @@ void VehicleInterfaceNode::init(
 {
   m_cycle_time = cycle_time;
   // Timer
-  m_read_timer = create_wall_timer(m_cycle_time, [this]() {
-        try {
-          read_and_publish();
-        } catch (...) {
-          on_error(std::current_exception());
-        }
-      });
+  m_read_timer = create_wall_timer(
+    m_cycle_time, [this]() {
+      try {
+        read_and_publish();
+      } catch (...) {
+        on_error(std::current_exception());
+      }
+    });
   // Make publishers
   m_state_pub = create_publisher<autoware_auto_msgs::msg::VehicleStateReport>(
     state_report.topic + "_out", rclcpp::QoS{10U});
@@ -249,8 +250,9 @@ void VehicleInterfaceNode::init(
     create_publisher<autoware_auto_msgs::msg::VehicleOdometry>(odometry.topic, rclcpp::QoS{10U});
   // Make subordinate subscriber TODO(c.ho) parameterize time better
   using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
-  m_state_sub = create_subscription<VSC>(state_command.topic, rclcpp::QoS{10U},
-      [this](VSC::SharedPtr msg) {m_last_state_command = *msg;});
+  m_state_sub = create_subscription<VSC>(
+    state_command.topic, rclcpp::QoS{10U},
+    [this](VSC::SharedPtr msg) {m_last_state_command = *msg;});
   // State machine boilerplate for better errors
   const auto state_machine = [&state_machine_config]() -> auto {
       if (!state_machine_config) {
@@ -333,7 +335,8 @@ void VehicleInterfaceNode::check_invariants()
   if (0U == m_command_sub.index()) {
     if (m_state_machine) {
       // Warn
-      RCLCPP_WARN(logger(), "State machine instantiated for raw control vehicle interface, "
+      RCLCPP_WARN(
+        logger(), "State machine instantiated for raw control vehicle interface, "
         "will not be used");
     }
   } else {  // basic or high level command

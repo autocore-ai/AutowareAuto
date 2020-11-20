@@ -68,8 +68,9 @@ struct SubAndMsg
   SubAndMsg(rclcpp::Node & nd, const std::string & topic)
   {
     if ("null" != topic) {
-      sub_ = nd.create_subscription<T>(topic, rclcpp::QoS{10U}.reliable().durability_volatile(),
-          [this](std::shared_ptr<T> msg) {msg_ = *msg;});
+      sub_ = nd.create_subscription<T>(
+        topic, rclcpp::QoS{10U}.reliable().durability_volatile(),
+        [this](std::shared_ptr<T> msg) {msg_ = *msg;});
     }
   }
 };
@@ -127,8 +128,9 @@ TEST_P(joy_vi_test, basic_mapping)
   sensor_msgs::msg::Joy joy_msg{};
   joy_msg.axes = {-0.1F, -0.2F, -0.3F, -0.4F, -0.5F};
   joy_msg.buttons = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
-  const auto timer = test_nd->create_wall_timer(std::chrono::milliseconds{1LL},
-      [&joy_msg, &joy_pub]() {joy_pub->publish(joy_msg);});
+  const auto timer = test_nd->create_wall_timer(
+    std::chrono::milliseconds{1LL},
+    [&joy_msg, &joy_pub]() {joy_pub->publish(joy_msg);});
   // Execute
   rclcpp::executors::SingleThreadedExecutor exec{};
   exec.add_node(test_nd);
@@ -216,7 +218,8 @@ TEST_P(joy_vi_test, basic_mapping)
       EXPECT_LT(velocity, 0.0F);
     }
     // Must be modulo the increment
-    EXPECT_LT(std::fabs(std::fmod(velocity, JoystickVehicleInterfaceNode::VELOCITY_INCREMENT)),
+    EXPECT_LT(
+      std::fabs(std::fmod(velocity, JoystickVehicleInterfaceNode::VELOCITY_INCREMENT)),
       std::numeric_limits<decltype(velocity)>::epsilon());
     // Curvature
     EXPECT_TRUE(axis_check_fn(Axes::CURVATURE, high_level.msg_->curvature));
@@ -256,9 +259,11 @@ TEST_P(joy_vi_test, basic_mapping)
         };
       err_print("Horn", state.msg_->horn, true, false, Buttons::HORN_TOGGLE);
       err_print("hand_brake", state.msg_->hand_brake, true, false, Buttons::HAND_BRAKE_TOGGLE);
-      err_print("mode", state.msg_->mode, VSC::MODE_AUTONOMOUS, VSC::MODE_MANUAL,
+      err_print(
+        "mode", state.msg_->mode, VSC::MODE_AUTONOMOUS, VSC::MODE_MANUAL,
         Buttons::AUTONOMOUS_TOGGLE);
-      err_print("headlight", state.msg_->headlight, VSC::HEADLIGHT_ON,
+      err_print(
+        "headlight", state.msg_->headlight, VSC::HEADLIGHT_ON,
         VSC::HEADLIGHT_OFF, Buttons::HEADLIGHTS_TOGGLE);
       err_print("wiper", state.msg_->wiper, VSC::WIPER_LOW, VSC::WIPER_OFF, Buttons::WIPER_TOGGLE);
       EXPECT_TRUE(false);
@@ -278,7 +283,8 @@ TEST_P(joy_vi_test, basic_mapping)
     EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_RECORD), recordreplay.msg_->data == 1u);
     EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_START_REPLAY), recordreplay.msg_->data == 2u);
     EXPECT_EQ(button_check_fn(Buttons::RECORDREPLAY_STOP), recordreplay.msg_->data == 3u);
-    EXPECT_EQ(!button_check_fn(Buttons::RECORDREPLAY_START_RECORD) &&
+    EXPECT_EQ(
+      !button_check_fn(Buttons::RECORDREPLAY_START_RECORD) &&
       !button_check_fn(Buttons::RECORDREPLAY_START_REPLAY) &&
       !button_check_fn(Buttons::RECORDREPLAY_STOP), recordreplay.msg_->data == 0u);
   }
@@ -343,4 +349,4 @@ INSTANTIATE_TEST_CASE_P(
   {},
   {{Buttons::RECORDREPLAY_STOP, 1U}}
 }
-  ), );
+));

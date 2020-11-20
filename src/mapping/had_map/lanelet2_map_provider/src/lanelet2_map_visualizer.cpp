@@ -89,12 +89,16 @@ void Lanelet2MapVisualizer::visualize_map_callback(
   visualization_msgs::msg::MarkerArray map_marker_array;
 
   rclcpp::Time marker_t = this->now();
-  insertMarkerArray(map_marker_array,
-    autoware::common::had_map_utils::laneletsBoundaryAsMarkerArray(marker_t, lls,
-    color_lane_bounds, true));
-  insertMarkerArray(map_marker_array,
-    autoware::common::had_map_utils::laneletsAsTriangleMarkerArray(marker_t,
-    "lanelet_triangles", lls, color_lanelets));
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::laneletsBoundaryAsMarkerArray(
+      marker_t, lls,
+      color_lane_bounds, true));
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::laneletsAsTriangleMarkerArray(
+      marker_t,
+      "lanelet_triangles", lls, color_lanelets));
 
   bool8_t use_linestring_parking_definition = true;
 
@@ -109,33 +113,45 @@ void Lanelet2MapVisualizer::visualize_map_callback(
     auto ll_pickup_dropoff_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
       ll_linestrings, "parking_spot,drop_off,pick_up");
 
-    insertMarkerArray(map_marker_array,
+    insertMarkerArray(
+      map_marker_array,
       autoware::common::had_map_utils::lineStringsAsMarkerArray(
         marker_t, "parking_spots", ll_parking_linestrings, color_parking_bounds));
-    insertMarkerArray(map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsMarkerArray(marker_t, "parking_access_areas",
-      ll_parking_access_linestrings, color_parking_access_bounds));
-    insertMarkerArray(map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(marker_t,
-      "parking_triangles", ll_parking_linestrings, color_parking));
-    insertMarkerArray(map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(marker_t,
-      "parking_access_triangles", ll_parking_access_linestrings, color_parking_access));
-    insertMarkerArray(map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(marker_t,
-      "pickup_dropoff_triangles", ll_pickup_dropoff_linestrings, color_pickup_dropoff));
+    insertMarkerArray(
+      map_marker_array,
+      autoware::common::had_map_utils::lineStringsAsMarkerArray(
+        marker_t, "parking_access_areas",
+        ll_parking_access_linestrings, color_parking_access_bounds));
+    insertMarkerArray(
+      map_marker_array,
+      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
+        marker_t,
+        "parking_triangles", ll_parking_linestrings, color_parking));
+    insertMarkerArray(
+      map_marker_array,
+      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
+        marker_t,
+        "parking_access_triangles", ll_parking_access_linestrings, color_parking_access));
+    insertMarkerArray(
+      map_marker_array,
+      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
+        marker_t,
+        "pickup_dropoff_triangles", ll_pickup_dropoff_linestrings, color_pickup_dropoff));
   } else {
     // for parking spots defined as areas (LaneletOSM definition)
     auto ll_areas = autoware::common::had_map_utils::getAreaLayer(sub_map);
     auto ll_parking_areas = autoware::common::had_map_utils::subtypeAreas(ll_areas, "parking");
 
-    insertMarkerArray(map_marker_array,
-      autoware::common::had_map_utils::areasBoundaryAsMarkerArray(marker_t, "parking_area_bounds",
-      ll_parking_areas, color_parking_bounds));
+    insertMarkerArray(
+      map_marker_array,
+      autoware::common::had_map_utils::areasBoundaryAsMarkerArray(
+        marker_t, "parking_area_bounds",
+        ll_parking_areas, color_parking_bounds));
   }
   // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
-  m_timer = this->create_wall_timer(std::chrono::seconds(1),
-      [this, map_marker_array]() {m_viz_pub->publish(map_marker_array);});
+  m_timer = this->create_wall_timer(
+    std::chrono::seconds(1),
+    [this, map_marker_array]() {m_viz_pub->publish(map_marker_array);});
 }
 
 Lanelet2MapVisualizer::Lanelet2MapVisualizer(const rclcpp::NodeOptions & options)
@@ -144,8 +160,9 @@ Lanelet2MapVisualizer::Lanelet2MapVisualizer(const rclcpp::NodeOptions & options
   m_client =
     this->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Service");
 
-  m_viz_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("viz_had_map",
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+  m_viz_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+    "viz_had_map",
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 
   auto request = std::make_shared<autoware_auto_msgs::srv::HADMapService::Request>();
   bool8_t use_geom_bounds = false;

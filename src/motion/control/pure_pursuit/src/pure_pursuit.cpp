@@ -140,8 +140,9 @@ void PurePursuit::compute_lookahead_distance(const float32_t current_velocity)
   const float32_t lookahead_distance =
     fabsf(current_velocity * m_config.get_speed_to_lookahead_ratio());
   m_lookahead_distance =
-    std::max(m_config.get_minimum_lookahead_distance(),
-      std::min(lookahead_distance, m_config.get_maximum_lookahead_distance()));
+    std::max(
+    m_config.get_minimum_lookahead_distance(),
+    std::min(lookahead_distance, m_config.get_maximum_lookahead_distance()));
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t PurePursuit::in_traveling_direction(
@@ -332,8 +333,9 @@ float32_t PurePursuit::compute_command_accel_mps(
   }
   // v^2 - v0^2 = 2ax
   const float32_t abs_accel =
-    fabsf((target_velocity * target_velocity) -
-      (current_point.longitudinal_velocity_mps * current_point.longitudinal_velocity_mps)) /
+    fabsf(
+    (target_velocity * target_velocity) -
+    (current_point.longitudinal_velocity_mps * current_point.longitudinal_velocity_mps)) /
     (2.0F * distance);
   const float32_t accel_meter =
     ((target_velocity - current_point.longitudinal_velocity_mps) > 0.0F) ? abs_accel : -abs_accel;

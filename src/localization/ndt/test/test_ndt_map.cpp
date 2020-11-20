@@ -93,43 +93,68 @@ TEST_F(MapValidationTest, map_pcl_meta_validation) {
   }
 
   // Check with invalid height
-  EXPECT_EQ(validate_pcl_map(make_pcl(correct_field_set, 0U, data_size, row_step, width,
-    point_step)), 0U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        correct_field_set, 0U, data_size, row_step, width,
+        point_step)), 0U);
   // Check with invalid point step
-  EXPECT_EQ(validate_pcl_map(make_pcl(correct_field_set, 1U, data_size, row_step, width,
-    point_step - 1U)), 0U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        correct_field_set, 1U, data_size, row_step, width,
+        point_step - 1U)), 0U);
 }
 
 TEST_F(MapValidationTest, map_pcl_size_validation) {
   const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
 
-  EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size, row_step, width,
-    point_step)), num_points);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size, row_step, width,
+        point_step)), num_points);
 
   // Data larger than expected means that the return value will exclude the excess data
   // data.size(), row_step and width * point_step should be consistent, otherwise the
   // minimum of 3 will determine the returned size
-  EXPECT_EQ(validate_pcl_map(
+  EXPECT_EQ(
+    validate_pcl_map(
       make_pcl(field_set, 1U, data_size + point_step, row_step, width, point_step)), num_points);
-  EXPECT_EQ(validate_pcl_map(
+  EXPECT_EQ(
+    validate_pcl_map(
       make_pcl(field_set, 1U, data_size, row_step + point_step, width, point_step)), num_points);
-  EXPECT_EQ(validate_pcl_map(
+  EXPECT_EQ(
+    validate_pcl_map(
       make_pcl(field_set, 1U, data_size, row_step, width + 1U, point_step)), num_points);
 
   // Data shorter than expected: return the greatest number of points that can be read
   // given the point_step
-  EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size - 1U, row_step, width,
-    point_step)), num_points - 1U);
-  EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size, row_step - 1U, width,
-    point_step)), num_points - 1U);
-  EXPECT_EQ(validate_pcl_map(make_pcl(field_set, 1U, data_size, row_step, width - 1U,
-    point_step)), num_points - 1U);
-  EXPECT_EQ(validate_pcl_map(
-      make_pcl(field_set, 1U, data_size - 2 * point_step, row_step, width,
-      point_step)), num_points - 2U);
-  EXPECT_EQ(validate_pcl_map(
-      make_pcl(field_set, 1U, data_size - 2 * point_step - 1U, row_step, width,
-      point_step)), num_points - 3U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size - 1U, row_step, width,
+        point_step)), num_points - 1U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size, row_step - 1U, width,
+        point_step)), num_points - 1U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size, row_step, width - 1U,
+        point_step)), num_points - 1U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size - 2 * point_step, row_step, width,
+        point_step)), num_points - 2U);
+  EXPECT_EQ(
+    validate_pcl_map(
+      make_pcl(
+        field_set, 1U, data_size - 2 * point_step - 1U, row_step, width,
+        point_step)), num_points - 3U);
 }
 
 ////////////////////////////////////
@@ -329,8 +354,9 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
   StaticNDTMap map_grid(grid_config);
 
   // Map with invalid field set
-  auto invalid_pc1 = make_pcl({pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
-      1U, data_size, row_step, width, point_step);
+  auto invalid_pc1 = make_pcl(
+    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
+    1U, data_size, row_step, width, point_step);
   // Empty map
   auto invalid_pc2 = make_pcl(field_set, 1U, 0U, 0U, 0U, point_step);
   // Single point map but with invalid cell ID
@@ -386,22 +412,27 @@ TEST_F(NDTMapTest, map_representation_basics) {
   sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
 
   auto value = Real{1.0};
-  while (std::all_of(pc_point_its.begin(), pc_point_its.end(), [](auto & it) {
-      return it != it.end();
-    }) &&
+  while (std::all_of(
+      pc_point_its.begin(), pc_point_its.end(), [](auto & it) {
+        return it != it.end();
+      }) &&
     cell_id_it != cell_id_it.end())
   {
     const Eigen::Vector3d added_pt{value, value, value};
     // Turn the point into a pointcloud to insert. The point should be inserted enough to make
     // the voxel usable. (equal to NUM_POINT_THRESHOLD)
-    generator_grid.insert(make_pcl(std::vector<Eigen::Vector3d>{
+    generator_grid.insert(
+      make_pcl(
+        std::vector<Eigen::Vector3d>{
       DynamicNDTVoxel::NUM_POINT_THRESHOLD, added_pt}));
 
     // For simplicity,
     // the inserted points already correspond to the centroids and there's point per voxel.
     const auto & generating_voxel = generator_grid.cell(added_pt)[0U];
-    ASSERT_TRUE(generating_voxel.centroid().isApprox(added_pt,
-      std::numeric_limits<Real>::epsilon()));
+    ASSERT_TRUE(
+      generating_voxel.centroid().isApprox(
+        added_pt,
+        std::numeric_limits<Real>::epsilon()));
     ASSERT_EQ(generating_voxel.get().count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
     add_pt(pc_point_its, pc_cov_its, value);
@@ -428,15 +459,19 @@ TEST_F(NDTMapTest, map_representation_basics) {
 
   // Check if every voxel in the generator grid is passed to the map representation.
   for (auto & vx : generator_grid) {
-    EXPECT_NE(std::find_if(map_grid.begin(), map_grid.end(), [&vx](const auto & map_elem) {
-        return map_elem.first == vx.first;
-      }), map_grid.end());
+    EXPECT_NE(
+      std::find_if(
+        map_grid.begin(), map_grid.end(), [&vx](const auto & map_elem) {
+          return map_elem.first == vx.first;
+        }), map_grid.end());
 
     auto pt = vx.second.centroid();
     // slightly move the point before looking up to check if it gets the correct voxel.
     pt(0) += diff;
-    EXPECT_TRUE(map_grid.cell(pt(0), pt(1), pt(2))[0].centroid().isApprox(vx.second.centroid(),
-      std::numeric_limits<Real>::epsilon()));
+    EXPECT_TRUE(
+      map_grid.cell(pt(0), pt(1), pt(2))[0].centroid().isApprox(
+        vx.second.centroid(),
+        std::numeric_limits<Real>::epsilon()));
   }
 
   map_grid.clear();
@@ -549,7 +584,8 @@ DenseNDTMapContext::DenseNDTMapContext()
 {
   // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
   // init with a size to account for all the points in the map
-  autoware::common::lidar_utils::init_pcl_msg(m_pc, "map",
+  autoware::common::lidar_utils::init_pcl_msg(
+    m_pc, "map",
     POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
   // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
   // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1
@@ -579,7 +615,8 @@ void DenseNDTMapContext::build_pc(const Config & cfg)
 sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(const DynamicNDTMap & dynamic_map)
 {
   sensor_msgs::msg::PointCloud2 static_msg;
-  autoware::common::lidar_utils::init_pcl_msg(static_msg, "map", dynamic_map.size(), 10U,
+  autoware::common::lidar_utils::init_pcl_msg(
+    static_msg, "map", dynamic_map.size(), 10U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,

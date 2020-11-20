@@ -279,7 +279,8 @@ public:
     if (validate_pcl_map(msg) == 0U) {
       // throwing rather than silently failing since ndt matching cannot be done with an
       // empty/incorrect map
-      throw std::runtime_error("Point cloud representing the ndt map is either empty"
+      throw std::runtime_error(
+              "Point cloud representing the ndt map is either empty"
               "or does not have the correct format.");
     }
 
@@ -317,7 +318,8 @@ public:
       // If the pointcloud does not represent a voxel grid of identical configuration,
       // report the error
       if (voxel_idx != received_idx) {
-        throw std::domain_error("NDTVoxelMap: Pointcloud representing the ndt map"
+        throw std::domain_error(
+                "NDTVoxelMap: Pointcloud representing the ndt map"
                 "does not have a matching grid configuration with "
                 "the map representation it is being inserted to. The cell IDs do not matchb");
       }

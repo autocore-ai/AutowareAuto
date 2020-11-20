@@ -159,8 +159,9 @@ public:
     }
 
     const auto start = serialized.begin();
-    return NLPObstacleStageVariables(std::vector<T>(start, start + lambda_length),
-             std::vector<T>(start + lambda_length, start + lambda_length + mu_length) );
+    return NLPObstacleStageVariables(
+      std::vector<T>(start, start + lambda_length),
+      std::vector<T>(start + lambda_length, start + lambda_length + mu_length) );
   }
 
   std::vector<T> get_lambda() const noexcept {return m_lambda;}
@@ -217,7 +218,8 @@ public:
     std::vector<T> serialized{};
     for (const auto & halfplane : m_halfplanes) {
       const auto serialized_halfplane = halfplane.serialize();
-      serialized.insert(serialized.end(), serialized_halfplane.begin(),
+      serialized.insert(
+        serialized.end(), serialized_halfplane.begin(),
         serialized_halfplane.end() );
     }
     return serialized;
@@ -302,27 +304,34 @@ SerializedVariables<T> assemble_variable_vector_and_bounds(
   for (const auto & step : trajectory) {
     // State and its bounds
     const auto serialized_state = step.get_state().serialize();
-    assembled_variables.insert(assembled_variables.end(),
+    assembled_variables.insert(
+      assembled_variables.end(),
       serialized_state.begin(), serialized_state.end() );
-    lower_bounds.insert(lower_bounds.end(),
+    lower_bounds.insert(
+      lower_bounds.end(),
       serialized_state_lower.begin(), serialized_state_lower.end() );
-    upper_bounds.insert(upper_bounds.end(),
+    upper_bounds.insert(
+      upper_bounds.end(),
       serialized_state_upper.begin(), serialized_state_upper.end() );
 
     // Commands and their bounds
     const auto serialized_command = step.get_command().serialize();
-    assembled_variables.insert(assembled_variables.end(),
+    assembled_variables.insert(
+      assembled_variables.end(),
       serialized_command.begin(), serialized_command.end() );
-    lower_bounds.insert(lower_bounds.end(),
+    lower_bounds.insert(
+      lower_bounds.end(),
       serialized_command_lower.begin(), serialized_command_lower.end() );
-    upper_bounds.insert(upper_bounds.end(),
+    upper_bounds.insert(
+      upper_bounds.end(),
       serialized_command_upper.begin(), serialized_command_upper.end() );
   }
 
   // Obstacle variables and their bounds
   for (const auto & obstacle : obstacles) {
     const auto serialized = obstacle.serialize_variables();
-    assembled_variables.insert(assembled_variables.end(),
+    assembled_variables.insert(
+      assembled_variables.end(),
       serialized.begin(), serialized.end()
     );
     for (std::size_t k = {}; k < serialized.size(); k++) {

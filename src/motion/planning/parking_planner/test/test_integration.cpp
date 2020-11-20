@@ -79,11 +79,13 @@ void plot_polytope2D(const Polytope2D & polytope, const std::string & color)
 void plot_trajectory(const Trajectory & trajectory)
 {
   std::vector<float64_t> x_states{};
-  std::transform(trajectory.begin(), trajectory.end(), std::back_inserter(x_states),
+  std::transform(
+    trajectory.begin(), trajectory.end(), std::back_inserter(x_states),
     [](auto x) -> float64_t {return x.get_state().get_x();});
 
   std::vector<float64_t> y_states{};
-  std::transform(trajectory.begin(), trajectory.end(), std::back_inserter(y_states),
+  std::transform(
+    trajectory.begin(), trajectory.end(), std::back_inserter(y_states),
     [](auto x) -> float64_t {return x.get_state().get_y();});
 
   std::map<std::string, std::string> plot_keywords{};
@@ -143,8 +145,9 @@ TEST_P(TestIntegration, with_obstacles) {
   const VehicleCommand upper_command_bounds(+10.0, +15);
   const NLPCostWeights<float64_t> weights(1.0, 1.0, 0.0);
 
-  auto planner = ParkingPlanner(params.model_parameters, weights, lower_state_bounds,
-      upper_state_bounds, lower_command_bounds, upper_command_bounds);
+  auto planner = ParkingPlanner(
+    params.model_parameters, weights, lower_state_bounds,
+    upper_state_bounds, lower_command_bounds, upper_command_bounds);
 
   const auto result = planner.plan(params.current_state, params.goal_state, params.obstacles);
   const auto result_trajectory = result.get_trajectory();
@@ -172,9 +175,11 @@ TEST_P(TestIntegration, with_obstacles) {
   plot_trajectory(result_trajectory);
 
   // Plot start and goal states as well
-  plot_polytope2D(BicycleModel(params.model_parameters).compute_bounding_box(
+  plot_polytope2D(
+    BicycleModel(params.model_parameters).compute_bounding_box(
       params.current_state), "black");
-  plot_polytope2D(BicycleModel(params.model_parameters).compute_bounding_box(
+  plot_polytope2D(
+    BicycleModel(params.model_parameters).compute_bounding_box(
       params.goal_state), "black");
 
   std::string file_name = params.scenario_name + std::string{".png"};
@@ -204,7 +209,8 @@ const auto slanted_gap_obstacles = std::vector<Polytope2D>{
 };
 
 // This would be INSTANTIATE_TEST_SUITE_P in gtest 1.10 and up, but Autoware uses gtest 1.8.
-INSTANTIATE_TEST_CASE_P(integration, TestIntegration, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(
+  integration, TestIntegration, ::testing::Values(
     // Parallel, close, and car is somewhat small
     IntegrationTestParams{"parallel_close_small",
       side_gap_obstacles,

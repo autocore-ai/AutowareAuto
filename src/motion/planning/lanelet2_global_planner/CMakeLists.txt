@@ -28,6 +28,19 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto)
   ament_lint_auto_find_test_dependencies()
 
+  # Copy example files to build dir
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/map_data/AStuff_test_map.osm
+    ${CMAKE_CURRENT_BINARY_DIR}/test/map_data/AStuff_test_map.osm
+    COPYONLY
+  )
+
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/map_data/mapping_example_pk.osm
+    ${CMAKE_CURRENT_BINARY_DIR}/test/map_data/mapping_example_pk.osm
+    COPYONLY
+  )
+
   # gtest
   set(GB_PLANNER_GTEST lanelet2_global_planner_gtest)
   ament_add_gtest(${GB_PLANNER_GTEST}

@@ -103,7 +103,8 @@ public:
 
     if (future_result.wait_for(std::chrono::seconds(10)) != std::future_status::ready) {
       auto * lifecycle_node = "lidar_detector_managed";
-      LIDAR_INTEGRATION_ERROR("Server time out while getting current state for node: %s",
+      LIDAR_INTEGRATION_ERROR(
+        "Server time out while getting current state for node: %s",
         lifecycle_node);
     }
 

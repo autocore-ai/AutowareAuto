@@ -52,8 +52,9 @@ void Lanelet2GlobalPlanner::load_osm_map(
   if (osm_map) {
     osm_map.reset();
   }
-  osm_map = load(file, lanelet::projection::UtmProjector(
-        lanelet::Origin({lat, lon, alt})));
+  osm_map = load(
+    file, lanelet::projection::UtmProjector(
+      lanelet::Origin({lat, lon, alt})));
 
   // throw map load error
   if (!osm_map) {
@@ -335,24 +336,25 @@ const
 {
   // loop through parking space to find the closest distance error
   float64_t min_dist = 1e9;
-  auto i = std::min_element(std::begin(parking_id_list),
-      std::end(parking_id_list),
-      [ =, &min_dist](lanelet::Id park_id1, lanelet::Id park_id2)
+  auto i = std::min_element(
+    std::begin(parking_id_list),
+    std::end(parking_id_list),
+    [ =, &min_dist](lanelet::Id park_id1, lanelet::Id park_id2)
+    {
+      // compute parking center point
+      lanelet::Point3d p1;
+      lanelet::Point3d p2;
+      if (compute_parking_center(park_id1, p1) &&
+      compute_parking_center(park_id2, p2))
       {
-        // compute parking center point
-        lanelet::Point3d p1;
-        lanelet::Point3d p2;
-        if (compute_parking_center(park_id1, p1) &&
-        compute_parking_center(park_id2, p2))
-        {
-          float64_t dist1 = p2p_euclidean(p1, point);
-          float64_t dist2 = p2p_euclidean(p2, point);
-          min_dist = (dist1 < dist2) ? dist1 : dist2;
-          return dist1 < dist2;
-        } else {
-          return false;
-        }
-      });
+        float64_t dist1 = p2p_euclidean(p1, point);
+        float64_t dist2 = p2p_euclidean(p2, point);
+        min_dist = (dist1 < dist2) ? dist1 : dist2;
+        return dist1 < dist2;
+      } else {
+        return false;
+      }
+    });
 
   // get parking id
   // Improvement- Check if the parking point is too far away?
@@ -425,8 +427,9 @@ std::vector<lanelet::Id> Lanelet2GlobalPlanner::get_lane_route(
   const std::vector<lanelet::Id> & from_id, const std::vector<lanelet::Id> & to_id) const
 {
   lanelet::traffic_rules::TrafficRulesPtr trafficRules =
-    lanelet::traffic_rules::TrafficRulesFactory::create(lanelet::Locations::Germany,
-      lanelet::Participants::Vehicle);
+    lanelet::traffic_rules::TrafficRulesFactory::create(
+    lanelet::Locations::Germany,
+    lanelet::Participants::Vehicle);
   lanelet::routing::RoutingGraphUPtr routingGraph =
     lanelet::routing::RoutingGraph::build(*osm_map, *trafficRules);
 
@@ -472,7 +475,8 @@ bool8_t Lanelet2GlobalPlanner::compute_parking_center(
     float64_t mean_z = 0.0;
     lanelet::LineString3d ls3d = osm_map->lineStringLayer.get(parking_id);
     size_t num_points = ls3d.size();
-    std::for_each(ls3d.begin(), ls3d.end(), [&](lanelet::Point3d p)
+    std::for_each(
+      ls3d.begin(), ls3d.end(), [&](lanelet::Point3d p)
       {
         mean_x += p.x() / static_cast<float64_t>(num_points);
         mean_y += p.y() / static_cast<float64_t>(num_points);

@@ -99,8 +99,9 @@ std::size_t TrajectoryManager::get_closest_state(
     {return distance_from_current_state(one) < distance_from_current_state(two);};
 
   const auto minimum_index_iterator =
-    std::min_element(std::begin(trajectory.points), std::end(trajectory.points),
-      comparison_function);
+    std::min_element(
+    std::begin(trajectory.points), std::end(trajectory.points),
+    comparison_function);
   auto minimum_idx = std::distance(std::begin(trajectory.points), minimum_index_iterator);
 
   return static_cast<std::size_t>(minimum_idx);

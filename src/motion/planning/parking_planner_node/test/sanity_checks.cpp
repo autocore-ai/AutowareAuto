@@ -79,7 +79,8 @@ static const rclcpp::NodeOptions get_test_options()
     {"command_bounds.upper.throttle_mps2", +15.0},
   };
 
-  std::for_each(overrides.begin(), overrides.end(), [&options](auto x) {
+  std::for_each(
+    overrides.begin(), overrides.end(), [&options](auto x) {
       options.append_parameter_override(std::get<0>(x), std::get<1>(x));
     });
 

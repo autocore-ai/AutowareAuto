@@ -161,7 +161,8 @@ std::vector<Halfplane2D<MX>> make_halfplane_variables(
   for (std::size_t k = 0; k < max_obstacle_halfplanes; k++) {
     auto coefficients = make_named_variable(indexed_name(basename + "_halfplane_lhs", k), 2);
     auto right_hand_side = MX::sym(indexed_name(basename + "_halfplane_rhs", k), 1);
-    halfplanes.emplace_back(Halfplane2D<MX>(
+    halfplanes.emplace_back(
+      Halfplane2D<MX>(
         Point2D<MX>(coefficients[0], coefficients[1]),
         right_hand_side));
   }
@@ -197,8 +198,9 @@ NLPObstacle<MX> create_abstract_obstacle(
   // Create a polytope with the appropriate number of halfplanes
   auto halfplanes = make_halfplane_variables(basename, max_obstacle_halfplanes);
 
-  auto stage_variables = make_obstacle_stage_variables(basename, max_obstacle_halfplanes,
-      max_ego_halfplanes);
+  auto stage_variables = make_obstacle_stage_variables(
+    basename, max_obstacle_halfplanes,
+    max_ego_halfplanes);
 
   return NLPObstacle<MX>(stage_variables, halfplanes);
 }
@@ -253,13 +255,15 @@ void create_dynamics_constraints(
     [](auto X, auto U, auto P) {return casadi_dynamics_wrapper(X, U, P);};
 
   // Create a casadi function object that integrates the dynamics for one horizon step
-  Function dynamics = Function("F",
-      {x, u, p},  // Argument list
-      {RK4(x, u, p, casadi_dynamics_function,
+  Function dynamics = Function(
+    "F",
+    {x, u, p},    // Argument list
+    {RK4(
+        x, u, p, casadi_dynamics_function,
         INTEGRATION_STEP_SIZE, NUMBER_OF_INTEGRATION_STEPS)},  // Function to evaluate
-      {"x", "u", "p"},  // Input names
-      {"xf"},  // Output name
-      {{}});  // Options dictionary
+    {"x", "u", "p"},    // Input names
+    {"xf"},    // Output name
+    {{}});    // Options dictionary
 
   // Create the actual constraints
   // - Initial state constraints
@@ -271,7 +275,8 @@ void create_dynamics_constraints(
 
   // - Dynamics consistency constraints along the rest of the trajectory
   for (std::size_t k = 0; k < HORIZON_LENGTH - 1; ++k) {
-    auto evaluated_dynamics = dynamics(MXDict{
+    auto evaluated_dynamics = dynamics(
+      MXDict{
       {"x", convert_to_mx(trajectory[k].get_state())},
       {"u", convert_to_mx(trajectory[k].get_command())},
       {"p", convert_to_mx(vehicle_parameters)}
@@ -326,7 +331,8 @@ void create_single_stage_obstacle_constraints(
 
   // - Distance constraint: -g^T\mu + (At(x) -b)^T\lambda_k^m >= 0
   constexpr auto minimum_distance = 0.1;  // meters
-  inequality_constraints.push_back(-1.0 *
+  inequality_constraints.push_back(
+    -1.0 *
     (-dot(g, mu) + dot((mtimes(A, t) - b), lambda) - minimum_distance));
 
   // - Equality constraints: G^T\mu + R(x)^TA^T\lambda_k^m == 0
@@ -350,7 +356,9 @@ void create_obstacle_constraints(
   // Preparations: Build a vehicle polyhedron centered at (0,0) and heading 0
   // - Build G and g representing obstacle box at (x,y,heading) = (0,0,0)
   auto G = DM(std::vector<std::vector<float64_t>>({{1., 0.}, {-1., 0.}, {0, 1}, {0, -1}}));
-  auto g = vertcat(std::vector<MX>({
+  auto g = vertcat(
+    std::vector<MX>(
+  {
     vehicle_parameters.get_length_front() + vehicle_parameters.get_front_overhang(),
     vehicle_parameters.get_length_rear() + vehicle_parameters.get_rear_overhang(),
     0.5 * vehicle_parameters.get_vehicle_width(),
@@ -378,8 +386,9 @@ MX create_cost_function(
 {
   // Terminal cost: Try to reach the goal state if at all possible
   auto cost_function = cost_weights.get_goal_weight() *
-    dot(convert_to_mx(goal_state) - convert_to_mx(trajectory[HORIZON_LENGTH - 1].get_state()),
-      convert_to_mx(goal_state) - convert_to_mx(trajectory[HORIZON_LENGTH - 1].get_state()));
+    dot(
+    convert_to_mx(goal_state) - convert_to_mx(trajectory[HORIZON_LENGTH - 1].get_state()),
+    convert_to_mx(goal_state) - convert_to_mx(trajectory[HORIZON_LENGTH - 1].get_state()));
 
   // Input cost: Try to not use tons of actuation
   const auto throttle_cost = cost_weights.get_throttle_weight();
@@ -443,8 +452,10 @@ int main(int argc, char * argv[])
   std::vector<NLPObstacle<MX>> obstacles{};
   obstacles.reserve(MAX_NUMBER_OF_OBSTACLES);
   for (std::size_t k = {}; k < MAX_NUMBER_OF_OBSTACLES; k++) {
-    obstacles.push_back(create_abstract_obstacle("obstacle_0", MAX_HYPERPLANES_PER_OBSTACLE,
-      MAX_EGO_HYPERPLANES));
+    obstacles.push_back(
+      create_abstract_obstacle(
+        "obstacle_0", MAX_HYPERPLANES_PER_OBSTACLE,
+        MAX_EGO_HYPERPLANES));
   }
 
   // Create run-time parameters, those will be adjustable at every solve call
@@ -459,12 +470,14 @@ int main(int argc, char * argv[])
   std::vector<MX> inequality_constraints{};  // for type "<=" constraints
 
   // Create the individual
-  create_dynamics_constraints(trajectory, vehicle_params, current_state,
+  create_dynamics_constraints(
+    trajectory, vehicle_params, current_state,
     equality_constraints);
 
   create_terminal_state_constraint(trajectory, goal_state, equality_constraints);
 
-  create_obstacle_constraints(trajectory, vehicle_params, obstacles,
+  create_obstacle_constraints(
+    trajectory, vehicle_params, obstacles,
     equality_constraints, inequality_constraints);
 
   // Create cost function
@@ -479,7 +492,9 @@ int main(int argc, char * argv[])
 
   // - Parameters, using the adapter from nlp_adapters.hpp
   const MX parameter_vector =
-    vertcat(assemble_parameter_vector<MX>(current_state, goal_state,
+    vertcat(
+    assemble_parameter_vector<MX>(
+      current_state, goal_state,
       vehicle_params, obstacles, cost_weights));
 
   // - Constraints - equality first, then inequality.
@@ -508,7 +523,8 @@ int main(int argc, char * argv[])
   solver.generate_dependencies("parking_planner_callbacks.c");
 
   // This keeps the same approach as above for consistency.
-  generate_info_header(shared_library_directory, "nlp_cpp_info.hpp",
+  generate_info_header(
+    shared_library_directory, "nlp_cpp_info.hpp",
     equality_constraints.size(), inequality_constraints.size() );
 
   // Everything went well

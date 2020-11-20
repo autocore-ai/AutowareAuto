@@ -53,7 +53,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const rclcpp::NodeOptions & nod
     static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<float32_t>()),
     static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<float32_t>())
   };
-  init(ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
+  init(
+    ego_topic, trajectory_topic, bounding_boxes_topic, vehicle_param, heading_weight,
     min_record_distance);
 }
 
@@ -71,8 +72,9 @@ void RecordReplayPlannerNode::init(
   // Setup Tf Buffer with listener
   rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(clock);
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_,
-      std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(
+    *tf_buffer_,
+    std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
 
   // Set up action for control of recording and replaying
   m_recordserver = rclcpp_action::create_server<RecordTrajectory>(
@@ -97,8 +99,9 @@ void RecordReplayPlannerNode::init(
 
   // Set up subscribers for the actual recording
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
-  m_ego_sub = create_subscription<State>(ego_topic, QoS{10},
-      [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
+  m_ego_sub = create_subscription<State>(
+    ego_topic, QoS{10},
+    [this](const State::SharedPtr msg) {on_ego(msg);}, SubAllocT{});
 
   if (m_enable_obstacle_detection) {
     using SubAllocT =
@@ -114,8 +117,9 @@ void RecordReplayPlannerNode::init(
   m_trajectory_pub =
     create_publisher<Trajectory>(trajectory_topic, QoS{10}, PubAllocT{});
 
-  m_trajectory_boundingbox_pub = create_publisher<BoundingBoxArray>("debug/trajectory_boxes",
-      QoS{10});
+  m_trajectory_boundingbox_pub = create_publisher<BoundingBoxArray>(
+    "debug/trajectory_boxes",
+    QoS{10});
   m_collison_boundingbox_pub = create_publisher<BoundingBoxArray>("debug/collison_boxes", QoS{10});
   m_transformed_boundingbox_pub = create_publisher<BoundingBoxArray>(
     "debug/transformed_obstacle_boxes", QoS{10});
@@ -169,8 +173,9 @@ void RecordReplayPlannerNode::on_bounding_box(const BoundingBoxArray::SharedPtr 
     m_planner->update_bounding_boxes(*msg);
   } else {
     tf2::Duration timeout = tf2::durationFromSec(0.2);
-    if (tf_buffer_->canTransform(m_odom_frame_id, msg->header.frame_id,
-      tf2_ros::fromMsg(msg->header.stamp), timeout) )
+    if (tf_buffer_->canTransform(
+        m_odom_frame_id, msg->header.frame_id,
+        tf2_ros::fromMsg(msg->header.stamp), timeout) )
     {
       auto msg_tansformed = tf_buffer_->transform(*msg, m_odom_frame_id, timeout);
       if (m_transformed_boundingbox_pub->get_subscription_count() > 0U) {

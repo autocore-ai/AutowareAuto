@@ -167,7 +167,8 @@ protected:
   /// Action to take when a measurement is attempted to be set without a valid map.
   virtual void on_register_without_map()
   {
-    throw std::logic_error("RelativeLocalizerBase: Cannot register a measurement without a valid"
+    throw std::logic_error(
+            "RelativeLocalizerBase: Cannot register a measurement without a valid"
             " map. Either no valid map is set yet or an invalid map had been "
             "attempted to be set.");
   }

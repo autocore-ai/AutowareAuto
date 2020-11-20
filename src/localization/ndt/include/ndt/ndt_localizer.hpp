@@ -110,12 +110,14 @@ public:
     const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result);
 
     if (opt_summary.termination_type() == common::optimization::TerminationType::FAILURE) {
-      throw std::runtime_error("NDT localizer has likely encountered a numerical "
+      throw std::runtime_error(
+              "NDT localizer has likely encountered a numerical "
               "error during optimization.");
     }
 
     // Convert eigen pose back to ros pose/transform
-    transform_adapters::pose_to_transform(eig_pose_result,
+    transform_adapters::pose_to_transform(
+      eig_pose_result,
       pose_out.pose.pose);
 
     pose_out.header.stamp = msg.header.stamp;
@@ -207,7 +209,8 @@ protected:
     const auto message_time = ::time_utils::from_message(msg.header.stamp);
     // Map shouldn't be newer than a measurement.
     if (message_time < m_map.stamp()) {
-      throw std::logic_error("Lidar scan should not have a timestamp older than the timestamp of"
+      throw std::logic_error(
+              "Lidar scan should not have a timestamp older than the timestamp of"
               "the current map.");
     }
   }
@@ -225,11 +228,13 @@ protected:
       message_time;
     const auto stamp_tol = m_config.guess_time_tolerance();
     // An initial estimate should be comparable in time to the measurement's time stamp
-    if (std::abs(std::chrono::duration_cast<std::decay_t<decltype(stamp_tol)>>(guess_scan_diff).
-      count()) >
+    if (std::abs(
+        std::chrono::duration_cast<std::decay_t<decltype(stamp_tol)>>(guess_scan_diff).
+        count()) >
       std::abs(stamp_tol.count()))
     {
-      throw std::domain_error("Initial guess is not within: " + std::to_string(stamp_tol.count()) +
+      throw std::domain_error(
+              "Initial guess is not within: " + std::to_string(stamp_tol.count()) +
               "ns range of the scan's time stamp. Either increase the tolerance range or"
               "make sure the localizer takes in timely initial pose guesses.");
     }

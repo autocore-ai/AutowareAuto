@@ -124,8 +124,9 @@ void TrajectoryPlannerNodeBase::handle_accepted(
   // TODO(mitsudome-r): If synchronized service request is available,
   // replace it with synchronized implementation
   auto result =
-    m_map_client->async_send_request(map_request,
-      std::bind(&TrajectoryPlannerNodeBase::map_response, this, std::placeholders::_1));
+    m_map_client->async_send_request(
+    map_request,
+    std::bind(&TrajectoryPlannerNodeBase::map_response, this, std::placeholders::_1));
 }
 
 void TrajectoryPlannerNodeBase::map_response(rclcpp::Client<HADMapService>::SharedFuture future)

@@ -167,7 +167,8 @@ public:
     message_received = message_received && (m_num_received_msgs <= m_num_msgs * 2U);
 
     RCLCPP_INFO(get_logger(), "\tShould have correct answer: "s + std::to_string(m_num_msgs));
-    RCLCPP_INFO(get_logger(),
+    RCLCPP_INFO(
+      get_logger(),
       "\tActual have correct answer: "s + std::to_string(m_num_correct_output));
     bool8_t is_correct = m_num_correct_output <= m_num_msgs;
     is_correct = is_correct && ((m_num_correct_output * 2U) > (m_num_msgs * 7 / 10));

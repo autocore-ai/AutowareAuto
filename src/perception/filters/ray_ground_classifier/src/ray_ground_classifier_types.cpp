@@ -74,11 +74,13 @@ Config::Config(
   if ((max_local_slope_deg >= nonground_retro_thresh_deg) ||
     (max_global_slope_deg >= nonground_retro_thresh_deg))
   {
-    throw std::runtime_error("ray ground classifier: retro nonground classification must "
+    throw std::runtime_error(
+            "ray ground classifier: retro nonground classification must "
             "be greater than other angle thresholds");
   }
   if ((m_max_last_local_ground_thresh_m < m_max_global_height_thresh_m)) {
-    throw std::runtime_error("ray ground classifier: max local last ground thresh must "
+    throw std::runtime_error(
+            "ray ground classifier: max local last ground thresh must "
             "be greater than max_global_height_m");
   }
 }

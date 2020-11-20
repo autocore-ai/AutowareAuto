@@ -181,8 +181,9 @@ public:
         if (cell.usable()) {
           const auto & inv_cov = cell.inverse_covariance();
           // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
-          Real e_x_cov_x = std::exp(-m_gauss_d2 * pt_trans_norm.dot(
-                inv_cov * pt_trans_norm) / 2.0);
+          Real e_x_cov_x = std::exp(
+            -m_gauss_d2 * pt_trans_norm.dot(
+              inv_cov * pt_trans_norm) / 2.0);
 
           if (mode.score()) {
             score += -m_gauss_d1 * e_x_cov_x;

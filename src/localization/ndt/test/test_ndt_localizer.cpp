@@ -53,9 +53,12 @@ protected:
       ASSERT_TRUE(static_vx.usable());
       ASSERT_TRUE(dynamic_vx.usable());
 
-      ASSERT_TRUE(static_vx.centroid().isApprox(dynamic_vx.centroid(),
-        std::numeric_limits<Real>::epsilon()));
-      ASSERT_TRUE(static_vx.inverse_covariance().isApprox(
+      ASSERT_TRUE(
+        static_vx.centroid().isApprox(
+          dynamic_vx.centroid(),
+          std::numeric_limits<Real>::epsilon()));
+      ASSERT_TRUE(
+        static_vx.inverse_covariance().isApprox(
           dynamic_vx.inverse_covariance(),
           std::numeric_limits<Real>::epsilon() * 1e2));
     }
@@ -129,12 +132,14 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   std::cout << "The estimated pose difference after \n" << pose_out << std::endl;
 }
 
-INSTANTIATE_TEST_CASE_P(sanity_test, P2DLocalizerParameterTest,
+INSTANTIATE_TEST_CASE_P(
+  sanity_test, P2DLocalizerParameterTest,
   ::testing::Values(
     PoseParams{0.0, 0.65, 0.0, 0.0, 0.0, 0.0},
     PoseParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0},
     PoseParams{0.0, 0.1, 0.1, 0.0, 3.14159265359 / 72.0, 0.0},
     PoseParams{0.0, -0.2, 0.0, 0.0, 3.14159265359 / 72.0, 3.14159265359 / 72.0}
+    // cppcheck-suppress syntaxError
   ), );
 
 
@@ -203,13 +208,17 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
   EXPECT_NO_THROW(
     localizer.register_measurement(m_downsampled_cloud, set_and_get(scan_time), dummy_pose)
   );
-  EXPECT_NO_THROW(localizer.register_measurement(
+  EXPECT_NO_THROW(
+    localizer.register_measurement(
       m_downsampled_cloud, set_and_get(guess_time_tolerated1), dummy_pose));
-  EXPECT_NO_THROW(localizer.register_measurement(
+  EXPECT_NO_THROW(
+    localizer.register_measurement(
       m_downsampled_cloud, set_and_get(guess_time_tolerated2), dummy_pose));
-  EXPECT_NO_THROW(localizer.register_measurement(
+  EXPECT_NO_THROW(
+    localizer.register_measurement(
       m_downsampled_cloud, set_and_get(guess_time_tolerated3), dummy_pose));
-  EXPECT_NO_THROW(localizer.register_measurement(
+  EXPECT_NO_THROW(
+    localizer.register_measurement(
       m_downsampled_cloud, set_and_get(guess_time_tolerated4), dummy_pose));
 
   EXPECT_THROW(

@@ -39,7 +39,8 @@ TEST(VLP32CDataTest, angle_lookup_test) {
     1.4F, -1.4F, 1.4F, -4.2F, 4.2F, -1.4F, 1.4F, -1.4F
   };
 
-  std::transform(azimuth_offsets.begin(),
+  std::transform(
+    azimuth_offsets.begin(),
     azimuth_offsets.end(), azimuth_offsets.begin(),
     [](const auto & elem) {return elem < 0.0F ? elem + 360.0F : elem;});
 
@@ -52,8 +53,9 @@ TEST(VLP32CDataTest, angle_lookup_test) {
     for (auto laser_id_in_pair = 0U; laser_id_in_pair < 2U; ++laser_id_in_pair) {
       const auto laser_id = firing_id * 2U + laser_id_in_pair;
       const auto azimuth =
-        static_cast<uint32_t>(std::roundf(DEG2IDX *
-        (degree_indices_passed + azimuth_offsets[laser_id])));
+        static_cast<uint32_t>(std::roundf(
+          DEG2IDX *
+          (degree_indices_passed + azimuth_offsets[laser_id])));
       EXPECT_EQ(azimuth, vlp32c_data.azimuth_offset(0U, 0U, laser_id));
     }
   }

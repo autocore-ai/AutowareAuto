@@ -161,20 +161,23 @@ TEST_F(TestPCF, test_basic_fusion) {
   auto pc2 = make_pc({4, 5, 6}, t1);
   auto expected_result = make_pc({1, 2, 3, 4, 5, 6}, t1);
 
-  auto pub_ptr1 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("input_topic1",
-      rclcpp::QoS(10));
-  auto pub_ptr2 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>("input_topic2",
-      rclcpp::QoS(10));
+  auto pub_ptr1 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>(
+    "input_topic1",
+    rclcpp::QoS(10));
+  auto pub_ptr2 = pcf_node->create_publisher<sensor_msgs::msg::PointCloud2>(
+    "input_topic2",
+    rclcpp::QoS(10));
 
   auto handle_concat =
-    [&expected_result,
-    &test_completed](const sensor_msgs::msg::PointCloud2::SharedPtr msg) -> void {
+    [&expected_result, &test_completed](const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+    -> void {
       check_pcl_eq(*msg, expected_result);
       test_completed = true;
     };
 
-  auto sub_ptr = pcf_node->create_subscription<sensor_msgs::msg::PointCloud2>("output_topic",
-      rclcpp::QoS(10), handle_concat);
+  auto sub_ptr = pcf_node->create_subscription<sensor_msgs::msg::PointCloud2>(
+    "output_topic",
+    rclcpp::QoS(10), handle_concat);
 
   pub_ptr1->publish(pc1);
   pub_ptr2->publish(pc2);

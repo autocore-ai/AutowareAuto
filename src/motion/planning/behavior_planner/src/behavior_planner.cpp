@@ -129,14 +129,16 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
       if (prev_type == PlannerType::PARKING && type == PlannerType::LANE) {
         // create parking subroute
         // set goal to closest poin on lane from starting point
-        subroute.route.goal_point = get_closest_point_on_lane(subroute.route.start_point,
-            primitive.id, lanelet_map_ptr);
+        subroute.route.goal_point = get_closest_point_on_lane(
+          subroute.route.start_point,
+          primitive.id, lanelet_map_ptr);
         m_subroutes.push_back(subroute);
       }
       if (prev_type == PlannerType::LANE && type == PlannerType::PARKING) {
         // Currently, we assume that final goal is close to lane.
-        subroute.route.goal_point = get_closest_point_on_lane(route.goal_point, prev_primitive.id,
-            lanelet_map_ptr);
+        subroute.route.goal_point = get_closest_point_on_lane(
+          route.goal_point, prev_primitive.id,
+          lanelet_map_ptr);
         m_subroutes.push_back(subroute);
       }
 
@@ -153,8 +155,9 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
   // add final subroute
   // note that prev_type is actually type of final primitive after the loop is done
   // if (prev_type == PlannerType::LANE) {
-  subroute.route.goal_point = get_closest_point_on_lane(route.goal_point,
-      prev_primitive.id, lanelet_map_ptr);
+  subroute.route.goal_point = get_closest_point_on_lane(
+    route.goal_point,
+    prev_primitive.id, lanelet_map_ptr);
   // }else{
   //   subroute.route.goal_point = route.goal_point;
   // }
@@ -218,8 +221,9 @@ std::size_t BehaviorPlanner::get_closest_subroute(const State & ego_state)
     {return distance_function(one) < distance_function(two);};
 
   const auto minimum_index_iterator =
-    std::min_element(std::begin(m_subroutes), std::end(m_subroutes),
-      comparison_function);
+    std::min_element(
+    std::begin(m_subroutes), std::end(m_subroutes),
+    comparison_function);
   auto minimum_idx = std::distance(std::begin(m_subroutes), minimum_index_iterator);
 
   return static_cast<std::size_t>(minimum_idx);

@@ -46,7 +46,8 @@ static Trajectory create_dummy_initial_guess()
 {
   Trajectory initial_guess{};
   for (std::size_t k = {}; k < HORIZON_LENGTH; k++) {
-    initial_guess.push_back(TrajectoryStep(
+    initial_guess.push_back(
+      TrajectoryStep(
         // Using 0.1 here because 0.0 is usually numerically a bad initial guess
         VehicleCommand(0.1, 0.1),
         VehicleState(0.1, 0.1, 0.1, 0.1, 0.1)));
@@ -66,17 +67,20 @@ TEST(bicycle_model, simple_solve) {
   const auto start1 = VehicleState(5.0, 0.0, 0.0, 0.5, 0.0);
   const auto goal1 = VehicleState(-1.0, 1.0, 0.0, 0.0, 0.0);
   const auto initial_guess1 = create_dummy_initial_guess();
-  const auto nlp_path_planner = NLPPathPlanner(weights,
-      lower_state_bounds, upper_state_bounds,
-      lower_command_bounds, upper_command_bounds);
-  const auto results1 = nlp_path_planner.plan_nlp(start1, goal1, initial_guess1, obstacles,
-      parameters);
+  const auto nlp_path_planner = NLPPathPlanner(
+    weights,
+    lower_state_bounds, upper_state_bounds,
+    lower_command_bounds, upper_command_bounds);
+  const auto results1 = nlp_path_planner.plan_nlp(
+    start1, goal1, initial_guess1, obstacles,
+    parameters);
   const auto trajectory1 = results1.m_trajectory;
 
   const auto start2 = VehicleState(3.0, 6.0, 0.0, 3.14, 0.0);
   const auto goal2 = VehicleState(-2.0, 9.0, 0.0, 1.57, 0.0);
   const auto initial_guess2 = create_dummy_initial_guess();
-  const auto results2 = nlp_path_planner.plan_nlp(start2, goal2, initial_guess2, obstacles,
-      parameters);
+  const auto results2 = nlp_path_planner.plan_nlp(
+    start2, goal2, initial_guess2, obstacles,
+    parameters);
   const auto trajectory2 = results2.m_trajectory;
 }

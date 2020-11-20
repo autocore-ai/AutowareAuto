@@ -38,11 +38,13 @@ class RayGroundPclValidationTester : public rclcpp::Node
 public:
   RayGroundPclValidationTester()
   : Node{"pcl_listener"},
-    m_sub_nonground_points{create_subscription<PointCloud2>("points_nonground", rclcpp::QoS{50},
+    m_sub_nonground_points{create_subscription<PointCloud2>(
+        "points_nonground", rclcpp::QoS{50},
         [this](const PointCloud2::SharedPtr msg) {
           m_nonground_points.emplace_back(*msg);
         })},
-    m_sub_ground_points{create_subscription<PointCloud2>("points_ground", rclcpp::QoS{50},
+    m_sub_ground_points{create_subscription<PointCloud2>(
+      "points_ground", rclcpp::QoS{50},
       [this](const PointCloud2::SharedPtr msg) {
         m_ground_points.emplace_back(*msg);
       })},
@@ -207,9 +209,11 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
     }
 
     // Check all published nonground / ground pointclouds have the expected sizes
-    EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_ground_pcls(
+    EXPECT_TRUE(
+      ray_gnd_validation_tester->receive_correct_ground_pcls(
         expected_gnd_pcl_size, expected_num_of_pcl));
-    EXPECT_TRUE(ray_gnd_validation_tester->receive_correct_nonground_pcls(
+    EXPECT_TRUE(
+      ray_gnd_validation_tester->receive_correct_nonground_pcls(
         expected_nongnd_pcl_size, expected_num_of_pcl));
 
     ray_gnd_validation_tester->reset();

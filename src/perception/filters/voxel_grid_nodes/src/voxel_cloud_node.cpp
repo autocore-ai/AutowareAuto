@@ -43,7 +43,8 @@ namespace voxel_grid_nodes
 VoxelCloudNode::VoxelCloudNode(
   const rclcpp::NodeOptions & node_options)
 : Node("voxel_grid_cloud_node", node_options),
-  m_sub_ptr{create_subscription<Message>("points_in",
+  m_sub_ptr{create_subscription<Message>(
+      "points_in",
       rclcpp::QoS(
         declare_parameter("subscription.qos.history_depth", 10)
       ).durability(
@@ -54,7 +55,8 @@ VoxelCloudNode::VoxelCloudNode(
       ,
       std::bind(&VoxelCloudNode::callback, this, std::placeholders::_1)
     )},
-  m_pub_ptr{create_publisher<Message>("points_downsampled",
+  m_pub_ptr{create_publisher<Message>(
+      "points_downsampled",
       rclcpp::QoS(
         declare_parameter("publisher.qos.history_depth", 10)
       ).durability(
@@ -124,7 +126,8 @@ rmw_qos_durability_policy_t parse_durability_parameter(
     return RMW_QOS_POLICY_DURABILITY_VOLATILE;
   }
 
-  throw std::runtime_error("Durability setting '" + durability + "' is not supported."
+  throw std::runtime_error(
+          "Durability setting '" + durability + "' is not supported."
           "Please try 'volatile' or 'transient_local'.");
 }
 }  // namespace voxel_grid_nodes

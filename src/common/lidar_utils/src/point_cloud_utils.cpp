@@ -148,7 +148,8 @@ void init_pcl_msg(
   const std::string & frame_id,
   const std::size_t size)
 {
-  init_pcl_msg(msg, frame_id, size, 4U,
+  init_pcl_msg(
+    msg, frame_id, size, 4U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
@@ -168,7 +169,8 @@ bool8_t add_point_to_cloud_raw(
   static_assert(
     sizeof(autoware::common::types::PointXYZIF) >= ((4U * sizeof(float32_t)) + sizeof(uint16_t)),
     "PointXYZF is not expected size: ");
-  static_assert(std::is_trivially_copyable<autoware::common::types::PointXYZIF>::value,
+  static_assert(
+    std::is_trivially_copyable<autoware::common::types::PointXYZIF>::value,
     "PointXYZF is not trivial, add_point_to_cloud instead of add_point_to_cloud_raw");
 
   const uint8_t * casted_point_ptr = reinterpret_cast<const uint8_t *>(&pt);
@@ -374,8 +376,9 @@ AngleFilter::AngleFilter(float32_t start_angle, float32_t end_angle)
   } else {
     // range normal is the unit vector in the middle of the accepted range.(normalize(start + end))
     m_range_normal = plus_2d(start_vec, end_vec);
-    m_range_normal = times_2d(m_range_normal,
-        (1.0F / norm_2d(m_range_normal)));
+    m_range_normal = times_2d(
+      m_range_normal,
+      (1.0F / norm_2d(m_range_normal)));
 
     // If the small angle is not in CCW direction, then we need the wide angle, so the normal is
     // inverted.

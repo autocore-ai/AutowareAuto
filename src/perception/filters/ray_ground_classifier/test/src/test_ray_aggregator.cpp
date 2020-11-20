@@ -37,8 +37,10 @@ void check_ray(const Ray & ray, const float32_t th)
     const float32_t y = pt.get_point_pointer()->y;
     // (0, 0) is a special case
     if ((fabsf(x) > 0.0001F) || (fabsf(y) > 0.0001F)) {
-      EXPECT_LT(autoware::perception::filters::ray_ground_classifier::angle_distance_rad(th,
-        atan2f(y, x)), 0.1F) <<
+      EXPECT_LT(
+        autoware::perception::filters::ray_ground_classifier::angle_distance_rad(
+          th,
+          atan2f(y, x)), 0.1F) <<
         x << ", " << y;
     }
     const float32_t r = (x * x) + (y * y);
@@ -168,8 +170,11 @@ TEST(ray_aggregator, multi_insert)
   blks[0U].resize(2U);
   blks[0U][0U] = &pt0_0;
   blks[0U][1U] = &pt0_1;
+  // cppcheck-suppress objectIndex
   blks[1U].resize(2U);
+  // cppcheck-suppress objectIndex
   blks[1U][0U] = &pt1_0;
+  // cppcheck-suppress objectIndex
   blks[1U][1U] = &pt1_1;
   const std::size_t min_ray_points = 4U;
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.2F, min_ray_points};
@@ -223,10 +228,12 @@ TEST(ray_aggregator, bad_cases)
   const uint32_t capacity =
     static_cast<uint32_t>(autoware::common::types::POINT_BLOCK_CAPACITY);
   // small width
-  EXPECT_THROW(RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.00000000001F, 10U}),
+  EXPECT_THROW(
+    RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.00000000001F, 10U}),
     std::runtime_error);
   // too big ray limit
-  EXPECT_THROW(RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.1F, capacity + 1U}),
+  EXPECT_THROW(
+    RayAggregator::Config cfg({-3.14159F, 3.14159F, 0.1F, capacity + 1U}),
     std::runtime_error);
   // insert past capacity
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.2F, 10U};

@@ -168,8 +168,9 @@ PlanningResult ParkingPlanner::plan(
   const auto trajectory_guess = this->create_trajectory_from_states(astar_output, HORIZON_LENGTH);
 
   // Run NLP smoother, warm-started using the A* guess
-  auto nlp_results = m_nlp_planner.plan_nlp(current_state, goal_state, trajectory_guess, obstacles,
-      m_model_parameters);
+  auto nlp_results = m_nlp_planner.plan_nlp(
+    current_state, goal_state, trajectory_guess, obstacles,
+    m_model_parameters);
   const auto smoothed_trajectory = nlp_results.m_trajectory;
   const std::size_t nlp_iterations =
     static_cast<std::size_t>(nlp_results.m_solve_info["iter_count"].to_int());
@@ -177,16 +178,18 @@ PlanningResult ParkingPlanner::plan(
 
   // Perform post-checking of trajectory for collisions and dynamics
   const auto checking_tolerance = 1e-4;
-  const auto trajectory_ok = m_nlp_planner.check_trajectory(smoothed_trajectory, current_state,
-      goal_state, obstacles, m_model_parameters, checking_tolerance);
+  const auto trajectory_ok = m_nlp_planner.check_trajectory(
+    smoothed_trajectory, current_state,
+    goal_state, obstacles, m_model_parameters, checking_tolerance);
   std::cout << "Trajectory ok is: " << trajectory_ok << std::endl;
 
   // Return final result
   if (trajectory_ok) {
     return PlanningResult(smoothed_trajectory, nlp_iterations, nlp_proc_time, PlanningStatus::OK);
   } else {
-    return PlanningResult(smoothed_trajectory, nlp_iterations, nlp_proc_time,
-             PlanningStatus::NLP_ERROR);
+    return PlanningResult(
+      smoothed_trajectory, nlp_iterations, nlp_proc_time,
+      PlanningStatus::NLP_ERROR);
   }
 }
 

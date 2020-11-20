@@ -55,8 +55,9 @@ TEST_F(PCMapperTest, core) {
 
   auto register_and_check = [](const auto & pc, const auto & tf, auto update, auto & mapper) {
       geometry_msgs::msg::PoseWithCovarianceStamped pose_out;
-      const auto sum = mapper.register_measurement(pc, geometry_msgs::msg::TransformStamped{},
-          pose_out);
+      const auto sum = mapper.register_measurement(
+        pc, geometry_msgs::msg::TransformStamped{},
+        pose_out);
       EXPECT_EQ(sum.map_update_summary.update_type, update);
       EXPECT_EQ(sum.map_update_summary.num_added_pts, pc.width);
       EXPECT_EQ(sum.map_increment->width, pc.width);

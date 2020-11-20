@@ -44,7 +44,8 @@ TEST(VLS128DataTest, angle_lookup_test) {
     6.354F, 4.548F, 2.732F, 0.911F, -0.911F, -2.732F, -4.548F, -6.354F
   };
 
-  std::transform(group_azimuth_offsets.begin(),
+  std::transform(
+    group_azimuth_offsets.begin(),
     group_azimuth_offsets.end(), group_azimuth_offsets.begin(),
     [](const auto & elem) {return elem < 0.0F ? elem + 360.0F : elem;});
 
@@ -69,12 +70,14 @@ TEST(VLS128DataTest, angle_lookup_test) {
 
       for (auto pt_id = 0U; pt_id < VLS128Data::GROUP_SIZE; ++pt_id) {
         const auto pt_id_in_block = (group_id_in_block * VLS128Data::GROUP_SIZE) +pt_id;
-        const auto raw_azimuth_lookup = vls128_data.azimuth_offset(num_banked_pts, block_id,
-            pt_id_in_block);
+        const auto raw_azimuth_lookup = vls128_data.azimuth_offset(
+          num_banked_pts, block_id,
+          pt_id_in_block);
 
         const auto expected_azimuth =
-          static_cast<uint32_t>(std::roundf(firing_total_azimuth_offset +
-          group_azimuth_offsets[pt_id] * DEG2IDX));
+          static_cast<uint32_t>(std::roundf(
+            firing_total_azimuth_offset +
+            group_azimuth_offsets[pt_id] * DEG2IDX));
         const auto altitude = vls128_data.altitude(num_banked_pts, block_id, pt_id_in_block);
         EXPECT_EQ(raw_azimuth_lookup, expected_azimuth);
         EXPECT_LE(altitude, AZIMUTH_ROTATION_RESOLUTION);

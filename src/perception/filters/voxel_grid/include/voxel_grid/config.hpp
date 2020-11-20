@@ -84,14 +84,20 @@ public:
   uint64_t index(const PointT & pt) const
   {
     const uint64_t idx = static_cast<uint64_t>(
-      std::floor((clamp(common::geometry::point_adapter::x_(pt),
-      m_min_point.x, m_max_point.x) - m_min_point.x) * m_voxel_size_inv.x));
+      std::floor(
+        (clamp(
+          common::geometry::point_adapter::x_(pt),
+          m_min_point.x, m_max_point.x) - m_min_point.x) * m_voxel_size_inv.x));
     const uint64_t jdx = static_cast<uint64_t>(
-      std::floor((clamp(common::geometry::point_adapter::y_(pt),
-      m_min_point.y, m_max_point.y) - m_min_point.y) * m_voxel_size_inv.y));
+      std::floor(
+        (clamp(
+          common::geometry::point_adapter::y_(pt),
+          m_min_point.y, m_max_point.y) - m_min_point.y) * m_voxel_size_inv.y));
     const uint64_t kdx = static_cast<uint64_t>(
-      std::floor((clamp(common::geometry::point_adapter::z_(pt),
-      m_min_point.z, m_max_point.z) - m_min_point.z) * m_voxel_size_inv.z));
+      std::floor(
+        (clamp(
+          common::geometry::point_adapter::z_(pt),
+          m_min_point.z, m_max_point.z) - m_min_point.z) * m_voxel_size_inv.z));
     return idx + (jdx * m_y_stride) + (kdx * m_z_stride);
   }
 

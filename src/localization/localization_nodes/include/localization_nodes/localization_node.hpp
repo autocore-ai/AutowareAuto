@@ -94,14 +94,20 @@ public:
   : Node(node_name, name_space),
     m_pose_initializer(pose_initializer),
     m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
-    m_observation_sub(create_subscription<ObservationMsgT>(observation_sub_config.topic,
-      observation_sub_config.qos,
-      [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
-    m_map_sub(create_subscription<MapMsgT>(map_sub_config.topic, map_sub_config.qos,
-      [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
-    m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(pose_pub_config.topic,
-      pose_pub_config.qos)),
-    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+    m_observation_sub(create_subscription<ObservationMsgT>(
+        observation_sub_config.topic,
+        observation_sub_config.qos,
+        [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
+    m_map_sub(
+      create_subscription<MapMsgT>(
+        map_sub_config.topic, map_sub_config.qos,
+        [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
+    m_pose_publisher(
+      create_publisher<PoseWithCovarianceStamped>(
+        pose_pub_config.topic,
+        pose_pub_config.qos)),
+    m_initial_pose_sub(
+      create_subscription<PoseWithCovarianceStamped>(
         initial_pose_sub_config.topic, initial_pose_sub_config.qos,
         [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
           initial_pose_callback(msg);
@@ -126,18 +132,21 @@ public:
             static_cast<size_t>(declare_parameter("observation_sub.history_depth").template
             get<size_t>())}},
         [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
-    m_map_sub(create_subscription<MapMsgT>(
+    m_map_sub(
+      create_subscription<MapMsgT>(
         "ndt_map",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter("map_sub.history_depth").
             template get<size_t>())}}.transient_local(),
         [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
-    m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
+    m_pose_publisher(
+      create_publisher<PoseWithCovarianceStamped>(
         "ndt_pose",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
               "pose_pub.history_depth").template get<size_t>())}})),
-    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+    m_initial_pose_sub(
+      create_subscription<PoseWithCovarianceStamped>(
         "initialpose",
         rclcpp::QoS{rclcpp::KeepLast{10}},
         [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
@@ -163,18 +172,21 @@ public:
             static_cast<size_t>(declare_parameter("observation_sub.history_depth").template
             get<size_t>())}},
         [this](typename ObservationMsgT::ConstSharedPtr msg) {observation_callback(msg);})),
-    m_map_sub(create_subscription<MapMsgT>(
+    m_map_sub(
+      create_subscription<MapMsgT>(
         "ndt_map",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter("map_sub.history_depth").
             template get<size_t>())}}.transient_local(),
         [this](typename MapMsgT::ConstSharedPtr msg) {map_callback(msg);})),
-    m_pose_publisher(create_publisher<PoseWithCovarianceStamped>(
+    m_pose_publisher(
+      create_publisher<PoseWithCovarianceStamped>(
         "ndt_pose",
         rclcpp::QoS{rclcpp::KeepLast{
             static_cast<size_t>(declare_parameter(
               "pose_pub.history_depth").template get<size_t>())}})),
-    m_initial_pose_sub(create_subscription<PoseWithCovarianceStamped>(
+    m_initial_pose_sub(
+      create_subscription<PoseWithCovarianceStamped>(
         "initialpose",
         rclcpp::QoS{rclcpp::KeepLast{10}},
         [this](const typename PoseWithCovarianceStamped::ConstSharedPtr msg) {
@@ -226,7 +238,8 @@ protected:
   /// Default behavior when an observation is received with no valid existing map.
   virtual void on_observation_with_invalid_map(typename ObservationMsgT::ConstSharedPtr)
   {
-    RCLCPP_WARN(get_logger(), "Received observation without a valid map, "
+    RCLCPP_WARN(
+      get_logger(), "Received observation without a valid map, "
       "ignoring the observation.");
   }
 
@@ -235,7 +248,8 @@ protected:
   virtual void on_invalid_output(PoseWithCovarianceStamped & pose)
   {
     (void) pose;
-    RCLCPP_WARN(get_logger(), "Relative localizer has an invalid pose estimate. "
+    RCLCPP_WARN(
+      get_logger(), "Relative localizer has an invalid pose estimate. "
       "The result is ignored.");
   }
 
@@ -260,8 +274,9 @@ private:
   void init()
   {
     if (declare_parameter("publish_tf").template get<bool>()) {
-      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf",
-          rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
+      m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>(
+        "/tf",
+        rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
     }
 
     if (declare_parameter("init_hack.enabled", false)) {
@@ -359,8 +374,9 @@ private:
 
     geometry_msgs::msg::TransformStamped odom_tf;
     try {
-      odom_tf = m_tf_buffer.lookupTransform("odom", "base_link",
-          time_utils::from_message(pose_msg.header.stamp));
+      odom_tf = m_tf_buffer.lookupTransform(
+        "odom", "base_link",
+        time_utils::from_message(pose_msg.header.stamp));
     } catch (const tf2::ExtrapolationException &) {
       odom_tf = m_tf_buffer.lookupTransform("odom", "base_link", tf2::TimePointZero);
     }
@@ -391,8 +407,9 @@ private:
   /// Publish the pose message as a transform.
   void republish_tf(builtin_interfaces::msg::Time stamp)
   {
-    auto map_odom_tf = m_tf_buffer.lookupTransform(m_localizer_ptr->map_frame_id(), "odom",
-        tf2::TimePointZero);
+    auto map_odom_tf = m_tf_buffer.lookupTransform(
+      m_localizer_ptr->map_frame_id(), "odom",
+      tf2::TimePointZero);
     map_odom_tf.header.stamp = stamp;
     tf2_msgs::msg::TFMessage tf_message;
     tf_message.transforms.push_back(map_odom_tf);
@@ -403,7 +420,8 @@ private:
   void check_localizer() const
   {
     if (!m_localizer_ptr) {
-      throw std::runtime_error("Localizer node needs a valid localizer to be set before it "
+      throw std::runtime_error(
+              "Localizer node needs a valid localizer to be set before it "
               "can register measurements. Call `set_localizer(...)` first.");
     }
   }
@@ -424,13 +442,15 @@ private:
 
     //  project intial pose into map frame
     if (!m_tf_buffer.canTransform(map_frame, msg_ptr->header.frame_id, tf2::TimePointZero)) {
-      RCLCPP_ERROR(get_logger(),
+      RCLCPP_ERROR(
+        get_logger(),
         "Failed to find transform from %s to %s frame. Failed to give initial pose.",
         msg_ptr->header.frame_id, map_frame);
       return;
     }
-    const auto transform = m_tf_buffer.lookupTransform(map_frame, msg_ptr->header.frame_id,
-        tf2::TimePointZero);
+    const auto transform = m_tf_buffer.lookupTransform(
+      map_frame, msg_ptr->header.frame_id,
+      tf2::TimePointZero);
 
     // convert to PoseStamped Message to match with argument to doTransform()
     geometry_msgs::msg::PoseStamped input_pose_stamped, transformed_pose_stamped;

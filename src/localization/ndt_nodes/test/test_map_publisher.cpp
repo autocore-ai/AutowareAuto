@@ -151,12 +151,13 @@ TEST_F(MapPublisherTest, core_functionality)
   Cloud received_cloud_map;
   const auto listener_node = rclcpp::Node::make_shared("MapPublisherTest_listener_node");
   const auto sub =
-    listener_node->create_subscription<Cloud>(map_topic,
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
-      [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
-        ++callback_counter;
-        received_cloud_map = *msg;
-      });
+    listener_node->create_subscription<Cloud>(
+    map_topic,
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
+    [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
+      ++callback_counter;
+      received_cloud_map = *msg;
+    });
 
   // Create map publisher. It is given 5 seconds to discover the test subscription.
 
@@ -166,23 +167,32 @@ TEST_F(MapPublisherTest, core_functionality)
   params.emplace_back("map_yaml_file", yaml_file_name);
   params.emplace_back("map_frame", map_frame);
 
-  params.emplace_back("map_config.min_point.x",
+  params.emplace_back(
+    "map_config.min_point.x",
     static_cast<float32_t>(grid_config.get_min_point().x));
-  params.emplace_back("map_config.min_point.y",
+  params.emplace_back(
+    "map_config.min_point.y",
     static_cast<float32_t>(grid_config.get_min_point().y));
-  params.emplace_back("map_config.min_point.z",
+  params.emplace_back(
+    "map_config.min_point.z",
     static_cast<float32_t>(grid_config.get_min_point().z));
-  params.emplace_back("map_config.max_point.x",
+  params.emplace_back(
+    "map_config.max_point.x",
     static_cast<float32_t>(grid_config.get_max_point().x));
-  params.emplace_back("map_config.max_point.y",
+  params.emplace_back(
+    "map_config.max_point.y",
     static_cast<float32_t>(grid_config.get_max_point().y));
-  params.emplace_back("map_config.max_point.z",
+  params.emplace_back(
+    "map_config.max_point.z",
     static_cast<float32_t>(grid_config.get_max_point().z));
-  params.emplace_back("map_config.voxel_size.x",
+  params.emplace_back(
+    "map_config.voxel_size.x",
     static_cast<float32_t>(grid_config.get_voxel_size().x));
-  params.emplace_back("map_config.voxel_size.y",
+  params.emplace_back(
+    "map_config.voxel_size.y",
     static_cast<float32_t>(grid_config.get_voxel_size().y));
-  params.emplace_back("map_config.voxel_size.z",
+  params.emplace_back(
+    "map_config.voxel_size.z",
     static_cast<float32_t>(grid_config.get_voxel_size().z));
   params.emplace_back("map_config.capacity", static_cast<int32_t>(grid_config.get_capacity()));
 
@@ -223,9 +233,12 @@ TEST_F(MapPublisherTest, core_functionality)
     const auto expected_centroid = expected_centroid_it.second;
     const auto & received_cell = static_received_map.cell(expected_centroid)[0U];
     const auto & reference_cell = dynamic_validation_map.cell(expected_centroid)[0U];
-    EXPECT_TRUE(received_cell.centroid().isApprox(reference_cell.centroid(),
-      std::numeric_limits<Real>::epsilon()));
-    EXPECT_TRUE(received_cell.inverse_covariance().isApprox(
+    EXPECT_TRUE(
+      received_cell.centroid().isApprox(
+        reference_cell.centroid(),
+        std::numeric_limits<Real>::epsilon()));
+    EXPECT_TRUE(
+      received_cell.inverse_covariance().isApprox(
         reference_cell.inverse_covariance(),
         std::numeric_limits<Real>::epsilon() * 1e2));
   }
@@ -251,20 +264,22 @@ TEST_F(MapPublisherTest, viz_functionality)
   Cloud received_viz_cloud_map;
   const auto listener_node = rclcpp::Node::make_shared("MapPublisherTest_listener_node");
   const auto sub =
-    listener_node->create_subscription<Cloud>(map_topic,
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
-      [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
-        ++callback_counter;
-        received_cloud_map = *msg;
-      });
+    listener_node->create_subscription<Cloud>(
+    map_topic,
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
+    [&received_cloud_map, &callback_counter](Cloud::ConstSharedPtr msg) {
+      ++callback_counter;
+      received_cloud_map = *msg;
+    });
   const auto viz_listener_node = rclcpp::Node::make_shared("MapPublisherTest_viz_listener_node");
   const auto viz_sub =
-    viz_listener_node->create_subscription<Cloud>(viz_map_topic,
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
-      [&received_viz_cloud_map, &viz_callback_counter](Cloud::ConstSharedPtr msg) {
-        ++viz_callback_counter;
-        received_viz_cloud_map = *msg;
-      });
+    viz_listener_node->create_subscription<Cloud>(
+    viz_map_topic,
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local(),
+    [&received_viz_cloud_map, &viz_callback_counter](Cloud::ConstSharedPtr msg) {
+      ++viz_callback_counter;
+      received_viz_cloud_map = *msg;
+    });
 
   std::string yaml_string = build_yaml_string();
   std::ofstream yaml_fout(yaml_file_name);
@@ -281,23 +296,32 @@ TEST_F(MapPublisherTest, viz_functionality)
   params.emplace_back("map_frame", map_frame);
   params.emplace_back("viz_map", true);
 
-  params.emplace_back("map_config.min_point.x",
+  params.emplace_back(
+    "map_config.min_point.x",
     static_cast<float32_t>(grid_config.get_min_point().x));
-  params.emplace_back("map_config.min_point.y",
+  params.emplace_back(
+    "map_config.min_point.y",
     static_cast<float32_t>(grid_config.get_min_point().y));
-  params.emplace_back("map_config.min_point.z",
+  params.emplace_back(
+    "map_config.min_point.z",
     static_cast<float32_t>(grid_config.get_min_point().z));
-  params.emplace_back("map_config.max_point.x",
+  params.emplace_back(
+    "map_config.max_point.x",
     static_cast<float32_t>(grid_config.get_max_point().x));
-  params.emplace_back("map_config.max_point.y",
+  params.emplace_back(
+    "map_config.max_point.y",
     static_cast<float32_t>(grid_config.get_max_point().y));
-  params.emplace_back("map_config.max_point.z",
+  params.emplace_back(
+    "map_config.max_point.z",
     static_cast<float32_t>(grid_config.get_max_point().z));
-  params.emplace_back("map_config.voxel_size.x",
+  params.emplace_back(
+    "map_config.voxel_size.x",
     static_cast<float32_t>(grid_config.get_voxel_size().x));
-  params.emplace_back("map_config.voxel_size.y",
+  params.emplace_back(
+    "map_config.voxel_size.y",
     static_cast<float32_t>(grid_config.get_voxel_size().y));
-  params.emplace_back("map_config.voxel_size.z",
+  params.emplace_back(
+    "map_config.voxel_size.z",
     static_cast<float32_t>(grid_config.get_voxel_size().z));
   params.emplace_back("map_config.capacity", static_cast<int32_t>(grid_config.get_capacity()));
 

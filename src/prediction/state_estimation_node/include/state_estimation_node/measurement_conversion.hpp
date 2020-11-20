@@ -57,7 +57,8 @@ template<typename MeasurementT, typename MessageT>
 MeasurementT message_to_measurement(
   const MessageT &, const Eigen::Isometry3f &)
 {
-  static_assert(sizeof(MessageT) == -1,
+  static_assert(
+    sizeof(MessageT) == -1,
     "You have to have a specialization for message_to_measurement() function!");
   // We only have this throw here to make linter happy as this is a non-void function.
   throw std::runtime_error("You have to have a specialization for message_to_measurement()!");

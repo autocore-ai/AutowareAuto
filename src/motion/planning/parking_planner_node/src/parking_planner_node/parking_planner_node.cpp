@@ -150,7 +150,8 @@ ParkingPlannerNode::ParkingPlannerNode(
     f32_param("command_bounds.upper.throttle_mps2"),
   };
 
-  init(vehicle_param, optimization_weights, lower_state_bounds, upper_state_bounds,
+  init(
+    vehicle_param, optimization_weights, lower_state_bounds, upper_state_bounds,
     lower_command_bounds, upper_command_bounds);
 }
 
@@ -201,8 +202,9 @@ static typename std::vector<std::list<Point>> get_pocket_hulls(
 )
 {
   // - Get pockets in that convex hull (hence the above rotation)
-  const auto pocket_list = hull_pockets(polygon_start, polygon_end,
-      convex_hull_start, convex_hull_end);
+  const auto pocket_list = hull_pockets(
+    polygon_start, polygon_end,
+    convex_hull_start, convex_hull_end);
 
   // - Create owned convex hulls of the pockets
   std::vector<std::list<Point>> owned_pocket_hulls;
@@ -240,8 +242,9 @@ static typename std::vector<std::list<Point>> get_outer_boxes(
     // Check if segment is on the convex hull. The second part of the condition
     // checks the "rollover segment", as in the segment obtained by connecting the
     // final point with the first point again.
-    if ( ( std::search(convex_hull_start, convex_hull_end,
-      segment_vector.begin(), segment_vector.end(), are_points_equal) != convex_hull_end ) ||
+    if ( ( std::search(
+        convex_hull_start, convex_hull_end,
+        segment_vector.begin(), segment_vector.end(), are_points_equal) != convex_hull_end ) ||
       (are_points_equal(segment_vector[0], *(std::prev(convex_hull_end))) &&
       are_points_equal(segment_vector[1], *convex_hull_start) ) )
     {
@@ -276,8 +279,10 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
   //   involving the two in iterator form.
   std::vector<Point> drivable_area_points{};
   for (uint32_t k = {}; k < drivable_area.numSegments(); ++k) {
-    drivable_area_points.emplace_back(lanelet_point_to_point(drivable_area.segment(k).
-      first));
+    drivable_area_points.emplace_back(
+      lanelet_point_to_point(
+        drivable_area.segment(k).
+        first));
   }
 
   // - Get convex hull of drivable surface
@@ -288,8 +293,10 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
     const typename decltype(drivable_area_hull)::const_iterator
     drivable_area_hull_begin = drivable_area_hull.begin();
     // We only care about the convex hull, throw away interior points
-    drivable_area_hull.resize(static_cast<uint32_t>(std::distance(drivable_area_hull_begin,
-      drivable_area_hull_end)));
+    drivable_area_hull.resize(
+      static_cast<uint32_t>(std::distance(
+        drivable_area_hull_begin,
+        drivable_area_hull_end)));
   }
 
   // - Find a point that is on the convex hull and rotate the drivable area points to start there
@@ -304,8 +311,9 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
     drivable_area_hull.begin(), drivable_area_hull.end());
 
   // - Get outer boxes where necessary
-  const auto outer_boxes = get_outer_boxes(drivable_area, drivable_area_hull.begin(),
-      drivable_area_hull.end());
+  const auto outer_boxes = get_outer_boxes(
+    drivable_area, drivable_area_hull.begin(),
+    drivable_area_hull.end());
 
   // - Compute parking polytopes from the convex hulls of the outer boxes as well as the pockets
   auto all_hulls = owned_pocket_hulls;
@@ -370,15 +378,23 @@ HADMapService::Request ParkingPlannerNode::create_map_request(const Route & rout
     autoware_auto_msgs::srv::HADMapService_Request::DRIVEABLE_GEOMETRY);
 
   const auto BOX_PADDING = 10.0f;
-  request.geom_upper_bound.push_back(std::fmax(route.start_point.x,
-    route.goal_point.x) + BOX_PADDING);
-  request.geom_upper_bound.push_back(std::fmax(route.start_point.y,
-    route.goal_point.y) + BOX_PADDING);
+  request.geom_upper_bound.push_back(
+    std::fmax(
+      route.start_point.x,
+      route.goal_point.x) + BOX_PADDING);
+  request.geom_upper_bound.push_back(
+    std::fmax(
+      route.start_point.y,
+      route.goal_point.y) + BOX_PADDING);
   request.geom_upper_bound.push_back(0.0);
-  request.geom_lower_bound.push_back(std::fmin(route.start_point.x,
-    route.goal_point.x) - BOX_PADDING);
-  request.geom_lower_bound.push_back(std::fmin(route.start_point.y,
-    route.goal_point.y) - BOX_PADDING);
+  request.geom_lower_bound.push_back(
+    std::fmin(
+      route.start_point.x,
+      route.goal_point.x) - BOX_PADDING);
+  request.geom_lower_bound.push_back(
+    std::fmin(
+      route.start_point.y,
+      route.goal_point.y) - BOX_PADDING);
   request.geom_lower_bound.push_back(0.0);
   return request;
 }
@@ -435,7 +451,8 @@ static Polygon3d coalesce_drivable_areas(
   // At this point, all the polygons from the route should be merged into drivable_area,
   // and we now need to turn this back into a lanelet polygon.
   std::vector<Point3d> lanelet_drivable_area_points{};
-  std::transform(drivable_area.outer_boundary().vertices_begin(),
+  std::transform(
+    drivable_area.outer_boundary().vertices_begin(),
     drivable_area.outer_boundary().vertices_end(),
     lanelet_drivable_area_points.begin(),
     [](const CGAL_Point & p) {

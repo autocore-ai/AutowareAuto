@@ -89,9 +89,11 @@ class POINT_CLOUD_MAPPING_PUBLIC MapperBase
     ObservationMsgT, MapIncrementT, RegistrationSummaryT>
 {
 public:
-  static_assert(std::is_same<MapIncrementT, typename LocalizerT::MapMsg>::value,
+  static_assert(
+    std::is_same<MapIncrementT, typename LocalizerT::MapMsg>::value,
     "MapperBase and the utilized Relative Localizer must use the same map increment type");
-  static_assert(std::is_same<ObservationMsgT, typename LocalizerT::InputMsg>::value,
+  static_assert(
+    std::is_same<ObservationMsgT, typename LocalizerT::InputMsg>::value,
     "MapperBase and the utilized Relative Localizer must use the same observation type");
 
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
@@ -137,7 +139,8 @@ public:
 
     if (m_map.size() > 0U) {
       if (!m_localizer_ptr->map_valid()) {
-        throw std::runtime_error("MapperBase: Map representation has data but "
+        throw std::runtime_error(
+                "MapperBase: Map representation has data but "
                 "the localizer's map is at an invalid state.");
       }
       localization_summary =

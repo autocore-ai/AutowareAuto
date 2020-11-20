@@ -210,7 +210,8 @@ TEST_F(PurePursuitTest, interpolation)
   command = controller.compute_command(current_pose);
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
-  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad,
+  EXPECT_FLOAT_EQ(
+    command.front_wheel_angle_rad,
     atanf(dist_front_rear_wheels / (0.4F / sqrtf(2.0F))));
 
   TrajectoryPointStamped current_pose;

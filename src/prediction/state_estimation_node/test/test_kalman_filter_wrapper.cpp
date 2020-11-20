@@ -129,20 +129,25 @@ TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
   // Check that nothing else forbids us from updating the state.
   timestamp += 10ms;
   time_measurement_received += 10ms;
-  EXPECT_TRUE(filter.observation_update(
+  EXPECT_TRUE(
+    filter.observation_update(
       time_measurement_received,
       MeasurementPose{timestamp, {0.0F, 0.0F}, {1.0F, 1.0F}}));
   // Check that measurements don't pass the Mahalanobis threshold.
-  EXPECT_FALSE(filter.observation_update(
+  EXPECT_FALSE(
+    filter.observation_update(
       time_measurement_received,
       MeasurementPose{timestamp, {10.0F, 0.0F}, {1.0F, 1.0F}}));
-  EXPECT_FALSE(filter.observation_update(
+  EXPECT_FALSE(
+    filter.observation_update(
       time_measurement_received,
       MeasurementPose{timestamp, {0.0F, 10.0F}, {1.0F, 1.0F}}));
-  EXPECT_FALSE(filter.observation_update(
+  EXPECT_FALSE(
+    filter.observation_update(
       time_measurement_received,
       MeasurementSpeed{timestamp, {10.0F, 0.0F}, {1.0F, 1.0F}}));
-  EXPECT_FALSE(filter.observation_update(
+  EXPECT_FALSE(
+    filter.observation_update(
       time_measurement_received,
       MeasurementSpeed{timestamp, {0.0F, 10.0F}, {1.0F, 1.0F}}));
 }
@@ -187,13 +192,15 @@ TEST(KalmanFilterWrapperTest, track_static_object) {
   EXPECT_FALSE(filter.is_initialized());
   MeasurementBasedTime timestamp{std::chrono::system_clock::now()};
   GlobalTime time_measurement_received{std::chrono::system_clock::now()};
-  EXPECT_TRUE(filter.observation_update(
+  EXPECT_TRUE(
+    filter.observation_update(
       time_measurement_received, MeasurementPose{timestamp, {42.0F, 42.0F}}));
   const auto initial_state = filter.get_state();
   for (int i = 0; i < 10; ++i) {
     timestamp += 100ms;
     time_measurement_received += 100ms;
-    EXPECT_TRUE(filter.observation_update(
+    EXPECT_TRUE(
+      filter.observation_update(
         time_measurement_received, MeasurementPose{timestamp, {42.0F, 42.0F}, {1.0F, 1.0F}}));
     auto odom_msg = filter.get_state();
     EXPECT_NEAR(odom_msg.pose.pose.position.x, initial_state.pose.pose.position.x, kEpsilon);

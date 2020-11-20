@@ -37,8 +37,9 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
   std::vector<std::string> wrong_y_field_names{"x", "h", "z"};
   std::vector<std::string> wrong_z_field_names{"x", "y", "h"};
   const auto correct_pc = create_custom_pcl<float32_t>(right_field_names, mini_cloud_size);
-  const auto not_intensity_pc = create_custom_pcl<float32_t>(not_intensity_field_names,
-      mini_cloud_size);
+  const auto not_intensity_pc = create_custom_pcl<float32_t>(
+    not_intensity_field_names,
+    mini_cloud_size);
   const auto three_fields_pc = create_custom_pcl<float32_t>(three_field_names, mini_cloud_size);
   const auto five_fields_pc = create_custom_pcl<float32_t>(five_field_names, mini_cloud_size);
   const auto invalid_pc = create_custom_pcl<float32_t>(invalid_field_names, mini_cloud_size);
@@ -100,14 +101,24 @@ TEST(fast_atan2, max_error)
 
   ASSERT_TRUE(max_error < FAST_ATAN2_MAX_ERROR);
 
-  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
-    atan2f(0.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(1.0f, 0.0f) -
-    atan2f(1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(-1.0f, 0.0f) -
-    atan2f(-1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, 1.0f) -
-    atan2f(0.0f, 1.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(fabsf(autoware::common::lidar_utils::fast_atan2(0.0f, -1.0f) -
-    atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(
+    fabsf(
+      autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
+      atan2f(0.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(
+    fabsf(
+      autoware::common::lidar_utils::fast_atan2(1.0f, 0.0f) -
+      atan2f(1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(
+    fabsf(
+      autoware::common::lidar_utils::fast_atan2(-1.0f, 0.0f) -
+      atan2f(-1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(
+    fabsf(
+      autoware::common::lidar_utils::fast_atan2(0.0f, 1.0f) -
+      atan2f(0.0f, 1.0f)) < FAST_ATAN2_MAX_ERROR);
+  ASSERT_TRUE(
+    fabsf(
+      autoware::common::lidar_utils::fast_atan2(0.0f, -1.0f) -
+      atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
 }

@@ -106,11 +106,12 @@ bool check_pc_equal(PCLCloud & pc1, PCLCloud & pc2)
   }
 
   // TODO(yunus.caliskan): do the check orderless?
-  return std::equal(pc1.begin(), pc1.end(), pc2.begin(), [](const auto & pt1, const auto & pt2) {
-             return comp::abs_eq(pt1.x, pt2.x, EPS) &&
-             comp::abs_eq(pt1.y, pt2.y, EPS) &&
-             comp::abs_eq(pt1.z, pt2.z, EPS);
-           });
+  return std::equal(
+    pc1.begin(), pc1.end(), pc2.begin(), [](const auto & pt1, const auto & pt2) {
+      return comp::abs_eq(pt1.x, pt2.x, EPS) &&
+      comp::abs_eq(pt1.y, pt2.y, EPS) &&
+      comp::abs_eq(pt1.z, pt2.z, EPS);
+    });
 }
 
 }  // namespace point_cloud_mapping

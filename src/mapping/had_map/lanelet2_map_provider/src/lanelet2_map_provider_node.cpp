@@ -102,8 +102,9 @@ void Lanelet2MapProviderNode::init()
 
   m_map_service =
     this->create_service<autoware_auto_msgs::srv::HADMapService>(
-    "HAD_Map_Service", std::bind(&Lanelet2MapProviderNode::handle_request, this,
-    std::placeholders::_1, std::placeholders::_2));
+    "HAD_Map_Service", std::bind(
+      &Lanelet2MapProviderNode::handle_request, this,
+      std::placeholders::_1, std::placeholders::_2));
 }
 
 void Lanelet2MapProviderNode::load_map()

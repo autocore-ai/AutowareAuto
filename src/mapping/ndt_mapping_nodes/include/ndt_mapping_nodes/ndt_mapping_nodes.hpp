@@ -102,7 +102,8 @@ private:
       parse_grid_config("localizer.map"),
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
       template get<uint32_t>()),
-      std::chrono::milliseconds(static_cast<uint64_t>(
+      std::chrono::milliseconds(
+        static_cast<uint64_t>(
           this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
     };
 
@@ -135,7 +136,8 @@ private:
     const auto & map_frame_id = this->declare_parameter("map.frame_id").template get<std::string>();
     VoxelMap map{parse_grid_config("map"), map_frame_id};
 
-    this->set_localizer(std::make_unique<Mapper>(
+    this->set_localizer(
+      std::make_unique<Mapper>(
         this->declare_parameter("file_name_prefix").template get<std::string>(),
         std::move(map), std::move(localizer_ptr), map_frame_id
     ));

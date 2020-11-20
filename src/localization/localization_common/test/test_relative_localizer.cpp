@@ -67,7 +67,8 @@ TEST_F(TestRelativeLocalizerBase, bad_map) {
 
   // no map is set yet.
   EXPECT_FALSE(localizer.map_valid());
-  EXPECT_THROW(localizer.register_measurement(0, m_init, dummy_pose),
+  EXPECT_THROW(
+    localizer.register_measurement(0, m_init, dummy_pose),
     std::logic_error);
 
   // Emulate setting a bad map.

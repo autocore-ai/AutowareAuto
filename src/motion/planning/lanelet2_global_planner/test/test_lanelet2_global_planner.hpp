@@ -96,9 +96,10 @@ TEST(TestFunction, Point3d_eigen)
   Eigen::Vector3d pd = p1.basicPoint() - p2.basicPoint();
   Eigen::Vector3d pd2 = pd.array().square();
   float64_t dist = std::sqrt(pd2.x() + pd2.y() + pd2.z());
-  float64_t actual = std::sqrt(std::pow(p2.x() - p1.x(), 2) +
-      std::pow(p2.y() - p1.y(), 2) +
-      std::pow(p2.z() - p1.z(), 2));
+  float64_t actual = std::sqrt(
+    std::pow(p2.x() - p1.x(), 2) +
+    std::pow(p2.y() - p1.y(), 2) +
+    std::pow(p2.z() - p1.z(), 2));
   ASSERT_DOUBLE_EQ(actual, dist);
 }
 
@@ -113,7 +114,8 @@ TEST(TestFunction, Point3d_mean)
   float64_t mean_x = 0.0;
   float64_t mean_y = 0.0;
   float64_t mean_z = 0.0;
-  std::for_each(ls.begin(), ls.end(), [&](lanelet::Point3d p)
+  std::for_each(
+    ls.begin(), ls.end(), [&](lanelet::Point3d p)
     {
       mean_x += p.x() / static_cast<float64_t>(num_points);
       mean_y += p.y() / static_cast<float64_t>(num_points);
@@ -148,9 +150,10 @@ TEST_F(TestGlobalPlannerBasicMap, test_p2p_distance)
   lanelet::Point3d p1(lanelet::utils::getId(), 1.0, 2.0, 3.0);
   lanelet::Point3d p2(lanelet::utils::getId(), 4.0, 5.0, 6.0);
   float64_t dist = node_ptr->p2p_euclidean(p1, p2);
-  float64_t actual = std::sqrt(std::pow(p2.x() - p1.x(), 2) +
-      std::pow(p2.y() - p1.y(), 2) +
-      std::pow(p2.z() - p1.z(), 2));
+  float64_t actual = std::sqrt(
+    std::pow(p2.x() - p1.x(), 2) +
+    std::pow(p2.y() - p1.y(), 2) +
+    std::pow(p2.z() - p1.z(), 2));
   ASSERT_DOUBLE_EQ(actual, dist);
 }
 

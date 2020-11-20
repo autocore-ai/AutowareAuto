@@ -100,11 +100,14 @@ TEST_F(VoxelTest, basic)
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().y, min_point.y);
   EXPECT_FLOAT_EQ(cfg_ptr->get_min_point().z, min_point.z);
   // Max point
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().x,
+  EXPECT_FLOAT_EQ(
+    cfg_ptr->get_max_point().x,
     max_point.x - std::numeric_limits<float32_t>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().y,
+  EXPECT_FLOAT_EQ(
+    cfg_ptr->get_max_point().y,
     max_point.y - std::numeric_limits<float32_t>::epsilon());
-  EXPECT_FLOAT_EQ(cfg_ptr->get_max_point().z,
+  EXPECT_FLOAT_EQ(
+    cfg_ptr->get_max_point().z,
     max_point.z - std::numeric_limits<float32_t>::epsilon());
   // Voxel Size
   EXPECT_FLOAT_EQ(cfg_ptr->get_voxel_size().x, voxel_size.x);

@@ -80,7 +80,8 @@ make_nlpobstacle_stage_variables(const double lambda_guess, const double mu_gues
     };
 
   for (std::size_t k = {}; k < HORIZON_LENGTH; ++k) {
-    stage_variables.push_back(NLPObstacleStageVariables<double>(
+    stage_variables.push_back(
+      NLPObstacleStageVariables<double>(
         make_guess_vector(NLPObstacleStageVariables<double>::get_lambda_length(), lambda_guess),
         make_guess_vector(NLPObstacleStageVariables<double>::get_mu_length(), mu_guess) )
     );
@@ -97,7 +98,8 @@ static NLPObstacle<double> create_nlpobstacle(
 
   const auto & polytope_halfplanes = polytope.get_halfplanes();
   std::vector<Halfplane2D<double>> halfplanes{};
-  halfplanes.insert(halfplanes.end(), polytope_halfplanes.begin(),
+  halfplanes.insert(
+    halfplanes.end(), polytope_halfplanes.begin(),
     polytope_halfplanes.end());
 
   // Make sure we don't attempt to solve a problem we cannot solve
@@ -230,8 +232,9 @@ bool NLPPathPlanner::check_trajectory(
   const auto check_dynamics =
     [&model, tolerance](auto next_state, auto current_state,
       auto current_command) -> bool {
-      const auto computed_state = model.integrated_dynamics(current_state, current_command,
-          INTEGRATION_STEP_SIZE, NUMBER_OF_INTEGRATION_STEPS);
+      const auto computed_state = model.integrated_dynamics(
+        current_state, current_command,
+        INTEGRATION_STEP_SIZE, NUMBER_OF_INTEGRATION_STEPS);
       const auto next_serialized = next_state.serialize();
       const auto computed_serialized = computed_state.serialize();
       if (!are_vectors_close(next_serialized, computed_serialized, tolerance) ) {
@@ -268,8 +271,9 @@ bool NLPPathPlanner::check_trajectory(
 
   // Go through trajectory checking dynamics and bounds
   for (std::size_t k = {}; k < trajectory.size() - 1; k++) {
-    if (!check_dynamics(trajectory[k + 1].get_state(), trajectory[k].get_state(),
-      trajectory[k].get_command() ) )
+    if (!check_dynamics(
+        trajectory[k + 1].get_state(), trajectory[k].get_state(),
+        trajectory[k].get_command() ) )
     {
       std::cout << "dynamics violated in step " << k << std::endl;
       return false;
@@ -280,8 +284,9 @@ bool NLPPathPlanner::check_trajectory(
       return false;
     }
 
-    if (!check_bounds(trajectory[k].get_command(), m_lower_command_bounds,
-      m_upper_command_bounds))
+    if (!check_bounds(
+        trajectory[k].get_command(), m_lower_command_bounds,
+        m_upper_command_bounds))
     {
       std::cout << "command bounds violated in step " << k << std::endl;
       return false;
@@ -294,10 +299,12 @@ bool NLPPathPlanner::check_trajectory(
   }
 
   // Check that initial and final state are what we expect them to be
-  if (!are_vectors_close(trajectory[0].get_state().serialize(),
-    initial_state.serialize(), tolerance) ||
-    !are_vectors_close(trajectory.back().get_state().serialize(),
-    goal_state.serialize(), tolerance)  )
+  if (!are_vectors_close(
+      trajectory[0].get_state().serialize(),
+      initial_state.serialize(), tolerance) ||
+    !are_vectors_close(
+      trajectory.back().get_state().serialize(),
+      goal_state.serialize(), tolerance)  )
   {
     return false;
   }
@@ -316,10 +323,12 @@ NLPResults NLPPathPlanner::plan_nlp(
 {
   // Assemble solver inputs
   auto nlp_obstacles = create_obstacles_from_polyhedra(obstacles, current_state);
-  auto p = assemble_parameter_vector(current_state, goal_state, model_parameters, nlp_obstacles,
-      m_cost_weights);
-  auto vars_and_bounds = assemble_variable_vector_and_bounds(initial_guess, nlp_obstacles,
-      m_lower_state_bounds, m_upper_state_bounds, m_lower_command_bounds, m_upper_command_bounds);
+  auto p = assemble_parameter_vector(
+    current_state, goal_state, model_parameters, nlp_obstacles,
+    m_cost_weights);
+  auto vars_and_bounds = assemble_variable_vector_and_bounds(
+    initial_guess, nlp_obstacles,
+    m_lower_state_bounds, m_upper_state_bounds, m_lower_command_bounds, m_upper_command_bounds);
   auto constraint_bounds = create_constraint_bounds();
 
   // NOTE set print_level to higher for debugging purposes. The hessian approximation has to be
@@ -327,11 +336,13 @@ NLPResults NLPPathPlanner::plan_nlp(
   // callbacks being created.
   casadi::Dict ipopt_options = {{"hessian_approximation", "limited-memory"}, {"print_level", 0},
     {"max_iter", 500}};
-  casadi::Function solver = casadi::nlpsol("solver", "ipopt", SHARED_LIBRARY_DIRECTORY + "/" +
-      "libparking_planner_callbacks.so", {{"ipopt", ipopt_options}});
+  casadi::Function solver = casadi::nlpsol(
+    "solver", "ipopt", SHARED_LIBRARY_DIRECTORY + "/" +
+    "libparking_planner_callbacks.so", {{"ipopt", ipopt_options}});
 
   // Call solver with the assembled data
-  casadi::DMDict res = solver(casadi::DMDict{
+  casadi::DMDict res = solver(
+    casadi::DMDict{
             {"x0", vars_and_bounds.variables},
             {"p", p},
             {"ubg", constraint_bounds.upper},

@@ -56,7 +56,8 @@ public:
   {
     FilterType type_enum = FilterType::LowPassFilter;
     auto type_clean = type;
-    (void)std::transform(type_clean.begin(), type_clean.end(), type_clean.begin(),
+    (void)std::transform(
+      type_clean.begin(), type_clean.end(), type_clean.begin(),
       [](auto c) {return std::tolower(c);});
     if ("low_pass_filter" == type_clean) {
       type_enum = FilterType::LowPassFilter;

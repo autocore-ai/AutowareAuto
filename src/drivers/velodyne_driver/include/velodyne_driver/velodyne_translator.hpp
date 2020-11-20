@@ -155,7 +155,8 @@ private:
   static_assert(sizeof(DataBlock) == 100U, "Error velodyne data block size is incorrect");
   static_assert(sizeof(Packet) == 1206U, "Error velodyne packet size is incorrect");
   // Ensure that a full packet will fit into a point block
-  static_assert(static_cast<uint32_t>(POINT_BLOCK_CAPACITY) >=
+  static_assert(
+    static_cast<uint32_t>(POINT_BLOCK_CAPACITY) >=
     ((NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET) + 1U),
     "Number of points from one VLP16 packet cannot fit into a point block");
 

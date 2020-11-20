@@ -123,7 +123,8 @@ TEST_P(velodyne_node_integration, test)
     std::make_shared<lidar_integration::Vlp16IntegrationSpoofer>(ip, port, config.get_rpm());
 
   // ===== Run ====== //
-  EXPECT_TRUE(lidar_integration::lidar_integration_test(
+  EXPECT_TRUE(
+    lidar_integration::lidar_integration_test(
       [&velodyne_node_thread, nd_ptr] {
         // Create thread to
         velodyne_node_thread = std::thread {[nd_ptr] {

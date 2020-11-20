@@ -92,7 +92,8 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
     static_cast<size_t>(declare_parameter("expected_num_subscribers").get<int32_t>())},
   m_pcl_size{static_cast<size_t>(declare_parameter("pcl_size").get<int32_t>())}
 {
-  common::lidar_utils::init_pcl_msg(m_filtered_transformed_msg,
+  common::lidar_utils::init_pcl_msg(
+    m_filtered_transformed_msg,
     m_output_frame_id.c_str(), m_pcl_size);
 }
 
@@ -100,7 +101,8 @@ const PointCloud2 & PointCloud2FilterTransformNode::filter_and_transform(const P
 {
   // Verify frame_id
   if (msg.header.frame_id != m_input_frame_id) {
-    throw std::runtime_error("Raw topic from unexpected frame. Expected: " +
+    throw std::runtime_error(
+            "Raw topic from unexpected frame. Expected: " +
             m_input_frame_id + ", got: " + msg.header.frame_id);
   }
 
@@ -188,8 +190,9 @@ PointCloud2FilterTransformNode::intensity_iterator_wrapper::intensity_iterator_w
   m_intensity_it_float32(msg, "intensity")
 {
   auto && intensity_field_it =
-    std::find_if(std::cbegin(msg.fields), std::cend(msg.fields),
-      [](const sensor_msgs::msg::PointField & field) {return field.name == "intensity";});
+    std::find_if(
+    std::cbegin(msg.fields), std::cend(msg.fields),
+    [](const sensor_msgs::msg::PointField & field) {return field.name == "intensity";});
   m_intensity_datatype = (*intensity_field_it).datatype;
   switch (m_intensity_datatype) {
     case sensor_msgs::msg::PointField::UINT8:

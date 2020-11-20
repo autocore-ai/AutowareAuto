@@ -48,7 +48,8 @@ public:
   static constexpr uint16_t GROUP_SIZE{2U};
   using BlockFlag = uint8_t[2U];
 
-  static_assert(NUM_GROUPS_PER_SEQ * GROUP_SIZE == NUM_LASERS,
+  static_assert(
+    NUM_GROUPS_PER_SEQ * GROUP_SIZE == NUM_LASERS,
     "VLP32C driver has incorrect configuration. "
     "Check the manual for the group size and number of lasers.");
 

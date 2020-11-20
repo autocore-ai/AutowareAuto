@@ -57,7 +57,8 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
     NO_PUBLISH : pub_tf_param.get<bool>();
 
   // Set up interface
-  set_interface(std::make_unique<LgsvlInterface>(
+  set_interface(
+    std::make_unique<LgsvlInterface>(
       *this,
       sim_ctrl_cmd_topic,
       sim_state_cmd_topic,

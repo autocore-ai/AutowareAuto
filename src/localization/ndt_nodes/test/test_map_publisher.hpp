@@ -79,7 +79,8 @@ protected:
   {
     // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
     // init with a size to account for all the points in the map
-    autoware::common::lidar_utils::init_pcl_msg(m_pc, "map",
+    autoware::common::lidar_utils::init_pcl_msg(
+      m_pc, "map",
       POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
     // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
     // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1

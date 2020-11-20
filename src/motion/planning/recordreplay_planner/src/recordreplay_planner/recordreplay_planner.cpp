@@ -235,8 +235,9 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
 
 
   const auto minimum_index_iterator =
-    std::min_element(std::begin(m_record_buffer), std::end(m_record_buffer),
-      comparison_function);
+    std::min_element(
+    std::begin(m_record_buffer), std::end(m_record_buffer),
+    comparison_function);
   auto minimum_idx = std::distance(std::begin(m_record_buffer), minimum_index_iterator);
 
   return static_cast<std::size_t>(minimum_idx);
@@ -270,8 +271,9 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   auto & trajectory = m_trajectory;
   const auto record_length = get_record_length();
   m_traj_end_idx =
-    std::min({record_length - m_traj_start_idx, trajectory.points.max_size(),
-        m_cache_traj_bbox_arr.boxes.max_size()}) + m_traj_start_idx;
+    std::min(
+    {record_length - m_traj_start_idx, trajectory.points.max_size(),
+      m_cache_traj_bbox_arr.boxes.max_size()}) + m_traj_start_idx;
 
   // Build bounding box cache
   if (m_cache_traj_bbox_arr.boxes.empty() ||
@@ -300,8 +302,9 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 
     // Check for collisions with all perceived obstacles
     for (const auto & obstaclebox : m_latest_bounding_boxes.boxes) {
-      if (intersect(boundingbox.corners.begin(), boundingbox.corners.end(),
-        obstaclebox.corners.begin(), obstaclebox.corners.end()) )
+      if (intersect(
+          boundingbox.corners.begin(), boundingbox.corners.end(),
+          obstaclebox.corners.begin(), obstaclebox.corners.end()) )
       {
         // Collision detected, set end index (non-inclusive)
         m_traj_end_idx = i;  // This also ends the outer loop

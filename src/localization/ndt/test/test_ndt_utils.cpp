@@ -116,20 +116,24 @@ TEST_P(TestTransformAdapters, pose_to_transform_to_pose) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(transform_param_tests, TestTransformAdapters,
+INSTANTIATE_TEST_CASE_P(
+  transform_param_tests, TestTransformAdapters,
   ::testing::Values(
     PoseParams{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
     PoseParams{0.5, 0.9, 0.1, 1.0, -3.1, 0.05},
     PoseParams{2.5, -1.9, 0.1, -2.1, 0.1, 3.05},
     PoseParams{2.5, -1.9, 64, -2.1, 31, -1.2},
     PoseParams{0.001, 1.00009, -1.0, 0.0, 0.75, 0.13}
+    // cppcheck-suppress syntaxError
   ), );
 
-INSTANTIATE_TEST_CASE_P(fuzzed_tests, TestTransformAdapters,
+INSTANTIATE_TEST_CASE_P(
+  fuzzed_tests, TestTransformAdapters,
   ::testing::Values(
     PoseParams{0.1, 50.0},
     PoseParams{100.0, 0.005},
     PoseParams{25.5, 4.5}
+    // cppcheck-suppress syntaxError
   ), );
 
 TEST_P(CovarianceStabilityTest, basic) {
@@ -138,7 +142,8 @@ TEST_P(CovarianceStabilityTest, basic) {
   const auto scale = 0.01;
   std::vector<Real> filtered_evals;
   auto min_e_val = *std::max_element(e_vals.begin(), e_vals.end()) * scale;
-  std::transform(e_vals.begin(), e_vals.end(), std::back_inserter(filtered_evals),
+  std::transform(
+    e_vals.begin(), e_vals.end(), std::back_inserter(filtered_evals),
     [min_e_val](Real & e) {return e < min_e_val ? min_e_val : e;});
 
   const auto valid = GetParam().valid;
@@ -159,7 +164,8 @@ TEST_P(CovarianceStabilityTest, basic) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(basic, CovarianceStabilityTest,
+INSTANTIATE_TEST_CASE_P(
+  basic, CovarianceStabilityTest,
   ::testing::Values(
     Cov3x3Param(1e-2, 65.0, 24, true),
     Cov3x3Param(-12., 24., 65., false),
@@ -168,4 +174,5 @@ INSTANTIATE_TEST_CASE_P(basic, CovarianceStabilityTest,
     Cov3x3Param(1.0, 1.0, 0.0, false),
     Cov3x3Param(1e-2, 1e-3, 65, true),
     Cov3x3Param(1e-2, 1e-3, 1e-15, true)
+    // cppcheck-suppress syntaxError
   ), );

@@ -143,7 +143,8 @@ void NDTMapPublisherNode::init(
   m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(*m_map_config_ptr);
 
   common::lidar_utils::init_pcl_msg(m_source_pc, map_frame);
-  common::lidar_utils::init_pcl_msg(m_map_pc, map_frame, m_map_config_ptr->get_capacity(), 10U,
+  common::lidar_utils::init_pcl_msg(
+    m_map_pc, map_frame, m_map_config_ptr->get_capacity(), 10U,
     "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
@@ -155,8 +156,9 @@ void NDTMapPublisherNode::init(
     "icov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
     "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
 
-  m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(map_topic,
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+  m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(
+    map_topic,
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 
   if (m_viz_map) {   // create a publisher for map_visualization
     using PointXYZ = perception::filters::voxel_grid::PointXYZ;
@@ -182,16 +184,18 @@ void NDTMapPublisherNode::init(
 
     // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
     // TODO(yunus.caliskan): Remove the loop and publish only once after #380
-    m_visualization_timer = create_wall_timer(std::chrono::seconds(1),
-        [this]() {
-          if (m_downsampled_pc.width > 0U) {
-            m_viz_pub->publish(m_downsampled_pc);
-          }
-        });
+    m_visualization_timer = create_wall_timer(
+      std::chrono::seconds(1),
+      [this]() {
+        if (m_downsampled_pc.width > 0U) {
+          m_viz_pub->publish(m_downsampled_pc);
+        }
+      });
   }
 
-  m_pub_earth_map = create_publisher<tf2_msgs::msg::TFMessage>("/tf_static",
-      rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+  m_pub_earth_map = create_publisher<tf2_msgs::msg::TFMessage>(
+    "/tf_static",
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 }
 
 void NDTMapPublisherNode::run()
@@ -230,7 +234,8 @@ void NDTMapPublisherNode::load_map()
     geo_pose.longitude,
     geo_pose.elevation,
     x, y, z);
-  publish_earth_to_map_transform(x, y, z,
+  publish_earth_to_map_transform(
+    x, y, z,
     geo_pose.roll, geo_pose.pitch, geo_pose.yaw);
 
   m_ndt_map_ptr->insert(m_source_pc);
@@ -262,10 +267,11 @@ void NDTMapPublisherNode::publish_earth_to_map_transform(
   tf2_msgs::msg::TFMessage static_tf_msg;
   static_tf_msg.transforms.push_back(tf);
 
-  m_transform_pub_timer = create_wall_timer(std::chrono::seconds(1),
-      [this, static_tf_msg]() {
-        m_pub_earth_map->publish(static_tf_msg);
-      });
+  m_transform_pub_timer = create_wall_timer(
+    std::chrono::seconds(1),
+    [this, static_tf_msg]() {
+      m_pub_earth_map->publish(static_tf_msg);
+    });
 
   m_pub_earth_map->publish(static_tf_msg);
 }

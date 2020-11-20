@@ -40,27 +40,32 @@ TEST_F(ray_ground_classifier, point_classification)
   // close to ground: GROUND
   pt_g.x = 1.0F;
   pt_g.z = cfg.m_ground_z_m;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_g}),
+  EXPECT_EQ(
+    cls.is_ground(PointXYZIFR{&pt_g}),
     RayGroundPointClassifier::PointLabel::GROUND);
   // exhibit vertical structure: RETRO_NONGROUND
   pt_rng.x = pt_g.x + 0.1F;
   pt_rng.z = cfg.m_ground_z_m + 1.0F;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_rng}),
+  EXPECT_EQ(
+    cls.is_ground(PointXYZIFR{&pt_rng}),
     RayGroundPointClassifier::PointLabel::RETRO_NONGROUND);
   // near last nonground point: NONGROUND
   pt_ng.x += pt_rng.x + 1.0F;
   pt_ng.z = pt_rng.z;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_ng}),
+  EXPECT_EQ(
+    cls.is_ground(PointXYZIFR{&pt_ng}),
     RayGroundPointClassifier::PointLabel::NONGROUND);
   // back to ground: PROVISIONAL_GROUND
   pt_pg.x = pt_ng.x + 0.1F;
   pt_pg.z = cfg.m_ground_z_m;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_pg}),
+  EXPECT_EQ(
+    cls.is_ground(PointXYZIFR{&pt_pg}),
     RayGroundPointClassifier::PointLabel::PROVISIONAL_GROUND);
   // distant nonground: NONLOCAL_NONGROUND
   pt_nlng.x += pt_pg.x + 10.1F;
   pt_nlng.z = cfg.m_ground_z_m + 2.0F;
-  EXPECT_EQ(cls.is_ground(PointXYZIFR{&pt_nlng}),
+  EXPECT_EQ(
+    cls.is_ground(PointXYZIFR{&pt_nlng}),
     RayGroundPointClassifier::PointLabel::NONLOCAL_NONGROUND);
   // bad case: go backwards
   bad_pt.x = pt_nlng.x - 1.0F;
@@ -88,7 +93,8 @@ n = not ground point
  */
 TEST_F(ray_ground_classifier, flat_ground)
 {
-  generate_groundspace(5.0F, 35.0F, 32U,
+  generate_groundspace(
+    5.0F, 35.0F, 32U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   generate_points(cfg, dat, pts, labels);
@@ -108,7 +114,8 @@ TEST_F(ray_ground_classifier, flat_ground)
 TEST_F(ray_ground_classifier, wall)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
-  generate_groundspace(ro, rf, 16U,
+  generate_groundspace(
+    ro, rf, 16U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
@@ -136,7 +143,8 @@ TEST_F(ray_ground_classifier, wall)
 TEST_F(ray_ground_classifier, wall2)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
-  generate_groundspace(ro, rf, 16U,
+  generate_groundspace(
+    ro, rf, 16U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
@@ -165,7 +173,8 @@ TEST_F(ray_ground_classifier, wall2)
 TEST_F(ray_ground_classifier, ditch)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
-  generate_groundspace(ro, rf, 16U,
+  generate_groundspace(
+    ro, rf, 16U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
@@ -194,7 +203,8 @@ TEST_F(ray_ground_classifier, ditch)
 TEST_F(ray_ground_classifier, gap)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
-  generate_groundspace(ro, rf, 16U,
+  generate_groundspace(
+    ro, rf, 16U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
@@ -330,14 +340,16 @@ TEST_F(ray_ground_classifier, driveway)
   const float32_t H = 0.25F;  // 10-20 cm curb + dip
   // dip
   float32_t r1 = rf + dr, r2 = rf + dr + W;
-  generate_groundspace(r1, r2, 3U,
+  generate_groundspace(
+    r1, r2, 3U,
     [ = ](float32_t r) {
       return (r - r1) * (-H / W);
     }, dat);
 
   // undip
   r1 = rf + 2 * dr + W, r2 = rf + 2 * dr + 2 * W;
-  generate_groundspace(r1, r2, 3U,
+  generate_groundspace(
+    r1, r2, 3U,
     [ = ](float32_t r) {
       return (r - r1) * (H / W);
     }, dat);
@@ -433,7 +445,8 @@ TEST_F(ray_ground_classifier, provisional_ground)
 TEST_F(ray_ground_classifier, structured_partition_and_other)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
-  generate_groundspace(ro, rf, 16U,
+  generate_groundspace(
+    ro, rf, 16U,
     [](float32_t r) {(void)r; return 0.0F;}, dat);
 
   // build a wall
@@ -466,7 +479,8 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   cls.structured_partition(raw_points, ground_points, nonground_points);
   // check size: tolerance is 2 for 2 rays
   EXPECT_LE(fabs(static_cast<int32_t>(ground_points.size()) - (2 * 16)), 2) << ground_points.size();
-  EXPECT_LE(fabs(static_cast<int32_t>(nonground_points.size()) - (2 * 16)),
+  EXPECT_LE(
+    fabs(static_cast<int32_t>(nonground_points.size()) - (2 * 16)),
     2) << nonground_points.size();
   // check individual points
   for (uint32_t idx = 0U; idx < ground_points.size(); ++idx) {
@@ -474,7 +488,8 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
     EXPECT_LT(ground_pt->x, 20.0F);
     // hack due to knowledge that they should be roughly ordered in radius, then height
     if ((idx != 15U) && (idx != 30U)) {
-      EXPECT_LT(ground_pt->z,
+      EXPECT_LT(
+        ground_pt->z,
         cfg.m_ground_z_m + 0.1F) << idx << ", " << ground_pt->x << ", " << ground_pt->id;
     }
   }
@@ -509,7 +524,8 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   nonground_points.clear();
   EXPECT_TRUE(cls.can_fit_result(ground_points, nonground_points));
   cls.partition(ground_points, nonground_points, false);
-  EXPECT_EQ(ground_points.size() + nonground_points.size(),
+  EXPECT_EQ(
+    ground_points.size() + nonground_points.size(),
     static_cast<uint32_t>(POINT_BLOCK_CAPACITY));
   // check empty
   raw_points.resize(0);
@@ -533,7 +549,9 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
 TEST_F(ray_ground_classifier, bad_cases)
 {
   // check negative slopes
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     -5.0F,         // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -543,7 +561,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     -3.0F,         // max_global_slope_deg,
@@ -553,7 +573,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -565,7 +587,9 @@ TEST_F(ray_ground_classifier, bad_cases)
   }), std::runtime_error);
 
   // check >90 deg slopes
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     95.0F,         // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -575,7 +599,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     93.0F,         // max_global_slope_deg,
@@ -585,7 +611,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -596,7 +624,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check negative height thresholds
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -606,7 +636,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -617,7 +649,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check for consistency wrt vertical structure threshold
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     75.0F,         // max_local_slope_deg,
     3.0F,          // max_global_slope_deg,
@@ -627,7 +661,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     5.0F,          // max_last_local_ground_thresh_m,
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     73.0F,         // max_global_slope_deg,
@@ -638,7 +674,9 @@ TEST_F(ray_ground_classifier, bad_cases)
     2.0,           // max_provisional_ground_distance_m
   }), std::runtime_error);
   // check for local vs global consistency
-  EXPECT_THROW(Config cfg2({
+  EXPECT_THROW(
+    Config cfg2(
+  {
     0.4F,          // sensor_height_m,
     5.0F,          // max_local_slope_deg,
     73.0F,         // max_global_slope_deg,

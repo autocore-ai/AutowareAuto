@@ -45,10 +45,12 @@ static std::vector<VehicleState<float64_t>> expand_state_longitudinal_with_headi
   const float64_t from_heading = from_state.get_heading();
   const float64_t delta_x = cos(from_heading) * parking_planner::DELTA_LONGITUDINAL;
   const float64_t delta_y = sin(from_heading) * parking_planner::DELTA_LONGITUDINAL;
-  const float64_t heading_minus = remainder(from_heading - parking_planner::DELTA_HEADING,
-      MY_PI * 2.0);
-  const float64_t heading_plus = remainder(from_heading + parking_planner::DELTA_HEADING,
-      MY_PI * 2.0);
+  const float64_t heading_minus = remainder(
+    from_heading - parking_planner::DELTA_HEADING,
+    MY_PI * 2.0);
+  const float64_t heading_plus = remainder(
+    from_heading + parking_planner::DELTA_HEADING,
+    MY_PI * 2.0);
   std::vector<VehicleState<float64_t>> to_states(6, from_state);
   to_states[0].set_x(from_x - delta_x);
   to_states[0].set_y(from_y - delta_y);
@@ -77,7 +79,8 @@ static bool check_collision_bounding_box_vs_obstacles(
   const std::vector<Polytope2D<float64_t>> & obstacles)
 {
   Polytope2D<float64_t> my_box = bounding_box;  // create a copy before shift-and-rotate
-  my_box.rotate_and_shift(vehicle_state.get_heading(), Point2D<float64_t>(),
+  my_box.rotate_and_shift(
+    vehicle_state.get_heading(), Point2D<float64_t>(),
     Point2D<float64_t>(vehicle_state.get_x(), vehicle_state.get_y()));
   for (const auto & obst : obstacles) {
     if (my_box.intersects_with(obst)) {
@@ -102,8 +105,10 @@ static uint64_t map_state_on_discretized_grid(
       (state.get_y() - reference.get_y() + parking_planner::MAX_EXPLORATION_RADIUS) /
       parking_planner::DELTA_LONGITUDINAL));
   uint64_t h_quant =
-    static_cast<uint64_t>(round((remainder(state.get_heading() - reference.get_heading(),
-    parking_planner::MY_PI * 2.0) + parking_planner::MY_PI) / parking_planner::DELTA_HEADING));
+    static_cast<uint64_t>(round(
+      (remainder(
+        state.get_heading() - reference.get_heading(),
+        parking_planner::MY_PI * 2.0) + parking_planner::MY_PI) / parking_planner::DELTA_HEADING));
   return h_quant * num_position_steps * num_position_steps + y_quant * num_position_steps + x_quant;
 }
 
@@ -136,13 +141,15 @@ std::vector<VehicleState<float64_t>> AstarPathPlanner::plan_astar(
   ClosedSet closed_set;
 
   // Initialize data structures for the given problem data
-  Point2D<float64_t> vect_current_to_goal = Point2D<float64_t>(current_state.get_x(),
-      current_state.get_y()) -
+  Point2D<float64_t> vect_current_to_goal = Point2D<float64_t>(
+    current_state.get_x(),
+    current_state.get_y()) -
     Point2D<float64_t>(goal_state.get_x(), goal_state.get_y());
   float64_t dist_current_to_goal = vect_current_to_goal.norm2();
   uint64_t current_discrete = map_state_on_discretized_grid(current_state, goal_state);
   uint64_t goal_discrete = map_state_on_discretized_grid(goal_state, goal_state);
-  open_set.push({{dist_current_to_goal, 0},
+  open_set.push(
+    {{dist_current_to_goal, 0},
       {{current_state, current_state},
         {current_discrete, current_discrete}}});
 
@@ -174,7 +181,8 @@ std::vector<VehicleState<float64_t>> AstarPathPlanner::plan_astar(
             float64_t dist_to_goal = vect_to_goal.norm2();
             if (dist_to_goal < parking_planner::MAX_EXPLORATION_RADIUS) {
               float64_t next_g_cost = f_cost + dist_to_goal;
-              open_set.push({{next_g_cost, next_f_cost},
+              open_set.push(
+                {{next_g_cost, next_f_cost},
                   {{to_state, next_state},
                     {to_discrete, next_discrete}}});
             }

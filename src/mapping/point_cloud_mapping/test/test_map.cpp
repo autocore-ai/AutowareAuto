@@ -49,8 +49,9 @@ TEST(PointCloudMapTest, basic_io) {
       geometry_msgs::msg::PoseWithCovarianceStamped dummy;
       auto capped_increment = std::min(increment_size, (capacity - map_size));
 
-      const auto pc = autoware::mapping::point_cloud_mapping::make_pc(increment_size, map_size,
-          frame);
+      const auto pc = autoware::mapping::point_cloud_mapping::make_pc(
+        increment_size, map_size,
+        frame);
       const auto summary = map.try_add_observation(pc, dummy);
       EXPECT_EQ(summary.update_type, expected_update_type);
       EXPECT_EQ(summary.num_added_pts, capped_increment);
@@ -103,9 +104,10 @@ TEST_F(VoxelMapTest, basic_io) {
       geometry_msgs::msg::PoseWithCovarianceStamped dummy;
       auto capped_increment = std::min(increment_size, (capacity - map_size));
 
-      const auto pc = autoware::mapping::point_cloud_mapping::make_pc_deviated(increment_size,
-          map_size, frame,
-          FIXED_DEVIATION);
+      const auto pc = autoware::mapping::point_cloud_mapping::make_pc_deviated(
+        increment_size,
+        map_size, frame,
+        FIXED_DEVIATION);
       const auto summary = map.try_add_observation(pc, dummy);
       EXPECT_EQ(summary.update_type, expected_update_type);
 
@@ -148,7 +150,8 @@ void autoware::mapping::point_cloud_mapping::check_pc(PclCloud & pc, std::size_t
 {
   EXPECT_EQ(pc.size(), size);
   std::set<size_t> read_pts;
-  std::transform(pc.begin(), pc.end(), std::inserter(read_pts, read_pts.end()), [](
+  std::transform(
+    pc.begin(), pc.end(), std::inserter(read_pts, read_pts.end()), [](
       const auto & pt) {
       EXPECT_FLOAT_EQ(pt.x, pt.y);
       EXPECT_FLOAT_EQ(pt.z, pt.y);
@@ -178,7 +181,8 @@ sensor_msgs::msg::PointCloud2 autoware::mapping::point_cloud_mapping::make_pc(
 {
   std::vector<autoware::common::types::PointXYZIF> pts(size);
   auto idx = 0U;
-  std::generate(pts.begin(), pts.end(), [&idx, offset]() {
+  std::generate(
+    pts.begin(), pts.end(), [&idx, offset]() {
       auto val = static_cast<float_t>((idx++) + offset);
       return autoware::common::types::PointXYZIF{val, val, val, val};
     });
@@ -193,8 +197,9 @@ sensor_msgs::msg::PointCloud2 autoware::mapping::point_cloud_mapping::make_pc_de
   pts.reserve(VoxelMapContext::NUM_PTS_PER_CELL * size);
   for (auto idx = 0U; idx < size; ++idx) {
     auto val = static_cast<float_t>((idx) + offset);
-    const auto & cells = autoware::mapping::point_cloud_mapping::get_cells({val, val, val, val},
-        deviation);
+    const auto & cells = autoware::mapping::point_cloud_mapping::get_cells(
+      {val, val, val, val},
+      deviation);
     pts.insert(pts.end(), cells.begin(), cells.end());
   }
   return autoware::mapping::point_cloud_mapping::make_pc(pts, frame);

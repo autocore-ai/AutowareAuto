@@ -40,7 +40,8 @@ constexpr auto kCovarianceMatrixRows = 6U;
 constexpr auto kIndexX = 0U;
 constexpr auto kIndexY = kCovarianceMatrixRows + 1U;
 constexpr auto kCovarianceMatrixRowsSquared = kCovarianceMatrixRows * kCovarianceMatrixRows;
-static_assert(std::tuple_size<
+static_assert(
+  std::tuple_size<
     geometry_msgs::msg::PoseWithCovariance::_covariance_type>::value ==
   kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
 
@@ -166,7 +167,8 @@ template<typename MotionModelT, std::int32_t kNumOfStates, int32_t kProcessNoise
 nav_msgs::msg::Odometry KalmanFilterWrapper<MotionModelT, kNumOfStates,
   kProcessNoiseDim>::get_state() const
 {
-  static_assert(sizeof(MotionModelT) == -1,
+  static_assert(
+    sizeof(MotionModelT) == -1,
     "You have to have a specialization for get_state() function!");
   // We only throw here because otherwise the linter complaints there is no return value.
   throw std::runtime_error("You have to have a specialization for get_state() function!");

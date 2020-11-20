@@ -205,7 +205,8 @@ TEST_F(velodyne_driver, basic)
   const Vlp16Translator::Config cfg{300.0F};
   Vlp16Translator driver(cfg);
   driver.convert(pkt, out);
-  EXPECT_LE(out.size(),
+  EXPECT_LE(
+    out.size(),
     static_cast<size_t>(NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET));
   // Mostly just a sanity check: All points should fall in a pie slice
   float32_t min_r = std::numeric_limits<float32_t>::max();

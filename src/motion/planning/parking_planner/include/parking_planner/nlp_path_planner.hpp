@@ -39,6 +39,7 @@ namespace parking_planner
 using autoware::common::types::float64_t;
 struct NLPResults
 {
+  // cppcheck-suppress syntaxError
   Trajectory<float64_t> m_trajectory;
   casadi::Dict m_solve_info;
 };

@@ -73,13 +73,16 @@ LidarIntegrationListener::LidarIntegrationListener(
 {
   init_statistics(m_stats);
 
-  RCLCPP_INFO(get_logger(), "\texpected_period_ms: %d",
+  RCLCPP_INFO(
+    get_logger(), "\texpected_period_ms: %d",
     static_cast<int32_t>(expected_period_ms * 1000.0F));
   RCLCPP_INFO(get_logger(), "\texpected_size: %u", expected_size);
 
-  RCLCPP_INFO(get_logger(), "\trelative_tolerance_period: %f",
+  RCLCPP_INFO(
+    get_logger(), "\trelative_tolerance_period: %f",
     static_cast<float64_t>(relative_tolerance_period));
-  RCLCPP_INFO(get_logger(), "\trelative_tolerance_size: %f",
+  RCLCPP_INFO(
+    get_logger(), "\trelative_tolerance_size: %f",
     static_cast<float64_t>(relative_tolerance_size));
 
   RCLCPP_INFO(get_logger(), "LidarIntegrationListener initialized. ");
@@ -103,17 +106,21 @@ bool8_t LidarIntegrationListener::has_valid_period(const Statistics & stats) con
 
     RCLCPP_INFO(get_logger(), "Period: %0.2f", static_cast<float64_t>(sample_period_us));
     RCLCPP_INFO(get_logger(), "Count: %u", stats.count);
-    RCLCPP_INFO(get_logger(), "Period difference abs: %0.2f",
+    RCLCPP_INFO(
+      get_logger(), "Period difference abs: %0.2f",
       static_cast<float64_t>(std::abs(sample_period_us - m_expected_period_us)));
-    RCLCPP_INFO(get_logger(), "Period difference tolerance: %0.2f",
+    RCLCPP_INFO(
+      get_logger(), "Period difference tolerance: %0.2f",
       static_cast<float64_t>(m_relative_tolerance * m_expected_period_us));
 
     printf("Sample Duration: %0.0f\n", static_cast<float64_t>(sample_duration_us));
     printf("Period: %0.1f\n", static_cast<float64_t>(sample_period_us));
     printf("Count: %0.0f\n", static_cast<float64_t>(stats.count));
-    printf("Period difference abs:       %0.1f\n",
+    printf(
+      "Period difference abs:       %0.1f\n",
       static_cast<float64_t>(std::abs(sample_period_us - m_expected_period_us)));
-    printf("Period difference tolerance: %0.1f\n",
+    printf(
+      "Period difference tolerance: %0.1f\n",
       static_cast<float64_t>(m_relative_tolerance * m_expected_period_us));
   }
 
@@ -129,17 +136,22 @@ bool8_t LidarIntegrationListener::has_valid_size(
       static_cast<float32_t>(stats.total_size) / (static_cast<float32_t>(stats.count) - 1.0F);
 
     RCLCPP_INFO(get_logger(), "Mean size: %0.2f", static_cast<float64_t>(mean_size));
-    RCLCPP_INFO(get_logger(), "Error: %0.2f",
+    RCLCPP_INFO(
+      get_logger(), "Error: %0.2f",
       static_cast<float64_t>(std::abs(mean_size - static_cast<float32_t>(expected_size))));
-    RCLCPP_INFO(get_logger(), "Size difference tolerance: %0.2f",
+    RCLCPP_INFO(
+      get_logger(), "Size difference tolerance: %0.2f",
       static_cast<float64_t>(m_relative_size_tolerance * static_cast<float32_t>(expected_size)));
-    RCLCPP_INFO(get_logger(), "Actual size difference: %0.2f", static_cast<float64_t>(std::abs(
+    RCLCPP_INFO(
+      get_logger(), "Actual size difference: %0.2f", static_cast<float64_t>(std::abs(
         mean_size - static_cast<float32_t>(expected_size))));
 
     printf("Mean size: %0.2f\n", static_cast<float64_t>(mean_size));
-    printf("Size difference tolerance: %0.2f\n",
+    printf(
+      "Size difference tolerance: %0.2f\n",
       static_cast<float64_t>(m_relative_size_tolerance * static_cast<float32_t>(expected_size)));
-    printf("Actual size difference:    %0.2f\n",
+    printf(
+      "Actual size difference:    %0.2f\n",
       static_cast<float64_t>(std::abs(mean_size - static_cast<float32_t>(expected_size))));
 
     ret = std::abs(mean_size - static_cast<float32_t>(expected_size)) <
@@ -190,7 +202,8 @@ LidarIntegrationPclListener::LidarIntegrationPclListener(
     expected_size,
     relative_tolerance_period,
     relative_tolerance_size},
-  m_sub_ptr{create_subscription<PointCloud2>(topic, rclcpp::QoS(rclcpp::KeepLast(20)),
+  m_sub_ptr{create_subscription<PointCloud2>(
+      topic, rclcpp::QoS(rclcpp::KeepLast(20)),
       [this](const PointCloud2::SharedPtr msg_ptr) {
         this->callback(msg_ptr->width);
         RCLCPP_INFO(get_logger(), "\tdata length: %u", msg_ptr->data.size());
@@ -216,7 +229,8 @@ LidarIntegrationBoxListener::LidarIntegrationBoxListener(
     expected_size,
     relative_tolerance_period,
     relative_tolerance_size},
-  m_sub_ptr{create_subscription<BoundingBoxArray>(topic, rclcpp::QoS(rclcpp::KeepLast(20)),
+  m_sub_ptr{create_subscription<BoundingBoxArray>(
+      topic, rclcpp::QoS(rclcpp::KeepLast(20)),
       [this](const BoundingBoxArray::SharedPtr msg_ptr) {
         this->callback(static_cast<uint32_t>(msg_ptr->boxes.size()));
       })}

@@ -86,10 +86,12 @@ public:
 
     m_fake_node = std::make_shared<rclcpp::Node>("fake_node");
     m_fake_map_service =
-      m_fake_node->create_service<HADMapService>("HAD_Map_Service",
-        std::bind(&LanePlannerNodeTest::send_fake_map, this, _1, _2, _3));
-    m_trajectory_client = rclcpp_action::create_client<PlanTrajectory>(m_fake_node,
-        "plan_lane_trajectory");
+      m_fake_node->create_service<HADMapService>(
+      "HAD_Map_Service",
+      std::bind(&LanePlannerNodeTest::send_fake_map, this, _1, _2, _3));
+    m_trajectory_client = rclcpp_action::create_client<PlanTrajectory>(
+      m_fake_node,
+      "plan_lane_trajectory");
 
     rclcpp::NodeOptions node_options{};
     node_options.append_parameter_override("vehicle.cg_to_front_m", 1.0F);

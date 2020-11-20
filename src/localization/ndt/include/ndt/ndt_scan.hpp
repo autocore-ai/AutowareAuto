@@ -105,7 +105,8 @@ public:
 
   // Make sure the given iterator type in the template is compatible with the used container.
   // container should have `iterator` type/alias defined.
-  static_assert(std::is_same<decltype(std::declval<NDTScanBase>().begin()), iterator>::value,
+  static_assert(
+    std::is_same<decltype(std::declval<NDTScanBase>().begin()), iterator>::value,
     "P2DNDTScan: The iterator type parameter should match the "
     "iterator of the container.");
 

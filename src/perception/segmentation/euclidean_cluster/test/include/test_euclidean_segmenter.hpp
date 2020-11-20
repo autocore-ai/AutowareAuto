@@ -144,9 +144,11 @@ TEST(euclidean_segmenter, combined)
       insert_point(cls, box.corners[1U].x, box.corners[1U].y);
       insert_point(cls, box.corners[2U].x, box.corners[2U].y);
       insert_point(cls, box.corners[3U].x, box.corners[3U].y);
-      insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
+      insert_line(
+        dummy, cls, box.corners[0U].x, box.corners[0U].y,
         box.corners[1U].x, box.corners[1U].y, 0.1F);
-      insert_line(dummy, cls, box.corners[0U].x, box.corners[0U].y,
+      insert_line(
+        dummy, cls, box.corners[0U].x, box.corners[0U].y,
         box.corners[3U].x, box.corners[3U].y, 0.1F);
     };
 

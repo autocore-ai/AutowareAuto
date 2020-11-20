@@ -137,7 +137,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     }
     // Verify the point cloud format and assign correct point_step
     if (!has_intensity_and_throw_if_no_xyz(msg)) {
-      RCLCPP_WARN(this->get_logger(),
+      RCLCPP_WARN(
+        this->get_logger(),
         "RayGroundClassifierNode Warning: PointCloud doesn't have intensity field");
     }
     // Harvest timestamp
@@ -174,7 +175,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
           {
             if (!m_aggregator.insert(pt)) {
               #ifdef _OPENMP
-              RCLCPP_WARN_ONCE(this->get_logger(),
+              RCLCPP_WARN_ONCE(
+                this->get_logger(),
                 "early end of scan are ignored in parallel mode");
               #else
               m_aggregator.end_of_scan();
@@ -201,7 +203,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
           abort = true;
         } catch (...) {
           #pragma omp critical (get_logger)
-          RCLCPP_INFO(this->get_logger(),
+          RCLCPP_INFO(
+            this->get_logger(),
             "RayGroundClassifierCloudNode has encountered an unknown failure");
           abort = true;
           has_encountered_unknown_exception = true;
@@ -243,8 +246,9 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
               uint32_t local_ground_pc_idx;
               #pragma omp atomic capture
               local_ground_pc_idx = m_ground_pc_idx++;
-              if (!add_point_to_cloud_raw(m_ground_msg, *ground_point,
-                local_ground_pc_idx))
+              if (!add_point_to_cloud_raw(
+                  m_ground_msg, *ground_point,
+                  local_ground_pc_idx))
               {
                 throw std::runtime_error(
                         "RayGroundClassifierNode: Overran ground msg point capacity");
@@ -254,8 +258,9 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
               uint32_t local_nonground_pc_idx;
               #pragma omp atomic capture
               local_nonground_pc_idx = m_nonground_pc_idx++;
-              if (!add_point_to_cloud_raw(m_nonground_msg, *nonground_point,
-                local_nonground_pc_idx))
+              if (!add_point_to_cloud_raw(
+                  m_nonground_msg, *nonground_point,
+                  local_nonground_pc_idx))
               {
                 throw std::runtime_error(
                         "RayGroundClassifierNode: Overran nonground msg point capacity");
@@ -273,7 +278,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
             abort = true;
           } catch (...) {
             #pragma omp critical (get_logger)
-            RCLCPP_INFO(this->get_logger(),
+            RCLCPP_INFO(
+              this->get_logger(),
               "RayGroundClassifierCloudNode has encountered an unknown failure");
             abort = true;
             has_encountered_unknown_exception = true;
@@ -285,7 +291,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
 
     if (has_encountered_unknown_exception) {
       m_has_failed = true;
-      RCLCPP_INFO(this->get_logger(),
+      RCLCPP_INFO(
+        this->get_logger(),
         "RayGroundClassifierCloudNode has encountered an unknown failure");
       throw;
     }
@@ -308,7 +315,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     m_has_failed = true;
     RCLCPP_INFO(this->get_logger(), e.what());
   } catch (...) {
-    RCLCPP_INFO(this->get_logger(),
+    RCLCPP_INFO(
+      this->get_logger(),
       "RayGroundClassifierCloudNode has encountered an unknown failure");
     throw;
   }

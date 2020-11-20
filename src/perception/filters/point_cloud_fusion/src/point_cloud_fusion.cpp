@@ -52,11 +52,13 @@ PointCloudFusionNode::PointCloudFusionNode(
 
 void PointCloudFusionNode::init()
 {
-  common::lidar_utils::init_pcl_msg(m_cloud_concatenated, m_output_frame_id,
+  common::lidar_utils::init_pcl_msg(
+    m_cloud_concatenated, m_output_frame_id,
     m_cloud_capacity);
 
   if (m_input_topics.size() > 8 || m_input_topics.size() < 2) {
-    throw std::domain_error("Number of sources for point cloud fusion must be between 2 and 8."
+    throw std::domain_error(
+            "Number of sources for point cloud fusion must be between 2 and 8."
             " Found: " + std::to_string(m_input_topics.size()));
   }
 
@@ -75,9 +77,10 @@ void PointCloudFusionNode::init()
     *m_cloud_subscribers[6], *m_cloud_subscribers[7]);
 
   m_cloud_synchronizer->registerCallback(
-    std::bind(&PointCloudFusionNode::pointcloud_callback, this, std::placeholders::_1,
-    std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5,
-    std::placeholders::_6, std::placeholders::_7, std::placeholders::_8));
+    std::bind(
+      &PointCloudFusionNode::pointcloud_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5,
+      std::placeholders::_6, std::placeholders::_7, std::placeholders::_8));
 }
 
 std::chrono::nanoseconds PointCloudFusionNode::convert_msg_time(builtin_interfaces::msg::Time stamp)
@@ -97,7 +100,8 @@ PointCloudFusionNode::pointcloud_callback(
 
   uint32_t pc_concat_idx = 0;
   // reset pointcloud before using
-  common::lidar_utils::reset_pcl_msg(m_cloud_concatenated, m_cloud_capacity,
+  common::lidar_utils::reset_pcl_msg(
+    m_cloud_concatenated, m_cloud_capacity,
     pc_concat_idx);
 
   auto latest_stamp = msgs[0]->header.stamp;
@@ -113,7 +117,8 @@ PointCloudFusionNode::pointcloud_callback(
   }
 
   if (total_size > m_cloud_capacity) {
-    RCLCPP_WARN(get_logger(), "pointclouds that are trying to be fused exceed the cloud capacity. "
+    RCLCPP_WARN(
+      get_logger(), "pointclouds that are trying to be fused exceed the cloud capacity. "
       "The exceeded clouds will be ignored.");
   }
 
@@ -139,7 +144,8 @@ uint32_t PointCloudFusionNode::fuse_pc_msgs(
     if (!concat_success) {
       // Cloud could not be added to the m_cloud_concatenated since the size limit is reached.
       // No point in trying the remaining clouds.
-      RCLCPP_WARN(get_logger(), "Reached the capacity of the fused cloud, ignoring the "
+      RCLCPP_WARN(
+        get_logger(), "Reached the capacity of the fused cloud, ignoring the "
         "remaining cloud messages and publishing.");
       break;
     }

@@ -90,8 +90,9 @@ TEST(astar_path_planner, obstacle_path_x) {
   const auto vehicle_bounding_box = model.compute_bounding_box(VehicleState{});
 
   Polytope2D obstacle(
-    std::vector<Point2D>({{dist / 2 + 1.0, 1.0}, {dist / 2 - 1.0, 1.0}, {dist / 2 - 1.0, -1.0},
-      {dist / 2 + 1.0, -1.0}}));
+    std::vector<Point2D>(
+      {{dist / 2 + 1.0, 1.0}, {dist / 2 - 1.0, 1.0}, {dist / 2 - 1.0, -1.0},
+        {dist / 2 + 1.0, -1.0}}));
 
   std::vector<Polytope2D> obstacles;
   obstacles.push_back(obstacle);
@@ -133,8 +134,9 @@ TEST(astar_path_planner, obstacle_path_y) {
   const auto vehicle_bounding_box = model.compute_bounding_box(VehicleState{});
 
   Polytope2D obstacle(
-    std::vector<Point2D>({{1.0, 1.0 + dist / 2}, {-1.0, 1.0 + dist / 2}, {-1.0, -1.0 + dist / 2},
-      {1.0, -1.0 + dist / 2}}));
+    std::vector<Point2D>(
+      {{1.0, 1.0 + dist / 2}, {-1.0, 1.0 + dist / 2}, {-1.0, -1.0 + dist / 2},
+        {1.0, -1.0 + dist / 2}}));
 
   std::vector<Polytope2D> obstacles;
   obstacles.push_back(obstacle);
@@ -176,8 +178,9 @@ TEST(astar_path_planner, immediate_obstacle) {
   const auto vehicle_bounding_box = model.compute_bounding_box(VehicleState{});
 
   Polytope2D wall(
-    std::vector<Point2D>({{-dist / 2 + 2.0, 3.0}, {-dist / 2 + 1.0, 3.0}, {-dist / 2 + 1.0, -3.0},
-      {-dist / 2 + 2.0, -3.0}}));
+    std::vector<Point2D>(
+      {{-dist / 2 + 2.0, 3.0}, {-dist / 2 + 1.0, 3.0}, {-dist / 2 + 1.0, -3.0},
+        {-dist / 2 + 2.0, -3.0}}));
 
   std::vector<Polytope2D> obstacles({wall});
 
@@ -218,12 +221,14 @@ TEST(astar_path_planner, sideways_parking_broad) {
   const auto vehicle_bounding_box = model.compute_bounding_box(VehicleState{});
 
   Polytope2D front_parked_car(
-    std::vector<Point2D>({{4.0, 1.0 + dist}, {2.0, 1.0 + dist}, {2.0, -1.0 + dist},
-      {4.0, -1.0 + dist}}));
+    std::vector<Point2D>(
+      {{4.0, 1.0 + dist}, {2.0, 1.0 + dist}, {2.0, -1.0 + dist},
+        {4.0, -1.0 + dist}}));
 
   Polytope2D back_parked_car(
-    std::vector<Point2D>({{-2.0, 1.0 + dist}, {-4.0, 1.0 + dist}, {-4.0, -1.0 + dist},
-      {-2.0, -1.0 + dist}}));
+    std::vector<Point2D>(
+      {{-2.0, 1.0 + dist}, {-4.0, 1.0 + dist}, {-4.0, -1.0 + dist},
+        {-2.0, -1.0 + dist}}));
 
   std::vector<Polytope2D> obstacles;
   obstacles.push_back(front_parked_car);
@@ -260,12 +265,14 @@ TEST(astar_path_planner, sideways_parking_narrow) {
   const auto vehicle_bounding_box = model.compute_bounding_box(VehicleState{});
 
   Polytope2D front_parked_car(
-    std::vector<Point2D>({{3.5, 1.0 + dist}, {1.5, 1.0 + dist}, {1.5, -1.0 + dist},
-      {3.5, -1.0 + dist}}));
+    std::vector<Point2D>(
+      {{3.5, 1.0 + dist}, {1.5, 1.0 + dist}, {1.5, -1.0 + dist},
+        {3.5, -1.0 + dist}}));
 
   Polytope2D back_parked_car(
-    std::vector<Point2D>({{-1.5, 1.0 + dist}, {-3.5, 1.0 + dist}, {-3.5, -1.0 + dist},
-      {-1.5, -1.0 + dist}}));
+    std::vector<Point2D>(
+      {{-1.5, 1.0 + dist}, {-3.5, 1.0 + dist}, {-3.5, -1.0 + dist},
+        {-1.5, -1.0 + dist}}));
 
   std::vector<Polytope2D> obstacles;
   obstacles.push_back(front_parked_car);

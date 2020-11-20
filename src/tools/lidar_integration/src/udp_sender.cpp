@@ -49,8 +49,9 @@ UdpSenderBase::UdpSenderBase(
   }
 
   // Connect to address
-  int ret = connect(m_socket, reinterpret_cast<sockaddr *>(&m_addr),
-      ipv6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in));
+  int ret = connect(
+    m_socket, reinterpret_cast<sockaddr *>(&m_addr),
+    ipv6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in));
   if (ret != 0) {
     throw std::runtime_error("Could not connect");
   }

@@ -66,15 +66,17 @@ public:
   /// \brief Add two points
   Point2D<T> operator+(const Point2D<T> & other) const noexcept
   {
-    return Point2D<T>(this->m_coord.first + other.m_coord.first,
-             this->m_coord.second + other.m_coord.second);
+    return Point2D<T>(
+      this->m_coord.first + other.m_coord.first,
+      this->m_coord.second + other.m_coord.second);
   }
 
   /// \brief Subtract one point from the other
   Point2D<T> operator-(const Point2D<T> & other) const noexcept
   {
-    return Point2D<T>(this->m_coord.first - other.m_coord.first,
-             this->m_coord.second - other.m_coord.second);
+    return Point2D<T>(
+      this->m_coord.first - other.m_coord.first,
+      this->m_coord.second - other.m_coord.second);
   }
 
   /// \brief Divide by a constant
@@ -84,15 +86,17 @@ public:
       throw std::domain_error{"Divide by zero encountered"};
     }
 
-    return Point2D<T>(this->m_coord.first / dividend,
-             this->m_coord.second / dividend);
+    return Point2D<T>(
+      this->m_coord.first / dividend,
+      this->m_coord.second / dividend);
   }
 
   /// \brief Multiply by something
   Point2D<T> operator*(const T multiplier) const noexcept
   {
-    return Point2D<T>(this->m_coord.first * multiplier,
-             this->m_coord.second * multiplier);
+    return Point2D<T>(
+      this->m_coord.first * multiplier,
+      this->m_coord.second * multiplier);
   }
 
   /// \brief Compute the 2-norm of a point (as in, the distance to the origin)
@@ -349,16 +353,18 @@ private:
         const Point2D<T> & vertex_last = *it_last;
         const Point2D<T> & vertex_current = *it;
         Point2D<T> diff_vector = vertex_current - vertex_last;
-        Point2D<T> norm_vector = Point2D<T>(diff_vector.get_coord().second,
-            -diff_vector.get_coord().first);
+        Point2D<T> norm_vector = Point2D<T>(
+          diff_vector.get_coord().second,
+          -diff_vector.get_coord().first);
         this->m_halfplanes.push_back(Halfplane2D<T>(norm_vector, norm_vector.dot(vertex_current)));
         it_last = it;
       }
       const Point2D<T> & vertex_last = *it_last;
       const Point2D<T> & vertex_current = *it_begin;
       Point2D<T> diff_vector = vertex_current - vertex_last;
-      Point2D<T> norm_vector = Point2D<T>(diff_vector.get_coord().second,
-          -diff_vector.get_coord().first);
+      Point2D<T> norm_vector = Point2D<T>(
+        diff_vector.get_coord().second,
+        -diff_vector.get_coord().first);
       this->m_halfplanes.push_back(Halfplane2D<T>(norm_vector, norm_vector.dot(vertex_current)));
     }
   }

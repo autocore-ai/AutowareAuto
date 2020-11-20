@@ -39,17 +39,21 @@ int32_t main(const int32_t argc, char ** const argv)
     const auto * arg = rcutils_cli_get_option(argv, &argv[argc], "--model");
     if (arg != nullptr) {
       auto model = std::string(arg);
-      std::transform(model.begin(), model.end(), model.begin(), [](const auto & c) {
+      std::transform(
+        model.begin(), model.end(), model.begin(), [](const auto & c) {
           return std::tolower(c);
         });
       if (model == "vlp16") {
-        run(std::make_shared<
+        run(
+          std::make_shared<
             autoware::drivers::velodyne_node::VLP16DriverNode>("vlp16_driver_node"));
       } else if (model == "vlp32c") {
-        run(std::make_shared<
+        run(
+          std::make_shared<
             autoware::drivers::velodyne_node::VLP32CDriverNode>("vlp32c_driver_node"));
       } else if (model == "vls128") {
-        run(std::make_shared<
+        run(
+          std::make_shared<
             autoware::drivers::velodyne_node::VLS128DriverNode>("vls128_driver_node"));
       } else {
         throw std::runtime_error("Model " + model + " is not supperted.");

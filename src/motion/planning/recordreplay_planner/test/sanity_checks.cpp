@@ -83,8 +83,9 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
   const auto time_increment = p.time_spacing_ms;
   const auto v = dx / (1.0e-3F * p.time_spacing_ms.count());
   for (uint32_t k = {}; k < N; ++k) {
-    const auto next_state = make_state(dx * k, 0.0F, 0.0F, v, 0.0F, 0.0F,
-        t0 + k * time_increment);
+    const auto next_state = make_state(
+      dx * k, 0.0F, 0.0F, v, 0.0F, 0.0F,
+      t0 + k * time_increment);
     planner_.record_state(next_state);
   }
 
@@ -108,6 +109,7 @@ INSTANTIATE_TEST_CASE_P(
     PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t({})},
     PropertyTestParameters{std::chrono::milliseconds(100), system_clock::from_time_t(10)},
     PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t(10)}
+    // cppcheck-suppress syntaxError
   ), );
 
 
@@ -127,8 +129,9 @@ TEST_P(sanity_checks_trajectory_length, length)
 {
   const auto p = GetParam();
   const auto N = p.number_of_points;
-  const auto dummy_state = make_state(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
-      system_clock::from_time_t({}));
+  const auto dummy_state = make_state(
+    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+    system_clock::from_time_t({}));
 
   for (uint32_t k = {}; k < N; ++k) {
     planner_.record_state(dummy_state);
@@ -138,7 +141,8 @@ TEST_P(sanity_checks_trajectory_length, length)
   EXPECT_EQ(planner_.get_record_length(), N);
   auto trajectory = planner_.plan(dummy_state);
 
-  EXPECT_EQ(trajectory.points.size(),
+  EXPECT_EQ(
+    trajectory.points.size(),
     std::min(N, static_cast<uint32_t>(trajectory.points.max_size())));
 }
 
@@ -161,8 +165,10 @@ RecordReplayPlanner helper_create_and_record_example(uint32_t N)
 
   // Record some states going from
   for (uint32_t k = {}; k < N; ++k) {
-    planner.record_state(make_state(1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
-      t0 + k * std::chrono::milliseconds{100LL}));
+    planner.record_state(
+      make_state(
+        1.0F * k, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+        t0 + k * std::chrono::milliseconds{100LL}));
   }
 
   return planner;
@@ -348,7 +354,8 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
     auto aligned_box = get_test_box(state.state);
 
     EXPECT_EQ(aligned_box.corners.size(), static_cast<std::size_t>(4));
-    const auto expected_corners = std::set<Point32, point_compare>({
+    const auto expected_corners = std::set<Point32, point_compare>(
+    {
       make_point(1.5f, 1.0f),
       make_point(-1.2f, 1.0f),
       make_point(-1.2f, -1.0f),
@@ -365,7 +372,8 @@ TEST(recordreplay_geometry_checks, bounding_box_creation)
 
     EXPECT_EQ(rotated_box.corners.size(), static_cast<std::size_t>(4));
 
-    const auto expected_corners = std::set<Point32, point_compare>({
+    const auto expected_corners = std::set<Point32, point_compare>(
+    {
       make_point(+1.0f, +1.5f),
       make_point(-1.0f, +1.5f),
       make_point(-1.0f, -1.2f),
@@ -385,24 +393,27 @@ TEST(recordreplay_geometry_checks, collision_check) {
   { // Intersection
     const auto state_shifted = make_state(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0);
     auto aligned_box_shifted = get_test_box(state_shifted.state);
-    auto collision = intersect(aligned_box.corners.begin(), aligned_box.corners.end(),
-        aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
+    auto collision = intersect(
+      aligned_box.corners.begin(), aligned_box.corners.end(),
+      aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
     EXPECT_TRUE(collision);
   }
 
   { // No intersection
     const auto state_shifted = make_state(50.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0);
     auto aligned_box_shifted = get_test_box(state_shifted.state);
-    auto collision = intersect(aligned_box.corners.begin(), aligned_box.corners.end(),
-        aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
+    auto collision = intersect(
+      aligned_box.corners.begin(), aligned_box.corners.end(),
+      aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
     EXPECT_FALSE(collision);
   }
 
   { // Small intersection in a corner
     const auto state_shifted = make_state(2.6F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, t0);
     auto aligned_box_shifted = get_test_box(state_shifted.state);
-    auto collision = intersect(aligned_box.corners.begin(), aligned_box.corners.end(),
-        aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
+    auto collision = intersect(
+      aligned_box.corners.begin(), aligned_box.corners.end(),
+      aligned_box_shifted.corners.begin(), aligned_box_shifted.corners.end());
     EXPECT_TRUE(collision);
   }
 }

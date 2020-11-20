@@ -28,7 +28,8 @@ namespace covariance_insertion_node
 template<typename InputT>
 constexpr typename output<InputT>::type convert(const InputT & input_msg) noexcept
 {
-  static_assert(!needs_conversion<InputT>::value,
+  static_assert(
+    !needs_conversion<InputT>::value,
     "The default implementation is only good when the types are the same. "
     "Otherwise this function has to be specialized.");
   return input_msg;

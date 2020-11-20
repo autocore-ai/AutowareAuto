@@ -143,7 +143,8 @@ private:
   template<typename InputIT>
   bool8_t insert(InputIT first, InputIT last)
   {
-    static_assert(std::is_pointer<InputIT>::value,
+    static_assert(
+      std::is_pointer<InputIT>::value,
       "insert(first,last) must be called on an iterable pointer");
     bool8_t ret = true;
     for (InputIT it = first; it != last; ++it) {

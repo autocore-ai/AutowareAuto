@@ -33,7 +33,8 @@ namespace reference_tracking_controller
 template<typename T>
 class REFERENCE_TRACKING_CONTROLLER_PUBLIC ReferenceTrackerBase
 {
-  static_assert(std::is_floating_point<T>::value,
+  static_assert(
+    std::is_floating_point<T>::value,
     "Reference trackers only work for floating point types");
 
 public:

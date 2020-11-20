@@ -104,7 +104,8 @@ protected:
   {
     sensor_msgs::PointCloud2Modifier mod{cloud};
     mod.resize(N);
-    mod.setPointCloud2Fields(4,
+    mod.setPointCloud2Fields(
+      4,
       "x", 1, sensor_msgs::msg::PointField::FLOAT32,
       "y", 1, sensor_msgs::msg::PointField::FLOAT32,
       "z", 1, sensor_msgs::msg::PointField::FLOAT32,

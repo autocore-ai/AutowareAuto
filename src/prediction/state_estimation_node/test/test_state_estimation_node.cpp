@@ -115,7 +115,7 @@ private:
 INSTANTIATE_TEST_CASE_P(
   StateEstimationNodeTests,
   DISABLED_StateEstimationNodeTest,
-  ::testing::Values(true, false), );
+  ::testing::Values(true, false));
 
 /// @test Test that if we publish one message, it generates a state estimate which is sent out.
 TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
@@ -149,7 +149,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
 
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
-  create_result_odom_subscription("/state_estimation_namespace/filtered_state", node.get(),
+  create_result_odom_subscription(
+    "/state_estimation_namespace/filtered_state", node.get(),
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;
@@ -217,7 +218,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
 
   std::vector<Odometry::SharedPtr> received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
-  create_result_odom_subscription("/state_estimation_namespace/filtered_state", node.get(),
+  create_result_odom_subscription(
+    "/state_estimation_namespace/filtered_state", node.get(),
     [&received_msgs](
       const Odometry::SharedPtr msg) {
       received_msgs.push_back(msg);
@@ -259,7 +261,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
     if (received_msgs.empty()) {continue;}
     if (publish_tf) {
       auto & msg = *received_msgs.back();
-      EXPECT_TRUE(get_tf_buffer().canTransform(
+      EXPECT_TRUE(
+        get_tf_buffer().canTransform(
           "map", "base_link", to_tf_time_point(msg.header.stamp)));
       const auto transform{get_tf_buffer().lookupTransform(
           "map", "base_link", to_tf_time_point(msg.header.stamp))};
@@ -271,7 +274,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
       EXPECT_DOUBLE_EQ(transform.transform.translation.y, msg.pose.pose.position.y);
       EXPECT_DOUBLE_EQ(transform.transform.translation.z, msg.pose.pose.position.z);
     } else {
-      EXPECT_FALSE(get_tf_buffer().canTransform(
+      EXPECT_FALSE(
+        get_tf_buffer().canTransform(
           "map", "base_link", to_tf_time_point(msg.header.stamp)));
     }
   }
@@ -310,7 +314,8 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
 
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
-  create_result_odom_subscription("/state_estimation_namespace/filtered_state", node.get(),
+  create_result_odom_subscription(
+    "/state_estimation_namespace/filtered_state", node.get(),
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;

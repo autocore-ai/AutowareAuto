@@ -20,8 +20,6 @@ import launch.actions
 
 import launch_ros.actions
 
-from launch_ros.default_launch_description import ROSSpecificLaunchStartup
-
 import launch_testing
 import launch_testing.util
 
@@ -45,7 +43,6 @@ def generate_test_description(ready_fn):
     context = {'state_node': state_estimation_node}
 
     return launch.LaunchDescription([
-        ROSSpecificLaunchStartup(),
         state_estimation_node,
         # Need to keep the launch alive by having an alive process
         launch_testing.util.KeepAliveProc(),

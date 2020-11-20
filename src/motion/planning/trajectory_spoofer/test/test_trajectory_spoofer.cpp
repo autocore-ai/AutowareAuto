@@ -28,7 +28,8 @@
 
 #if !ASSERT_DURATION_MILLI_EQ
 # define ASSERT_DURATION_MILLI_EQ(t1, t2) \
-  ASSERT_TRUE( ( (t1 - t2) < std::chrono::milliseconds(1)) && \
+  ASSERT_TRUE( \
+    ( (t1 - t2) < std::chrono::milliseconds(1)) && \
     ( (t1 - t2) > std::chrono::milliseconds(-1)) ) << \
     std::chrono::duration_cast<std::chrono::milliseconds>(t1).count() << " not within 1ms of " << \
     std::chrono::duration_cast<std::chrono::milliseconds>(t2).count();

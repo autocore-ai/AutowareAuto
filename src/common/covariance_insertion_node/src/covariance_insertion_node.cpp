@@ -123,7 +123,8 @@ void CovarianceInsertionNode::validate(const MsgVariant & msg_variant)
     throw std::runtime_error(
             "No overrides provided. Probably something is wrong with the provided parameters.");
   }
-  mpark::visit([&](const auto & msg) {
+  mpark::visit(
+    [&](const auto & msg) {
       using InputMsgT = std::decay_t<decltype(msg)>;
       using OutputType = typename output<InputMsgT>::type;
       OutputType new_msg{};
@@ -134,18 +135,20 @@ void CovarianceInsertionNode::validate(const MsgVariant & msg_variant)
 void CovarianceInsertionNode::create_pub_sub(const MsgVariant & msg_variant)
 {
   validate(msg_variant);
-  mpark::visit([&](const auto & msg) {
+  mpark::visit(
+    [&](const auto & msg) {
       using InputMsgT = std::decay_t<decltype(msg)>;
       using OutputType = typename output<InputMsgT>::type;
       m_publisher = create_publisher<OutputType>(m_output_topic, m_history_size);
-      m_subscription = create_subscription<InputMsgT>(m_input_topic, m_history_size,
-      [&](const typename InputMsgT::SharedPtr msg) {
-        if (!msg) {return;}
-        auto new_msg = convert(*msg);
-        set_all_covariances(&new_msg, m_covariances);
-        auto publisher = std::static_pointer_cast<rclcpp::Publisher<OutputType>>(m_publisher);
-        publisher->publish(new_msg);
-      });
+      m_subscription = create_subscription<InputMsgT>(
+        m_input_topic, m_history_size,
+        [&](const typename InputMsgT::SharedPtr msg) {
+          if (!msg) {return;}
+          auto new_msg = convert(*msg);
+          set_all_covariances(&new_msg, m_covariances);
+          auto publisher = std::static_pointer_cast<rclcpp::Publisher<OutputType>>(m_publisher);
+          publisher->publish(new_msg);
+        });
     }, msg_variant);
 }
 

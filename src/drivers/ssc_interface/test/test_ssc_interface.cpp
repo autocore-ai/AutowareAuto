@@ -51,7 +51,8 @@ TEST(test_ssc_interface, test_drive_straight) {
     const float32_t y_nominal = std::sin(kYaw) * i * dt * 2.0;
     EXPECT_TRUE(is_close(y_nominal, vks.state.y)) <<
       "should be " << y_nominal << ", is " << vks.state.y;
-    ssc_interface::SscInterface::kinematic_bicycle_model(dt, kRearAxleToCogM, kFrontAxleToCogM,
+    ssc_interface::SscInterface::kinematic_bicycle_model(
+      dt, kRearAxleToCogM, kFrontAxleToCogM,
       &vks);
   }
 }
@@ -75,8 +76,9 @@ TEST(test_ssc_interface, test_constant_steering) {
   // We should be doing a circle of a certain radius
   // But what is the radius? Well, sin(β)*r = kRearAxleToCogM.
   // β is the angle of the velocity vector relative to the car's main axis
-  const float32_t beta_rad = std::atan2(vks.state.lateral_velocity_mps,
-      vks.state.longitudinal_velocity_mps);
+  const float32_t beta_rad = std::atan2(
+    vks.state.lateral_velocity_mps,
+    vks.state.longitudinal_velocity_mps);
   const float32_t radius_m = kRearAxleToCogM / std::sin(beta_rad);
   const double radius_m_squared = radius_m * radius_m;
   const float32_t dt = 2.0 * radius_m / kNumSteps;
@@ -90,7 +92,8 @@ TEST(test_ssc_interface, test_constant_steering) {
   vks.state.heading.real = std::cos(-beta_rad / 2.0f);
   vks.state.heading.imag = std::sin(-beta_rad / 2.0f);
   for (int i = 0; i < kNumSteps; ++i) {
-    ssc_interface::SscInterface::kinematic_bicycle_model(dt, kRearAxleToCogM, kFrontAxleToCogM,
+    ssc_interface::SscInterface::kinematic_bicycle_model(
+      dt, kRearAxleToCogM, kFrontAxleToCogM,
       &vks);
     // Check that we're driving a circle. It would be nicer to explicitly
     // calculate a nominal x and y position for each step and compare.

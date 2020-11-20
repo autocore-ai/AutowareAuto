@@ -105,9 +105,10 @@ LgsvlInterface::LgsvlInterface(
     sim_state_cmd_topic, rclcpp::QoS{10});
   // Make subscribers
   if (!sim_nav_odom_topic.empty() && ("null" != sim_nav_odom_topic)) {
-    m_nav_odom_sub = node.create_subscription<nav_msgs::msg::Odometry>(sim_nav_odom_topic,
-        rclcpp::QoS{10},
-        [this](nav_msgs::msg::Odometry::SharedPtr msg) {on_odometry(*msg);});
+    m_nav_odom_sub = node.create_subscription<nav_msgs::msg::Odometry>(
+      sim_nav_odom_topic,
+      rclcpp::QoS{10},
+      [this](nav_msgs::msg::Odometry::SharedPtr msg) {on_odometry(*msg);});
     // Ground truth state/pose publishers only work if there's a ground truth input
     m_kinematic_state_pub = node.create_publisher<autoware_auto_msgs::msg::VehicleKinematicState>(
       kinematic_state_topic, rclcpp::QoS{10});
@@ -314,8 +315,9 @@ void LgsvlInterface::on_state_report(const autoware_auto_msgs::msg::VehicleState
   const auto value_same = [&msg](const auto & kv) -> bool {  // also do some capture
       return msg.gear == kv.second;
     };
-  const auto it = std::find_if(autoware_to_lgsvl_gear.begin(),
-      autoware_to_lgsvl_gear.end(), value_same);
+  const auto it = std::find_if(
+    autoware_to_lgsvl_gear.begin(),
+    autoware_to_lgsvl_gear.end(), value_same);
 
   if (it != autoware_to_lgsvl_gear.end()) {
     corrected_report.gear = it->first;

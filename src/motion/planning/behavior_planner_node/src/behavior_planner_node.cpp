@@ -103,10 +103,12 @@ void BehaviorPlannerNode::init()
   }
 
   // Setup subscribers
-  m_ego_state_sub = this->create_subscription<State>("vehicle_state", QoS{10},
-      [this](const State::SharedPtr msg) {on_ego_state(msg);});
-  m_route_sub = this->create_subscription<Route>("route", QoS{10},
-      [this](const Route::SharedPtr msg) {on_route(msg);});
+  m_ego_state_sub = this->create_subscription<State>(
+    "vehicle_state", QoS{10},
+    [this](const State::SharedPtr msg) {on_ego_state(msg);});
+  m_route_sub = this->create_subscription<Route>(
+    "route", QoS{10},
+    [this](const Route::SharedPtr msg) {on_route(msg);});
 
   // Setup publishers
   m_trajectory_pub =
@@ -154,8 +156,9 @@ State BehaviorPlannerNode::transform_to_map(const State & state)
 {
   geometry_msgs::msg::TransformStamped tf;
   try {
-    tf = m_tf_buffer->lookupTransform("map", state.header.frame_id,
-        time_utils::from_message(state.header.stamp));
+    tf = m_tf_buffer->lookupTransform(
+      "map", state.header.frame_id,
+      time_utils::from_message(state.header.stamp));
   } catch (const tf2::ExtrapolationException &) {
     // TODO(mitsudome-r): currently falls back to retrive newest
     // transform available for availability,
@@ -179,10 +182,12 @@ void BehaviorPlannerNode::request_trajectory(const RouteWithType & route_with_ty
   action_goal.sub_route = route;
 
   auto send_goal_options = rclcpp_action::Client<PlanTrajectoryAction>::SendGoalOptions();
-  send_goal_options.goal_response_callback = std::bind(&BehaviorPlannerNode::goal_response_callback,
-      this, _1);
-  send_goal_options.feedback_callback = std::bind(&BehaviorPlannerNode::feedback_callback, this, _1,
-      _2);
+  send_goal_options.goal_response_callback = std::bind(
+    &BehaviorPlannerNode::goal_response_callback,
+    this, _1);
+  send_goal_options.feedback_callback = std::bind(
+    &BehaviorPlannerNode::feedback_callback, this, _1,
+    _2);
   send_goal_options.result_callback = std::bind(&BehaviorPlannerNode::result_callback, this, _1);
 
   switch (planner_type) {
@@ -239,8 +244,10 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
     auto request = std::make_shared<ModifyTrajectory::Request>();
     request->original_trajectory = trajectory;
     auto result =
-      m_modify_trajectory_client->async_send_request(request,
-        std::bind(&BehaviorPlannerNode::modify_trajectory_response,
+      m_modify_trajectory_client->async_send_request(
+      request,
+      std::bind(
+        &BehaviorPlannerNode::modify_trajectory_response,
         this, std::placeholders::_1));
   }
 }
@@ -272,8 +279,9 @@ void BehaviorPlannerNode::on_route(const Route::SharedPtr & msg)
   // TODO(mitsudome-r): If synchronized service request becomes available,
   // replace it with synchronized implementation
   auto result =
-    m_map_client->async_send_request(request,
-      std::bind(&BehaviorPlannerNode::map_response, this, std::placeholders::_1));
+    m_map_client->async_send_request(
+    request,
+    std::bind(&BehaviorPlannerNode::map_response, this, std::placeholders::_1));
 }
 
 void BehaviorPlannerNode::modify_trajectory_response(

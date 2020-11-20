@@ -31,8 +31,9 @@ VLS128Data::VLS128Data(const float32_t rpm)
   init_altitude_table();
   // (60E6 us/min * x min/rev = us/rev) * (seq/us * block/seq) = block / rev
   m_num_blocks_per_revolution =
-    static_cast<uint16_t>(std::roundf(60.0E6F /
-    (rpm * FIRE_SEQ_OFFSET_US * NUM_SEQUENCES_PER_BLOCK)));
+    static_cast<uint16_t>(std::roundf(
+      60.0E6F /
+      (rpm * FIRE_SEQ_OFFSET_US * NUM_SEQUENCES_PER_BLOCK)));
 }
 
 uint32_t VLS128Data::azimuth_offset(uint16_t num_banked_pts, uint32_t, uint32_t pt_id) const
@@ -73,8 +74,9 @@ void VLS128Data::init_azimuth_table(const float32_t rpm)
     const auto total_firing_offset_us = num_groups_fired * FIRE_DURATION_US + maintenance_offset_us;
     const auto pt_id_in_group = pt_id % GROUP_SIZE;
 
-    const auto raw_idx = std::roundf(DEG2IDX * (US_TO_DEG * (total_firing_offset_us) +
-        group_azimuth_offsets[pt_id_in_group]));
+    const auto raw_idx = std::roundf(
+      DEG2IDX * (US_TO_DEG * (total_firing_offset_us) +
+      group_azimuth_offsets[pt_id_in_group]));
     const auto normalized_idx = raw_idx < -eps ?
       (raw_idx + AZIMUTH_ROTATION_RESOLUTION) : raw_idx;
     m_azimuth_ind[pt_id] = static_cast<uint32_t>(normalized_idx);

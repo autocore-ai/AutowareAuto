@@ -52,13 +52,16 @@ uint32_t validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg)
   // check PointField fields
   // Get ID of the last field before cell_ID for reverse iterating. (used to calculate offset)
   auto double_field_idx = expected_num_fields - 2U;
-  if (!std::all_of(msg.fields.rbegin() + 1U, msg.fields.rend(),  // check all float fields
-    [&double_field_idx, &field_valid, double_field_size](auto & field) {
-      return field_valid(field, sensor_msgs::msg::PointField::FLOAT64,
-      ((double_field_idx--) * double_field_size), 1U);
-    }) ||
-    !field_valid(msg.fields[9U], sensor_msgs::msg::PointField::UINT32,  // check the cell id field
-    (9U * double_field_size), 2U) )
+  if (!std::all_of(
+      msg.fields.rbegin() + 1U, msg.fields.rend(),               // check all float fields
+      [&double_field_idx, &field_valid, double_field_size](auto & field) {
+        return field_valid(
+          field, sensor_msgs::msg::PointField::FLOAT64,
+          ((double_field_idx--) * double_field_size), 1U);
+      }) ||
+    !field_valid(
+      msg.fields[9U], sensor_msgs::msg::PointField::UINT32,             // check the cell id field
+      (9U * double_field_size), 2U) )
   {
     return 0U;
   }
@@ -80,8 +83,9 @@ uint32_t validate_pcl_map(const sensor_msgs::msg::PointCloud2 & msg)
 
 
   // If the actual size and the meta data is in conflict, use the minimum length to be safe.
-  const auto min_data_length = std::min(static_cast<decltype(msg.row_step)>(msg.data.size()),
-      std::min(msg.row_step, msg.width * msg.point_step));
+  const auto min_data_length = std::min(
+    static_cast<decltype(msg.row_step)>(msg.data.size()),
+    std::min(msg.row_step, msg.width * msg.point_step));
   // Trim the length to make it divisible to point_step, excess data cannot be read.
   const auto safe_data_length = min_data_length - (min_data_length % msg.point_step);
   // Return number of points that can safely be read from the point cloud

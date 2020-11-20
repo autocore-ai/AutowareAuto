@@ -66,9 +66,10 @@ public:
       };
     }
 
-    return VehicleState(serialized_states[0], serialized_states[1], serialized_states[2],
-             serialized_states[3],
-             serialized_states[4]);
+    return VehicleState(
+      serialized_states[0], serialized_states[1], serialized_states[2],
+      serialized_states[3],
+      serialized_states[4]);
   }
 
   // Getters and setters, nothing fancy now but may get checks later

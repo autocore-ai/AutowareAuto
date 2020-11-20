@@ -207,7 +207,8 @@ private:
       map_config,
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
       template get<uint32_t>()),
-      std::chrono::milliseconds(static_cast<uint64_t>(
+      std::chrono::milliseconds(
+        static_cast<uint64_t>(
           this->declare_parameter("localizer.guess_time_tolerance_ms").template get<uint64_t>()))
     };
 

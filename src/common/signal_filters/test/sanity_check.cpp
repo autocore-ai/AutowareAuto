@@ -281,18 +281,21 @@ TYPED_TEST(sanity_check, basic)
     HelperT::signal(TypeParam::signal_frequency, TypeParam::signal_magnitude, count);
   // Compute FFT of raw signal
   const auto raw_response = HelperT::dft(raw_signal);
-  ASSERT_TRUE(HelperT::has_response_past_cutoff(
+  ASSERT_TRUE(
+    HelperT::has_response_past_cutoff(
       TypeParam::cutoff_frequency,
       TypeParam::signal_magnitude,
       raw_response));
   // And find maximum frequency response
-  const auto response_magnitude = std::max_element(raw_response.begin(), raw_response.end(),
-      [](auto a, auto b) {return a.second < b.second;})->second;
+  const auto response_magnitude = std::max_element(
+    raw_response.begin(), raw_response.end(),
+    [](auto a, auto b) {return a.second < b.second;})->second;
   // Pass through filter
   const auto filtered_signal = HelperT::filter_signal(*filter, raw_signal);
   // Compute FFT of filtered signal
   const auto filtered_response = HelperT::dft(filtered_signal);
-  EXPECT_FALSE(HelperT::has_response_past_cutoff(
+  EXPECT_FALSE(
+    HelperT::has_response_past_cutoff(
       TypeParam::cutoff_frequency,
       response_magnitude,
       filtered_response));

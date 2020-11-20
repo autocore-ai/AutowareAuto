@@ -50,7 +50,8 @@ public:
     build_pc(m_grid_config);
     std::vector<Eigen::Vector3d> down_sampled_pts;
 
-    std::transform(m_voxel_centers.begin(), m_voxel_centers.end(),
+    std::transform(
+      m_voxel_centers.begin(), m_voxel_centers.end(),
       std::back_inserter(down_sampled_pts),
       [](auto it) {return it.second;});
 

@@ -80,7 +80,8 @@ bool8_t DynamicNDTVoxel::usable() const noexcept
 const Eigen::Matrix3d & DynamicNDTVoxel::covariance() const
 {
   if (!usable()) {
-    throw std::out_of_range("DynamicNDTVoxel: Cannot get covariance from a "
+    throw std::out_of_range(
+            "DynamicNDTVoxel: Cannot get covariance from a "
             "voxel without sufficient number of points");
   }
   return m_covariance;
@@ -89,7 +90,8 @@ const Eigen::Matrix3d & DynamicNDTVoxel::covariance() const
 std::experimental::optional<Eigen::Matrix3d> DynamicNDTVoxel::inverse_covariance() const
 {
   if (!usable()) {
-    throw std::out_of_range("DynamicNDTVoxel: Cannot get covariance from a "
+    throw std::out_of_range(
+            "DynamicNDTVoxel: Cannot get covariance from a "
             "voxel without sufficient number of points");
   }
 
@@ -160,7 +162,8 @@ const Eigen::Vector3d & StaticNDTVoxel::centroid() const
 const Eigen::Matrix3d & StaticNDTVoxel::inverse_covariance() const
 {
   if (!m_occupied) {
-    throw std::out_of_range("StaticNDTVoxel: Cannot get inverse covariance "
+    throw std::out_of_range(
+            "StaticNDTVoxel: Cannot get inverse covariance "
             "from an unoccupied voxel");
   }
   return m_inv_covariance;

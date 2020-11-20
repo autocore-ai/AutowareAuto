@@ -85,8 +85,9 @@ public:
       };
 
     this->m_pointcloud_sub =
-      create_subscription<sensor_msgs::msg::PointCloud2>("vlp16_cloud",
-        rclcpp::UnitTestDefaultsQoS(), fn2);
+      create_subscription<sensor_msgs::msg::PointCloud2>(
+      "vlp16_cloud",
+      rclcpp::UnitTestDefaultsQoS(), fn2);
   }
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr m_pointcloud_sub;

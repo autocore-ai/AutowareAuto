@@ -31,8 +31,9 @@ VLP32CData::VLP32CData(const float32_t rpm)
   init_altitude_table();
   // (60E6 us/min * x min/rev = us/rev) * (seq/us * block/seq) = block / rev
   m_num_blocks_per_revolution =
-    static_cast<uint16_t>(std::floor(60.0E6F /
-    (rpm * FIRE_SEQ_OFFSET_US * NUM_SEQUENCES_PER_BLOCK)));
+    static_cast<uint16_t>(std::floor(
+      60.0E6F /
+      (rpm * FIRE_SEQ_OFFSET_US * NUM_SEQUENCES_PER_BLOCK)));
 }
 
 uint32_t VLP32CData::azimuth_offset(uint16_t, uint32_t, uint32_t pt_id) const
@@ -65,8 +66,9 @@ void VLP32CData::init_azimuth_table(const float32_t rpm)
   for (uint32_t pt_id = 0U; pt_id < NUM_LASERS; ++pt_id) {
     const uint32_t group_id = pt_id / GROUP_SIZE;
 
-    const auto raw_idx = std::roundf(DEG2IDX * (US_TO_DEG *
-        (static_cast<float32_t>(group_id) * FIRE_DURATION_US) + azimuth_offsets[pt_id]));
+    const auto raw_idx = std::roundf(
+      DEG2IDX * (US_TO_DEG *
+      (static_cast<float32_t>(group_id) * FIRE_DURATION_US) + azimuth_offsets[pt_id]));
     const auto normalized_idx = raw_idx < -eps ?
       (raw_idx + AZIMUTH_ROTATION_RESOLUTION) : raw_idx;
     m_azimuth_ind[pt_id] = static_cast<uint32_t>(normalized_idx);

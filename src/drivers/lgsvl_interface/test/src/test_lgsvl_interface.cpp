@@ -26,8 +26,9 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
       EXPECT_EQ(msg->gear, expected_result.gear);
       test_completed = true;
     };
-  const auto sub_node = std::make_shared<rclcpp::Node>("test_lgsvl_interface_sub_state_command",
-      "/gtest");
+  const auto sub_node = std::make_shared<rclcpp::Node>(
+    "test_lgsvl_interface_sub_state_command",
+    "/gtest");
   auto sub_ptr = sub_node->create_subscription<lgsvl_interface::VSC>(
     sim_state_cmd_topic, rclcpp::QoS(10), handle_state_cmd);
 
@@ -68,13 +69,16 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
     };
 
   // Tests
-  wait_for_subscription_callback(VSC::GEAR_DRIVE,
+  wait_for_subscription_callback(
+    VSC::GEAR_DRIVE,
     static_cast<lgsvl_interface::GEAR_TYPE>(lgsvl_interface::LGSVL_GEAR::DRIVE));
 
-  wait_for_subscription_callback(VSC::GEAR_REVERSE,
+  wait_for_subscription_callback(
+    VSC::GEAR_REVERSE,
     static_cast<lgsvl_interface::GEAR_TYPE>(lgsvl_interface::LGSVL_GEAR::REVERSE));
 
-  wait_for_subscription_callback(static_cast<lgsvl_interface::GEAR_TYPE>(99u),
+  wait_for_subscription_callback(
+    static_cast<lgsvl_interface::GEAR_TYPE>(99u),
     static_cast<lgsvl_interface::GEAR_TYPE>(lgsvl_interface::LGSVL_GEAR::DRIVE));
 }
 
@@ -83,8 +87,9 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_report)
   VSR vsr_msg;
 
   // Setup Node execution
-  const auto pub_node = std::make_shared<rclcpp::Node>("test_lgsvl_interface_pub_state_report",
-      "/gtest");
+  const auto pub_node = std::make_shared<rclcpp::Node>(
+    "test_lgsvl_interface_pub_state_report",
+    "/gtest");
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node_);
 

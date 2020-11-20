@@ -80,7 +80,8 @@ void PointCloudMutationSpooferNode::wait_for_matched(
   while (m_pub->get_subscription_count() < num_expected_subs) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
     if (std::chrono::steady_clock::now() - match_start > match_timeout) {
-      throw std::runtime_error("PointCloudMutationSpooferNode: couldn't match "
+      throw std::runtime_error(
+              "PointCloudMutationSpooferNode: couldn't match "
               "any subscriptions within the initialization time budget.");
     }
   }

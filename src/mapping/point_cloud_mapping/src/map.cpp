@@ -81,7 +81,8 @@ MapUpdateSummary PlainPointCloudMap::try_add_observation(
   }
 
   if (m_cloud.size() > m_capacity) {
-    throw std::logic_error("PlainPointCloudMap: Number of points in the map exceed"
+    throw std::logic_error(
+            "PlainPointCloudMap: Number of points in the map exceed"
             "the capacity. This shouldn't happen, something must be wrong.");
   }
 

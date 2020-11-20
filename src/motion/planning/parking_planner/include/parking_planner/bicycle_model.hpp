@@ -71,9 +71,10 @@ public:
       };
     }
 
-    return BicycleModelParameters(serialized_states[0], serialized_states[1], serialized_states[2],
-             serialized_states[3],
-             serialized_states[4]);
+    return BicycleModelParameters(
+      serialized_states[0], serialized_states[1], serialized_states[2],
+      serialized_states[3],
+      serialized_states[4]);
   }
 
   // Getters and setters, nothing fancy now but may get checks later
@@ -181,8 +182,9 @@ public:
     std::vector<T> serialized_states,
     std::vector<T> serialized_commands) const
   {
-    return this->dynamics(VehicleState<T>::deserialize(serialized_states),
-             VehicleCommand<T>::deserialize(serialized_commands) ).serialize();
+    return this->dynamics(
+      VehicleState<T>::deserialize(serialized_states),
+      VehicleCommand<T>::deserialize(serialized_commands) ).serialize();
   }
 
 
@@ -200,7 +202,8 @@ public:
     corners.push_back(Point2D<T>(xfront, -yhalf) );
     corners.push_back(Point2D<T>(xfront, yhalf) );
     auto polytope = Polytope2D<T>(corners);
-    polytope.rotate_and_shift(states.get_heading(),
+    polytope.rotate_and_shift(
+      states.get_heading(),
       Point2D<T>({}, {}), Point2D<T>(states.get_x(), states.get_y()));
     return polytope;
   }
