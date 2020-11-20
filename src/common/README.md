@@ -23,3 +23,4 @@ across the Autoware.Auto system.
 - @subpage measurement-conversion-design
 - @subpage state-estimation-design
 - @subpage state-estimation-nodes-design
+- @subpage tvm-utility-design

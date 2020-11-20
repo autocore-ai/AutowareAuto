@@ -62,6 +62,7 @@ stages:
   variables:
     RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     ROS_DISTRO: foxy
+    ROS_VERSION: 2
   stage: build
   script:
     - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends

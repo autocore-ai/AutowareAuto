@@ -15,3 +15,7 @@ repositories:
     type: git
     url: https://github.com/NewEagleRaptor/raptor-dbw-ros2.git
     version: foxy
+  src/external/tvm_vendor:
+    type: git
+    url: https://github.com/autowarefoundation/tvm_vendor/
+    version: fef2b164240720b0452d8a9524aaa1e8316eaf91
