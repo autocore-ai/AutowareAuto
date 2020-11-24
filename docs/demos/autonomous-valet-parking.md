@@ -16,6 +16,11 @@ The AVP demonstration uses Autoware.Auto to provide the following functions:
 4. Drive to a pre-defined pick-up zone (e.g. the exit from a carpark).
 5. Automatically stop for obstacles while achieving the above.
 
+# System architecture for the AVP ODD
+
+The system architecture that was developed to address the AVP ODD in Autoware.Auto is given below:
+
+![Autoware.Auto AVP Architecture](images/AVP_Architecture.png)
 
 # Prerequisites {#avpdemo-prerequisites}
 
@@ -33,9 +38,19 @@ A sample car is available, based on a real-life vehicle used by many members of 
 
 # Hardware requirements
 
-The AVP demo can currently only be run in simulation.
-To run the LGSVL simulator, you will need an Nvidia graphics card.
+## Physical demo
 
+The physical AVP demo was tested with the following hardware:
+
+- 2 Velodyne VLP-32Cs
+- an AutonomouStuff Spectra industrial PC.
+- an autonomouStuff PACMod drive-by-wire system
+- the AutonomouStuff Speed and Steering Control (SSC) software.
+
+## Simulation demo
+
+The simulation AVP demo was tested with hardware that satisfies requirements for the LGSVL simulator.
+To run the LGSVL simulator, you will need an NVIDIA graphics card. Additional information about requirements can be found [here](https://www.lgsvlsimulator.com/docs/faq/#what-are-the-recommended-system-specs-what-are-the-minimum-required-system-specs).
 
 # Setup and launching (simulator)
 
@@ -44,7 +59,7 @@ You can use the included sample carpark, or your own carpark.
 If using your own carpark, you will need to provide a simulated world for it as described in @ref avpdemo-prerequisites.
 
 1. @ref installation-and-development-install-ade and install the @ref lgsvl.
-2. Follow the instructions on the @ref lgsvl page to configure a vehicle and simulation using the AutonomouStuff Parking Lot map.
+2. Follow the instructions on the @ref lgsvl page to configure a vehicle and simulation using the AutonomouStuff Parking Lot map (AS Parking Lot).
 3. Follow the instructions on the @ref lgsvl page to launch the simulator.
 4. In a new terminal, run the launch file for Milestone 2.
 The objectives and features of Milestone 2 can be found [here](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/24):
