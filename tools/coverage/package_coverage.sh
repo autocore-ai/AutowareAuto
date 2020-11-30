@@ -6,6 +6,7 @@ usage_exit() {
 }
 
 COVERAGE_FLAGS="-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
+AA_PATH="*/AutowareAuto"
 
 if [ $# -eq 0 ]
 	then
@@ -67,10 +68,14 @@ lcov \
 
 # Filter test, build, and install files and generate html
 lcov --config-file .lcovrc -r "$(pwd)/lcov/lcov.total" \
-	"*/AutowareAuto/install/*" "*/CMakeCCompilerId.c" "*/CMakeCXXCompilerId.cpp" "*_msgs/*" \
-	"*/AutowareAuto/build/mpc_planner/*" "*/AutowareAuto/build/mpc_controller/*" \
-	"*/AutowareAuto/src/external/*" \
-	"*/AutowareAuto/build/recordreplay_planner_actions/*" \
+	"${AA_PATH}/build/mpc_planner/*" \
+	"${AA_PATH}/build/recordreplay_planner_actions/*" \
+	"${AA_PATH}/install/*" \
+	"${AA_PATH}/src/external/*" \
+        "${AA_PATH}/build/mpc_controller/*" \
+        "*/CMakeCCompilerId.c" \
+        "*/CMakeCXXCompilerId.cpp" \
+        "*_msgs/*" \
 	-o "$(pwd)/lcov/lcov.total.filtered" || { echo "Filtering failed."; exit 1; }
 
 genhtml \
