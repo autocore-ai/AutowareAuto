@@ -42,14 +42,18 @@ void BehaviorPlannerNode::init()
   const behavior_planner::PlannerConfig config{
     static_cast<float32_t>(declare_parameter("goal_distance_thresh").get<float64_t>()),
     static_cast<float32_t>(declare_parameter("stop_velocity_thresh").get<float64_t>()),
-    static_cast<float32_t>(declare_parameter("heading_weight").get<float64_t>())
+    static_cast<float32_t>(declare_parameter("heading_weight").get<float64_t>()),
+    static_cast<float32_t>(declare_parameter("subroute_goal_offset_lane2parking").get<float64_t>()),
+    static_cast<float32_t>(declare_parameter("subroute_goal_offset_parking2lane").get<float64_t>())
   };
   m_planner = std::make_unique<behavior_planner::BehaviorPlanner>(config);
 
   // Setup Tf Buffer with listener
   rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   m_tf_buffer = std::make_shared<tf2_ros::Buffer>(clock);
-  m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
+  m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
+    *m_tf_buffer,
+    std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
 
   m_lane_planner_client = rclcpp_action::create_client<PlanTrajectoryAction>(
     this->get_node_base_interface(),
@@ -109,10 +113,21 @@ void BehaviorPlannerNode::init()
   m_route_sub = this->create_subscription<Route>(
     "route", QoS{10},
     [this](const Route::SharedPtr msg) {on_route(msg);});
+  m_vehicle_state_report_sub = this->create_subscription<VehicleStateReport>(
+    "vehicle_state_report", QoS{10},
+    [this](const VehicleStateReport::SharedPtr msg) {on_vehicle_state_report(msg);});
 
   // Setup publishers
   m_trajectory_pub =
     this->create_publisher<Trajectory>("trajectory", QoS{10});
+  m_debug_trajectory_pub =
+    this->create_publisher<Trajectory>("debug/full_trajectory", QoS{10});
+  m_debug_checkpoints_pub =
+    this->create_publisher<Trajectory>("debug/checkpoints", QoS{10});
+  m_debug_subroute_pub =
+    this->create_publisher<Route>("debug/current_subroute", QoS{10});
+  m_vehicle_state_command_pub =
+    this->create_publisher<VehicleStateCommand>("vehicle_state_command", QoS{10});
 }
 
 void BehaviorPlannerNode::goal_response_callback(
@@ -146,6 +161,11 @@ void BehaviorPlannerNode::result_callback(const PlanTrajectoryGoalHandle::Wrappe
   } else {
     RCLCPP_ERROR(get_logger(), "Planner failed to calculate !!");
   }
+
+  auto trajectory = result.result->trajectory;
+  trajectory.header.frame_id = "map";
+  m_debug_trajectory_pub->publish(trajectory);
+
   m_planner->set_trajectory(result.result->trajectory);
 
   // finished requesting trajectory
@@ -167,6 +187,8 @@ State BehaviorPlannerNode::transform_to_map(const State & state)
   }
   State transformed_state;
   motion::motion_common::doTransform(state, transformed_state, tf);
+  transformed_state.header.frame_id = "map";
+  transformed_state.header.stamp = state.header.stamp;
   return transformed_state;
 }
 
@@ -202,6 +224,7 @@ void BehaviorPlannerNode::request_trajectory(const RouteWithType & route_with_ty
     default:
       break;
   }
+  m_debug_subroute_pub->publish(route);
 }
 
 void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
@@ -221,25 +244,63 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
 
   // check if we need new trajectory
   // make sure we are not requesting trajectory if we already have
+  static auto previous_output_arrived_goal = std::chrono::system_clock::now();
   if (!m_requesting_trajectory) {
-    if (m_planner->has_arrived_subroute_goal(m_ego_state)) {
+    if (m_planner->has_arrived_goal(m_ego_state)) {
+      // TODO(mitsudome-r): replace this with throttled output in foxy
+      const auto now = std::chrono::system_clock::now();
+      const auto throttle_time = std::chrono::duration<float64_t>(3);
+      if (now - previous_output_arrived_goal > throttle_time) {
+        RCLCPP_INFO(get_logger(), "trying to change gear");
+        previous_output_arrived_goal = now;
+      }
+      RCLCPP_INFO(get_logger(), "Reached goal. Wait for another route");
+    } else if (m_planner->has_arrived_subroute_goal(m_ego_state)) {
       // send next subroute
-      m_planner->set_next_subroute(m_ego_state);
+      m_planner->set_next_subroute();
       request_trajectory(m_planner->get_current_subroute(m_ego_state));
       m_requesting_trajectory = true;
-    }
-    if (m_planner->needs_new_trajectory(m_ego_state)) {
+    } else if (m_planner->needs_new_trajectory(m_ego_state)) {
       // update trajectory for current subroute
       request_trajectory(m_planner->get_current_subroute(m_ego_state));
       m_requesting_trajectory = true;
     }
   }
 
-  if (m_planner->is_trajectory_ready()) {
+  if (!m_planner->is_trajectory_ready()) {
+    return;
+  }
+
+  static auto previous_output = std::chrono::system_clock::now();
+  const auto desired_gear = m_planner->get_desired_gear(m_ego_state);
+  if (desired_gear != m_current_gear) {
+    const auto throttle_time = std::chrono::duration<float64_t>(3);
+
+    // TODO(mitsudome-r): replace this with throttled output in foxy
+    const auto now = std::chrono::system_clock::now();
+    if (now - previous_output > throttle_time) {
+      RCLCPP_INFO(get_logger(), "trying to change gear");
+      previous_output = now;
+    }
+
+
+    VehicleStateCommand gear_command;
+    gear_command.gear = desired_gear;
+    gear_command.mode = VehicleStateCommand::MODE_AUTONOMOUS;
+    gear_command.stamp = msg->header.stamp;
+    m_vehicle_state_command_pub->publish(gear_command);
+
+    // send trajectory with current state so that velocity will be zero in order to change gear
+    Trajectory trajectory;
+    trajectory.header.frame_id = "map";
+    trajectory.header.stamp = msg->header.stamp;
+    trajectory.points.push_back(msg->state);
+    m_trajectory_pub->publish(trajectory);
+  } else {
     auto trajectory = m_planner->get_trajectory(m_ego_state);
     // trajectory.header = m_ego_state.header;
     trajectory.header.frame_id = "map";
-    trajectory.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
+    trajectory.header.stamp = msg->header.stamp;
 
     auto request = std::make_shared<ModifyTrajectory::Request>();
     request->original_trajectory = trajectory;
@@ -252,6 +313,10 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
   }
 }
 
+void BehaviorPlannerNode::on_vehicle_state_report(const VehicleStateReport::SharedPtr & msg)
+{
+  m_current_gear = msg->gear;
+}
 
 void BehaviorPlannerNode::on_route(const Route::SharedPtr & msg)
 {
@@ -287,7 +352,16 @@ void BehaviorPlannerNode::on_route(const Route::SharedPtr & msg)
 void BehaviorPlannerNode::modify_trajectory_response(
   rclcpp::Client<ModifyTrajectory>::SharedFuture future)
 {
-  m_trajectory_pub->publish(future.get()->modified_trajectory);
+  auto trajectory = future.get()->modified_trajectory;
+
+  // set current position with velocity zero to do emergency stop in case
+  // collision estimator fails or if there is obstacle on first point
+  if (trajectory.points.empty()) {
+    auto stopping_point = m_ego_state.state;
+    stopping_point.longitudinal_velocity_mps = 0.0;
+    trajectory.points.push_back(stopping_point);
+  }
+  m_trajectory_pub->publish(trajectory);
 }
 
 void BehaviorPlannerNode::map_response(rclcpp::Client<HADMapService>::SharedFuture future)
@@ -299,6 +373,15 @@ void BehaviorPlannerNode::map_response(rclcpp::Client<HADMapService>::SharedFutu
 
   // TODO(mitsudome-r) move to handle_accepted() when synchronous service is available
   m_planner->set_route(*m_route, m_lanelet_map_ptr);
+
+  const auto subroutes = m_planner->get_subroutes();
+  Trajectory checkpoints;
+  checkpoints.header.frame_id = "map";
+  for (const auto subroute : subroutes) {
+    checkpoints.points.push_back(subroute.route.start_point);
+    checkpoints.points.push_back(subroute.route.goal_point);
+  }
+  m_debug_checkpoints_pub->publish(checkpoints);
 }
 }  // namespace behavior_planner_node
 }  // namespace autoware

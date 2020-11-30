@@ -26,6 +26,7 @@
 #include <common/types.hpp>
 #include <autoware_auto_msgs/msg/route.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 
 // lanelet headers
@@ -55,7 +56,9 @@ using autoware_auto_msgs::msg::Route;
 using autoware_auto_msgs::msg::MapPrimitive;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
+using autoware_auto_msgs::msg::VehicleStateCommand;
 
+using autoware::common::types::uchar8_t;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
@@ -80,18 +83,22 @@ public:
   explicit BehaviorPlanner(const PlannerConfig & config);
 
   void set_route(const Route & route, const lanelet::LaneletMapPtr & lanelet_map_ptr);
-  void set_next_subroute(const State & ego_state);
+  void clear_route();
+  void set_next_subroute();
 
   bool8_t is_route_ready();
 
   bool8_t needs_new_trajectory(const State & state);
   TrajectoryPoint get_sub_goal();
+  bool8_t has_arrived_goal(const State & state);
   bool8_t has_arrived_subroute_goal(const State & state);
 
   bool8_t is_vehicle_stopped(const State & state);
 
   RouteWithType get_current_subroute(const State & ego_state);
   PlannerType get_planner_type();
+  uchar8_t get_desired_gear(const State & state);
+  std::vector<RouteWithType> get_subroutes();
 
   // relay to trajectory_manager
   bool8_t is_trajectory_ready();
@@ -111,8 +118,6 @@ private:
   TrajectoryManager m_trajectory_manager;
 
   bool8_t m_is_trajectory_complete;
-
-  std::size_t get_closest_subroute(const State & ego_state);
 };
 }  // namespace behavior_planner
 }  // namespace autoware

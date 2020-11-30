@@ -49,9 +49,18 @@ void TrajectoryManager::set_trajectory(const Trajectory & trajectory)
 
 void TrajectoryManager::set_sub_trajectories()
 {
+  // return sign with hysterysis buffer
   const auto is_positive = [](const TrajectoryPoint & pt) {
       // using epsilon instead to ensure change in sign.
-      return pt.longitudinal_velocity_mps > -std::numeric_limits<float32_t>::epsilon();
+      static bool8_t is_prev_positive = true;
+      bool8_t is_positive;
+      if (is_prev_positive) {
+        is_positive = pt.longitudinal_velocity_mps > -std::numeric_limits<float32_t>::epsilon();
+      } else {
+        is_positive = pt.longitudinal_velocity_mps > std::numeric_limits<float32_t>::epsilon();
+      }
+      is_prev_positive = is_positive;
+      return is_positive;
     };
 
   if (m_trajectory.points.empty()) {
@@ -122,10 +131,58 @@ size_t TrajectoryManager::get_remaining_length(const State & state)
   return remaining_length;
 }
 
+Trajectory TrajectoryManager::crop_from_current_state(
+  const Trajectory & trajectory,
+  const State & state)
+{
+  if (trajectory.points.empty()) {return trajectory;}
+  auto index = get_closest_state(state, trajectory);
+
+  // we always want trajectory to start from front of vehicle so increment index
+  if (index + 1 < trajectory.points.size()) {
+    index += 1;
+  }
+
+  Trajectory output;
+  output.header = trajectory.header;
+  auto current_state = state.state;
+  current_state.longitudinal_velocity_mps = trajectory.points.at(index).longitudinal_velocity_mps;
+  output.points.push_back(current_state);
+  for (size_t i = index; i < trajectory.points.size(); i++) {
+    output.points.push_back(trajectory.points.at(i));
+  }
+  return output;
+}
+
+void TrajectoryManager::set_time_from_start(Trajectory * trajectory)
+{
+  if (trajectory->points.empty()) {
+    return;
+  }
+
+  float32_t t = 0.0;
+
+  // special operation for first point
+  auto & first_point = trajectory->points.at(0);
+  first_point.time_from_start.sec = 0;
+  first_point.time_from_start.nanosec = 0;
+
+  for (std::size_t i = 1; i < trajectory->points.size(); ++i) {
+    auto & p0 = trajectory->points[i - 1];
+    auto & p1 = trajectory->points[i];
+    auto v = 0.5f * (p0.longitudinal_velocity_mps + p1.longitudinal_velocity_mps);
+    t += norm_2d(minus_2d(p0, p1)) / std::max(std::fabs(v), 0.5f);
+    float32_t t_s = 0;
+    float32_t t_ns = std::modf(t, &t_s) * 1.0e9f;
+    trajectory->points[i].time_from_start.sec = static_cast<int32_t>(t_s);
+    trajectory->points[i].time_from_start.nanosec = static_cast<uint32_t>(t_ns);
+  }
+}
+
 Trajectory TrajectoryManager::get_trajectory(const State & state)
 {
   // select new sub_trajectory when vehicle is at stop
-  if (state.state.longitudinal_velocity_mps < m_config.stop_velocity_thresh) {
+  if (std::abs(state.state.longitudinal_velocity_mps) < m_config.stop_velocity_thresh) {
     const auto & last_point = m_sub_trajectories.at(m_selected_trajectory).points.back();
     const auto distance = norm_2d(minus_2d(last_point, state.state));
 
@@ -137,10 +194,10 @@ Trajectory TrajectoryManager::get_trajectory(const State & state)
   }
 
   // TODO(mitsudome-r) implement trajectory refine functions if needed to integrate with controller
-  // output = crop_form_current_state(input);
-  // output = set_time_from_start(output);
-  // output = interpolation();
-  return m_sub_trajectories.at(m_selected_trajectory);
+  const auto & input = m_sub_trajectories.at(m_selected_trajectory);
+  auto output = crop_from_current_state(input, state);
+  set_time_from_start(&output);
+  return output;
 }
 
 }  // namespace behavior_planner
