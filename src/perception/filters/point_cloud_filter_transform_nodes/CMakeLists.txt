@@ -56,7 +56,7 @@ if(BUILD_TESTING)
       "test/test_point_cloud_filter_transform.cpp")
   target_include_directories(${FILTER_TRANSFORM_NODE_GTEST} PRIVATE include)
   target_link_libraries(${FILTER_TRANSFORM_NODE_GTEST} ${FILTER_NODE_LIB})
-  ament_target_dependencies(${FILTER_TRANSFORM_NODE_GTEST} "lidar_integration" "velodyne_node" "autoware_auto_common" "rclcpp_lifecycle")
+  ament_target_dependencies(${FILTER_TRANSFORM_NODE_GTEST} "lidar_integration" "velodyne_node" "autoware_auto_common")
 
   # # integration test
   add_ros_test(test/cloud_mutation.test.py)

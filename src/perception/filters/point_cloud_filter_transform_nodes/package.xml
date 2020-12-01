@@ -29,7 +29,6 @@
     <test_depend>lidar_integration</test_depend>
     <test_depend>velodyne_node</test_depend>
     <test_depend>ament_cmake_gtest</test_depend>
-    <test_depend>rclcpp_lifecycle</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>
 </package>
