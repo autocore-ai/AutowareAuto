@@ -52,6 +52,11 @@ def generate_launch_description():
     mpc_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/mpc.param.yaml')
 
+    pc_filter_transform_pkg_prefix = get_package_share_directory(
+        'point_cloud_filter_transform_nodes')
+    pc_filter_transform_param_file = os.path.join(
+        pc_filter_transform_pkg_prefix, 'param/vlp16_sim_lexus_filter_transform.param.yaml')
+
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
 
@@ -77,6 +82,11 @@ def generate_launch_description():
         default_value=mpc_param_file,
         description='Path to config file for MPC'
     )
+    pc_filter_transform_param = DeclareLaunchArgument(
+        'pc_filter_transform_param_file',
+        default_value=pc_filter_transform_param_file,
+        description='Path to config file for Point Cloud Filter/Transform Nodes'
+    )
 
     # Nodes
 
@@ -97,6 +107,22 @@ def generate_launch_description():
             ("gnss_odom", "/lgsvl/gnss_odom"),
             ("vehicle_odom", "/lgsvl/vehicle_odom")
         ]
+    )
+    filter_transform_vlp16_front = Node(
+        package='point_cloud_filter_transform_nodes',
+        node_executable='point_cloud_filter_transform_node_exe',
+        node_name='filter_transform_vlp16_front',
+        node_namespace='lidar_front',
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
+        remappings=[("points_in", "points_raw")]
+    )
+    filter_transform_vlp16_rear = Node(
+        package='point_cloud_filter_transform_nodes',
+        node_executable='point_cloud_filter_transform_node_exe',
+        node_name='filter_transform_vlp16_rear',
+        node_namespace='lidar_rear',
+        parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
+        remappings=[("points_in", "points_raw")]
     )
     map_publisher = Node(
         package='ndt_nodes',
@@ -130,7 +156,8 @@ def generate_launch_description():
     )
 
     core_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([avp_demo_pkg_prefix, '/launch/ms3_core.launch.py'])
+        PythonLaunchDescriptionSource([avp_demo_pkg_prefix, '/launch/ms3_core.launch.py']),
+        launch_arguments={}.items()
     )
 
     return LaunchDescription([
@@ -138,10 +165,13 @@ def generate_launch_description():
         map_publisher_param,
         ndt_localizer_param,
         mpc_param,
+        pc_filter_transform_param,
         urdf_publisher,
         lgsvl_interface,
         map_publisher,
         ndt_localizer,
         mpc,
+        filter_transform_vlp16_front,
+        filter_transform_vlp16_rear,
         core_launch,
     ])

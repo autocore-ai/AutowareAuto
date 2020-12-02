@@ -10,14 +10,14 @@
     controller:
       interpolation: true
       sample_tolerance_ms: 20
-      control_lookahead_ms: 100
+      control_lookahead_ms: 500
       limits:
-        min_longitudinal_velocity_mps: -5.00
-        max_longitudinal_velocity_mps: 15.0
+        min_longitudinal_velocity_mps: -1.7
+        max_longitudinal_velocity_mps: 1.7
         min_lateral_velocity_mps: -3.0
         max_lateral_velocity_mps: 3.0
         min_acceleration_mps2: -3.0
-        max_acceleration_mps2: 3.0
+        max_acceleration_mps2: 1.5
         min_yaw_rate_rps: -3.0
         max_yaw_rate_rps: 3.0
         min_jerk_mps3: -10.0
@@ -34,30 +34,30 @@
         mass_kg: 1460.0
         yaw_inertia_kgm2: 2170.0
         width_m: 2.0
-        front_overhang_m: 0.5
-        rear_overhang_m: 0.5
+        front_overhang_m: 1.05
+        rear_overhang_m: 0.92
       behavior:
         stop_rate_mps2: 3.0
         time_step_ms: 100
         is_temporal_reference: true
       weights:
-        nominal:
-          pose: 10.0
-          heading: 10.0
-          longitudinal_velocity: 10.0
-          lateral_velocity: 10.0
-          yaw_rate: 10.0
-          acceleration: 10.0
-          jerk: 10.0
-          steer_angle: 10.0
-          steer_angle_rate: 10.0
-        terminal:
-          pose: 10000.0
-          heading: 10000.0
-          longitudinal_velocity: 100.0
-          lateral_velocity: 10.0
-          yaw_rate: 10.0
-          acceleration: 0.0
-          jerk: 0.0
-          steer_angle: 0.0
-          steer_angle_rate: 0.0
+        nominal:                        # -- at each trajectory points --
+          pose: 100.0                   # to make the pose same as the reference trajectory at each trajectory points
+          heading: 50.0                 # to make the pose heading as the reference trajectory at each trajectory points
+          longitudinal_velocity: 25.0   # to make the pose velocity as the reference trajectory at each trajectory points
+          lateral_velocity: 0.0         # NOT USED
+          yaw_rate: 0.0                 # NOT USED
+          acceleration: 10.0            # to make the accelration zero
+          jerk: 0.0                     # NOT USED
+          steer_angle: 0.0              # to make the steering angle zero
+          steer_angle_rate: 0.0         # NOT USED
+        terminal:                       # -- at a trajectory tarminal point --
+          pose: 10000.0                 # to make the pose same as the reference
+          heading: 10000.0              # to make the heading same as the reference
+          longitudinal_velocity: 100.0  # to make the velocity same as the reference
+          lateral_velocity: 0.0         # NOT USED
+          yaw_rate: 0.0                 # NOT USED
+          acceleration: 0.0             # to make the accelration ZERO
+          jerk: 0.0                     # NOT USED
+          steer_angle: 0.0              # to make the steering angle ZERO
+          steer_angle_rate: 0.0         # NOT USED
