@@ -100,7 +100,7 @@ using lanelet::utils::getId;
 
 ParkingPlannerNode::ParkingPlannerNode(
   const rclcpp::NodeOptions & options)
-: TrajectoryPlannerNodeBase("parking_planner", options)
+: TrajectoryPlannerNodeBase("parking_planner", "plan_parking_trajectory", options)
 {
   const auto f32_param = [this](const std::string & name) {
       return static_cast<Real>(declare_parameter(name).get<float32_t>());

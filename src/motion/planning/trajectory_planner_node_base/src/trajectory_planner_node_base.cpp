@@ -27,6 +27,7 @@ namespace trajectory_planner_node_base
 
 TrajectoryPlannerNodeBase::TrajectoryPlannerNodeBase(
   const std::string & node_name,
+  const std::string & action_server_name,
   const rclcpp::NodeOptions & node_options)
 : Node{node_name, node_options},
   m_planner_state{PlannerState::IDLE}
@@ -50,7 +51,7 @@ TrajectoryPlannerNodeBase::TrajectoryPlannerNodeBase(
     this->get_node_clock_interface(),
     this->get_node_logging_interface(),
     this->get_node_waitables_interface(),
-    "plan_lane_trajectory",
+    action_server_name,
     [this](auto uuid, auto goal) {return this->handle_goal(uuid, goal);},
     [this](auto goal_handle) {return this->handle_cancel(goal_handle);},
     [this](auto goal_handle) {return this->handle_accepted(goal_handle);});

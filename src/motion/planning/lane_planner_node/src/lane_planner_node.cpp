@@ -24,7 +24,7 @@ namespace lane_planner_node
 {
 
 LanePlannerNode::LanePlannerNode(const rclcpp::NodeOptions & node_options)
-: TrajectoryPlannerNodeBase{"lane_planner", node_options}
+: TrajectoryPlannerNodeBase{"lane_planner", "plan_lane_trajectory", node_options}
 {
   const VehicleConfig vehicle_param{
     static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<float32_t>()),

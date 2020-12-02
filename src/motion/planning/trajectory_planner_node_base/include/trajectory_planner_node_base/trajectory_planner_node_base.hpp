@@ -60,9 +60,11 @@ class TRAJECTORY_PLANNER_NODE_BASE_PUBLIC TrajectoryPlannerNodeBase : public rcl
 public:
   /// \brief default constructor, starts planner
   /// \param[in] node_name name of the ROS node
+  /// \param[in] action_server_name The name under which the action server will be created
   /// \param[in] options node options for rclcpp Node
   explicit TrajectoryPlannerNodeBase(
     const std::string & node_name,
+    const std::string & action_server_name,
     const rclcpp::NodeOptions & options);
 
 protected:
