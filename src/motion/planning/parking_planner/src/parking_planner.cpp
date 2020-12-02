@@ -153,6 +153,20 @@ PlanningResult ParkingPlanner::plan(
   const std::vector<Polytope2D<float64_t>> & obstacles
 ) const
 {
+  // If the starting and target angles would be closer if we shift by 2*pi in either
+  // direction, do that. This will help avoid the planner coming up with "loop" solutions.
+  // TODO(s.me) this should be cleaned up after AVP
+  const auto goal_heading = goal_state.get_heading();
+  const auto current_heading = current_state.get_heading();
+  const auto current_heading_difference = std::abs(goal_heading - current_heading);
+  VehicleState<float64_t> adapted_goal_state = goal_state;
+  const auto pi = 3.14159;
+  if (std::abs(goal_heading - (2 * pi) - current_heading) < current_heading_difference) {
+    adapted_goal_state.set_heading(goal_heading - (2 * pi) );
+  } else if (std::abs(goal_heading + (2 * pi) - current_heading) < current_heading_difference) {
+    adapted_goal_state.set_heading(goal_heading + (2 * pi) );
+  }
+
   // Run discretized global A* planner
   const auto vehicle_bounding_box =
     BicycleModel<float64_t,
@@ -160,7 +174,7 @@ PlanningResult ParkingPlanner::plan(
   const std::vector<VehicleState<float64_t>> astar_output =
     m_astar_planner.plan_astar(
     current_state,
-    goal_state,
+    adapted_goal_state,
     vehicle_bounding_box,
     obstacles);
 
@@ -169,8 +183,8 @@ PlanningResult ParkingPlanner::plan(
 
   // Run NLP smoother, warm-started using the A* guess
   auto nlp_results = m_nlp_planner.plan_nlp(
-    current_state, goal_state, trajectory_guess, obstacles,
-    m_model_parameters);
+    current_state, adapted_goal_state, trajectory_guess,
+    obstacles, m_model_parameters);
   const auto smoothed_trajectory = nlp_results.m_trajectory;
   const std::size_t nlp_iterations =
     static_cast<std::size_t>(nlp_results.m_solve_info["iter_count"].to_int());
@@ -180,7 +194,7 @@ PlanningResult ParkingPlanner::plan(
   const auto checking_tolerance = 1e-4;
   const auto trajectory_ok = m_nlp_planner.check_trajectory(
     smoothed_trajectory, current_state,
-    goal_state, obstacles, m_model_parameters, checking_tolerance);
+    adapted_goal_state, obstacles, m_model_parameters, checking_tolerance);
   std::cout << "Trajectory ok is: " << trajectory_ok << std::endl;
 
   // Return final result

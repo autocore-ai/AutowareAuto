@@ -31,10 +31,10 @@ namespace parking_planner
 {
 using autoware::common::types::float64_t;
 static constexpr float64_t MY_PI = 3.141592653589793;
-static constexpr float64_t DELTA_LONGITUDINAL = 0.25;
-static const float64_t DELTA_HEADING = MY_PI / 12.0;
-static constexpr float64_t MAX_EXPLORATION_RADIUS = 20.0;
-static constexpr size_t MAX_NUM_EXPLORATION_NODES = 100000;
+static constexpr float64_t DELTA_LONGITUDINAL = 0.125;
+static const float64_t DELTA_HEADING = MY_PI / 24.0;
+static constexpr float64_t MAX_EXPLORATION_RADIUS = 30.0;
+static constexpr size_t MAX_NUM_EXPLORATION_NODES = 1000000;
 
 class PARKING_PLANNER_PUBLIC AstarPathPlanner
 {

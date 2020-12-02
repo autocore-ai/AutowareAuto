@@ -123,6 +123,12 @@ public:
     const VehicleState<float64_t> & goal_state,
     const std::vector<Polytope2D<float64_t>> & obstacles) const;
 
+
+  const BicycleModelParameters<float64_t> & get_parameters() const
+  {
+    return m_model_parameters;
+  }
+
 private:
   /// \brief Create a full Trajectory data structure from just a list of states. This is used
   ///        in the translation of the Astar output to an initial guess for the NLP. If the input

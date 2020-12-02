@@ -392,7 +392,7 @@ MX create_cost_function(
 
   // Input cost: Try to not use tons of actuation
   const auto throttle_cost = cost_weights.get_throttle_weight();
-  const auto steering_cost = cost_weights.get_throttle_weight();
+  const auto steering_cost = cost_weights.get_steering_weight();
   for (std::size_t k = {}; k < HORIZON_LENGTH - 1; k++) {
     const auto commands_k = trajectory[k].get_command();
     cost_function += throttle_cost * commands_k.get_throttle() * commands_k.get_throttle();

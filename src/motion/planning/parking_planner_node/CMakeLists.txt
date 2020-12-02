@@ -19,6 +19,7 @@ endif()
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/parking_planner_node/parking_planner_node.cpp)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} CGAL gmp mpfr)
 autoware_set_compile_options(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} CGAL::CGAL CGAL::CGAL_Core)
 

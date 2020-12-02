@@ -134,7 +134,7 @@ class TestIntegration : public ::testing::TestWithParam<IntegrationTestParams> {
 
 // TODO(jwhitleywork): Re-enable this test when fixed on arm64. Relevant issue is #551.
 // This test runs the parking planner like a user would
-TEST_P(TestIntegration, with_obstacles) {
+TEST_P(TestIntegration, DISABLED_with_obstacles) {
   const auto params = GetParam();
   RecordProperty("scenario_name", params.scenario_name);
 
@@ -231,14 +231,6 @@ INSTANTIATE_TEST_CASE_P(
     IntegrationTestParams{"parallel_from_behind",
       side_gap_obstacles,
       VehicleState(-4.0, 0.0, 0.0, 0, 0.0),
-      VehicleState(-2.0, -1.5, 0.0, 0, 0.0),
-      BicycleModelParameters(1.1, 1.1, 1.2, 0.1, 0.1),
-      PlanningStatus::OK
-    },
-    // Parallel: From right next to the gap
-    IntegrationTestParams{"parallel_from_next_to_gap",
-      side_gap_obstacles,
-      VehicleState(-2.0, 0.0, 0.0, 0, 0.0),
       VehicleState(-2.0, -1.5, 0.0, 0, 0.0),
       BicycleModelParameters(1.1, 1.1, 1.2, 0.1, 0.1),
       PlanningStatus::OK

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Boolean_set_operations_2.h>
 
 #include <common/types.hpp>
@@ -34,6 +33,7 @@
 #include <geometry/common_2d.hpp>
 #include <geometry/convex_hull.hpp>
 #include <geometry/hull_pockets.hpp>
+#include <geometry/bounding_box/rotating_calipers.hpp>
 #include <motion_common/motion_common.hpp>
 #include <chrono>
 #include <algorithm>
@@ -72,24 +72,28 @@ using ParkerModelParameters =
   autoware::motion::planning::parking_planner::BicycleModelParameters<float64_t>;
 using ParkingPolytope = autoware::motion::planning::parking_planner::Polytope2D<float64_t>;
 using ParkingPlanner = autoware::motion::planning::parking_planner::ParkingPlanner;
+using ParkingStatus = autoware::motion::planning::parking_planner::PlanningStatus;
 using ParkingTrajectory = autoware::motion::planning::parking_planner::Trajectory<float64_t>;
 using PlanningStatus = autoware::motion::planning::parking_planner::PlanningStatus;
 using ParkingPoint = autoware::motion::planning::parking_planner::Point2D<float64_t>;
 
 using autoware_auto_msgs::msg::TrajectoryPoint;
-using AutowareTrajectory = autoware_auto_msgs::msg::Trajectory;
+using autoware_auto_msgs::msg::BoundingBoxArray;
+using autoware_auto_msgs::msg::BoundingBox;
 
 using Point = geometry_msgs::msg::Point32;
 using Polygon = geometry_msgs::msg::Polygon;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 using autoware::common::geometry::convex_hull;
+using autoware::common::geometry::ccw;
 using autoware::common::geometry::hull_pockets;
 using autoware::common::geometry::minus_2d;
 using autoware::common::geometry::plus_2d;
 using autoware::common::geometry::norm_2d;
 using autoware::common::geometry::times_2d;
 using autoware::common::geometry::get_normal;
+using autoware::common::geometry::bounding_box::minimum_perimeter_bounding_box;
 
 
 using lanelet::Point3d;
@@ -177,6 +181,19 @@ void ParkingPlannerNode::init(
     model_parameters, optimization_weights,
     lower_state_bounds,
     upper_state_bounds, lower_command_bounds, upper_command_bounds);
+
+  m_debug_obstacles_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+    "parking_debug_obstacles",
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+
+  m_debug_trajectory_publisher = this->create_publisher<autoware_auto_msgs::msg::Trajectory>(
+    "parking_debug_trajectory",
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
+
+
+  m_debug_start_end_publisher = this->create_publisher<autoware_auto_msgs::msg::BoundingBoxArray>(
+    "parking_debug_start_end",
+    rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 }
 
 // --- Helpers for "execute_planning" ---
@@ -249,7 +266,7 @@ static typename std::vector<std::list<Point>> get_outer_boxes(
       are_points_equal(segment_vector[1], *convex_hull_start) ) )
     {
       auto orthogonal = get_normal(minus_2d(segment_vector[1], segment_vector[0]));
-      orthogonal = times_2d(orthogonal, norm_2d(orthogonal));
+      orthogonal = times_2d(orthogonal, -1.0f / norm_2d(orthogonal));
 
       const auto box = std::list<Point>{
         segment_vector[0],
@@ -315,15 +332,29 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
     drivable_area, drivable_area_hull.begin(),
     drivable_area_hull.end());
 
-  // - Compute parking polytopes from the convex hulls of the outer boxes as well as the pockets
+  // - Merge outer boxes and pocket hulls into one big list
   auto all_hulls = owned_pocket_hulls;
   all_hulls.insert(all_hulls.end(), outer_boxes.begin(), outer_boxes.end());
-  std::vector<ParkingPolytope> obstacles{};
 
+  // - Compute parking polytopes from the convex hulls of the outer boxes as well as the pockets
+  std::vector<ParkingPolytope> obstacles{};
   for (const auto & hull : all_hulls) {
     std::vector<ParkingPoint> parking_points{};
     for (auto it = hull.begin(); it != hull.end(); ++it) {
       parking_points.emplace_back(ParkingPoint(it->x, it->y));
+    }
+    // Parking polytopes need ccw, lanelet does clockwise
+    const auto point_p2g = [](const ParkingPoint & pt) {
+        Point out;
+        out.x = static_cast<float32_t>(std::get<0>(pt.get_coord()));
+        out.y = static_cast<float32_t>(std::get<1>(pt.get_coord()));
+        return out;
+      };
+    if (parking_points.size() >= 3 &&
+      ccw(point_p2g(parking_points[0]), point_p2g(parking_points[1]),
+      point_p2g(parking_points[2])) )
+    {
+      std::reverse(parking_points.begin(), parking_points.end());
     }
     obstacles.emplace_back(ParkingPolytope(parking_points));
   }
@@ -331,7 +362,7 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
   return obstacles;
 }
 
-static Trajectory convert_parking_planner_to_autoware_trajectory(
+static AutowareTrajectory convert_parking_planner_to_autoware_trajectory(
   const ParkingTrajectory & parking_trajectory)
 {
   // These constants come from parking_planner/configuration.hpp
@@ -341,6 +372,7 @@ static Trajectory convert_parking_planner_to_autoware_trajectory(
 
   // Create one trajectory point for each parking planner trajectory point.
   AutowareTrajectory trajectory{};
+  trajectory.header.frame_id = "map";
   for (const auto & step : parking_trajectory) {
     auto parking_state = step.get_state();
     auto parking_command = step.get_command();
@@ -399,11 +431,11 @@ HADMapService::Request ParkingPlannerNode::create_map_request(const Route & rout
   return request;
 }
 
+// TODO(s.me) this is getting a bit long, break up
 static Polygon3d coalesce_drivable_areas(
   const Route & route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
-  // Create a CGAL polygon we'll merge everything into
   CGAL_Polygon_with_holes drivable_area;
 
   for (const auto & map_primitive : route.primitives) {
@@ -411,59 +443,171 @@ static Polygon3d coalesce_drivable_areas(
     Polygon current_area_polygon{};
     if (lanelet_map_ptr->lineStringLayer.exists(map_primitive.id) ) {
       // The ID corresponds to a linestring, so the find() call below should not become null
-      // TODO(s.me) maybe check it anyway and throw if it happens
       LineString3d current_area = *lanelet_map_ptr->lineStringLayer.find(map_primitive.id);
       autoware::common::had_map_utils::lineString2Polygon(current_area, &current_area_polygon);
     } else if (lanelet_map_ptr->laneletLayer.exists(map_primitive.id)) {
       // The ID corresponds to a lanelet, so the find() call below should not become null
-      // TODO(s.me) maybe check it anyway and throw if it happens
       ConstLanelet current_area = *lanelet_map_ptr->laneletLayer.find(map_primitive.id);
       autoware::common::had_map_utils::lanelet2Polygon(current_area, &current_area_polygon);
     } else {
-      // This might happen if a primitive is on the route, but outside of the bounding
-      // box that we query the map for. Not sure how to deal with this at this point
-      // though.
+      // This might happen if a primitive is on the route, but outside of the bounding box that we
+      // query the map for. Not sure how to deal with this at this point though.
       std::cerr << "Error: primitive ID " << map_primitive.id << " not found, skipping" <<
         std::endl;
     }
 
-    // Convert the resulting polygon to a CGAL_Polygon (this should just do nothing
-    // if the polygon from above is empty)
-    CGAL_Polygon to_join{};
-    CGAL_Polygon_with_holes temporary_union;
-    for (const auto & area_point : current_area_polygon.points) {
-      to_join.push_back(CGAL_Point(area_point.x, area_point.y));
-    }
+    if (drivable_area.outer_boundary().size() > 0) {
+      // Convert current_area_polygon to a CGAL_Polygon and make sure the orientation is correct
+      CGAL_Polygon to_join{};
+      CGAL_Polygon_with_holes temporary_union;
+      const auto first_point = current_area_polygon.points.begin();
+      for (auto area_point_it =
+        current_area_polygon.points.begin();
+        // Stop if we run out of points, or if we encounter the first point again
+        area_point_it < current_area_polygon.points.end() &&
+        !(first_point != area_point_it && first_point->x == area_point_it->x &&
+        first_point->y == area_point_it->y);
+        area_point_it++)
+      {
+        to_join.push_back(CGAL_Point(area_point_it->x, area_point_it->y));
+      }
 
-    // Merge this CGAL polygon with the growing drivable_area. We need an intermediate
-    // merge result because as far as I can tell from the CGAL docs, I can't "join to"
-    // a polygon in-place with the join() interface.
-    const auto polygons_overlap = CGAL::join(drivable_area, to_join, temporary_union);
-    if (!polygons_overlap && !drivable_area.outer_boundary().is_empty()) {
-      // TODO(s.me) cancel here? Right now we just ignore that polygon
-      std::cerr << "Error: polygons in union do not overlap!" << std::endl;
+      if (to_join.is_clockwise_oriented() ) {
+        to_join.reverse_orientation();
+      }
+
+      // Merge this CGAL polygon with the growing drivable_area. We need an intermediate merge
+      // result because as far as I can tell from the CGAL docs, I can't "join to" a polygon
+      // in-place with the join() interface.
+      const auto polygons_overlap = CGAL::join(drivable_area, to_join, temporary_union);
+      if (!polygons_overlap && !drivable_area.outer_boundary().is_empty()) {
+        // TODO(s.me) cancel here? Right now we just ignore that polygon, if it doesn't
+        // overlap with the rest, there is no way to get to it anyway
+        std::cerr << "Error: polygons in union do not overlap!" << std::endl;
+      } else {
+        drivable_area = temporary_union;
+      }
     } else {
-      drivable_area = temporary_union;
+      // Otherwise, just set the current drivable area equal to the area to add to it, because
+      // CGAL seems to do "union(empty, non-empty) = empty" for some reason.
+      const auto first_point = current_area_polygon.points.begin();
+      for (auto area_point_it =
+        current_area_polygon.points.begin();
+        area_point_it < current_area_polygon.points.end() &&
+        // Stop if we run out of points, or if we encounter the first point again
+        !(first_point != area_point_it && first_point->x == area_point_it->x &&
+        first_point->y == area_point_it->y);
+        area_point_it++)
+      {
+        drivable_area.outer_boundary().push_back(CGAL_Point(area_point_it->x, area_point_it->y));
+      }
+      if (drivable_area.outer_boundary().is_clockwise_oriented() ) {
+        drivable_area.outer_boundary().reverse_orientation();
+      }
     }
   }
-
 
   // At this point, all the polygons from the route should be merged into drivable_area,
   // and we now need to turn this back into a lanelet polygon.
   std::vector<Point3d> lanelet_drivable_area_points{};
-  std::transform(
-    drivable_area.outer_boundary().vertices_begin(),
-    drivable_area.outer_boundary().vertices_end(),
-    lanelet_drivable_area_points.begin(),
-    [](const CGAL_Point & p) {
-      return Point3d(getId(), CGAL::to_double(p.x()), CGAL::to_double(p.y()), 0.0);
-    });
+  lanelet_drivable_area_points.reserve(drivable_area.outer_boundary().size());
+  for (auto p = drivable_area.outer_boundary().vertices_begin();
+    p != drivable_area.outer_boundary().vertices_end(); p++)
+  {
+    lanelet_drivable_area_points.emplace_back(
+      Point3d(
+        getId(), CGAL::to_double(p->x()),
+        CGAL::to_double(p->y()), 0.0));
+  }
   Polygon3d lanelet_drivable_area(getId(), lanelet_drivable_area_points);
-
   return lanelet_drivable_area;
 }
 
-Trajectory ParkingPlannerNode::plan_trajectory(
+void ParkingPlannerNode::debug_publish_obstacles(
+  const std::vector<ParkingPolytope> & obstacles)
+{
+  visualization_msgs::msg::MarkerArray map_marker_array;
+  rclcpp::Time marker_t = rclcpp::Time(0);
+
+  std_msgs::msg::ColorRGBA color_obstacles;
+  autoware::common::had_map_utils::setColor(&color_obstacles, 1.0f, 1.0f, 1.0f, 1.0f);
+
+  std::vector<LineString3d> all_obstacle_linestrings{};
+  for (const auto & the_obstacle : obstacles) {
+    LineString3d obstacle_linestring(getId(), {});
+    for (const auto & pt : the_obstacle.get_vertices() ) {
+      obstacle_linestring.push_back(Point3d(getId(), std::get<0>(pt.get_coord()),
+        std::get<1>(pt.get_coord()), 0.0));
+    }
+    all_obstacle_linestrings.push_back(obstacle_linestring);
+  }
+
+  m_debug_obstacles_publisher->publish(
+    autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
+      marker_t, "parking_debug_obstacles",
+      all_obstacle_linestrings,
+      color_obstacles));
+}
+
+void ParkingPlannerNode::debug_publish_start_and_end(
+  const ParkerVehicleState & start,
+  const ParkerVehicleState & end
+)
+{
+  const auto params = m_planner->get_parameters();
+  const auto bbox_from_state = [&params](const ParkerVehicleState & state) -> BoundingBox
+    {
+      // Shorthands to keep the formulas sane
+      const double h = state.get_heading();
+      const double xcog = state.get_x(), ycog = state.get_y();
+      const double lf = params.get_length_front() + params.get_front_overhang();
+      const double lr = params.get_length_rear() + params.get_rear_overhang();
+      const double wh = params.get_vehicle_width() * 0.5;
+      const double ch = std::cos(h), sh = std::sin(h);
+
+      // We need a list for the bounding box call later
+      std::list<Point> vehicle_corners;
+
+      { // Front left
+        auto p = Point{};
+        p.x = static_cast<float>(xcog + (lf * ch) - (wh * sh));
+        p.y = static_cast<float>(ycog + (lf * sh) + (wh * ch));
+        vehicle_corners.push_back(p);
+      }
+      { // Front right
+        auto p = Point{};
+        p.x = static_cast<float>(xcog + (lf * ch) + (wh * sh));
+        p.y = static_cast<float>(ycog + (lf * sh) - (wh * ch));
+        vehicle_corners.push_back(p);
+      }
+      { // Rear right
+        auto p = Point{};
+        p.x = static_cast<float>(xcog - (lr * ch) + (wh * sh));
+        p.y = static_cast<float>(ycog - (lr * sh) - (wh * ch));
+        vehicle_corners.push_back(p);
+      }
+      { // Rear right
+        auto p = Point{};
+        p.x = static_cast<float>(xcog - (lr * ch) - (wh * sh));
+        p.y = static_cast<float>(ycog - (lr * sh) + (wh * ch));
+        vehicle_corners.push_back(p);
+      }
+
+      return minimum_perimeter_bounding_box(vehicle_corners);
+    };
+
+  BoundingBoxArray bbox_array;
+  bbox_array.header.frame_id = "map";
+  bbox_array.boxes.resize(2);
+  bbox_array.boxes[0] = bbox_from_state(start);
+  bbox_array.boxes[0].vehicle_label = BoundingBox::CAR;
+  bbox_array.boxes[1] = bbox_from_state(end);
+  bbox_array.boxes[0].vehicle_label = BoundingBox::CAR;
+
+  m_debug_start_end_publisher->publish(bbox_array);
+}
+
+AutowareTrajectory ParkingPlannerNode::plan_trajectory(
   const Route & route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
@@ -474,16 +618,31 @@ Trajectory ParkingPlannerNode::plan_trajectory(
   // ---- Obtain "list of bounding obstacles" of drivable surface -----------------------
   const auto obstacles = convert_drivable_area_to_obstacles(drivable_area);
 
+  // - Debugging: publish the obstacles as marker arrays for inspection
+  this->debug_publish_obstacles(obstacles);
+
   // ---- Call the actual planner with the inputs we've assembled -----------------------
   const auto start_trajectory_point = route.start_point;
   const auto goal_trajectory_point = route.goal_point;
   const auto starting_state = convert_trajectorypoint_to_vehiclestate(start_trajectory_point);
   const auto goal_state = convert_trajectorypoint_to_vehiclestate(goal_trajectory_point);
+
+  this->debug_publish_start_and_end(starting_state, goal_state);
+
   const auto planner_result = m_planner->plan(starting_state, goal_state, obstacles);
+  std::cout << "NLP solution took " << planner_result.get_nlp_iterations() << " iterations" <<
+    std::endl;
+
+  if (planner_result.get_status() == ParkingStatus::NLP_ERROR) {
+    return AutowareTrajectory{};
+  }
 
   // ---- Convert the trajectory to an autoware trajectory message ----------------------
   auto trajectory =
     convert_parking_planner_to_autoware_trajectory(planner_result.get_trajectory());
+
+  m_debug_trajectory_publisher->publish(trajectory);
+
   return trajectory;
 }
 
