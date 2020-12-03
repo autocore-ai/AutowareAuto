@@ -422,6 +422,8 @@ test_coverage:
   script:
     - vcs import < autoware.auto.$ROS_DISTRO.repos
     - './tools/coverage/coverage.sh -b -u'
+  after_script:
+    - colcon test-result --verbose
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
