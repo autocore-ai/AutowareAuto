@@ -42,8 +42,12 @@ LanePlannerNode::LanePlannerNode(const rclcpp::NodeOptions & node_options)
       declare_parameter("gaussian_smoother.standard_deviation").get<float64_t>()),
     static_cast<uint32_t>(declare_parameter("gaussian_smoother.kernel_size").get<uint64_t>())
   };
+  const lane_planner::LanePlannerConfig planner_config{
+    static_cast<float32_t>(
+      declare_parameter("lane_planner.trajectory_resolution").get<float64_t>())
+  };
 
-  m_planner = std::make_unique<lane_planner::LanePlanner>(vehicle_param, config);
+  m_planner = std::make_unique<lane_planner::LanePlanner>(vehicle_param, config, planner_config);
 }
 
 HADMapService::Request LanePlannerNode::create_map_request(const Route & route)

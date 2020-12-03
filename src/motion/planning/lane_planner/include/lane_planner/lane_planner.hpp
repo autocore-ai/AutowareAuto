@@ -69,13 +69,19 @@ LANE_PLANNER_PUBLIC float32_t calculate_curvature(
   const TrajectoryPoint & p1, const TrajectoryPoint & p2,
   const TrajectoryPoint & p3);
 
+struct LANE_PLANNER_PUBLIC LanePlannerConfig
+{
+  float32_t trajectory_resolution;
+};
+
 /// \brief A class for recording trajectories and replaying them as plans
 class LANE_PLANNER_PUBLIC LanePlanner
 {
 public:
   explicit LanePlanner(
     const VehicleConfig & vehicle_param,
-    const TrajectorySmootherConfig & config);
+    const TrajectorySmootherConfig & config,
+    const LanePlannerConfig & planner_config);
 
   Trajectory plan_trajectory(
     const autoware_auto_msgs::msg::Route & route,
@@ -83,6 +89,7 @@ public:
 
 private:
   VehicleConfig m_vehicle_param;
+  LanePlannerConfig m_planner_config;
 
   TrajectorySmoother m_trajectory_smoother;
 

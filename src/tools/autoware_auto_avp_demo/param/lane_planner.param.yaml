@@ -2,7 +2,7 @@
   ros__parameters:
     heading_weight: 0.1
     lane_planner:
-      trajectory_resolution: 2.0
+      trajectory_resolution: 0.5
     vehicle:
       cg_to_front_m: 1.0
       cg_to_rear_m: 1.0
@@ -14,5 +14,5 @@
       front_overhang_m: 0.5
       rear_overhang_m: 0.5
     gaussian_smoother:
-      standard_deviation: 1.0
-      kernel_size: 5
+      standard_deviation: 5.0
+      kernel_size: 3
