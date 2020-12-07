@@ -19,6 +19,7 @@
   <depend>lanelet2_global_planner</depend>
   <depend>motion_common</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
