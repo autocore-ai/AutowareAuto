@@ -360,7 +360,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /lidars/points_fused
+      Topic: /lidars/points_fused_viz
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -394,7 +394,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:

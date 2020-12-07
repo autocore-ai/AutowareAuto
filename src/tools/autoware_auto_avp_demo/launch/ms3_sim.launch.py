@@ -117,7 +117,8 @@ def generate_launch_description():
         node_name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
         remappings=[
-            ("points_in", "/lidars/points_fused_downsampled")
+            ("points_in", "/lidars/points_fused_downsampled"),
+            ("observation_republish", "/lidars/points_fused_viz"),
         ]
     )
     mpc = Node(

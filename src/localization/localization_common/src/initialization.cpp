@@ -31,6 +31,8 @@ geometry_msgs::msg::TransformStamped BestEffortInitializer::extrapolate(
   (void) time_point;
   const auto ret = tf_graph.lookupTransform(target_frame, source_frame, tf2::TimePointZero);
   if (time_utils::from_message(ret.header.stamp) > time_point) {
+    // It's older than the oldest because if it was within [oldest_available, newest_available]
+    // we wouldn't be in this function.
     throw std::domain_error(
             "BestEffortInitializer: Backwards extrapolation is not supported."
             "Initialization timepoint is older than the oldest available "

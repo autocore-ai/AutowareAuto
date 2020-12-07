@@ -283,7 +283,8 @@ private:
       /////////////////////////////////////////////////
       // TODO(yunus.caliskan): Remove in #425
       // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
-      auto & tf = m_init_hack_transform.transform;
+      geometry_msgs::msg::TransformStamped init_hack_transform;
+      auto & tf = init_hack_transform.transform;
       tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
       tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
       tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
@@ -291,9 +292,11 @@ private:
       tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
       tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
       tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
-      m_init_hack_transform.header.frame_id = "map";
-      m_init_hack_transform.child_frame_id = "odom";
-      m_use_hack = true;  // On this constructor that is used by the executable,
+      init_hack_transform.header.frame_id = "map";
+      init_hack_transform.child_frame_id = "base_link";
+      m_external_pose = init_hack_transform;
+      m_external_pose_available = true;
+      m_use_hack = true;
       // we currently need the hack for the AVP demo MS2.
       ////////////////////////////////////////////////////
     }
@@ -307,47 +310,62 @@ private:
   void observation_callback(typename ObservationMsgT::ConstSharedPtr msg_ptr)
   {
     check_localizer();
-    if (m_localizer_ptr->map_valid()) {
-      try {
-        const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
-        const auto & observation_frame = get_frame_id(*msg_ptr);
-        const auto & map_frame = m_localizer_ptr->map_frame_id();
-
-        ////////////////////////////////////////////////////////
-        // TODO(yunus.caliskan): remove in #425
-        if (m_use_hack && !m_hack_initialized) {
-          check_and_execute_hack(get_stamp(*msg_ptr));
-        }
-        /////////////////////////////////////////////////////////
-
-        const auto initial_guess =
-          m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
-
-        m_hack_initialized = true;  // Only after a successful lookup, disable the hack.
-
-        PoseWithCovarianceStamped pose_out;
-        const auto summary =
-          m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, pose_out);
-        if (validate_output(summary, pose_out, initial_guess)) {
-          m_pose_publisher->publish(pose_out);
-          // This is to be used when no state estimator or alternative source of
-          // localization is available.
-          if (m_tf_publisher) {
-            publish_tf(pose_out);
-          }
-          handle_registration_summary(summary);
-        } else {
-          on_invalid_output(pose_out);
-        }
-      } catch (...) {
-        // TODO(mitsudome-r) remove this hack in #458
-        if (m_tf_publisher && m_use_hack) {
-          republish_tf(get_stamp(*msg_ptr));
-        }
-        on_bad_registration(std::current_exception());
-      }
-    } else {
+    if (!m_localizer_ptr->map_valid()) {
       on_observation_with_invalid_map(msg_ptr);
+      return;
+    }
+
+    const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
+    const auto & observation_frame = get_frame_id(*msg_ptr);
+    const auto & map_frame = m_localizer_ptr->map_frame_id();
+
+    try {
+      geometry_msgs::msg::TransformStamped initial_guess;
+      if (m_external_pose_available) {
+        // If someone set a transform and then requests a different transform, that's an error
+        if (m_external_pose.header.frame_id != map_frame ||
+          m_external_pose.child_frame_id != observation_frame)
+        {
+          throw std::runtime_error(
+                  "The pose initializer's set_external_pose() "
+                  "and guess() methods were called with different frames.");
+        }
+        m_external_pose_available = false;
+        initial_guess = m_external_pose;
+        initial_guess.header.stamp = get_stamp(*msg_ptr);
+      } else {
+        initial_guess =
+          m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
+      }
+
+      PoseWithCovarianceStamped pose_out;
+      const auto summary =
+        m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, pose_out);
+      if (validate_output(summary, pose_out, initial_guess)) {
+        m_pose_publisher->publish(pose_out);
+        // This is to be used when no state estimator or alternative source of
+        // localization is available.
+        if (m_tf_publisher) {
+          publish_tf(pose_out);
+          // republish point cloud so visualization has no issues with the timestamp
+          // being too new (no transform yet). Reset the timestamp to zero so visualization
+          // is not bothered if odom->base_link transformation is available
+          // only at different time stamps.
+          auto msg = *msg_ptr;
+          msg.header.stamp = time_utils::to_message(tf2::TimePointZero);
+          m_obs_republisher->publish(msg);
+        }
+
+        handle_registration_summary(summary);
+      } else {
+        on_invalid_output(pose_out);
+      }
+    } catch (...) {
+      // TODO(mitsudome-r) remove this hack in #458
+      if (m_tf_publisher && m_use_hack) {
+        republish_tf(get_stamp(*msg_ptr));
+      }
+      on_bad_registration(std::current_exception());
     }
   }
 
@@ -371,6 +389,15 @@ private:
       pose.orientation.w};
     tf2::Vector3 translation{pose.position.x, pose.position.y, pose.position.z};
     const tf2::Transform map_base_link_transform{rotation, translation};
+
+    // Wait for odom to base_link transform to be available
+    bool odom_to_bl_found = m_tf_buffer.canTransform("odom", "base_link", tf2::TimePointZero);
+
+    while (!odom_to_bl_found) {
+      RCLCPP_INFO(get_logger(), "Waiting for odom to base_link transform to be available.");
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      odom_to_bl_found = m_tf_buffer.canTransform("odom", "base_link", tf2::TimePointZero);
+    }
 
     geometry_msgs::msg::TransformStamped odom_tf;
     try {
@@ -426,21 +453,11 @@ private:
     }
   }
 
-  // TODO(yunus.caliskan): Remove this method in #425
-  void check_and_execute_hack(builtin_interfaces::msg::Time stamp)
-  {
-    const auto tp = time_utils::from_message(stamp);
-    if (!m_tf_buffer.canTransform("map", "odom", tp)) {
-      m_init_hack_transform.header.stamp = stamp;
-      m_tf_buffer.setTransform(m_init_hack_transform, "initialization");
-    }
-  }
-
   void initial_pose_callback(const typename PoseWithCovarianceStamped::ConstSharedPtr msg_ptr)
   {
+    // The child frame is implicitly base_link.
+    // Ensure the parent frame is the map frame
     const std::string & map_frame = m_localizer_ptr->map_frame_id();
-
-    //  project intial pose into map frame
     if (!m_tf_buffer.canTransform(map_frame, msg_ptr->header.frame_id, tf2::TimePointZero)) {
       RCLCPP_ERROR(
         get_logger(),
@@ -452,20 +469,30 @@ private:
       map_frame, msg_ptr->header.frame_id,
       tf2::TimePointZero);
 
-    // convert to PoseStamped Message to match with argument to doTransform()
-    geometry_msgs::msg::PoseStamped input_pose_stamped, transformed_pose_stamped;
+
+    geometry_msgs::msg::TransformStamped input_pose_stamped;
     input_pose_stamped.header = msg_ptr->header;
-    input_pose_stamped.pose = msg_ptr->pose.pose;
+    input_pose_stamped.child_frame_id = "base_link";
+    input_pose_stamped.transform.rotation = msg_ptr->pose.pose.orientation;
+    input_pose_stamped.transform.translation.x = msg_ptr->pose.pose.position.x;
+    input_pose_stamped.transform.translation.y = msg_ptr->pose.pose.position.y;
+    input_pose_stamped.transform.translation.z = msg_ptr->pose.pose.position.z;
+    geometry_msgs::msg::TransformStamped transformed_pose_stamped;
     tf2::doTransform(input_pose_stamped, transformed_pose_stamped, transform);
 
-    PoseWithCovarianceStamped transformed_pose = *msg_ptr;
-    transformed_pose.header.frame_id = map_frame;
-    transformed_pose.pose.pose = transformed_pose_stamped.pose;
+    // Note: The frame_id in the result is already the map_frame, no need to set it.
+    transformed_pose_stamped.child_frame_id = "base_link";
 
-    //  update tf with transformed initial pose
-    if (m_tf_publisher) {
-      publish_tf(transformed_pose);
-    }
+    // For future reference: We can't write this pose to /tf here.
+    // If this message comes from RViz and we're running in simulation, RViz
+    // and data coming from LGSVL (the observations) will sometimes have very
+    // large differences in their timestamps (e.g. RViz being 40s newer).
+    // If this pose was published to /tf, it would be seen as being way in the
+    // future and the localizer couldn't use it as its next initial pose.
+    // We'd need to know the current time before it can be published, and set the
+    // time in the header to a recent time.
+    m_external_pose = transformed_pose_stamped;
+    m_external_pose_available = true;
   }
 
   LocalizerBasePtr m_localizer_ptr;
@@ -476,14 +503,16 @@ private:
   typename rclcpp::Subscription<MapMsgT>::SharedPtr m_map_sub;
   typename rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr m_pose_publisher;
   typename rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_publisher{nullptr};
+  typename rclcpp::Publisher<ObservationMsgT>::SharedPtr m_obs_republisher{
+    create_publisher<ObservationMsgT>("observation_republish", 10)};
 
   // Receive updates from "/initialpose" (e.g. rviz2)
   typename rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr m_initial_pose_sub;
+  // Stores "/initialpose", the timestamp is not used/valid
+  geometry_msgs::msg::TransformStamped m_external_pose;
+  bool m_external_pose_available{false};
 
-  // TODO(yunus.caliskan): Remove hack variables below in #425
   bool m_use_hack{false};
-  bool m_hack_initialized{false};
-  geometry_msgs::msg::TransformStamped m_init_hack_transform;
 };
 }  // namespace localization_nodes
 }  // namespace localization
