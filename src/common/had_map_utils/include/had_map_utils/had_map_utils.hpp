@@ -31,10 +31,12 @@ namespace common
 namespace had_map_utils
 {
 
+using autoware::common::types::float64_t;
+
 void HAD_MAP_UTILS_PUBLIC overwriteLaneletsCenterline(
   lanelet::LaneletMapPtr lanelet_map, const autoware::common::types::bool8_t force_overwrite);
 lanelet::LineString3d HAD_MAP_UTILS_PUBLIC generateFineCenterline(
-  const lanelet::ConstLanelet & lanelet_obj, const autoware::common::types::float64_t resolution);
+  const lanelet::ConstLanelet & lanelet_obj, const float64_t resolution);
 
 }  // namespace had_map_utils
 }  // namespace common

@@ -88,7 +88,7 @@ void Lanelet2MapVisualizer::visualize_map_callback(
 
   visualization_msgs::msg::MarkerArray map_marker_array;
 
-  rclcpp::Time marker_t = this->now();
+  rclcpp::Time marker_t = rclcpp::Time(0);
   insertMarkerArray(
     map_marker_array,
     autoware::common::had_map_utils::laneletsBoundaryAsMarkerArray(
