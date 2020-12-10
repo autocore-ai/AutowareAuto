@@ -6,8 +6,6 @@ project(parking_planner_nodes)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(CGAL REQUIRED COMPONENTS Core)
-
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -20,9 +18,7 @@ set(PARKING_PLANNER_NODE_LIB parking_planner_node)
 ament_auto_add_library(${PARKING_PLANNER_NODE_LIB} SHARED
   src/parking_planner_nodes/parking_planner_node.cpp)
 target_include_directories(${PARKING_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-target_link_libraries(${PARKING_PLANNER_NODE_LIB} CGAL gmp mpfr)
 autoware_set_compile_options(${PARKING_PLANNER_NODE_LIB})
-target_link_libraries(${PARKING_PLANNER_NODE_LIB} CGAL::CGAL CGAL::CGAL_Core)
 
 rclcpp_components_register_node(${PARKING_PLANNER_NODE_LIB}
   PLUGIN "autoware::motion::planning::parking_planner_nodes::ParkingPlannerNode"

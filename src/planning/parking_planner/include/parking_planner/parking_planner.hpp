@@ -1,4 +1,4 @@
-// Copyright 2020 Embotech AG, Zurich, Switzerland. All rights reserved.
+// Copyright 2020 Embotech AG, Zurich, Switzerland. Arm Limited. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@
 #ifndef PARKING_PLANNER__PARKING_PLANNER_HPP_
 #define PARKING_PLANNER__PARKING_PLANNER_HPP_
 
+#include <autoware_auto_msgs/msg/route.hpp>
+#include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <common/types.hpp>
+#include <lanelet2_core/LaneletMap.h>
 #include <vector>
 
 #include "astar_path_planner.hpp"
@@ -46,6 +49,17 @@ enum class PlanningStatus
   /// There was an error running the nonlinear solver
   NLP_ERROR
 };
+
+PARKING_PLANNER_PUBLIC std::vector<Polytope2D<float64_t>> convert_drivable_area_to_obstacles(
+  const lanelet::Polygon3d & drivable_area);
+
+PARKING_PLANNER_PUBLIC autoware_auto_msgs::msg::Trajectory
+convert_parking_planner_to_autoware_trajectory(
+  const Trajectory<float64_t> & parking_trajectory);
+
+PARKING_PLANNER_PUBLIC lanelet::Polygon3d coalesce_drivable_areas(
+  const autoware_auto_msgs::msg::Route & route,
+  const lanelet::LaneletMapPtr & lanelet_map_ptr);
 
 /// \brief Results of a parking planning call
 class PARKING_PLANNER_PUBLIC PlanningResult

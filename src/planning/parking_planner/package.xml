@@ -12,7 +12,12 @@
 
     <depend>autoware_auto_msgs</depend>
     <depend>autoware_auto_common</depend>
+    <depend>autoware_auto_geometry</depend>
     <depend>casadi_vendor</depend>
+    <depend>cgal</depend>
+    <depend>had_map_utils</depend>
+    <depend>lanelet2_core</depend>
+    <depend>motion_common</depend>
 
     <build_depend>builtin_interfaces</build_depend>
 

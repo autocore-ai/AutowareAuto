@@ -1,4 +1,4 @@
-# Copyright 2020 Embotech AG
+# Copyright 2020-2021 Embotech AG, Arm Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ project(parking_planner)
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(casadi REQUIRED)
+find_package(CGAL REQUIRED COMPONENTS Core)
 ament_auto_find_build_dependencies()
 
 # Temporarily override build type - See #696
@@ -70,7 +71,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
     src/astar_path_planner.cpp
     src/nlp_path_planner.cpp
     src/parking_planner.cpp)
-target_link_libraries(${PROJECT_NAME} casadi)
+target_link_libraries(${PROJECT_NAME} casadi CGAL CGAL::CGAL CGAL::CGAL_Core gmp mpfr)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_PATH})
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_solver_generator)
 autoware_set_compile_options(${PROJECT_NAME})
