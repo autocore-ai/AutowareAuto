@@ -25,7 +25,7 @@ Autoware.Auto initially targets the following 2 use cases:
 1. Autonomous Valet Parking
 2. Autonomous Depot Maneuvering
 
-Uses cases are designed with respect to target Operational Design Domains (ODDs). Demonstrations for target ODDs can be found in \ref odd-demos.
+Uses cases are designed with respect to target Operational Design Domains (ODDs). Demonstrations for Autoware.Auto can be found in \ref demos.
 
 After the initial set of [milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones)
 are completed, Autoware.Auto will allow you to easily map a parking lot, create
@@ -60,7 +60,7 @@ If you are new to Autoware.Auto, begin at the installation documentation, then m
 
 - @subpage installation
 - @subpage tutorials
-- @subpage odd-demos
+- @subpage demos
 - @subpage contributors-guide
 - @subpage design
 

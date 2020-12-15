@@ -1,5 +1,7 @@
-ODD Demos {#odd-demos}
+Demos {#demos}
 =========
+
+# Operational Design Domain (ODD) Demos
 
 Autoware.Auto includes a growing number of demonstrations for target Operational Design Domains (ODDs), where an ODD is a formal definition of the set of conditions and circumstances an automated vehicle is designed to operate under (for reference, see [SAE J3016 section 3.22](https://www.sae.org/standards/content/j3016_201806/)).
 
@@ -12,3 +14,11 @@ The demonstration documentation assumes a working knowledge of Autoware.Auto.
 For articles on how to achieve specific tasks with Autoware.Auto, see our \ref tutorials.
 
 - @subpage avpdemo
+
+# General Demos
+
+The following pages describe how to run demonstrations which showcase specific pieces of functionality within the Autoware.Auto architecture.
+
+- @subpage test-behavior-planner
+- @subpage test-global-planner
+- @subpage test-ndt

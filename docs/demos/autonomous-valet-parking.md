@@ -61,18 +61,33 @@ If using your own carpark, you will need to provide a simulated world for it as 
 1. @ref installation-and-development-install-ade and install the @ref lgsvl.
 2. Follow the instructions on the @ref lgsvl page to configure a vehicle and simulation using the AutonomouStuff Parking Lot map (AS Parking Lot).
 3. Follow the instructions on the @ref lgsvl page to launch the simulator.
-4. In a new terminal, run the launch file for Milestone 2.
-The objectives and features of Milestone 2 can be found [here](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/24):
+4. In a new terminal, run the launch file for Milestone 3:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms2.launch.py
+ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
 ```
-
 
 # Setup and launching (hardware)
 
-The AVP demo does not currently support running on in-vehicle hardware.
+Using the hardware that is defined in the Physical Demo section above, the demonstration can be run on physical hardware only in parking lots for which a Lanelet2 map and lidar map are available.
+
+To run the demonstration on a physical vehicle using your own maps:
+
+1. Replace the paths to the `.pcd` and `.yaml` files for the PCD map in the `src/tools/autoware_auto_avp_demo/param/map_publisher_vehicle.param.yaml` with paths to your own map files.
+2. Replace the path to the `.osm` file for the Lanelet2 map in the `src/tools/autoware_auto_avp_demo/param/lanelet2_map_provider.param.yaml` with the path to your own map file.
+
+Whether using your own maps or the existing ones:
+
+1. @ref installation-and-development-install-ade
+2. In a new terminal, run the launch file for Milestoe 3:
+
+```console
+$ ade enter
+ade$ source /opt/AuotwareAuto/setup.bash
+ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
+```
 
 
 # Related packages
