@@ -71,5 +71,6 @@ target_include_directories(${PC_FUSION_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 # Ament Exporting
 ament_auto_package(
     INSTALL_TO_SHARE
+    launch
     param
 )

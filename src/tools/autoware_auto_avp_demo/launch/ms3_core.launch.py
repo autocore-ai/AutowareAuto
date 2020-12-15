@@ -14,6 +14,8 @@
 
 """Launch Modules for Milestone 3 of the AVP 2020 Demo."""
 
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import IncludeLaunchDescription
 from launch import LaunchContext
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -65,8 +67,6 @@ def generate_launch_description():
 
     point_cloud_fusion_pkg_prefix = get_package_share_directory(
         'point_cloud_fusion')
-    point_cloud_fusion_param_file = os.path.join(
-        point_cloud_fusion_pkg_prefix, 'param/vlp16_sim_lexus_pc_fusion.param.yaml')
 
     # Arguments
 
@@ -94,11 +94,6 @@ def generate_launch_description():
         'recordreplay_planner_param_file',
         default_value=recordreplay_planner_param_file,
         description='Path to config file for record/replay planner'
-    )
-    point_cloud_fusion_param = DeclareLaunchArgument(
-        'point_cloud_fusion_param_file',
-        default_value=point_cloud_fusion_param_file,
-        description='Path to config file for point cloud fusion'
     )
     lanelet2_map_provider_param = DeclareLaunchArgument(
         'lanelet2_map_provider_param_file',
@@ -138,16 +133,11 @@ def generate_launch_description():
         ]
     )
     # point cloud fusion runner to fuse front and rear lidar
-    point_cloud_fusion = Node(
-        package='point_cloud_fusion',
-        node_executable='pointcloud_fusion_node_exe',
-        node_namespace='lidars',
-        parameters=[LaunchConfiguration('point_cloud_fusion_param_file')],
-        remappings=[
-            ("output_topic", "points_fused"),
-            ("input_topic1", "/lidar_front/points_filtered"),
-            ("input_topic2", "/lidar_rear/points_filtered")
-        ]
+
+    point_cloud_fusion = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(point_cloud_fusion_pkg_prefix,
+                             'launch/vlp16_sim_lexus_pc_fusion.launch.py'))
     )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
@@ -279,7 +269,6 @@ def generate_launch_description():
         scan_downsampler_param,
         with_rviz_param,
         recordreplay_planner_param,
-        point_cloud_fusion_param,
         lanelet2_map_provider_param,
         lane_planner_param,
         parking_planner_param,
