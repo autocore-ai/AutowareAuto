@@ -2,11 +2,7 @@ repositories:
   src/external/autoware_auto_msgs:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git
-    version: 88a13256c224a709815054157f1389e258b57ba2
-  src/external/mpc:
-    type: git
-    url: https://gitlab.com/JWhitleyWork/mpc.git
-    version: foxy
+    version: 07b4d5a6f56f10dd59b7cd4f0542ccc9d2d72821
   src/external/rosauth:
     type: git
     url: https://github.com/GT-RAIL/rosauth.git

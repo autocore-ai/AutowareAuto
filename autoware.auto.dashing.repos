@@ -2,8 +2,4 @@ repositories:
   src/external/autoware_auto_msgs:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git
-    version: 3eccc7e40af7181d3355699a0814f203a1da057e
-  src/external/mpc:
-    type: git
-    url: https://gitlab.com/aninnymouse/mpc.git
-    version: eaa5908bdd987051a9dcd9c505f99bfd7f028547
+    version: 07b4d5a6f56f10dd59b7cd4f0542ccc9d2d72821

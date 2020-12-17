@@ -878,7 +878,8 @@ EXCLUDE                = docs/_build \
                          src/tools/autoware_auto_create_pkg/autoware_auto_create_pkg/template \
                          src/external \
                          src/common/mpark_variant_vendor/include \
-                         src/common/autoware_auto_common/include/common/filesystem.hpp
+                         src/common/autoware_auto_common/include/common/filesystem.hpp \
+                         src/control/mpc_controller/scripts
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
