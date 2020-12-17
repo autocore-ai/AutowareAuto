@@ -68,6 +68,10 @@ def generate_launch_description():
     point_cloud_fusion_pkg_prefix = get_package_share_directory(
         'point_cloud_fusion')
 
+    avp_web_interface_pkg_prefix = get_package_share_directory(
+        'avp_web_interface')
+    web_files_root = os.path.join(avp_web_interface_pkg_prefix, 'web')
+
     # Arguments
 
     euclidean_cluster_param = DeclareLaunchArgument(
@@ -246,22 +250,10 @@ def generate_launch_description():
         node_executable='rosbridge_websocket'
     )
 
-    web_files_root = os.path.join(os.environ["COLCON_PREFIX_PATH"],
-                                  "avp_web_interface", "share", "avp_web_interface", "web")
-    web_server = ExecuteProcess(cmd=["python3", "-m", "http.server", "8000"],
-                                cwd=web_files_root)
-
-    web_bridge = Node(
-        package='rosbridge_server',
-        node_name='rosbridge_server_node',
-        node_namespace='gui',
-        node_executable='rosbridge_websocket'
+    web_server = ExecuteProcess(
+      cmd=["python3", "-m", "http.server", "8000"],
+      cwd=web_files_root
     )
-
-    web_files_root = os.path.join(os.environ["COLCON_PREFIX_PATH"],
-                                  "avp_web_interface", "share", "avp_web_interface", "web")
-    web_server = ExecuteProcess(cmd=["python3", "-m", "http.server", "8000"],
-                                cwd=web_files_root)
 
     return LaunchDescription([
         euclidean_cluster_param,
