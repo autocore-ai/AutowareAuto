@@ -146,8 +146,7 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
   rclcpp::NodeOptions node_options;
   node_options.parameter_overrides(params);
 
-  ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(
-    node_options);
+  ray_gnd_ptr = std::make_shared<RayGroundClassifierCloudNode>(node_options);
 
   ray_gnd_validation_tester = std::make_shared<RayGroundPclValidationTester>();
 
@@ -177,45 +176,32 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
   // expected size = 4 bytes * 4 fields * cloud_size
   uint32_t expected_gnd_pcl_size = 4U * 4U * mini_cloud_size;
   uint32_t expected_nongnd_pcl_size = 0U;  // no points will be classified as nonground
-  uint32_t expected_num_of_pcl = 2U;
+  uint32_t expected_num_received = 2U;
 
   while (ray_gnd_validation_tester->m_pub_raw_points->get_subscription_count() < 1) {
     std::this_thread::sleep_for(std::chrono::milliseconds{1LL});
   }
 
-  // Try it several times in case there is a random issue with the
-  // parallelism to have more chances to catch it
-  for (uint32_t i = 0; i < 10; i++) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
+  ray_gnd_validation_tester->m_pub_raw_points->publish(*three_fields_pc);
+  ray_gnd_validation_tester->m_pub_raw_points->publish(*five_fields_pc);
 
-    while (ray_gnd_validation_tester->m_nonground_points.size() < (expected_num_of_pcl - 1) &&
-      ray_gnd_validation_tester->m_ground_points.size() < (expected_num_of_pcl - 1))
-    {
-      ray_gnd_validation_tester->m_pub_raw_points->publish(*five_fields_pc);
-      // wait for ray_gnd_filter to process 1st pc and publish data
-      std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-      exec.spin_some();  // for tester to collect data
+  // Wait up to 5s but return early if we can
+  for (auto iter = 0U; iter < 500U; ++iter) {
+    exec.spin_some();
+    const auto num_nonground_received = ray_gnd_validation_tester->m_nonground_points.size();
+    const auto num_ground_received = ray_gnd_validation_tester->m_ground_points.size();
+    if (num_ground_received + num_nonground_received == expected_num_received) {
+      break;
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-
-    while (ray_gnd_validation_tester->m_nonground_points.size() < expected_num_of_pcl &&
-      ray_gnd_validation_tester->m_ground_points.size() < expected_num_of_pcl)
-    {
-      ray_gnd_validation_tester->m_pub_raw_points->publish(*three_fields_pc);
-      // wait for ray_gnd_filter to process 2nd pc and publish data
-      std::this_thread::sleep_for(std::chrono::milliseconds(500LL));
-      exec.spin_some();  // for tester to collect data
-    }
-
-    // Check all published nonground / ground pointclouds have the expected sizes
-    EXPECT_TRUE(
-      ray_gnd_validation_tester->receive_correct_ground_pcls(
-        expected_gnd_pcl_size, expected_num_of_pcl));
-    EXPECT_TRUE(
-      ray_gnd_validation_tester->receive_correct_nonground_pcls(
-        expected_nongnd_pcl_size, expected_num_of_pcl));
-
-    ray_gnd_validation_tester->reset();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
+
+  // Check all published nonground / ground pointclouds have the expected sizes
+  EXPECT_TRUE(
+    ray_gnd_validation_tester->receive_correct_ground_pcls(
+      expected_gnd_pcl_size, expected_num_received));
+  EXPECT_TRUE(
+    ray_gnd_validation_tester->receive_correct_nonground_pcls(
+      expected_nongnd_pcl_size, expected_num_received));
+  rclcpp::shutdown();
 }
