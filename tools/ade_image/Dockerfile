@@ -20,7 +20,6 @@ deb http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME}-security main universe\n\
 " > /etc/apt/sources.list; \
     fi
 
-
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         gettext-base \
@@ -93,6 +92,12 @@ ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/master/nvidia_icd.jso
 RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
 
 # ===================== END OF CLEAN UP ZONE ===================== #
+
+# Do full package upgrade as last step
+# to avoid disrupting layer caching
+RUN apt-get update && \
+    apt-get -y dist-upgrade && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY env.sh /etc/profile.d/ade_env.sh
 COPY gitconfig /etc/gitconfig
