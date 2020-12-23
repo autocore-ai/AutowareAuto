@@ -1,5 +1,5 @@
-Installation {#installation}
-============
+Installation with ADE{#installation-ade}
+=====================
 
 [TOC]
 
@@ -62,7 +62,7 @@ $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 # How to build {#installation-and-development-how-to-build}
 
 ```
-$ ade start --update --enter 
+$ ade start --update --enter
 ade$ cd AutowareAuto
 ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ade$ colcon build
