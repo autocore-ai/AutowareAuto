@@ -190,7 +190,9 @@ TEST(ray_ground_classifier_pcl_validation, filter_test)
     exec.spin_some();
     const auto num_nonground_received = ray_gnd_validation_tester->m_nonground_points.size();
     const auto num_ground_received = ray_gnd_validation_tester->m_ground_points.size();
-    if (num_ground_received + num_nonground_received == expected_num_received) {
+    if (num_ground_received == expected_num_received &&
+      num_nonground_received == expected_num_received)
+    {
       break;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
