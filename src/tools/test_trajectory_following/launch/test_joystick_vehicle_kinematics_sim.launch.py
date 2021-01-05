@@ -59,7 +59,7 @@ def generate_launch_description():
 
     joy_translator = Node(
         package='joystick_vehicle_interface',
-        node_executable='joystick_vehicle_interface_exe',
+        node_executable='joystick_vehicle_interface_node_exe',
         parameters=[LaunchConfiguration('joy_translator_param_file')],
         remappings=[
             ('vehicle_command', '/vehicle/vehicle_command')

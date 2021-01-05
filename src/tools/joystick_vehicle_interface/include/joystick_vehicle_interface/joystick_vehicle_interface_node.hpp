@@ -93,19 +93,7 @@ public:
   static constexpr AxisValue DEFAULT_OFFSET = 0.0F;
   static constexpr AxisValue VELOCITY_INCREMENT = 1.0F;
   /// ROS 2 parameter constructor
-  JoystickVehicleInterfaceNode(const std::string & node_name, const std::string & node_namespace);
-  /// Explicit constructor
-  JoystickVehicleInterfaceNode(
-    const std::string & node_name,
-    const std::string & node_namespace,
-    const std::string & control_command,
-    const std::string & state_command_topic,
-    const std::string & joy_topic,
-    const bool8_t & recordreplay_command_enabled,
-    const AxisMap & axis_map,
-    const AxisScaleMap & axis_scale_map,
-    const AxisScaleMap & axis_offset_map,
-    const ButtonMap & button_map);
+  explicit JoystickVehicleInterfaceNode(const rclcpp::NodeOptions & node_options);
 
 private:
   JOYSTICK_VEHICLE_INTERFACE_LOCAL void init(

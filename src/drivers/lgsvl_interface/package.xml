@@ -26,8 +26,6 @@
   <depend>time_utils</depend>
 
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>joy</exec_depend>
-  <exec_depend>joystick_vehicle_interface</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

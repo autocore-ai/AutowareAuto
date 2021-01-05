@@ -56,6 +56,7 @@ def generate_launch_description():
     lgsvl_interface = Node(
         package='lgsvl_interface',
         node_executable='lgsvl_interface_exe',
+        node_namespace='vehicle',
         output='screen',
 
         parameters=[

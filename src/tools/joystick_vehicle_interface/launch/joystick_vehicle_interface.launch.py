@@ -57,7 +57,7 @@ def generate_launch_description():
     # joystick translator node
     joy_translator = launch_ros.actions.Node(
         package='joystick_vehicle_interface',
-        node_executable='joystick_vehicle_interface_exe',
+        node_executable='joystick_vehicle_interface_node_exe',
         output='screen',
         parameters=[
             LaunchConfiguration('joy_translator_param'),

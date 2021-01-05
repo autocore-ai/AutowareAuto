@@ -14,11 +14,15 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 # Node library
-ament_auto_add_library(joystick_vehicle_interface_node src/joystick_vehicle_interface_node.cpp)
-autoware_set_compile_options(joystick_vehicle_interface_node)
+set(JOYSTICK_VEHICLE_INTERFACE_LIB_NODE joystick_vehicle_interface_node)
+ament_auto_add_library(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE} SHARED src/joystick_vehicle_interface_node.cpp)
+autoware_set_compile_options(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE})
+
 # Node executable
-ament_auto_add_executable(joystick_vehicle_interface_exe src/joystick_vehicle_interface_main.cpp)
-autoware_set_compile_options(joystick_vehicle_interface_exe)
+rclcpp_components_register_node(${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE}
+  PLUGIN "joystick_vehicle_interface::JoystickVehicleInterfaceNode"
+  EXECUTABLE ${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE}_exe
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

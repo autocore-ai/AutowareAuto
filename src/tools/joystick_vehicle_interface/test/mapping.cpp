@@ -22,9 +22,11 @@
 #include <chrono>
 #include <cmath>
 #include <limits>
+#include <map>
 #include <memory>
 #include <string>
 #include <thread>
+#include <vector>
 
 using joystick_vehicle_interface::Axes;
 using joystick_vehicle_interface::Buttons;
@@ -58,6 +60,19 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
+
+  template<typename T, typename K, typename V>
+  void add_map_value_to_parameters(
+    std::vector<rclcpp::Parameter> & params,
+    const std::string & parameter_key,
+    const std::map<K, V> & map,
+    const K & map_key)
+  {
+    auto && it = map.find(map_key);
+    if (it != map.end()) {
+      params.emplace_back(parameter_key, static_cast<T>(map.at(map_key)));
+    }
+  }
 };  // class joy_vi_test
 
 template<typename T>
@@ -82,22 +97,19 @@ TEST_P(joy_vi_test, basic_mapping)
     (PubType::HighLevel == param.pub_type) ? "high_level" :
     (PubType::Raw == param.pub_type) ? "raw" :
     (PubType::Basic == param.pub_type) ? "basic" : "null";
-  constexpr auto state_command_topic = "test_state_command_topic";
-  constexpr auto joy_topic = "test_joy_topic";
-  constexpr auto recordreplay_command_topic = "recordreplay_cmd";
   const bool recordreplay_command_enabled = true;
 
   const auto test_nd = std::make_shared<rclcpp::Node>("test_joystick_vehicle_interface_talker");
   const auto qos = rclcpp::SensorDataQoS{};
-  const auto joy_pub = test_nd->create_publisher<sensor_msgs::msg::Joy>(joy_topic, qos);
+  const auto joy_pub = test_nd->create_publisher<sensor_msgs::msg::Joy>("joy", qos);
   SubAndMsg<autoware_auto_msgs::msg::RawControlCommand>
   raw{*test_nd, (control_command == "raw") ? "raw_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::HighLevelControlCommand>
   high_level{*test_nd, (control_command == "high_level") ? "high_level_command" : "null"};
   SubAndMsg<autoware_auto_msgs::msg::VehicleControlCommand>
   basic{*test_nd, (control_command == "basic") ? "basic_command" : "null"};
-  SubAndMsg<autoware_auto_msgs::msg::VehicleStateCommand> state{*test_nd, state_command_topic};
-  SubAndMsg<std_msgs::msg::UInt8> recordreplay{*test_nd, recordreplay_command_topic};
+  SubAndMsg<autoware_auto_msgs::msg::VehicleStateCommand> state{*test_nd, "state_command"};
+  SubAndMsg<std_msgs::msg::UInt8> recordreplay{*test_nd, "recordreplay_cmd"};
 
   ASSERT_NE(state.sub_, nullptr);
   switch (param.pub_type) {
@@ -112,17 +124,86 @@ TEST_P(joy_vi_test, basic_mapping)
       break;
   }
 
+  rclcpp::NodeOptions node_options;
+
+  std::vector<rclcpp::Parameter> params;
+  params.emplace_back("control_command", control_command);
+  params.emplace_back("recordreplay_command_enabled", recordreplay_command_enabled);
+
+  add_map_value_to_parameters<uint8_t>(params, "axes.throttle", param.axis_map, Axes::THROTTLE);
+  add_map_value_to_parameters<uint8_t>(params, "axes.brake", param.axis_map, Axes::BRAKE);
+  add_map_value_to_parameters<uint8_t>(params, "axes.front_steer", param.axis_map,
+    Axes::FRONT_STEER);
+  add_map_value_to_parameters<uint8_t>(params, "axes.rear_steer", param.axis_map, Axes::REAR_STEER);
+  add_map_value_to_parameters<uint8_t>(params, "axes.curvature", param.axis_map, Axes::CURVATURE);
+  add_map_value_to_parameters<uint8_t>(params, "axes.acceleration", param.axis_map,
+    Axes::ACCELERATION);
+
+  add_map_value_to_parameters<double>(params, "axis_scale.throttle", param.axis_scale_map,
+    Axes::THROTTLE);
+  add_map_value_to_parameters<double>(params, "axis_scale.brake", param.axis_scale_map,
+    Axes::BRAKE);
+  add_map_value_to_parameters<double>(params, "axis_scale.front_steer", param.axis_scale_map,
+    Axes::FRONT_STEER);
+  add_map_value_to_parameters<double>(params, "axis_scale.rear_steer", param.axis_scale_map,
+    Axes::REAR_STEER);
+  add_map_value_to_parameters<double>(params, "axis_scale.curvature", param.axis_scale_map,
+    Axes::CURVATURE);
+  add_map_value_to_parameters<double>(params, "axis_scale.acceleration", param.axis_scale_map,
+    Axes::ACCELERATION);
+
+  add_map_value_to_parameters<double>(params, "axis_offset.throttle", param.axis_offset_map,
+    Axes::THROTTLE);
+  add_map_value_to_parameters<double>(params, "axis_offset.brake", param.axis_offset_map,
+    Axes::BRAKE);
+  add_map_value_to_parameters<double>(params, "axis_offset.front_steer", param.axis_offset_map,
+    Axes::FRONT_STEER);
+  add_map_value_to_parameters<double>(params, "axis_offset.rear_steer", param.axis_offset_map,
+    Axes::REAR_STEER);
+  add_map_value_to_parameters<double>(params, "axis_offset.curvature", param.axis_offset_map,
+    Axes::CURVATURE);
+  add_map_value_to_parameters<double>(params, "axis_offset.acceleration", param.axis_offset_map,
+    Axes::ACCELERATION);
+
+  add_map_value_to_parameters<uint8_t>(params, "buttons.autonomous", param.button_map,
+    Buttons::AUTONOMOUS_TOGGLE);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.headlights", param.button_map,
+    Buttons::HEADLIGHTS_TOGGLE);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.wiper", param.button_map,
+    Buttons::WIPER_TOGGLE);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.gear_drive", param.button_map,
+    Buttons::GEAR_DRIVE);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.gear_reverse", param.button_map,
+    Buttons::GEAR_REVERSE);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.gear_park", param.button_map,
+    Buttons::GEAR_PARK);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.gear_neutral", param.button_map,
+    Buttons::GEAR_NEUTRAL);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.gear_low", param.button_map,
+    Buttons::GEAR_LOW);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.blinker_left", param.button_map,
+    Buttons::BLINKER_LEFT);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.blinker_right", param.button_map,
+    Buttons::BLINKER_RIGHT);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.blinker_hazard", param.button_map,
+    Buttons::BLINKER_HAZARD);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.velocity_up", param.button_map,
+    Buttons::VELOCITY_UP);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.velocity_down", param.button_map,
+    Buttons::VELOCITY_DOWN);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.recordreplay_start_record",
+    param.button_map,
+    Buttons::RECORDREPLAY_START_RECORD);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.recordreplay_start_replay",
+    param.button_map,
+    Buttons::RECORDREPLAY_START_REPLAY);
+  add_map_value_to_parameters<uint8_t>(params, "buttons.recordreplay_stop", param.button_map,
+    Buttons::RECORDREPLAY_STOP);
+
+  node_options.parameter_overrides(params);
+
   const auto nd = std::make_shared<JoystickVehicleInterfaceNode>(
-    "test_joystick_vehicle_interface",
-    "",
-    control_command,
-    state_command_topic,
-    joy_topic,
-    recordreplay_command_enabled,
-    param.axis_map,
-    param.axis_scale_map,
-    param.axis_offset_map,
-    param.button_map);
+    node_options);
 
   // make joy
   sensor_msgs::msg::Joy joy_msg{};

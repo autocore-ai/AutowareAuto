@@ -14,11 +14,11 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #include <common/types.hpp>
+#include <joystick_vehicle_interface/joystick_vehicle_interface_node.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include <string>
 #include <type_traits>
-
-#include "joystick_vehicle_interface/joystick_vehicle_interface_node.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
@@ -27,15 +27,12 @@ namespace joystick_vehicle_interface
 {
 
 JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
-  const std::string & node_name,
-  const std::string & node_namespace)
-: Node{node_name, node_namespace}
+  const rclcpp::NodeOptions & node_options)
+: Node{"joystick_vehicle_interface", node_options}
 {
   // topics
-  const auto joy_topic = "joy";
   const auto control_command =
     declare_parameter("control_command").get<std::string>();
-  const auto state_command_topic = "state_command";
   const bool recordreplay_command_enabled =
     declare_parameter("recordreplay_command_enabled").get<bool8_t>();
 
@@ -92,72 +89,25 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(button_map, Buttons::RECORDREPLAY_START_RECORD, "buttons.recordreplay_start_record");
   check_set(button_map, Buttons::RECORDREPLAY_START_REPLAY, "buttons.recordreplay_start_replay");
   check_set(button_map, Buttons::RECORDREPLAY_STOP, "buttons.recordreplay_stop");
-  // init
-  init(
-    control_command,
-    state_command_topic,
-    joy_topic,
-    recordreplay_command_enabled,
-    axis_map,
-    axis_scale_map,
-    axis_offset_map,
-    button_map);
-}
 
-////////////////////////////////////////////////////////////////////////////////
-JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
-  const std::string & node_name,
-  const std::string & node_namespace,
-  const std::string & control_command,
-  const std::string & state_command_topic,
-  const std::string & joy_topic,
-  const bool8_t & recordreplay_command_enabled,
-  const AxisMap & axis_map,
-  const AxisScaleMap & axis_scale_map,
-  const AxisScaleMap & axis_offset_map,
-  const ButtonMap & button_map)
-: Node{node_name, node_namespace}
-{
-  init(
-    control_command,
-    state_command_topic,
-    joy_topic,
-    recordreplay_command_enabled,
-    axis_map,
-    axis_scale_map,
-    axis_offset_map,
-    button_map);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void JoystickVehicleInterfaceNode::init(
-  const std::string & control_command,
-  const std::string & state_command_topic,
-  const std::string & joy_topic,
-  const bool & recordreplay_command_enabled,
-  const AxisMap & axis_map,
-  const AxisScaleMap & axis_scale_map,
-  const AxisScaleMap & axis_offset_map,
-  const ButtonMap & button_map)
-{
-  const auto qos = rclcpp::QoS{10U}.reliable().durability_volatile();
   // Control commands
   if (control_command == "high_level") {
-    m_cmd_pub = create_publisher<HighLevelControl>("high_level_command", qos);
+    m_cmd_pub = create_publisher<HighLevelControl>("high_level_command",
+        rclcpp::QoS{10U}.reliable().durability_volatile());
   } else if (control_command == "raw") {
-    m_cmd_pub = create_publisher<RawControl>("raw_command", qos);
+    m_cmd_pub = create_publisher<RawControl>("raw_command",
+        rclcpp::QoS{10U}.reliable().durability_volatile());
   } else if (control_command == "basic") {
-    m_cmd_pub = create_publisher<BasicControl>("basic_command", qos);
+    m_cmd_pub = create_publisher<BasicControl>("basic_command",
+        rclcpp::QoS{10U}.reliable().durability_volatile());
   } else {
     throw std::domain_error
           {"JoystickVehicleInterface does not support " + control_command + "command control mode"};
   }
   // State commands
-  if (state_command_topic.empty()) {
-    throw std::domain_error{"JoystickVehicleInterface must have a state command topic specified"};
-  }
   m_state_cmd_pub =
-    create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>(state_command_topic, qos);
+    create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>("state_command",
+      rclcpp::QoS{10U}.reliable().durability_volatile());
 
   // Recordreplay command
   if (recordreplay_command_enabled) {
@@ -165,12 +115,8 @@ void JoystickVehicleInterfaceNode::init(
   }
 
   // Joystick
-  if (joy_topic.empty()) {
-    throw std::domain_error{"JoystickVehicleInterface must have a joystick topic specified"};
-  }
-  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>(
-    joy_topic, rclcpp::SensorDataQoS{},
-    [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
+  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::SensorDataQoS{},
+      [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
   // Maps
   m_axis_map = axis_map;
   m_axis_scale_map = axis_scale_map;
@@ -342,3 +288,5 @@ bool8_t JoystickVehicleInterfaceNode::handle_active_button(Buttons button)
 }
 
 }  // namespace joystick_vehicle_interface
+
+RCLCPP_COMPONENTS_REGISTER_NODE(joystick_vehicle_interface::JoystickVehicleInterfaceNode)
