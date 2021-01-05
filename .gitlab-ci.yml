@@ -344,22 +344,6 @@ build_arm64_foxy:
   needs:
     - job: ade_arm64_foxy
 
-build_coverage:
-  stage: build
-  image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
-  script:
-    - vcs import < autoware.auto.$ROS_DISTRO.repos
-    - './tools/coverage/coverage.sh -t -u'
-  artifacts:
-    name: "$CI_JOB_NAME"
-    paths:
-      - build
-      - install
-      - lcov.base
-      - log/latest_lcov_stdout.logs
-  needs:
-    - ade_amd64_dashing
-
 test_amd64_dashing:
   variables:
     ARCH: amd64
@@ -416,12 +400,12 @@ test_arm64_foxy:
     - build_arm64_foxy
   allow_failure: true
 
-test_coverage:
+coverage:
   stage: test
   image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
   script:
     - vcs import < autoware.auto.$ROS_DISTRO.repos
-    - './tools/coverage/coverage.sh -b -u'
+    - './tools/coverage/coverage.sh -u'
   after_script:
     - colcon test-result --verbose
   artifacts:
@@ -431,7 +415,7 @@ test_coverage:
       - log
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
   needs:
-    - build_coverage
+    - ade_amd64_dashing
 
 docs:
   stage: build
@@ -458,7 +442,7 @@ pages:
   only:
     - master
   needs:
-    - test_coverage
+    - coverage
     - docs
 
 volume_amd64_dashing:
