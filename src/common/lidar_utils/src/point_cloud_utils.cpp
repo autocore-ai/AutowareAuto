@@ -345,6 +345,9 @@ DistanceFilter::DistanceFilter(float32_t min_radius, float32_t max_radius)
   }
 }
 
+// odr-used by comp::abs_gte
+constexpr float32_t DistanceFilter::FEPS;
+
 
 StaticTransformer::StaticTransformer(const geometry_msgs::msg::Transform & tf)
 {

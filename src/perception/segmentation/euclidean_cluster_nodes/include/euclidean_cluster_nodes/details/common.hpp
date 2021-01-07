@@ -19,8 +19,11 @@
 
 #ifndef EUCLIDEAN_CLUSTER_NODES__DETAILS__COMMON_HPP_
 #define EUCLIDEAN_CLUSTER_NODES__DETAILS__COMMON_HPP_
-#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
-#include <euclidean_cluster/euclidean_cluster.hpp>
+
+#include <vector>
+
+#include "autoware_auto_msgs/msg/bounding_box_array.hpp"
+#include "euclidean_cluster/euclidean_cluster.hpp"
 
 namespace autoware
 {

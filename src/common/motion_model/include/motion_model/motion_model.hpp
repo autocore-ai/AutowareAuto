@@ -43,7 +43,7 @@ using index_t = Eigen::Index;
 /// \brief Virtual interface for all motion models for use with prediction
 /// \tparam NumStates dimensionality of this model's state space
 template<int32_t NumStates>
-class MotionModel
+class MOTION_MODEL_PUBLIC MotionModel
 {
 public:
   /// \brief Do motion based on current state, store result somewhere else.

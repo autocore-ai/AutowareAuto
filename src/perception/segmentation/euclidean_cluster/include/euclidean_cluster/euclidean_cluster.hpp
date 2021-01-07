@@ -41,10 +41,10 @@ using autoware::common::types::bool8_t;
 /// \brief Simple point struct for memory mapping to and from PointCloud2 type
 struct PointXYZI
 {
-  float32_t x;
-  float32_t y;
-  float32_t z;
-  float32_t intensity;
+  float32_t x = 0.0f;
+  float32_t y = 0.0f;
+  float32_t z = 0.0f;
+  float32_t intensity = 0.0f;
 };  // struct PointXYZI
 
 /// \brief Helper point for which euclidean distance is computed only once
@@ -79,7 +79,7 @@ private:
   // This could instead be a pointer; I'm pretty sure ownership would work out, but I'm
   // uncomfortable doing it that way (12 vs 20 bytes)
   PointXYZI m_point;
-  uint32_t m_id;
+  uint32_t m_id = 0;
 };  // class PointXYZII
 
 using HashConfig = autoware::common::geometry::spatial_hash::Config2d;
@@ -200,8 +200,8 @@ private:
   /// \brief Internal struct instead of pair since I can guarantee some memory stuff
   struct PointXY
   {
-    float32_t x;
-    float32_t y;
+    float32_t x = 0.0f;
+    float32_t y = 0.0f;
   };  // struct PointXYZ
   /// \brief Do the clustering process, with no error checking
   EUCLIDEAN_CLUSTER_LOCAL void cluster_impl(Clusters & clusters);
