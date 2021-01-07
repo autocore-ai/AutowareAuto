@@ -76,6 +76,10 @@ if(BUILD_TESTING)
       test/velodyne_node_half_cloud.test.py
       TIMEOUT "120"
     )
+    add_ros_test(
+      test/velodyne_node_launch.test.py
+      TIMEOUT "30"
+    )
 endif()
 
 ## install stuff
