@@ -36,7 +36,6 @@ TEST(velodyne_node, constructor)
   const auto port = 9999U;
   const auto frame_id = "base_link";
   const auto cloud_size = 10000U;
-  const auto sensor_id = 0U;
   using autoware::drivers::velodyne_driver::Vlp16Translator;
   const auto config = Vlp16Translator::Config{600.0F};
 
@@ -90,7 +89,6 @@ TEST_P(velodyne_node_integration, test)
   const auto ip = "127.0.0.1";
   const auto port = 3555U;
   const auto frame_id = "base_link";
-  const auto sensor_id = 0U;
   const auto runtime = std::chrono::seconds(10);
   using autoware::drivers::velodyne_driver::Vlp16Translator;
   const auto config = Vlp16Translator::Config{600.0F};
@@ -153,9 +151,9 @@ TEST_P(velodyne_node_integration, test)
 INSTANTIATE_TEST_CASE_P(
   cloud,
   velodyne_node_integration,
-  ::testing::Values(VelodyneNodeTestParam{55000U, 30000U, 100.0F, true}));
+  ::testing::Values(VelodyneNodeTestParam{55000U, 30000U, 100.0F, true}), );
 
 INSTANTIATE_TEST_CASE_P(
   half_cloud,
   velodyne_node_integration,
-  ::testing::Values(VelodyneNodeTestParam{10700U, 10700U, 50.0F, true}));
+  ::testing::Values(VelodyneNodeTestParam{10700U, 10700U, 50.0F, true}), );

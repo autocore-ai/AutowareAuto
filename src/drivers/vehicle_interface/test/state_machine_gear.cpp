@@ -101,7 +101,7 @@ INSTANTIATE_TEST_CASE_P(
     GearVelocity{
   VSR::GEAR_REVERSE, VSC::GEAR_LOW, -velocity_threshold - 1.0F, VSC::GEAR_NO_COMMAND},
     GearVelocity{VSR::GEAR_REVERSE, VSC::GEAR_LOW, velocity_threshold, VSC::GEAR_LOW}
-  )
+  ),
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,5 +180,5 @@ INSTANTIATE_TEST_CASE_P(
     AutoGear{-0.2F, 3.0F, VSR::GEAR_REVERSE, VSC::GEAR_NO_COMMAND, VSC::GEAR_DRIVE},
     AutoGear{-0.0F, 3.0F, VSR::GEAR_REVERSE, VSC::GEAR_NO_COMMAND, VSC::GEAR_DRIVE}
     // TODO(c.ho) bad/inconsistent states
-  )
+  ),
 );

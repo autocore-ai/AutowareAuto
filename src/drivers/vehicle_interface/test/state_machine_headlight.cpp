@@ -79,7 +79,7 @@ INSTANTIATE_TEST_CASE_P(
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_OFF, VSC::HEADLIGHT_ON},
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_ON, VSC::HEADLIGHT_ON},
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH}
-  )
+  ),
 );
 
 class wipers_off_headlight_no_change : public wiper_headlight_state_machine
@@ -122,5 +122,5 @@ INSTANTIATE_TEST_CASE_P(
     WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
     WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
     WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH}
-  )
+  ),
 );

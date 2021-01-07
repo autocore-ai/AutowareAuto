@@ -97,5 +97,5 @@ INSTANTIATE_TEST_CASE_P(
       min_front_steer - std::numeric_limits<decltype(min_accel)>::epsilon(), false},
     CommandClamp{0.0F, min_front_steer - std::numeric_limits<decltype(min_front_steer)>::epsilon() -
       front_steer_threshold, true}
-  )
+  ),
 );

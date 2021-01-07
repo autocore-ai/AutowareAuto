@@ -158,7 +158,7 @@ INSTANTIATE_TEST_CASE_P(
       FrequencyTargets{FrequencyTarget::AccelCommand}},
     HighFrequency{0.0F, 0.3F, std::chrono::milliseconds{10LL}, 20U,
       FrequencyTargets{FrequencyTarget::SteerCommand}}
-  )
+  ),
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -284,7 +284,7 @@ INSTANTIATE_TEST_CASE_P(
   set__headlight(VSC::HEADLIGHT_OFF).set__gear(VSC::GEAR_LOW)
 }
     // TODO(c.ho) more combinatorial tests
-  )
+  ),
 );
 
 // TODO(c.ho) test cases for overriding a previous requested change
@@ -333,5 +333,5 @@ INSTANTIATE_TEST_CASE_P(
     // Negative
     TimeoutCommand{-10.0F, 3.0F},  // saturated case
     TimeoutCommand{-0.1F, 1.0F}  // Near stop case
-  )
+  ),
 );

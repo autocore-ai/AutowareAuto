@@ -123,7 +123,7 @@ INSTANTIATE_TEST_CASE_P(
   std::vector<State>{State::MODE, State::WIPER, State::BLINKER, State::GEAR, State::HEADLIGHT},
   21U
 }
-  )
+  ),
 );
 
 // TODO(c.ho) bad state report test cases...

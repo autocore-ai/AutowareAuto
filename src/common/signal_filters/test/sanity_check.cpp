@@ -56,7 +56,7 @@ using TestTypes = ::testing::Types<
   TypeParams<float64_t, std::chrono::system_clock>,
   TypeParams<float64_t, std::chrono::steady_clock>
 >;
-TYPED_TEST_CASE(typed_checks, TestTypes);
+TYPED_TEST_CASE(typed_checks, TestTypes, );
 
 TYPED_TEST(typed_checks, empty_factory)
 {
@@ -100,7 +100,7 @@ using BasicTypes = ::testing::Types<
   BasicParams<float64_t, std::chrono::system_clock, FilterType::LowPassFilter>,
   BasicParams<float64_t, std::chrono::steady_clock, FilterType::LowPassFilter>
 >;
-TYPED_TEST_CASE(filter_checks, BasicTypes);
+TYPED_TEST_CASE(filter_checks, BasicTypes, );
 
 TYPED_TEST(filter_checks, bad_factory)
 {
@@ -267,7 +267,7 @@ using SanityCheckTypes = ::testing::Types<
   SanityCheckParam<double, std::chrono::system_clock, FilterType::LowPassFilter, 1, 100, 1>,
   SanityCheckParam<double, std::chrono::steady_clock, FilterType::LowPassFilter, 1, 100, 1>
 >;
-TYPED_TEST_CASE(sanity_check, SanityCheckTypes);
+TYPED_TEST_CASE(sanity_check, SanityCheckTypes, );
 
 TYPED_TEST(sanity_check, basic)
 {
