@@ -98,8 +98,7 @@ void create_current_pose(
   float32_t heading,
   float32_t velocity,
   float32_t acceleration,
-  float32_t heading_rate,
-  std::string frame_id)
+  float32_t heading_rate)
 {
   current_stamp.state.x = x;
   current_stamp.state.y = y;
@@ -107,7 +106,7 @@ void create_current_pose(
   current_stamp.state.longitudinal_velocity_mps = velocity;
   current_stamp.state.acceleration_mps2 = acceleration;
   current_stamp.state.heading_rate_rps = heading_rate;
-  current_stamp.header.frame_id = "traj";  // frame_id;
+  current_stamp.header.frame_id = "traj";
   current_stamp.header.stamp = time_utils::to_message(std::chrono::system_clock::now());
 }
 
@@ -130,7 +129,7 @@ TEST_F(PurePursuitTest, simple)
   const float32_t dist_front_rear_wheels = cfg.get_distance_front_rear_wheel();
 
   create_traj(traj, size);
-  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, "pose1");
+  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
@@ -139,14 +138,14 @@ TEST_F(PurePursuitTest, simple)
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.0F * dist_front_rear_wheels));
 
-  create_current_pose(current_pose, 1.5F, 1.0F, 0.0F, 5.0F, 0.0F, 0.0F, "pose2");
+  create_current_pose(current_pose, 1.5F, 1.0F, 0.0F, 5.0F, 0.0F, 0.0F);
 
   command = controller.compute_command(current_pose);
 
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -21.0F / (pow(1.25F, 0.5F) * 2.0F));
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.6F * dist_front_rear_wheels));  // 1.25/2.0
 
-  create_current_pose(current_pose, 0.5F, 2.0F, 0.0F, 5.0F, 0.0F, 0.0F, "pose3");
+  create_current_pose(current_pose, 0.5F, 2.0F, 0.0F, 5.0F, 0.0F, 0.0F);
 
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
@@ -164,7 +163,7 @@ TEST_F(PurePursuitTest, reverse)
   const float32_t dist_front_rear_wheels = cfg.get_distance_front_rear_wheel();
 
   create_reverse_traj(traj, size);
-  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, "pose1");
+  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F);
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
@@ -173,7 +172,7 @@ TEST_F(PurePursuitTest, reverse)
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -atanf(1.0F * dist_front_rear_wheels));
 
-  create_current_pose(current_pose, -1.5F, -1.0F, 0.0F, -5.0F, 0.0F, 0.0F, "pose2");
+  create_current_pose(current_pose, -1.5F, -1.0F, 0.0F, -5.0F, 0.0F, 0.0F);
 
   command = controller.compute_command(current_pose);
 
@@ -183,13 +182,12 @@ TEST_F(PurePursuitTest, reverse)
 
   // heading error: -(7.0 / 4.0) * PI -> (1.0 / 4.0) * PI
   create_reverse_traj(traj, size);
-  create_current_pose(
-    current_pose, 0.0, 0.0F, PI, 1.0F, 0.0F, 0.0F, "pose2");
+  create_current_pose(current_pose, 0.0, 0.0F, PI, 1.0F, 0.0F, 0.0F);
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
   traj.points[1].heading = from_angle((3.0 * PI) / 4.0F);
-  create_current_pose(current_pose, -1.5F, -1.5F, PI, 1.0F, 0.0F, 0.0F, "pose2");
+  create_current_pose(current_pose, -1.5F, -1.5F, PI, 1.0F, 0.0F, 0.0F);
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
@@ -203,7 +201,7 @@ TEST_F(PurePursuitTest, interpolation)
   const float32_t dist_front_rear_wheels = cfg.get_distance_front_rear_wheel();
 
   create_traj(traj, size);
-  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, "pose1");
+  create_current_pose(current_pose, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
 
   EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
   controller.set_trajectory(traj);
@@ -216,11 +214,11 @@ TEST_F(PurePursuitTest, interpolation)
 
   TrajectoryPointStamped current_pose;
   create_current_pose(
-    current_pose, 1.5F, 1.0F, PI / 4.0F, 10.0F, 0.0F, 0.0F, "pose2");
+    current_pose, 1.5F, 1.0F, PI / 4.0F, 10.0F, 0.0F, 0.0F);
 
   command = controller.compute_command(current_pose);
 
-  create_current_pose(current_pose, 2.0F, 4.0F, 0.0F, 5.0F * powf(2.0F, 0.5F), 0.0F, 0.0F, "pose3");
+  create_current_pose(current_pose, 2.0F, 4.0F, 0.0F, 5.0F * powf(2.0F, 0.5F), 0.0F, 0.0F);
 
   command = controller.compute_command(current_pose);
 

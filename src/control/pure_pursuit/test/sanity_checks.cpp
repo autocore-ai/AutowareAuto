@@ -67,10 +67,11 @@ class sanity_checks_axis_aligned_straight
   : public sanity_checks, public ::testing::WithParamInterface<StraightTestParam> {};
 
 // Basic straight test case with easy to compute lookaheads, no longitudinal control
-//
-//      >--------------
-//                      \
-//      -----------------T---------->
+// Double slashes on the right to avoid -Wcomment warnings
+//                                         //
+//      >--------------                    //
+//                      \                  //
+//      -----------------T---------->      //
 TEST_P(sanity_checks_axis_aligned_straight, basic)
 {
   const auto x0 = 0.0F;
@@ -143,10 +144,11 @@ INSTANTIATE_TEST_CASE_P(
   ), );
 
 // Orthogonal orientation: easy to compute offset for
-//      __
-//     /  \
-//    |   |
-//    ^---T------->
+// Double slashes on the right to avoid -Wcomment warnings
+//      __             //
+//     /  \            //
+//    |   |            //
+//    ^---T------->    //
 class sanity_checks_orthogonal_orientation
   : public sanity_checks, public ::testing::WithParamInterface<StraightTestParam> {};
 
