@@ -108,10 +108,12 @@ stages:
       '
     - chmod -R og-w /opt/AutowareAuto
     - tar czf opt.tar.gz /opt/AutowareAuto
+    - grep -h -r -o -P "(?<=\<name\>).*(?=\<\/name\>)" $(find src/external -name package.xml) | sort >> external_deps.txt
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
       - build/
+      - external_deps.txt
       - opt.tar.gz
 
 .gen_deps_base: &gen_deps_base
@@ -136,6 +138,7 @@ stages:
     - 'colcon test
            --merge-install
            --install-base /opt/AutowareAuto
+           --packages-skip $(cat external_deps.txt)
            --return-code-on-test-failure
       '
     - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
@@ -151,7 +154,6 @@ stages:
     - cd /tmp/tmp_ws
     - colcon build --packages-select my_cool_pkg
     - colcon test --packages-select my_cool_pkg
-    - colcon test-result --verbose
     - cd -
 
     # prepare volume artifact

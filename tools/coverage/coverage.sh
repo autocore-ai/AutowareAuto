@@ -45,7 +45,8 @@ fi
 
 if [ ${SKIP_TEST} -eq 0 ]; then
   colcon test \
-    --return-code-on-test-failure
+    --return-code-on-test-failure \
+    --packages-skip $(grep -h -r -o -P '(?<=\<name\>).*(?=\<\/name\>)' $(find src/external -name package.xml) | sort)
 
   mv log/latest_lcov_stdout.logs log/latest/lcov_stdout.logs  # 'latest' will be the latest test job
   lcov --config-file .lcovrc --base-directory ${PWD} --capture --directory build -o lcov.test >> log/latest/lcov_stdout.logs
@@ -57,7 +58,6 @@ if [ ${SKIP_TEST} -eq 0 ]; then
     "${AA_PATH}/build/recordreplay_planner_actions/*" \
     "${AA_PATH}/install/*" \
     "${AA_PATH}/src/*/test/*" \
-    "${AA_PATH}/src/external/*" \
     "*/CMakeCCompilerId.c" \
     "*/CMakeCXXCompilerId.cpp" \
     "*_msgs/*" \
