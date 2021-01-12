@@ -81,6 +81,7 @@ INSTANTIATE_TEST_CASE_P(
   FixedLineSearch(0.2),
   TerminationType::CONVERGENCE
 }
+    // cppcheck-suppress syntaxError
   ),
 );
 

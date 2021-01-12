@@ -92,22 +92,26 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
 
   // Control commands
   if (control_command == "high_level") {
-    m_cmd_pub = create_publisher<HighLevelControl>("high_level_command",
-        rclcpp::QoS{10U}.reliable().durability_volatile());
+    m_cmd_pub = create_publisher<HighLevelControl>(
+      "high_level_command",
+      rclcpp::QoS{10U}.reliable().durability_volatile());
   } else if (control_command == "raw") {
-    m_cmd_pub = create_publisher<RawControl>("raw_command",
-        rclcpp::QoS{10U}.reliable().durability_volatile());
+    m_cmd_pub = create_publisher<RawControl>(
+      "raw_command",
+      rclcpp::QoS{10U}.reliable().durability_volatile());
   } else if (control_command == "basic") {
-    m_cmd_pub = create_publisher<BasicControl>("basic_command",
-        rclcpp::QoS{10U}.reliable().durability_volatile());
+    m_cmd_pub = create_publisher<BasicControl>(
+      "basic_command",
+      rclcpp::QoS{10U}.reliable().durability_volatile());
   } else {
     throw std::domain_error
           {"JoystickVehicleInterface does not support " + control_command + "command control mode"};
   }
   // State commands
   m_state_cmd_pub =
-    create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>("state_command",
-      rclcpp::QoS{10U}.reliable().durability_volatile());
+    create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>(
+    "state_command",
+    rclcpp::QoS{10U}.reliable().durability_volatile());
 
   // Recordreplay command
   if (recordreplay_command_enabled) {
@@ -115,8 +119,9 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   }
 
   // Joystick
-  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>("joy", rclcpp::SensorDataQoS{},
-      [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
+  m_joy_sub = create_subscription<sensor_msgs::msg::Joy>(
+    "joy", rclcpp::SensorDataQoS{},
+    [this](const sensor_msgs::msg::Joy::SharedPtr msg) {on_joy(msg);});
   // Maps
   m_axis_map = axis_map;
   m_axis_scale_map = axis_scale_map;

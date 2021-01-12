@@ -56,6 +56,7 @@ using TestTypes = ::testing::Types<
   TypeParams<float64_t, std::chrono::system_clock>,
   TypeParams<float64_t, std::chrono::steady_clock>
 >;
+// cppcheck-suppress syntaxError
 TYPED_TEST_CASE(typed_checks, TestTypes, );
 
 TYPED_TEST(typed_checks, empty_factory)

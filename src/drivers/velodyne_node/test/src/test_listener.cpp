@@ -76,10 +76,10 @@ public:
       [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr msg) -> void
       {
         const auto t_now = this->now();
-        std::cout << "Got vlp, sz = " << msg->width << " time diff = " <<
-        (t_now - msg->header.stamp).nanoseconds() / 1.0E6F <<
-          " ms, Time since last message = " << (t_now - this->m_last_receive).nanoseconds() /
-          1.0E6F << " ms\n";
+        std::cout << "Got vlp, sz = " << msg->width << " time diff = ";
+        std::cout << (t_now - msg->header.stamp).nanoseconds() / 1.0E6F;
+        std::cout << " ms, Time since last message = ";
+        std::cout << (t_now - this->m_last_receive).nanoseconds() / 1.0E6F << " ms\n";
         this->m_last_receive = t_now;
         std::flush(std::cout);
       };

@@ -79,6 +79,7 @@ INSTANTIATE_TEST_CASE_P(
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_OFF, VSC::HEADLIGHT_ON},
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_ON, VSC::HEADLIGHT_ON},
     WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH}
+    // cppcheck-suppress syntaxError
   ),
 );
 

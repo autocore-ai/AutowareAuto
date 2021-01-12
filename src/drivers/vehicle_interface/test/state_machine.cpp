@@ -158,6 +158,7 @@ INSTANTIATE_TEST_CASE_P(
       FrequencyTargets{FrequencyTarget::AccelCommand}},
     HighFrequency{0.0F, 0.3F, std::chrono::milliseconds{10LL}, 20U,
       FrequencyTargets{FrequencyTarget::SteerCommand}}
+    // cppcheck-suppress syntaxError
   ),
 );
 
