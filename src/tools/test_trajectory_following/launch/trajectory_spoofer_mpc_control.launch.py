@@ -109,8 +109,8 @@ def generate_launch_description():
         prefix="bash -c 'sleep 1.0; $0 $@'",
     )
 
-    mpc_controller_node = Node(
-        package="mpc_controller_node",
+    mpc_controller_nodes = Node(
+        package="mpc_controller_nodes",
         node_executable="mpc_controller_node_exe",
         node_name="mpc_controller",
         node_namespace='control',
@@ -182,7 +182,7 @@ def generate_launch_description():
         trajectory_spoofer_param,
         trajectory_spoofer_node,
         mpc_controller_param,
-        mpc_controller_node,
+        mpc_controller_nodes,
         lgsvl_interface_param,
         lgsvl_interface_node,
         controller_testing_param,

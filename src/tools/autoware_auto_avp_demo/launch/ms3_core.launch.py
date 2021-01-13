@@ -171,7 +171,7 @@ def generate_launch_description():
         ]
     )
     recordreplay_planner = Node(
-        package='recordreplay_planner_node',
+        package='recordreplay_planner_nodes',
         node_executable='recordreplay_planner_node_exe',
         node_name='recordreplay_planner',
         node_namespace='planning',
@@ -194,7 +194,7 @@ def generate_launch_description():
         node_namespace='had_maps'
     )
     global_planner = Node(
-        package='lanelet2_global_planner_node',
+        package='lanelet2_global_planner_nodes',
         node_name='lanelet2_global_planner_node',
         node_namespace='planning',
         node_executable='lanelet2_global_planner_node_exe',
@@ -202,7 +202,7 @@ def generate_launch_description():
                     ('vehicle_kinematic_state', '/vehicle/vehicle_kinematic_state')]
     )
     lane_planner = Node(
-        package='lane_planner_node',
+        package='lane_planner_nodes',
         node_name='lane_planner_node',
         node_namespace='planning',
         node_executable='lane_planner_node_exe',
@@ -210,7 +210,7 @@ def generate_launch_description():
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
     parking_planner = Node(
-        package='parking_planner_node',
+        package='parking_planner_nodes',
         node_name='parking_planner_node',
         node_namespace='planning',
         node_executable='parking_planner_node_exe',
@@ -218,7 +218,7 @@ def generate_launch_description():
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
     object_collision_estimator = Node(
-        package='object_collision_estimator_node',
+        package='object_collision_estimator_nodes',
         node_name='object_collision_estimator_node',
         node_namespace='planning',
         node_executable='object_collision_estimator_node_exe',
@@ -228,7 +228,7 @@ def generate_launch_description():
         ]
     )
     behavior_planner = Node(
-        package='behavior_planner_node',
+        package='behavior_planner_nodes',
         node_name='behavior_planner_node',
         node_namespace='planning',
         node_executable='behavior_planner_node_exe',

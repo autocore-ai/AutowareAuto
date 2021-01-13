@@ -148,7 +148,7 @@ def generate_launch_description():
         ]
     )
     mpc = Node(
-        package='mpc_controller_node',
+        package='mpc_controller_nodes',
         node_executable='mpc_controller_node_exe',
         node_name='mpc_controller',
         node_namespace='control',

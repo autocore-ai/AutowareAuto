@@ -17,6 +17,8 @@ While these guidelines could not possibly cover every naming scenario, they prov
 
 REP-144 [1] defines the ROS standard for package names and packages in Autoware.Auto must adhere to this standard.
 
+Additionally, it is a best practice to append `_nodes` suffix for packages which contain multiple ROS nodes.
+
 # TF Frames
 
 The high-level frames that are used across the stack are defined in the <a href="localization-design.html">localization-design</a> document.

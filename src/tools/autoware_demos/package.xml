@@ -9,7 +9,7 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <exec_depend>covariance_insertion_node</exec_depend>
+  <exec_depend>covariance_insertion_nodes</exec_depend>
   <exec_depend>euclidean_cluster_nodes</exec_depend>
   <exec_depend>lexus_rx_450h_description</exec_depend>
   <exec_depend>ndt_nodes</exec_depend>
@@ -18,8 +18,8 @@
   <exec_depend>point_cloud_fusion</exec_depend>
   <exec_depend>ray_ground_classifier_nodes</exec_depend>
   <exec_depend>rviz2</exec_depend>
-  <exec_depend>state_estimation_node</exec_depend>
-  <exec_depend>velodyne_node</exec_depend>
+  <exec_depend>state_estimation_nodes</exec_depend>
+  <exec_depend>velodyne_nodes</exec_depend>
   <exec_depend>voxel_grid_nodes</exec_depend>
 
   <export>

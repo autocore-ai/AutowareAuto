@@ -124,7 +124,7 @@ def generate_launch_description():
         ]
     )
     recordreplay_planner_path = get_share_file(
-        package_name='recordreplay_planner_node',
+        package_name='recordreplay_planner_nodes',
         file_name='launch/recordreplay_planner_node.launch.py')
     recordreplay_planner_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(recordreplay_planner_path)

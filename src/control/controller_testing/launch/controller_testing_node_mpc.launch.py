@@ -48,7 +48,7 @@ def generate_launch_description():
     )
     rviz_cfg_path = os.path.join(controller_testing_pkg_prefix, 'config/mpc_cotrols.rviz')
 
-    mpc_controller_pkg_prefix = get_package_share_directory("mpc_controller_node")
+    mpc_controller_pkg_prefix = get_package_share_directory("mpc_controller_nodes")
     mpc_controller_param_file = os.path.join(mpc_controller_pkg_prefix, "defaults.yaml")
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
@@ -122,7 +122,7 @@ def generate_launch_description():
 
     # mpc_controller
     mpc_controller = Node(
-        package="mpc_controller_node",
+        package="mpc_controller_nodes",
         node_executable="mpc_controller_node_exe",
         # node_namespace="control",
         node_name="mpc_controller",

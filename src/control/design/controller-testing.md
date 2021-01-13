@@ -8,7 +8,7 @@ running simulted controller tests with dynamic vehicle model, and generate plots
 # Params
 
 * MPC controller config
-`mpc_controller_node/param/defaults.yaml`
+`mpc_controller_nodes/param/defaults.yaml`
 * Test and simulation config
 `controller_testing/param/defaults.param.yaml`
 

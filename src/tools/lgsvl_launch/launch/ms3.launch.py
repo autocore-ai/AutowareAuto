@@ -252,14 +252,14 @@ def generate_launch_description():
         ]
     )
     mpc = Node(
-        package='mpc_controller_node',
+        package='mpc_controller_nodes',
         node_executable='mpc_controller_node_exe',
         node_name='mpc_controller',
         node_namespace='control',
         parameters=[LaunchConfiguration('mpc_param_file')]
     )
     recordreplay_planner = Node(
-        package='recordreplay_planner_node',
+        package='recordreplay_planner_nodes',
         node_executable='recordreplay_planner_node_exe',
         node_name='recordreplay_planner',
         node_namespace='planning',

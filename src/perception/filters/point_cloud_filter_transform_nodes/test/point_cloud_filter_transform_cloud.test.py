@@ -29,13 +29,13 @@ def generate_test_description(ready_fn):
 
     # The nodes under test:
     velodyne_block_node = launch_ros.actions.Node(
-        package="velodyne_node",
+        package="velodyne_nodes",
         node_executable="velodyne_cloud_node_exe",
         node_name="vlp16_driver_node",
         node_namespace="lidar_front",
         parameters=[
             os.path.join(
-                ament_index_python.get_package_share_directory("velodyne_node"),
+                ament_index_python.get_package_share_directory("velodyne_nodes"),
                 "param",
                 "vlp16_test.param.yaml"
             ),

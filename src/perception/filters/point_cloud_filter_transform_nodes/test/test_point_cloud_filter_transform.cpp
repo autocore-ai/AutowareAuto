@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 #include <lidar_integration/lidar_integration.hpp>
 #include <point_cloud_filter_transform_nodes/point_cloud_filter_transform_node.hpp>
-#include <velodyne_node/velodyne_cloud_node.hpp>
+#include <velodyne_nodes/velodyne_cloud_node.hpp>
 #include <common/types.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
 
@@ -178,7 +178,7 @@ bool check_filtered_points(
 
 TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
 {
-  using VelodyneCloudNode = autoware::drivers::velodyne_node::VLP16DriverNode;
+  using VelodyneCloudNode = autoware::drivers::velodyne_nodes::VLP16DriverNode;
   using autoware::perception::filters::point_cloud_filter_transform_nodes
   ::PointCloud2FilterTransformNode;
   using lidar_integration::LidarIntegrationPclListener;

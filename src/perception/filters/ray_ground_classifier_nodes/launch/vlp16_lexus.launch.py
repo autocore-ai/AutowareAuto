@@ -23,9 +23,10 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     driver = launch_ros.actions.Node(
-        package='velodyne_node', node_executable='velodyne_cloud_node_exe',
+        package='velodyne_nodes', node_executable='velodyne_cloud_node_exe',
         node_namespace='lidar_front',
-        parameters=[get_package_share_directory('velodyne_node') + "/param/vlp16_test.param.yaml"])
+        parameters=[get_package_share_directory('velodyne_nodes') +
+                    "/param/vlp16_test.param.yaml"])
     classifier = launch_ros.actions.Node(
         package='ray_ground_classifier_nodes',
         node_executable='ray_ground_classifier_cloud_node_exe',

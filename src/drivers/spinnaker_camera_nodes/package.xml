@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>spinnaker_camera_nodes</name>
+    <version>0.0.1</version>
+    <description>A node for the Spinnaker camera SDK wrapper.</description>
+    <maintainer email="opensource@apex.ai">Igor Bogoslavskyi</maintainer>
+    <license>Apache Licence 2.0</license>
+
+    <buildtool_depend>ament_cmake_auto</buildtool_depend>
+    <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>rclcpp_components</depend>
+    <depend>std_msgs</depend>
+    <depend>sensor_msgs</depend>
+    <depend>autoware_auto_common</depend>
+    <depend>spinnaker_camera_driver</depend>
+
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+    <test_depend>ros_testing</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>

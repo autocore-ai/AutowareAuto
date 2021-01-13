@@ -17,10 +17,10 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>lgsvl_interface</exec_depend>
-  <exec_depend>mpc_controller_node</exec_depend>
+  <exec_depend>mpc_controller_nodes</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>recordreplay_planner_node</exec_depend> 
+  <exec_depend>recordreplay_planner_nodes</exec_depend> 
   <exec_depend>rviz2</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>

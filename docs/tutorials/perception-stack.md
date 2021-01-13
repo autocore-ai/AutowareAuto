@@ -47,24 +47,24 @@ In order to bring up the perception stack, point cloud data needs to be publishe
 $ ade enter
 ade$ udpreplay -r -1 route_small_loop_rw.pcap
 ```
-  4. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) for the front lidar:
+  4. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the front lidar:
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test.param.yaml
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
 ```
-  5. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) for the rear lidar:
+  5. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the rear lidar:
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_rear __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test_rear.param.yaml
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_rear __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test_rear.param.yaml
 ```
 2. Running a simulator: To do this, see [Running the LGSVL Simulator along side Autoware.Auto](lgsvl.html)
-3. Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_node) and then launch the node:
+3. Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) and then launch the node:
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run velodyne_node velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_node/param/vlp16_test.param.yaml
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
 ```
 
 \note
