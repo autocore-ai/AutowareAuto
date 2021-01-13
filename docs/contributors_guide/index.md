@@ -5,6 +5,7 @@ This section of the Autoware.Auto documentation gives policies, procedures, best
 You should begin with the contributor's guide overview.
 
 - @subpage contributor-guidelines
+- @subpage documentation
 - @subpage develop-in-a-fork
 - @subpage autoware-common-naming-guidelines
 - @subpage integration-testing

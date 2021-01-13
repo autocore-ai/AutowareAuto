@@ -359,22 +359,36 @@ In Autoware.Auto the [lcov tool] (http://ltp.sourceforge.net/documentation/techn
 2. Function coverage
 3. Branch coverage
 
-`lcov` also collects the results and generates `html` to visualize the coverage
-information. In the sections below, the commands to generate coverage information for `my_cool_pkg`
-are shown below.
+`lcov` also collects the results and generates `html` to visualize the coverage information.
+
+Coverage for the latest successful CI run on the `master` branch is
+[here](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/coverage/index.html).
 
 Use the commands below to generate coverage information for `my_cool_pkg`:
 
-\note
-You may need to clean your build before generating the coverage report.
+\note `package_coverage.sh` prompts to delete `build`, `install`, and `log` directories, if present. Answer with `y` to
+delete, or clean your build before generating the coverage report.
 
 ```bash
 ade$ cd AutowareAuto
+ade$ git lfs install
+ade$ git lfs pull --include="*" --exclude=""
+ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ade$ ./tools/coverage/package_coverage.sh my_cool_pkg
+ade$ ./tools/coverage/coverage.sh  # coverage of all packages
 ```
 
-The resulting `lcov/index.html` will have a similar form to the following:
+This produces the high-level coverage report and also generates a coverage folder with an `index.html` file in it
+assuming the build and tests passed successfully. The resulting `lcov/index.html` will have a similar form to the
+following:
 
 ![Example lcov output](images/lcov_result.jpg)
 
-In Autoware.Auto, coverage metrics are run as part of the CI pipeline.
+In Autoware.Auto, there is a separate "coverage" job as part of the CI pipeline that measures and reports the test
+coverage of a merge request:
+
+@image html images/coverage-test-job.png "coverage test job"
+
+and the summary statistics are printed near the end of the log output:
+
+@image html images/coverage-ci-output.png "coverage test job summary"

@@ -18,12 +18,12 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
    1. [ ] MR assigned to a capable reviewer. Default: @JWhitleyWork
    1. [ ] Splitting the MR into smaller, easier-to-review merge requests was considered
 1. Code and tests
-   1. [ ] Code is properly [formatted](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md11)
-   1. [ ] [Tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md22) affected by new code pass locally
-   1. [ ] Reasonable [coverage with unit tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md12) of 90+%; else create a follow-up ticket
+   1. [ ] Code is properly [formatted](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-formatting)
+   1. [ ] [Tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-run-tests) affected by new code pass locally
+   1. [ ] Reasonable [coverage with unit tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-coverage) of 90+%; else create a follow-up ticket
    1. [ ] Review any `// TODO` item added in the MR that can be addressed without the reviewer's help
 1. Documentation
-   1. [ ] Any new and modified code has accurate doxygen documentation
+   1. [ ] Any new and modified code has accurate [doxygen documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-source-code)
    1. [ ] Any diagrams are committed
 
 ## Checklist for the reviewer
@@ -47,20 +47,19 @@ Mark all the items that are done.
 1. Basic checks
    1. [ ] The MR title describes what is being done on the ticket
    1. [ ] All functional code written in C++14, tooling code may be written in Python 3.5+ or Bash
-   1. [ ] Commit messages formatted properly
+   1. [ ] The first commit has a proper [commit message](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-commits) to be used as a basis for the squashed commit created at the very end
 1. Code correctness
    1. [ ] The problem/feature is solved (reproducibly)
    1. [ ] The solution is performant enough for the use case in mind
    1. [ ] Any disabled lints inside the code or at the package level are justified
-   1. [ ] All dependencies are explicitly included in `package.xml` with the proper `<*depend>` declaration
-   1. [ ] No 3rd-party license issue
 1. Open work
    1. [ ] Any added source-code comment about future work refers to a follow-up GitLab issue explicitly; e.g., `// TODO #551 refactor code below`
 1. Documentation
    1. [ ] New classes, methods, functions in headers are documented with doxygen-style comments
    1. [ ] If implementation (of a function...) is modified, the doxygen documentation is updated accordingly
-   1. [ ] The design article is updated with the implementation
+   1. [ ] The [design article](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-package) is updated with the implementation
    1. [ ] Drawings are created when needed and committed to `git`
+   1. [ ] Modified files have a license that is [compatible](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/CONTRIBUTING.md) with AutowareAuto
 1. Testing
    1. [ ] Code coverage with unit tests does not decrease. Aim for coverage with unit tests of 90+%; else create a follow-up ticket
    1. [ ] Unit tests make sense and cover the business logic and error cases
@@ -72,7 +71,7 @@ Mark all the items that are done.
 <details>
   <summary markdown="span"><a name="new-node">Checklist for new ROS2 nodes</a></summary>
 
-1. [ ]  Every nodes is [registered as a component](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md21)
+1. [ ]  Every nodes is [registered as a component](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-components)
 1. [ ]  The [naming conventions](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware-common-naming-guidelines.html) are followed
 
 </details>
@@ -84,13 +83,14 @@ Mark all the items that are done.
    1. [ ] The package name and organization into files is sensible
    1. [ ] Core functionality is separated from the ROS2-specific part where reasonable
    1. [ ] There is a design document that explains the package at a high level
+   1. [ ] All dependencies are explicitly included in [`package.xml`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-minimal-package-xml-example) with the proper `<*depend>` declaration
 
 When starting from scratch, new packages should be created with the [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html) macro and they will automatically satisfy the following criteria.
 
 1. If an existing package is added to `AutowareAuto`, it should match the output of `autoware_auto_create_pkg` regarding
    1. [ ] same set of linters
    1. [ ] visibility control
-   1. [ ] finding build dependencies in `cmake` with `ament_auto_find_build_dependencies()`
+   1. [ ] finding build dependencies in [`cmake`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-minimal-cmake-example) with `ament_auto_find_build_dependencies()`
    1. [ ] installing with `ament_auto_package()`
  </details>
 
@@ -98,7 +98,7 @@ When starting from scratch, new packages should be created with the [`autoware_a
 
 After receiving approval:
 
-1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html) looks as expected
+1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-rendering) looks as expected
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
 1. [ ] Developers were informed about breaking changes on slack in the _committers-autoware-auto_ channel
 1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: @JWhitleyWork
