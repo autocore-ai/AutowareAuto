@@ -83,6 +83,7 @@ protected:
 
 // Instantiate tests for given types, add more types here as they are used
 using PointTypes = ::testing::Types<PointXYZ, PointXYZIF>;
+// cppcheck-suppress syntaxError
 TYPED_TEST_CASE(TypedVoxelTest, PointTypes, );
 /// NOTE: This is the older version due to 1.8.0 of GTest. v1.8.1 uses TYPED_TEST_SUITE
 
