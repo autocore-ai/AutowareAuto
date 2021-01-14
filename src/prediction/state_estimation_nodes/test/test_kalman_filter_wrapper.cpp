@@ -153,7 +153,7 @@ TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
 }
 
 /// \test Covariance of a static object grows without new observations.
-TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
+TEST(KalmanFilterWrapperTest, DISABLED_covariance_grows_with_time) {
   ConstantAccelerationFilter filter{
     kCovarianceIdentity, kNoiseIdentity, std::chrono::milliseconds{100LL}, "map"};
   EXPECT_FALSE(filter.is_initialized());
@@ -185,7 +185,7 @@ TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
 
 
 /// \test Track a static object.
-TEST(KalmanFilterWrapperTest, track_static_object) {
+TEST(KalmanFilterWrapperTest, DISABLED_track_static_object) {
   using namespace std::chrono_literals;
   ConstantAccelerationFilter filter{
     kCovarianceIdentity, kNoiseIdentity, std::chrono::milliseconds{100LL}, "map"};

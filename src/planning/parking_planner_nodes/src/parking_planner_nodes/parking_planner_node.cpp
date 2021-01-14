@@ -351,8 +351,9 @@ static std::vector<ParkingPolytope> convert_drivable_area_to_obstacles(
         return out;
       };
     if (parking_points.size() >= 3 &&
-      ccw(point_p2g(parking_points[0]), point_p2g(parking_points[1]),
-      point_p2g(parking_points[2])) )
+      ccw(
+        point_p2g(parking_points[0]), point_p2g(parking_points[1]),
+        point_p2g(parking_points[2])) )
     {
       std::reverse(parking_points.begin(), parking_points.end());
     }
@@ -536,8 +537,10 @@ void ParkingPlannerNode::debug_publish_obstacles(
   for (const auto & the_obstacle : obstacles) {
     LineString3d obstacle_linestring(getId(), {});
     for (const auto & pt : the_obstacle.get_vertices() ) {
-      obstacle_linestring.push_back(Point3d(getId(), std::get<0>(pt.get_coord()),
-        std::get<1>(pt.get_coord()), 0.0));
+      obstacle_linestring.push_back(
+        Point3d(
+          getId(), std::get<0>(pt.get_coord()),
+          std::get<1>(pt.get_coord()), 0.0));
     }
     all_obstacle_linestrings.push_back(obstacle_linestring);
   }

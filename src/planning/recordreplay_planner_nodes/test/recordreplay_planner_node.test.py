@@ -21,7 +21,6 @@ import ament_index_python
 import launch
 import launch.actions
 import launch_ros.actions
-from launch_ros.default_launch_description import ROSSpecificLaunchStartup
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
@@ -125,7 +124,6 @@ def generate_test_description(ready_fn):
     # integration test
     ld = launch.LaunchDescription(
         [
-            ROSSpecificLaunchStartup(),
             test_nodes,
             launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ]

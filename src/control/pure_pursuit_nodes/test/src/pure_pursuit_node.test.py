@@ -20,7 +20,6 @@ import ament_index_python
 import launch
 import launch.actions
 import launch_ros.actions
-from launch_ros.default_launch_description import ROSSpecificLaunchStartup
 
 import launch_testing.event_handlers
 
@@ -43,7 +42,6 @@ def generate_test_description(ready_fn):
         node_executable="pure_pursuit_integration_test_exe")
 
     ld = launch.LaunchDescription([
-        ROSSpecificLaunchStartup(),
         test_nodes,
         checker,
         launch.actions.OpaqueFunction(function=lambda context: ready_fn())

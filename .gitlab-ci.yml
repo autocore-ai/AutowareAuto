@@ -351,9 +351,52 @@ test_amd64_dashing:
     ARCH: amd64
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DISTRO: dashing
-  <<: *test_base
+  stage: test
+  image: $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+  script:
+    - tar xzf opt.tar.gz -C /
+    - rm opt.tar.gz
+    - source /opt/AutowareAuto/setup.bash
+    - 'colcon test
+           --merge-install
+           --install-base /opt/AutowareAuto
+           --return-code-on-test-failure
+           --packages-skip velodyne_nodes
+      '
+    - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
+
+    # Test package
+    - 'ros2 run autoware_auto_create_pkg main.py
+          --pkg-name my_cool_pkg
+          --destination /tmp/tmp_ws/src
+          --description "My cool package does cool stuff"
+          --maintainer "Jane Doe"
+          --email "jane.doe@awesome-company.com"
+      '
+    - cd /tmp/tmp_ws
+    - colcon build --packages-select my_cool_pkg
+    - colcon test --packages-select my_cool_pkg
+    - colcon test-result --verbose
+    - cd -
+
+    # prepare volume artifact
+    - mkdir /opt/AutowareAuto/src
+    - '(cd src && git archive --format=tar HEAD | (cd /opt/AutowareAuto/src && tar xf -))'
+    - cp -a LICENSE /opt/AutowareAuto
+    - chmod -R og-w /opt/AutowareAuto
+    - tar cfz opt.tar.gz /opt/AutowareAuto
+  after_script:
+    - colcon test-result --verbose
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - log
+      - opt.tar.gz
+    reports:
+      junit: test-results.xml
   needs:
     - build_amd64_dashing
+  allow_failure: true
 
 test_arm64_dashing:
   variables:
@@ -362,16 +405,54 @@ test_arm64_dashing:
     ROS_DISTRO: dashing
   tags:
     - arm64
-  <<: *test_base
+  stage: test
+  image: $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
+  script:
+    - tar xzf opt.tar.gz -C /
+    - rm opt.tar.gz
+    - source /opt/AutowareAuto/setup.bash
+    - 'colcon test
+           --merge-install
+           --install-base /opt/AutowareAuto
+           --return-code-on-test-failure
+           --packages-skip velodyne_nodes
+      '
+    - 'colcon test-result --all |grep xml |cut -d":" -f1 |xargs .gitlab-ci/merge-test-results test-results.xml || true'
+
+    # Test package
+    - 'ros2 run autoware_auto_create_pkg main.py
+          --pkg-name my_cool_pkg
+          --destination /tmp/tmp_ws/src
+          --description "My cool package does cool stuff"
+          --maintainer "Jane Doe"
+          --email "jane.doe@awesome-company.com"
+      '
+    - cd /tmp/tmp_ws
+    - colcon build --packages-select my_cool_pkg
+    - colcon test --packages-select my_cool_pkg
+    - colcon test-result --verbose
+    - cd -
+
+    # prepare volume artifact
+    - mkdir /opt/AutowareAuto/src
+    - '(cd src && git archive --format=tar HEAD | (cd /opt/AutowareAuto/src && tar xf -))'
+    - cp -a LICENSE /opt/AutowareAuto
+    - chmod -R og-w /opt/AutowareAuto
+    - tar cfz opt.tar.gz /opt/AutowareAuto
+  after_script:
+    - colcon test-result --verbose
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
       - log
       - opt.tar.gz
+    reports:
+      junit: test-results.xml
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - build_arm64_dashing
+  allow_failure: true
 
 test_amd64_foxy:
   variables:
@@ -381,7 +462,6 @@ test_amd64_foxy:
   <<: *test_base
   needs:
     - build_amd64_foxy
-  allow_failure: true
 
 test_arm64_foxy:
   variables:
@@ -400,11 +480,10 @@ test_arm64_foxy:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - build_arm64_foxy
-  allow_failure: true
 
 coverage:
   stage: test
-  image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/amd64/ade-foxy:commit-$CI_COMMIT_SHA
   script:
     - vcs import < autoware.auto.$ROS_DISTRO.repos
     - './tools/coverage/coverage.sh -u'
@@ -417,11 +496,11 @@ coverage:
       - log
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
   needs:
-    - ade_amd64_dashing
+    - ade_amd64_foxy
 
 docs:
   stage: build
-  image: $CI_REGISTRY_IMAGE/amd64/ade-dashing:commit-$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/amd64/ade-foxy:commit-$CI_COMMIT_SHA
   script:
     - docs/.doxygen/build.py
   artifacts:
@@ -429,7 +508,7 @@ docs:
     paths:
       - docs/_build/html
   needs:
-    - ade_amd64_dashing
+    - ade_amd64_foxy
 
 pages:
   stage: deploy
@@ -461,6 +540,7 @@ volume_amd64_dashing:
   <<: *volume_base
   needs:
     - test_amd64_dashing
+  allow_failure: true
 
 volume_arm64_dashing:
   stage: deploy
@@ -480,6 +560,7 @@ volume_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - test_arm64_dashing
+  allow_failure: true
 
 volume_amd64_foxy:
   stage: deploy
@@ -495,7 +576,6 @@ volume_amd64_foxy:
   <<: *volume_base
   needs:
     - test_amd64_foxy
-  allow_failure: true
 
 volume_arm64_foxy:
   stage: deploy
@@ -515,4 +595,3 @@ volume_arm64_foxy:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - test_arm64_foxy
-  allow_failure: true

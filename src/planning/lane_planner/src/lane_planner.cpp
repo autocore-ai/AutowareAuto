@@ -167,8 +167,9 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
   trajectory_points.push_back(route.start_point);
   for (size_t i = start_index; i < lanelets.size(); i++) {
     const auto & lanelet = lanelets.at(i);
-    const auto & centerline = autoware::common::had_map_utils::generateFineCenterline(lanelet,
-        m_planner_config.trajectory_resolution);
+    const auto & centerline = autoware::common::had_map_utils::generateFineCenterline(
+      lanelet,
+      m_planner_config.trajectory_resolution);
     const auto speed_limit =
       static_cast<float32_t>(traffic_rules_ptr->speedLimit(lanelet).speedLimit.value());
 

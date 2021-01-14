@@ -93,8 +93,9 @@ public:
     const autoware::lane_planner::LanePlannerConfig planner_config{
       2.0F  // trajectory_resolution
     };
-    m_planner_ptr = std::make_shared<autoware::lane_planner::LanePlanner>(vehicle_param, config,
-        planner_config);
+    m_planner_ptr = std::make_shared<autoware::lane_planner::LanePlanner>(
+      vehicle_param, config,
+      planner_config);
   }
   std::shared_ptr<autoware::lane_planner::LanePlanner> m_planner_ptr;
 };

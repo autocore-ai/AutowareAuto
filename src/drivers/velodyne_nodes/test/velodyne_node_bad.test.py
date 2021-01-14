@@ -19,7 +19,6 @@ import ament_index_python
 import launch
 import launch.actions
 import launch_ros.actions
-from launch_ros.default_launch_description import ROSSpecificLaunchStartup
 import launch_testing
 import launch_testing.util
 
@@ -29,9 +28,9 @@ def generate_test_description(ready_fn):
     test_topic = "veloyne_cloud_node_test_topic"
     velodyne_cloud_node = launch_ros.actions.LifecycleNode(
         package="velodyne_nodes",
-        node_executable="velodyne_cloud_node_exe",
-        node_name="vlp16_driver_node",
-        node_namespace="lidar_front",
+        executable="velodyne_cloud_node_exe",
+        name="vlp16_driver_node",
+        namespace="lidar_front",
         parameters=[
             "{}/param/vlp16_test.param.yaml".format(
                 ament_index_python.get_package_share_directory("velodyne_nodes")
@@ -47,7 +46,6 @@ def generate_test_description(ready_fn):
     context = {'vel_node': velodyne_cloud_node}
 
     return launch.LaunchDescription([
-        ROSSpecificLaunchStartup(),
         velodyne_cloud_node,
         # Need to keep the launch alive by having an alive process
         launch_testing.util.KeepAliveProc(),
