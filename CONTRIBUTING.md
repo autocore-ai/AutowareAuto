@@ -31,6 +31,6 @@ as per clause 5 of the Apache 2 License:
 ## Detailed contribution guidelines
 
 For more detailed information on contributing to Autoware.Auto, including development processes,
-please see the contributing guidelines in the documentation:
+please see the contributor guidelines in the documentation:
 
-https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/cpp-development-process.html
+https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html
