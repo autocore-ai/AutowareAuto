@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# This script prepares the commit messages to include
+# the issued ID at the beginning of the messge.
+
+branch_name=$(git rev-parse --abbrev-ref HEAD | tr /a-z/ /A-Z/)
+
+# If name of branch is 123-ABC123, we want to use 123
+if [[ "$branch_name" =~ ^[0-9]+\-.+$ ]]; then
+    branch_name="$(echo "$branch_name" | cut -d"-" -f 1)"
+fi
+
+# Don't autoformat invalid branch names
+if ! [[ "$branch_name" =~ ^[0-9]+$ ]]; then
+    echo "Warning: Invalid branch name ${branch_name}."
+    echo "Commit message won't be autoformatted."
+    exit 0
+fi
+
+# Add branch name tag
+
+branch_name="[$branch_name]"
+
+if [[ "$(cat $1)" != "$branch_name"* ]]; then
+    echo -e "$branch_name $(cat $1)" > $1
+fi
