@@ -38,16 +38,9 @@ Output:
 - PointCloud2 message
 
 
-## Error detection and handling
-
-These nodes are built on top of a UdpDriver, which itself is built off a LifecycleNode, and thus
-inherits their error handling capabilities.
-
-In addition to any other new features to be added to the base classes.
-
 ## Security considerations
 
-These nodes inherit all security flaws and capabilities inherent in the UDP driver, LifecycleNode,
+These nodes inherit all security flaws and capabilities inherent in the UDP driver, Node,
 and Vlp16Translator.
 
 # Future extensions / Unimplemented parts

@@ -10,7 +10,6 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
-    <build_depend>rclcpp_lifecycle</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>xsens_driver</build_depend>
 
@@ -18,7 +17,6 @@
     <depend>serial_driver</depend>
     <depend>autoware_auto_common</depend>
 
-    <exec_depend>rclcpp_lifecycle</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>xsens_driver</exec_depend>
 

@@ -25,7 +25,6 @@
 #include <cmath>
 
 #include "lidar_utils/point_cloud_utils.hpp"
-#include "lifecycle_msgs/msg/state.hpp"
 
 using autoware::common::types::float32_t;
 using autoware::common::lidar_utils::create_custom_pcl;

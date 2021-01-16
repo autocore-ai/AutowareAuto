@@ -11,22 +11,21 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <build_depend>lidar_utils</build_depend>
-    <build_depend>rclcpp_lifecycle</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>velodyne_driver</build_depend>
 
-    <depend>udp_driver</depend>
     <depend>autoware_auto_common</depend>
+    <depend>rclcpp</depend>
+    <depend>udp_driver</depend>
 
     <exec_depend>lidar_utils</exec_depend>
-    <exec_depend>rclcpp_lifecycle</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>velodyne_driver</exec_depend>
 
+    <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
     <test_depend>lidar_integration</test_depend>
-    <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ros_testing</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>
