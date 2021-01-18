@@ -174,7 +174,7 @@ private:
       pose.pose.pose.orientation.y,
       pose.pose.pose.orientation.z
     };
-    EigRotation guess_rotation{guess.transform.rotation.x,
+    EigRotation guess_rotation{guess.transform.rotation.w,
       guess.transform.rotation.x,
       guess.transform.rotation.y,
       guess.transform.rotation.z
