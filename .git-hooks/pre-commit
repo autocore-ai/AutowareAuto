@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Copyright 2021 Frederik Beaujean, Apex.AI
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+current_dir=$(pwd)
+repo_root_dir=$(git rev-parse --show-toplevel)
+
+cd "${repo_root_dir}" || exit
+
+run_cmd() {
+    cmd=$1
+    shift
+
+    echo "Running ${cmd}"
+    echo "---------------"
+    out=/tmp/${cmd}_output
+    if ament_${cmd} "$@" &> $out; then
+        echo "No errors found"
+        echo
+    else
+        cat $out
+        rm $out
+        exit 1
+    fi
+}
+
+cpp_files=$(git diff --cached --name-only --diff-filter=ACMRT | grep -E "\.(c|cpp|h|hpp)$")
+if [[ -n ${cpp_files} ]]; then
+    echo "Checking the following C++ file(s):"
+    echo "--------------------------------------------"
+    echo "${cpp_files}" | sed 's/^/\ -\ /g'
+    echo
+
+    echo "Running uncrustify"
+    echo "---------------"
+    if ament_uncrustify --reformat ${cpp_files} &> /tmp/uncrustify_output; then
+        echo "No errors found"
+        echo
+    else
+        echo "Some files were reformatted, please check the changes and commit again"
+        exit 1
+    fi
+
+    run_cmd "cpplint" ${cpp_files}
+    run_cmd "cppcheck" ${cpp_files}
+fi
+
+python_files=$(git diff --cached --name-only --diff-filter=ACMRT | grep -E "\.py$")
+if [[ -n ${python_files} ]]; then
+    echo "Checking the following python file(s):"
+    echo "--------------------------------------------"
+    echo "${python_files}" | sed 's/^/\ -\ /g'
+    echo
+
+    run_cmd "flake8" ${python_files}
+    run_cmd "pep257" ${python_files}
+fi
+
+cd "${current_dir}" || exit
