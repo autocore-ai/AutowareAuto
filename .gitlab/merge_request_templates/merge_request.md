@@ -11,20 +11,20 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
 1. MR formalities
    1. [ ] "WIP" or "Draft" removed from the MR title
    1. [ ] MR title and description help a friendly human understand the problem solved
-   1. [ ] MR has a link to the original issue in description
-   1. [ ] MR is configured to *allow commits from developers with access to push to the target branch*
+   1. [ ] MR has a link to the original issue in the description, if it exists
+   1. [ ] If the source branch is on a fork, MR is configured to *allow commits from developers with access to push to the target branch*
    1. [ ] Sensible notes for the reviewer added to the section above to facilitate review
    1. [ ] Target branch set correctly. Default: `master`
    1. [ ] MR assigned to a capable reviewer. Default: @JWhitleyWork
    1. [ ] Splitting the MR into smaller, easier-to-review merge requests was considered
 1. Code and tests
    1. [ ] Code is properly [formatted](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md11)
-   1. [ ] [Tests]((https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md22)) affected by new code pass locally
+   1. [ ] [Tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md22) affected by new code pass locally
    1. [ ] Reasonable [coverage with unit tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#autotoc_md12) of 90+%; else create a follow-up ticket
    1. [ ] Review any `// TODO` item added in the MR that can be addressed without the reviewer's help
 1. Documentation
-   1. [ ] New and modified code has accurate doxygen documentation
-   1. [ ] Diagrams are committed
+   1. [ ] Any new and modified code has accurate doxygen documentation
+   1. [ ] Any diagrams are committed
 
 ## Checklist for the reviewer
 
@@ -42,7 +42,7 @@ If the MR provides an improvement, don't hesitate to add a :thumbsup: emoji for 
 
 Mark all the items that are done.
 <details>
-<summary markdown="span">Checklist for development</summary>
+<summary markdown="span"><a name="general">Checklist for development</a></summary>
 
 1. Basic checks
    1. [ ] The MR title describes what is being done on the ticket
@@ -52,6 +52,7 @@ Mark all the items that are done.
    1. [ ] The problem/feature is solved (reproducibly)
    1. [ ] The solution is performant enough for the use case in mind
    1. [ ] Any disabled lints inside the code or at the package level are justified
+   1. [ ] All dependencies are explicitly included in `package.xml` with the proper `<*depend>` declaration
    1. [ ] No 3rd-party license issue
 1. Open work
    1. [ ] Any added source-code comment about future work refers to a follow-up GitLab issue explicitly; e.g., `// TODO #551 refactor code below`
@@ -83,7 +84,6 @@ Mark all the items that are done.
    1. [ ] The package name and organization into files is sensible
    1. [ ] Core functionality is separated from the ROS2-specific part where reasonable
    1. [ ] There is a design document that explains the package at a high level
-   1. [ ] All dependencies are explicitly included in `package.xml` with the proper `<*depend>` declaration
 
 When starting from scratch, new packages should be created with the [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html) macro and they will automatically satisfy the following criteria.
 
