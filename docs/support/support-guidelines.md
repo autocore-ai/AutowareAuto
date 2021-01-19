@@ -19,7 +19,8 @@ The following should be the general set of steps for obtaining support, dependin
 
 # General Information: Documentation{#support-guidelines-general-info}
 
-Whether you are looking to get help [installing Autoware.Auto](@ref installation), looking for [developer best-practices](@ref contributor-guidelines), or you just want to [run a demo](@ref demos), the auto-generated documentation should be your first resource.
+
+Whether you are looking to get help [installing Autoware.Auto](@ref installation), looking for [developer best-practices](@ref contributor-guidelines), or you just want to [run a demo](@ref usage), the auto-generated documentation should be your first resource.
 If you find information missing in the docs, please [create a new issue](@ref support-guidelines-gitlab-issues) and, optionally, create a merge request to add the information to the docs yourself.
 
 # Support Questions: ROS Answers{#support-guidelines-ros-answers}

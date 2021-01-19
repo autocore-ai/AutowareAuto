@@ -8,6 +8,9 @@ environment.
 Autoware.auto can also be installed without the use of [ADE](https://ade-cli.readthedocs.io/en/latest/)
 for cases where a more granular control of the installation environment is needed.
 
-
 - @subpage installation-ade
 - @subpage installation-no-ade
+
+Another prerequisite for running the full software stack is the LGSVL simulator:
+
+- @subpage lgsvl

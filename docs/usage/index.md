@@ -1,5 +1,5 @@
-Demos {#demos}
-=========
+Usage {#usage}
+=====
 
 # Operational Design Domain (ODD) Demos
 
@@ -11,7 +11,6 @@ Each article below contains instructions on how to set up, launch and control on
 For demonstrations that work on a real car, the hardware requirements are also described.
 
 The demonstration documentation assumes a working knowledge of Autoware.Auto.
-For articles on how to achieve specific tasks with Autoware.Auto, see our \ref tutorials.
 
 - @subpage avpdemo
 
@@ -22,3 +21,6 @@ The following pages describe how to run demonstrations which showcase specific p
 - @subpage test-behavior-planner
 - @subpage test-global-planner
 - @subpage test-ndt
+- @subpage autoware-demos
+- @subpage trajectory-following
+- @subpage perception-stack
