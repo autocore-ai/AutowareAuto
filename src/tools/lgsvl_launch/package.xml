@@ -13,6 +13,7 @@
   <!-- Building process will not be performed.-->
   <!-- This package is used for only launching.-->
 
+  <exec_depend>ament_index_python</exec_depend>
   <exec_depend>autoware_auto_avp_demo</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

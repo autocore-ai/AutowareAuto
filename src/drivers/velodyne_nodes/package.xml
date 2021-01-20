@@ -18,6 +18,7 @@
     <depend>rclcpp</depend>
     <depend>udp_driver</depend>
 
+    <exec_depend>ament_index_python</exec_depend>
     <exec_depend>lidar_utils</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>velodyne_driver</exec_depend>

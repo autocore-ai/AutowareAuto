@@ -19,6 +19,8 @@
     <depend>rclcpp_components</depend>
     <depend>rclcpp</depend>
 
+    <exec_depend>ament_index_python</exec_depend>
+
     <test_depend>lgsvl_interface</test_depend>
     <test_depend>voxel_grid_nodes</test_depend>
     <test_depend>point_cloud_filter_transform_nodes</test_depend>

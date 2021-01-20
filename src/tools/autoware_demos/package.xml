@@ -21,6 +21,7 @@
   <exec_depend>state_estimation_nodes</exec_depend>
   <exec_depend>velodyne_nodes</exec_depend>
   <exec_depend>voxel_grid_nodes</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
