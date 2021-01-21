@@ -17,9 +17,11 @@
 #include <GeographicLib/Geocentric.hpp>
 #include <ndt/ndt_map_publisher.hpp>
 #include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
+#include <utility>
 
 namespace autoware
 {
@@ -66,22 +68,58 @@ void read_from_yaml(
 
 void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 * msg)
 {
-  pcl::PointCloud<pcl::PointXYZI> cloud{};
-  if (pcl::io::loadPCDFile<pcl::PointXYZI>(file_name, cloud) == -1) {  // load the file
+  pcl::PCLPointCloud2 pcl_cloud;
+  if (pcl::io::loadPCDFile(file_name, pcl_cloud) == -1) {  // load the file
     throw std::runtime_error("PCD file not found.");
   }
-  if (!(cloud.size() > 0)) {
-    throw std::runtime_error("PCD Cloud empty\n");
+  if (pcl_cloud.data.size() == 0) {
+    throw std::runtime_error("PCD cloud empty\n");
   }
-  // TODO(yunus.caliskan): validate the map format. #102
-  common::lidar_utils::resize_pcl_msg(*msg, cloud.size());
 
-  auto id = 0U;
-  for (const auto & pt : cloud) {
-    common::types::PointXYZIF point{pt.x, pt.y, pt.z, pt.intensity,
-      static_cast<uint16_t>(id)};
-    common::lidar_utils::add_point_to_cloud(*msg, point, id);    // id is incremented inside
+  // Convert to sensor_msgs in order to check the available fields
+  sensor_msgs::msg::PointCloud2 cloud;
+  pcl_conversions::moveFromPCL(pcl_cloud, cloud);
+
+  // Ensure that we have at least the x, y, z fields and check whether we have intensity
+  const auto has_intensity = common::lidar_utils::has_intensity_and_throw_if_no_xyz(cloud);
+  if (has_intensity && msg->fields.size() == 4U &&
+    msg->fields[3U].datatype == sensor_msgs::msg::PointField::FLOAT32)
+  {
+    // Quick path: the data already has the desired format
+    *msg = std::move(cloud);
+    return;
   }
+
+  // We don't have intensity of the correct format
+  // Set up a new point cloud with the correct fields
+  sensor_msgs::msg::PointCloud2 adjusted_cloud;
+  const size_t num_points = cloud.data.size() / cloud.point_step;
+  common::lidar_utils::init_pcl_msg(adjusted_cloud, msg->header.frame_id, num_points);
+
+  // Copy x, y, z into it
+  for (size_t i = 0; i < num_points; ++i) {
+    const uint8_t * src = cloud.data.data() + cloud.point_step * i;
+    uint8_t * dest = adjusted_cloud.data.data() + adjusted_cloud.point_step * i;
+    std::memcpy(dest, src, 3 * sizeof(float32_t));
+    // If intensity exists, copy it into the new cloud, otherwise, set it to 0.0
+    // This would be faster with separate loops, but this function isn't a hotspot
+    float intensity = 0.0f;
+    if (has_intensity) {
+      const size_t intensity_offset = cloud.point_step * i + 3 * sizeof(float32_t);
+      if (msg->fields[3U].datatype == sensor_msgs::msg::PointField::FLOAT32) {
+        std::memcpy(&intensity, cloud.data.data() + intensity_offset, sizeof(float32_t));
+      } else if (msg->fields[3U].datatype == sensor_msgs::msg::PointField::UINT8) {
+        intensity = static_cast<float32_t>(cloud.data[intensity_offset]);
+      } else {
+        throw std::runtime_error("intensity datatype is not float or uint8_t");
+      }
+    }
+    uint8_t * dest_intensity = adjusted_cloud.data.data() + adjusted_cloud.point_step * i + 3 *
+      sizeof(float32_t);
+    std::memcpy(dest_intensity, &intensity, sizeof(float32_t));
+  }
+
+  *msg = std::move(adjusted_cloud);
 }
 
 NDTMapPublisher::NDTMapPublisher(

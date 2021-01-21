@@ -41,8 +41,6 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
 using autoware::common::types::float32_t;
 
-// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
-// the pointcloud msg has intensity field, otherwise return false
 bool8_t has_intensity_and_throw_if_no_xyz(
   const PointCloud2::SharedPtr & cloud)
 {
@@ -113,7 +111,6 @@ void PointCloudIts::reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx)
   intensity_it() += idx;
 }
 
-/////
 std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2 & msg) noexcept
 {
   // Count expected amount of data from various source of truths
@@ -131,7 +128,6 @@ std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2
   return last_index;
 }
 
-/////
 SafeCloudIndices sanitize_point_cloud(const sensor_msgs::msg::PointCloud2 & msg)
 {
   /// XYZI or XYZ, or throw
@@ -142,7 +138,6 @@ SafeCloudIndices sanitize_point_cloud(const sensor_msgs::msg::PointCloud2 & msg)
   return SafeCloudIndices{num_floats * sizeof(float32_t), index_after_last_safe_byte_index(msg)};
 }
 
-////
 void init_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::string & frame_id,
@@ -273,12 +268,6 @@ bool8_t add_point_to_cloud(
   return ret;
 }
 
-/// \brief Copy a point with no intensity into a pointcloud_msg
-/// \param[inout] cloud Cloud_msg receiving the point
-/// \param[in] pt Point to insert.
-/// \param[inout] point_cloud_idx Indice at which the insertion must be
-///               done. It will be incremented by one by the function.
-/// \return true if the insertion was successful
 bool8_t add_point_to_cloud(
   sensor_msgs::msg::PointCloud2 & cloud,
   const autoware::common::types::PointXYZF & pt,

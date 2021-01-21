@@ -191,11 +191,15 @@ LIDAR_UTILS_PUBLIC void resize_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::size_t new_size);
 
-// Check the pointcloud msg has x, y, z fields, otherwise throw an exception; check
-// the pointcloud msg has intensity field, otherwise return false
+/// Check that the pointcloud msg has x, y, z of type float32_t as the first three fields,
+/// otherwise throw an exception; check that the pointcloud msg has intensity field as
+/// the fourth field, otherwise return false
 LIDAR_UTILS_PUBLIC bool8_t
 has_intensity_and_throw_if_no_xyz(const PointCloud2::SharedPtr & cloud);
 
+/// Check that the pointcloud msg has x, y, z of type float32_t as the first three fields,
+/// otherwise throw an exception; check that the pointcloud msg has intensity field as
+/// the fourth field, otherwise return false
 LIDAR_UTILS_PUBLIC bool8_t
 has_intensity_and_throw_if_no_xyz(const PointCloud2 & cloud);
 

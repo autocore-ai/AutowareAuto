@@ -61,12 +61,14 @@ struct geocentric_pose_t
 
 /// Read the map info from a yaml file. Throws if the file cannot be read.
 /// \param[in] yaml_file_name Name of the ymal file.
-/// \param[out] geo_pose Geocentric pose describing map orgin
+/// \param[out] geo_pose Geodetic pose describing map orgin
 void NDT_PUBLIC read_from_yaml(
   const std::string & yaml_file_name,
   geodetic_pose_t * geo_pose);
 
 /// Read the pcd file into a PointCloud2 message. Throws if the file cannot be read.
+/// The returned point cloud has float fields x, y, z, intensity, all of type float32_t, with the
+/// default intensity value being 0.0.
 /// \param[in] file_name Name of the pcd file.
 /// \param[out] msg Pointer to PointCloud2 message
 void NDT_PUBLIC read_from_pcd(
