@@ -58,47 +58,14 @@ $ cd adehome
 $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
 
-
-# How to build {#installation-and-development-how-to-build}
-
+# Entering your development environment
 ```
+$ cd AutowareAuto
 $ ade start --update --enter
-ade$ cd AutowareAuto
-ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
-ade$ colcon build
-ade$ colcon test
-ade$ colcon test-result
 ```
 
-# Choosing a DDS Vendor
+Now you should have a terminal inside ADE, ready for @ref usage, or for developing Autoware.Auto
 
-Choosing a DDS vendor is usually as simple as changing the `RMW_IMPLEMENTATION` environment variable.
-This can either be done by changing the value that is added to the `.aderc` file in the `ADE_DOCKER_RUN_ARGS` or by overriding it manually using the commands below.
-For more information about why you would want to use a different DDS vendor and which ones are available, see [this ROS Index article](https://index.ros.org/doc/ros2/Concepts/DDS-and-ROS-middleware-implementations/).
-For more information about working with multiple middleware (DDS) implementations, see [this ROS Index article](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations/).
-
-## For Cyclone DDS (the default in `ade`):
-
-```
-ade$ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-```
-
-## For FastRTPS (now FastDDS - the default in ROS Dashing):
-```
-ade$ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-```
-
-## For Connext (not installed to `ade` by default):
-```
-ade$ sudo apt-get install rti-connext-dds-5.3.1 ros-dashing-rmw-connext-cpp
-ade$ export RMW_IMPLEMENTATION=rmw_connext_cpp
-```
-
-## For GurumDDS (not installed to `ade` by default):
-```
-ade$ sudo apt-get install gurumdds-2.6 ros-dashing-rmw-gurumdds-cpp
-ade$ export RMW_IMPLEMENTATION=rmw_gurumdds_cpp
-```
 
 # Cleanup {#installation-and-development-cleanup}
 
@@ -142,4 +109,36 @@ Use `docker system prune` to remove unused Docker items:
 
 ```console
 $ docker system prune -a --volumes
+```
+
+# Troubleshooting {#ade-troubleshooting}
+Here are solutions for a few specific errors:
+
+## Error - "forward compatibility was attempted on non supported hw" when starting ADE
+
+When starting `ade` with GPU support enabled for NVIDIA graphics, you may sometimes receive the following error:
+
+```console
+docker: Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "process_linux.go:449: container init caused \"process_linux.go:432: running prestart hook 0 caused \\\"error running hook: exit status 1, stdout: , stderr: nvidia-container-cli: initialization error: cuda error: forward compatibility was attempted on non supported hw\\\\n\\\"\"": unknown.
+ERROR: Command return non-zero exit code (see above): 125
+```
+
+This usually indicates that a new NVIDIA graphics driver has been installed (usually via `apt`) but the system has not yet been restarted.
+
+### Solution
+
+Restart your system after installing the new NVIDIA driver.
+
+## Error - "Unable to create the rendering window after 100 tries" when launching GUI application
+
+If you have an NVIDIA GPU and are using the proprietary NVIDIA GPU driver, you may encounter this error when using the default `.aderc` or `.aderc-arm64` files.
+This is due to a decision that was made regarding support for users with and without NVIDIA GPUs and those with and without the proprietary NVIDIA driver.
+For more information you can review the discussion that lead to this decision in [this issue](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/502).
+
+To resolve this issue, simply remove the line `export ADE_DISABLE_NVIDIA_DOCKER=true` from the `.aderc` file that you are using and restart `ade` with:
+
+```console
+ade$ exit
+$ ade stop
+$ ade start --update --enter
 ```

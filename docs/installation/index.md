@@ -1,5 +1,5 @@
 Installation {#installation}
-============
+============================
 
 The recommended method for installation is through the use of [ADE](https://ade-cli.readthedocs.io/en/latest/),
 a Docker-based tool to ensure that all developers in a project have a common, consistent development

@@ -59,6 +59,7 @@ Below is the table of contents for the Autoware.Auto documentation.
 If you are new to Autoware.Auto, begin at the installation documentation, then move on to @ref usage.
 
 - @subpage installation
+- @subpage building
 - @subpage usage
 - @subpage contributors-guide
 - @subpage design

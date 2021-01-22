@@ -1,0 +1,88 @@
+Building {#building}
+========
+
+# Prerequisites
+You need to be inside an ADE container, or have installed the dependencies manually. See @ref installation.
+
+If you haven't done so already, get the source code with 
+
+```bash
+$ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
+$ cd AutowareAuto
+$ vcs import < autoware.auto.$ROS_DISTRO.repos
+```
+
+
+# How to build the code {#installation-and-development-how-to-build}
+Navigate into the AutowareAuto directory and run
+
+```bash
+ade$ colcon build --cmake-args -DCMAKE_BUILD_TYPE="Release"
+```
+
+This assumes you want a maximally optimized build in order to run the stack as well as possible. For development and/or reduced compile times, leave out the `--cmake-args -DCMAKE_BUILD_TYPE="Release"`.
+
+If everything went well, you should _not_ see "failed" on your screen, although "packages had stderr output" is okay.
+
+To verify that everything works as expected, see if all tests pass:
+
+```bash
+ade$ colcon test
+ade$ colcon test-result
+```
+
+# Troubleshooting Steps {#build-troubleshooting-steps}
+
+Most issues with building Autoware.Auto are caused by out-of-date software or old build files.
+To update `ade` and the Docker containers it manages as well as clear old builds, run the following in your `adehome/AutowareAuto` folder:
+
+```bash
+$ ade stop
+$ sudo ade update-cli
+$ ade start --update --enter
+ade$ cd AutowareAuto
+ade$ rm -rf build/ install/ log/ src/external/
+ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
+ade$ git pull
+```
+
+If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your AutowareAuto folder and re-building:
+
+```bash
+$ rm -rf build/ install/ log/ src/external/
+$ vcs import < autoware.auto.$ROS_DISTRO.repos
+$ git pull
+```
+
+If you are still having trouble after these commands have been run, please see the @ref support-guidelines for where to ask questions.
+
+
+# Choosing a DDS Vendor (optional)
+
+Choosing a DDS vendor is usually as simple as changing the `RMW_IMPLEMENTATION` environment variable.
+This can either be done by changing the value that is added to the `.aderc` file in the `ADE_DOCKER_RUN_ARGS` or by overriding it manually using the commands below.
+For more information about why you would want to use a different DDS vendor and which ones are available, see [this ROS Index article](https://index.ros.org/doc/ros2/Concepts/DDS-and-ROS-middleware-implementations/).
+For more information about working with multiple middleware (DDS) implementations, see [this ROS Index article](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations/).
+
+## For Cyclone DDS (the default in ADE):
+
+```
+ade$ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+```
+
+## For FastRTPS (now FastDDS - the default in ROS Dashing):
+```
+ade$ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
+
+## For Connext (not installed to ADE by default):
+```
+ade$ sudo apt-get install rti-connext-dds-5.3.1 ros-dashing-rmw-connext-cpp
+ade$ export RMW_IMPLEMENTATION=rmw_connext_cpp
+```
+
+## For GurumDDS (not installed to ADE by default):
+```
+ade$ sudo apt-get install gurumdds-2.6 ros-dashing-rmw-gurumdds-cpp
+ade$ export RMW_IMPLEMENTATION=rmw_gurumdds_cpp
+```
