@@ -71,6 +71,15 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/ndt_map_publisher_launch.test.py
+    TIMEOUT "30"
+  )
+  add_ros_test(
+    test/ndt_localizer_launch.test.py
+    TIMEOUT "30"
+  )
+
   # gtest
   set(NDT_NODES_TEST ndt_nodes_gtest)
 
@@ -92,6 +101,7 @@ target_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB} PRIVATE -Wno-sign-conversio
         -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
 
 ament_auto_package(INSTALL_TO_SHARE
+  data
   launch
   param
 )

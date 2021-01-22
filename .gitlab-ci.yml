@@ -95,9 +95,11 @@ stages:
   image: $CI_REGISTRY_IMAGE/$ARCH/ade-$ROS_DISTRO:commit-$CI_COMMIT_SHA
   script:
     - 'apt-get update && apt-get -y --no-install-recommends install
-          git
           clang-tidy
+          git
+          git-lfs
       '
+    - 'git lfs install'
     - 'git lfs pull --include="*" --exclude=""'
     - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
     # build and test
@@ -396,7 +398,14 @@ coverage:
   stage: test
   image: $CI_REGISTRY_IMAGE/amd64/ade-foxy:commit-$CI_COMMIT_SHA
   script:
-    - vcs import < autoware.auto.$ROS_DISTRO.repos
+    - 'apt-get update && apt-get -y --no-install-recommends install
+          clang-tidy
+          git
+          git-lfs
+      '
+    - 'git lfs install'
+    - 'git lfs pull --include="*" --exclude=""'
+    - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
     - './tools/coverage/coverage.sh -u'
   after_script:
     - colcon test-result --verbose
