@@ -1,5 +1,5 @@
-Autoware demos {#autoware-demos}
-==============
+Running the EKF filter for localization {#ekf-localization-howto}
+=======================================
 
 # Ndt EKF smooth localization
 

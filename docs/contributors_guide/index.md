@@ -7,6 +7,7 @@ You should begin with the contributor's guide overview.
 - @subpage contributor-guidelines
 - @subpage documentation
 - @subpage develop-in-a-fork
+- @subpage writing-documentation
 - @subpage autoware-common-naming-guidelines
 - @subpage integration-testing
 - @subpage error-handling

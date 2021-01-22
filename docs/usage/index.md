@@ -18,9 +18,9 @@ The demonstration documentation assumes a working knowledge of Autoware.Auto.
 
 The following pages describe how to run demonstrations which showcase specific pieces of functionality within the Autoware.Auto architecture.
 
-- @subpage test-behavior-planner
-- @subpage test-global-planner
-- @subpage test-ndt
-- @subpage autoware-demos
-- @subpage trajectory-following
-- @subpage perception-stack
+- @subpage behavior-planner-howto
+- @subpage global-planner-howto
+- @subpage ndt-howto
+- @subpage ekf-localization-howto
+- @subpage trajectory-following-howto
+- @subpage perception-stack-howto

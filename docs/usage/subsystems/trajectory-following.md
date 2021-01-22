@@ -1,4 +1,4 @@
-Trajectory Following {#trajectory-following}
+Trajectory Following {#trajectory-following-howto}
 ============
 
 [TOC]

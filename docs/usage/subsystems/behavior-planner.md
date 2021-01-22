@@ -1,4 +1,4 @@
-Starting and testing the behavior planner {#test-behavior-planner}
+Starting and testing the behavior planner {#behavior-planner-howto}
 =======================================
 
 # How to start the stack

@@ -1,5 +1,5 @@
-Documentation {#documentation}
-=============
+Writing documentation {#writing-documentation}
+=====================
 
 [TOC]
 

@@ -1,4 +1,4 @@
-Initializing the NDT localizer {#test-ndt}
+Initializing the NDT localizer {#ndt-howto}
 ==============================
 
 # Starting localization

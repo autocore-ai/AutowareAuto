@@ -1,4 +1,4 @@
-Starting and testing the global planner {#test-global-planner}
+Starting and testing the global planner {#global-planner-howto}
 =======================================
 
 # How to start the stack
