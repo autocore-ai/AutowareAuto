@@ -16,10 +16,10 @@ This article demonstrates how to use the Agile Development Environment (ADE) to 
 Follow the [install](https://ade-cli.readthedocs.io/en/latest/install.html) instructions, which are reproduced here for convenience:
 
 1. Verify that the requirements [listed here](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) are fulfilled
-1. Download the statically-linked binary from the [Releases](https://gitlab.com/ApexAI/ade-cli/-/releases) page of the `ade-cli` project
-1. Name the binary `ade` and install it in your `PATH` (on Ubuntu, `/usr/local/bin` is recommended)
-1. Make the binary executable: `chmod +x ade`
-1. Check that it is installed:
+2. Download the statically-linked binary from the [Releases](https://gitlab.com/ApexAI/ade-cli/-/releases) page of the `ade-cli` project
+3. Name the binary `ade` and install it in your `PATH` (on Ubuntu, `/usr/local/bin` is recommended)
+4. Make the binary executable: `chmod +x ade`
+5. Check that it is installed:
 
 ```bash
 $ which ade

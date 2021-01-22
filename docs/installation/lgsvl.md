@@ -5,11 +5,9 @@ LGSVL simulator {#lgsvl}
 
 # LGSVL simulator: running the LGSVL simulator alongside Autoware.Auto
 
-The following guide assumes that the LGSVL simulator will be run from inside an ADE container.
+The following guide assumes that the LGSVL simulator will be run from inside an ADE container, although it is not strictly required.
 
-For more information about the simulator, see:
-
-[https://www.lgsvlsimulator.com/docs/](https://www.lgsvlsimulator.com/docs/)
+For more information about the simulator, see [https://www.lgsvlsimulator.com/docs/](https://www.lgsvlsimulator.com/docs/).
 
 ## Requirements
 
@@ -33,8 +31,7 @@ This section outlines these steps.
 
 ### Launching the simulator
 
-Install ADE as described in the
-[installation section](installation-and-development.html#installation-and-development-install-ade):
+Install ADE as described in the [installation section](@ref installation-ade):
 
 Start ADE with the LGSVL volume:
 
