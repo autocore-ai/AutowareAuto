@@ -1,4 +1,4 @@
-Localization Demo using rosbag {#demo-rosbag-localization}
+Localization Demo using rosbag {#rosbag-localization-howto}
 ==============================
 
 # Running the Localization Demo

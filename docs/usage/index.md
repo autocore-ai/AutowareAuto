@@ -44,3 +44,4 @@ The following pages describe how to run demonstrations which showcase specific p
 - @subpage ekf-localization-howto
 - @subpage trajectory-following-howto
 - @subpage perception-stack-howto
+- @subpage rosbag-localization-howto
