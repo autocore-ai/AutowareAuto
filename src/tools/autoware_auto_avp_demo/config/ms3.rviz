@@ -260,19 +260,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 1
-      Class: autoware_rviz_plugins/Trajectory
-      Color: 0; 255; 0
-      Enabled: true
-      Name: Trajectory
-      Namespaces:
-        {}
-      Scale: 1
-      Text Alpha: 1
-      Text Scale: 1
-      Topic: /planning/trajectory
-      Unreliable: false
-      Value: true
     - Class: autoware_rviz_plugins/BoundingBoxArray
       Enabled: true
       Name: BB_Traj
@@ -368,20 +355,6 @@ Visualization Manager:
       Namespaces:
         {}
       Topic: /planning/parking_debug_start_end
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Class: autoware_rviz_plugins/Trajectory
-      Color: 255; 0; 255
-      Enabled: true
-      Name: MPC Trajectory
-      Namespaces:
-        trajectory_arrow: true
-        trajectory_velocity: true
-      Scale: 1
-      Text Alpha: 1
-      Text Scale: 1
-      Topic: /control/mpc_debug_computed_trajectory
       Unreliable: false
       Value: true
     - Class: rviz_default_plugins/MarkerArray

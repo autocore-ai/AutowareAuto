@@ -288,19 +288,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 1
-      Class: autoware_rviz_plugins/Trajectory
-      Color: 0; 255; 0
-      Enabled: true
-      Name: Trajectory
-      Namespaces:
-        {}
-      Scale: 1
-      Text Alpha: 1
-      Text Scale: 1
-      Topic: /planning/trajectory
-      Unreliable: false
-      Value: true
     - Class: autoware_rviz_plugins/BoundingBoxArray
       Enabled: true
       Name: BB_Traj
