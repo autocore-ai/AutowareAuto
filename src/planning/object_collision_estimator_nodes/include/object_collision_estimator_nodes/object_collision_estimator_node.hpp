@@ -98,7 +98,7 @@ private:
   rclcpp::TimerBase::SharedPtr m_wall_timer{nullptr};
 
   /// \brief The time stamp of the last obstacle message received by the node
-  rclcpp::Time m_last_obstacle_msg_time {};
+  rclcpp::Time m_last_obstacle_msg_time {0, 0, RCL_ROS_TIME};
 
   /// \brief Hard coded node name
   static constexpr const char * OBJECT_COLLISION_ESTIMATOR_NODE_NAME =
