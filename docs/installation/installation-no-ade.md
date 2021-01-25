@@ -38,8 +38,8 @@ The tool `rosdep` allows an automatic search and installation of such dependenci
 
 ```bash
 $ sudo apt update
-$ apt install -y python3-rosdep
-$ rosdep init
+$ sudo apt install -y python3-rosdep
+$ sudo rosdep init
 $ rosdep update
 ```
 

@@ -58,7 +58,10 @@ Deviations need to be approved by the maintainers.
 The requirements for C++14 and Python 3.7+ align with compiler and tooling support found in ROS Foxy.
 This may change in the future as new OS or ROS environments are targeted.
 
-## Commits {#contributors-guidelines-commits}
+## Building
+See @ref building.
+
+## Committing
 
 Developers should commit and push regularly to their fork on GitLab to avoid data loss. Commit messages should follow
 common standards as laid out in this [post](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html). In

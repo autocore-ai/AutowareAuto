@@ -69,7 +69,7 @@ colcon build --cmake-args -DCMAKE_CXX_FLAGS="-fsanitize=undefined"
 rm -rf {build,install}/my_package
 ```
 
-or, if you don't want to delete the old binaries, you can specify custom build and install directories:
+to remove all build artifacts associated with that package. Alternatively, if you don't want to delete the old binaries, you can specify custom build and install directories:
 
 ```bash
 colcon build --build-base build_mybranch --install-base install_mybranch
@@ -93,16 +93,16 @@ $ sudo ade update-cli
 $ ade start --update --enter
 ade$ cd AutowareAuto
 ade$ rm -rf build/ install/ log/ src/external/
-ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ade$ git pull
+ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
 If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your AutowareAuto folder and re-building:
 
 ```bash
 $ rm -rf build/ install/ log/ src/external/
-$ vcs import < autoware.auto.$ROS_DISTRO.repos
 $ git pull
+$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
 If you are still having trouble after these commands have been run, please see the @ref support-guidelines for where to ask questions.
