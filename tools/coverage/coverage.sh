@@ -9,7 +9,7 @@ COVERAGE_FLAGS="-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
 SKIP_BUILD=0
 SKIP_TEST=0
 FLAG_U=0
-AA_PATH="*/AutowareAuto"
+AA_PATH=`dirname $(dirname $(dirname $(realpath $0)))`
 
 while getopts btuh OPT
 do
@@ -52,12 +52,10 @@ if [ ${SKIP_TEST} -eq 0 ]; then
   lcov --config-file .lcovrc --base-directory ${PWD} --capture --directory build -o lcov.test >> log/latest/lcov_stdout.logs
   lcov --config-file .lcovrc -a lcov.base -a lcov.test -o lcov.total >> log/latest/lcov_stdout.logs
   lcov --config-file .lcovrc -r lcov.total \
-    "${AA_PATH}/build/*/rclcpp_components/*" \
-    "${AA_PATH}/build/mpc_controller/*" \
-    "${AA_PATH}/build/mpc_planner/*" \
-    "${AA_PATH}/build/recordreplay_planner_actions/*" \
+    "${AA_PATH}/build/*" \
     "${AA_PATH}/install/*" \
     "${AA_PATH}/src/*/test/*" \
+    "${AA_PATH}/src/external/*" \
     "*/CMakeCCompilerId.c" \
     "*/CMakeCXXCompilerId.cpp" \
     "*_msgs/*" \

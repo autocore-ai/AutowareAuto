@@ -6,7 +6,7 @@ usage_exit() {
 }
 
 COVERAGE_FLAGS="-fprofile-arcs -ftest-coverage -DCOVERAGE_RUN=1"
-AA_PATH="*/AutowareAuto"
+AA_PATH=`dirname $(dirname $(dirname $(realpath $0)))`
 
 if [ $# -eq 0 ]
 	then
@@ -68,11 +68,10 @@ lcov \
 
 # Filter test, build, and install files and generate html
 lcov --config-file .lcovrc -r "$(pwd)/lcov/lcov.total" \
-	"${AA_PATH}/build/mpc_planner/*" \
-	"${AA_PATH}/build/recordreplay_planner_actions/*" \
+	"${AA_PATH}/build/*" \
 	"${AA_PATH}/install/*" \
 	"${AA_PATH}/src/external/*" \
-        "${AA_PATH}/build/mpc_controller/*" \
+        "${AA_PATH}/src/*/test/*" \
         "*/CMakeCCompilerId.c" \
         "*/CMakeCXXCompilerId.cpp" \
         "*_msgs/*" \
