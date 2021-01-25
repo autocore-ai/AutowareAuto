@@ -22,7 +22,7 @@ ade$ colcon build --cmake-args -DCMAKE_BUILD_TYPE="Release"
 
 It's important that you always run `colcon build` from the repository root. If everything went well, you should _not_ see "failed" on your screen, although "packages had stderr output" is okay.
 
-This assumes you want a maximally optimized build in order to run the stack as well as possible. For development and/or reduced compile times, leave out the `--cmake-args -DCMAKE_BUILD_TYPE="Release"`.
+This assumes you want a maximally optimized build in order to run the stack as efficiently as possible. For development and/or reduced compile times, leave out the `--cmake-args -DCMAKE_BUILD_TYPE="Release"`.
 
 To verify that everything works as expected, see if all tests pass:
 
