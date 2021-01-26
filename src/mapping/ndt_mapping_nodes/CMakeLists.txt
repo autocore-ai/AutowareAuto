@@ -51,6 +51,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/ndt_mapping_nodes_launch.test.py
+    TIMEOUT "30"
+  )
+
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_${PROJECT_NAME} test/test_ndt_mapping_nodes.cpp)
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})

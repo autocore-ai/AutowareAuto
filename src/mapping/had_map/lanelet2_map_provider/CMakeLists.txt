@@ -84,6 +84,15 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/lanelet2_map_provider_launch.test.py
+    TIMEOUT "30"
+  )
+  add_ros_test(
+    test/lanelet2_map_visualizer_launch.test.py
+    TIMEOUT "30"
+  )
+
   # Unit tests
   set(TEST_SOURCES test/test_lanelet2_map_provider.cpp)
   set(TEST_LANELET2_MAP_PROVIDER_EXE test_lanelet2_map_provider)
@@ -107,6 +116,7 @@ target_compile_options(${LANELET2_MAP_NODES} PRIVATE -Wno-sign-conversion -Wno-c
 
 # ament package generation and installing
 ament_auto_package(INSTALL_TO_SHARE
+  data
   launch
   param
 )

@@ -1,0 +1,5 @@
+/**:
+   ros__parameters:
+      latitude: 0.0
+      longitude: 0.0
+      elevation: 1.0

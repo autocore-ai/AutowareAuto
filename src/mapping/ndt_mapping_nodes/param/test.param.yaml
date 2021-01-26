@@ -1,0 +1,72 @@
+# param/ndt_localizer.param.yaml
+---
+/**:
+  ros__parameters:
+    file_name_prefix: "test"
+    publish_map_increment: true
+    map:
+      capacity: 1000000
+      min_point:
+        x: -1000.0
+        y: -1000.0
+        z: -3.0
+      max_point:
+        x: 1000.0
+        y: 1000.0
+        z: 3.0
+      voxel_size:
+        x: 1.0
+        y: 1.0
+        z: 1.0
+      frame_id: map
+    map_increment_pub:
+      history_depth: 10
+    observation_sub:
+      history_depth: 10
+    map_sub:
+      history_depth: 1
+    pose_pub:
+      history_depth: 10
+    publish_tf: true
+    predict_pose_threshold:
+      translation: 50.0
+      rotation: 3.15
+    init_hack:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      quaternion:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+      enabled: true
+    localizer:
+      map:
+        capacity: 1000000
+        min_point:
+          x: -1000.0
+          y: -1000.0
+          z: -3.0
+        max_point:
+          x: 1000.0
+          y: 1000.0
+          z: 3.0
+        voxel_size:
+          x: 3.5
+          y: 3.5
+          z: 3.5
+      scan:
+        capacity: 100000
+      optimization:
+        outlier_ratio: 0.55
+      optimizer:
+        max_iterations: 40
+        score_tolerance: 0.00001
+        parameter_tolerance: 0.00001
+        gradient_tolerance: 0.00002
+        line_search:
+          step_max: 0.12
+          step_min: 0.0001
+      guess_time_tolerance_ms: 750
