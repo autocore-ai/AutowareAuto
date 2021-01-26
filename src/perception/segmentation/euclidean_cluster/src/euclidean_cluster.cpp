@@ -280,7 +280,7 @@ std::pair<const PointXYZI *, const PointXYZI *> point_struct_iterators(
   //lint -e{826, 9176} NOLINT I claim this is ok and tested
   const auto begin = reinterpret_cast<const PointXYZI *>(&cls.data[0]);
   //lint -e{826, 9176} NOLINT I claim this is ok and tested
-  const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[cls.data.size() - 1]);
+  const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[0] + cls.data.size());
   return std::make_pair(begin, end);
 }
 

@@ -188,7 +188,7 @@ void EuclideanClusterNode::handle_clusters(
 
     // Also publish boxes for visualization
     uint32_t id_counter = 0;
-    MarkerArray m_marker_array{};
+    MarkerArray marker_array;
     for (const auto & box : m_boxes.boxes) {
       Marker m{};
       m.header.stamp = rclcpp::Time(0);
@@ -214,10 +214,10 @@ void EuclideanClusterNode::handle_clusters(
       m.color.a = 0.75;
       m.lifetime.sec = 0;
       m.lifetime.nanosec = 500000000;
-      m_marker_array.markers.push_back(m);
+      marker_array.markers.push_back(m);
       id_counter++;
     }
-    m_marker_pub_ptr->publish(m_marker_array);
+    m_marker_pub_ptr->publish(marker_array);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
