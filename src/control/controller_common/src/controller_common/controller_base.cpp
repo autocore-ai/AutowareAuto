@@ -94,6 +94,9 @@ void ControllerBase::set_trajectory(const Trajectory & trajectory)
   if (!check_new_trajectory(trajectory)) {
     throw std::domain_error{"ControllerBase: Trajectory not as expected"};
   }
+  if (trajectory.points.empty()) {
+    throw std::domain_error{"ControllerBase: Zero length trajectory is not expected"};
+  }
   // Return value ellision should hit for at most a single copy (a warning told me not to move)
   m_reference_trajectory = handle_new_trajectory(trajectory);
   // This happens _after_ because of dependence on state; handle_new_trajectory might mutate

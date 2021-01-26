@@ -288,13 +288,12 @@ TEST_F(bad_cases, empty_trajectory)
     // spin one more time for good measure
     EXPECT_NO_THROW(exec.spin_some(std::chrono::milliseconds(100LL)));
   }
-  // Should result in stop commands
-  EXPECT_GT(sub_->commands().size(), 0U);
-  for (const auto & cmd : sub_->commands()) {
-    ASSERT_FLOAT_EQ(cmd.long_accel_mps2, -3.0F);
-    ASSERT_FLOAT_EQ(cmd.front_wheel_angle_rad, 0.0F);
-    ASSERT_FLOAT_EQ(cmd.rear_wheel_angle_rad, 0.0F);
-  }
+  // Should result in no command
+  EXPECT_EQ(sub_->commands().size(), 0U);
+  // Check logging output
+  std::string last_line{};
+  (void)std::getline(*ss, last_line);
+  EXPECT_EQ(last_line, "ControllerBase: Zero length trajectory is not expected");
 }
 
 TEST_F(bad_cases, empty_state_frame)

@@ -89,8 +89,8 @@ TEST_F(state_tracking, size_zero_trajectory)
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 3.0F, 1.0F, dt);
   traj.header.frame_id = "foo";
   traj.points.resize(0U);
+  EXPECT_THROW(controller_.set_trajectory(std::move(traj)), std::domain_error);
   apex_test_tools::memory_test::start();
-  controller_.set_trajectory(std::move(traj));
   (void)controller_.compute_command(state);
   apex_test_tools::memory_test::stop();
   EXPECT_THROW(controller_.get_current_state_temporal_index(), std::domain_error);
