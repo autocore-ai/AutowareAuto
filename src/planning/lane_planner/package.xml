@@ -19,7 +19,7 @@
   <depend>motion_common</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
-  <depend>object_collision_estimator</depend>
+  <depend>trajectory_smoother</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

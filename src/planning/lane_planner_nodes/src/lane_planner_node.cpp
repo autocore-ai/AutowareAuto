@@ -23,6 +23,8 @@ namespace autoware
 namespace lane_planner_nodes
 {
 
+using motion::planning::trajectory_smoother::TrajectorySmootherConfig;
+
 LanePlannerNode::LanePlannerNode(const rclcpp::NodeOptions & node_options)
 : TrajectoryPlannerNodeBase{"lane_planner", "plan_lane_trajectory", node_options}
 {

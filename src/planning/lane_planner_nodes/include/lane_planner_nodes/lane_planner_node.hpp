@@ -38,8 +38,6 @@ using motion::motion_common::Real;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-using motion::planning::object_collision_estimator::TrajectorySmootherConfig;
-
 using autoware_auto_msgs::srv::HADMapService;
 using autoware_auto_msgs::msg::Route;
 using autoware_auto_msgs::msg::Trajectory;

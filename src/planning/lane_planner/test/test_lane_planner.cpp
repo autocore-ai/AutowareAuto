@@ -23,8 +23,7 @@ using autoware_auto_msgs::msg::Route;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 
 using motion::motion_common::VehicleConfig;
-using motion::planning::object_collision_estimator::TrajectorySmootherConfig;
-using motion::planning::object_collision_estimator::TrajectorySmoother;
+using motion::planning::trajectory_smoother::TrajectorySmootherConfig;
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;

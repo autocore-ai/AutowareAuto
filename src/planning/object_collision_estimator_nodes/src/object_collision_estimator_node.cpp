@@ -35,8 +35,8 @@ namespace object_collision_estimator_nodes
 using namespace std::chrono_literals;
 using motion::planning::object_collision_estimator::ObjectCollisionEstimatorConfig;
 using motion::planning::object_collision_estimator::ObjectCollisionEstimator;
-using motion::planning::object_collision_estimator::TrajectorySmootherConfig;
-using motion::planning::object_collision_estimator::TrajectorySmoother;
+using motion::planning::trajectory_smoother::TrajectorySmootherConfig;
+using motion::planning::trajectory_smoother::TrajectorySmoother;
 using motion::motion_common::VehicleConfig;
 using motion::motion_common::Real;
 using autoware::common::types::float64_t;

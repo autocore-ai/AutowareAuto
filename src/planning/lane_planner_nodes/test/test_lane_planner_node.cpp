@@ -24,7 +24,6 @@ using autoware::common::types::float64_t;
 
 using motion::motion_common::Real;
 using motion::motion_common::VehicleConfig;
-using motion::planning::object_collision_estimator::TrajectorySmootherConfig;
 
 using autoware_auto_msgs::srv::HADMapService;
 using autoware_auto_msgs::action::PlanTrajectory;

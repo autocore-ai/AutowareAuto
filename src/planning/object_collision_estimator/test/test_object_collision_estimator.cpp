@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <trajectory_smoother/trajectory_smoother.hpp>
 #include <motion_testing/motion_testing.hpp>
 #include <common/types.hpp>
 #include <gtest/gtest.h>
@@ -21,7 +22,7 @@
 
 using motion::planning::object_collision_estimator::ObjectCollisionEstimator;
 using motion::planning::object_collision_estimator::ObjectCollisionEstimatorConfig;
-using motion::planning::object_collision_estimator::TrajectorySmoother;
+using motion::planning::trajectory_smoother::TrajectorySmoother;
 using motion::motion_testing::constant_velocity_trajectory;
 using autoware::common::types::float32_t;
 using motion::motion_common::VehicleConfig;

@@ -31,6 +31,7 @@ namespace object_collision_estimator
 using autoware::common::geometry::bounding_box::minimum_perimeter_bounding_box;
 using autoware::common::types::float32_t;
 using motion::motion_common::to_angle;
+using motion::planning::trajectory_smoother::TrajectorySmoother;
 using geometry_msgs::msg::Point32;
 
 /// \brief Convert a trajectory waypoint into a bounding box representing the volume occupied by the
