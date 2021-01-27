@@ -52,6 +52,10 @@ if(BUILD_TESTING)
   autoware_set_compile_options(${PURE_PURSUIT_NODE_TEST})
 
   add_ros_test(test/src/pure_pursuit_node.test.py)
+  add_ros_test(
+    test/src/pure_pursuit_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 ## install stuff

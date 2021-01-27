@@ -9,6 +9,11 @@ ament_auto_find_build_dependencies()
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  add_ros_test(
+    test/controller_testing_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 # Install python scripts

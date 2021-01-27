@@ -27,8 +27,10 @@
   <exec_depend>rviz2</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>
 
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    state_frame: 'odom'
+    odom_child_frame: 'base_link'
+    sim_time_step_s: 0.1
+    real_time_sim: false
+    stop_and_report_time_s: 12.0
+    vehicle:
+      cog_to_front_axle: 1.228
+      cog_to_rear_axle: 1.5618
+    trajectory:
+      generate: false
+      frame: 'odom'
+      length: 100
+      discretization_m: 1.0
+      speed_start: 3.0
+      speed_max: 12.0
+      speed_increments: 0.33
+      stopping_decel: 3.0
+      heading_rate: 0.0
+      heading_rate_max: 1.0
+      heading_rate_increments: 0.0001
