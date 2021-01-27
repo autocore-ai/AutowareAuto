@@ -30,6 +30,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # Linters
   ament_lint_auto_find_test_dependencies()
+
+  add_ros_test(
+    test/recordreplay_planner_node_launch.test.py
+    TIMEOUT "30"
+  )
   # Unit test
   ament_add_gtest(${RECORDREPLAY_PLANNER_NODE_LIB}_unit_tests
     test/gtest_main.cpp

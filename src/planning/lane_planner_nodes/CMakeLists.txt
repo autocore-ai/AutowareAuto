@@ -50,6 +50,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/lane_planner_node_launch.test.py
+    TIMEOUT "30"
+  )
+
   # Unit tests
   set(TEST_SOURCES test/test_lane_planner_node.cpp)
   set(TEST_LANE_PLANNER_NODE_EXE test_lane_planner_node)

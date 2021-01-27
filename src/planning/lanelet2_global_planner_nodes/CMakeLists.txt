@@ -29,6 +29,18 @@ rclcpp_components_register_node(${GB_PLANNER_NODE_LIB}
   EXECUTABLE ${GB_PLANNER_NODE_EXE}
 )
 
+# Testing
+if(BUILD_TESTING)
+  ## Linters were previously not part of this package
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  add_ros_test(
+    test/lanelet2_global_planner_node_launch.test.py
+    TIMEOUT "30"
+  )
+endif()
+
 # Ament Exporting
 target_include_directories(${GB_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_compile_options(${GB_PLANNER_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast

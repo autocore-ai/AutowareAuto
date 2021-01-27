@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    heading_weight: 0.1
+    goal_distance_thresh: 1.0
+    stop_velocity_thresh: 0.1
+    subroute_goal_offset_lane2parking: 7.5
+    subroute_goal_offset_parking2lane: 7.5

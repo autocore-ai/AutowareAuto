@@ -61,6 +61,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/object_collision_estimator_node_launch.test.py
+    TIMEOUT "30"
+  )
+
   # Build unit test
   ament_add_gtest(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests
     test/${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_test.cpp)

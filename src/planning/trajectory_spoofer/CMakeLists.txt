@@ -58,6 +58,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/trajectory_spoofer_launch.test.py
+    TIMEOUT "30"
+  )
+
   # Unit tests
   set(TEST_SOURCES test/gtest_main.cpp test/test_trajectory_spoofer.cpp)
   set(TEST_TRAJECTORY_SPOOFER_EXE test_trajectory_spoofer)
