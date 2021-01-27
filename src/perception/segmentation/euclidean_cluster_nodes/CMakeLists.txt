@@ -50,6 +50,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/euclidean_cluster_node_launch.test.py
+    TIMEOUT "30"
+  )
+
   # gtest
   set(CLUSTER_NODE_GTEST eucliden_cluster_nodes_gtest)
   ament_add_gtest(${CLUSTER_NODE_GTEST} test/test_euclidean_cluster_nodes.cpp)

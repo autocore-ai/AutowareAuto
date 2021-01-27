@@ -49,6 +49,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/point_cloud_fusion_node_launch.test.py
+    TIMEOUT "30"
+  )
+
   # gtest
   set(PCF_GTEST pointcloud_fusion_gtest)
   ament_add_gtest(${PCF_GTEST}

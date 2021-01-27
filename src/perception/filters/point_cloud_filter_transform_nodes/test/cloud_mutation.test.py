@@ -16,7 +16,7 @@
 
 import os
 
-import ament_index_python
+from ament_index_python import get_package_share_directory
 import launch
 import launch.actions
 import launch_ros.actions
@@ -32,10 +32,8 @@ def generate_test_description(ready_fn):
         node_namespace="lidar_front",
         parameters=[
             os.path.join(
-                ament_index_python.get_package_share_directory(
-                    "point_cloud_filter_transform_nodes"),
-                "param",
-                "test.param.yaml"
+                get_package_share_directory('point_cloud_filter_transform_nodes'),
+                'param/test.param.yaml'
             ),
             {
                 "expected_num_subscribers": 1,

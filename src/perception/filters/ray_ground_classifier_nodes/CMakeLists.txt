@@ -75,6 +75,10 @@ if(BUILD_TESTING)
     test/ray_ground_classifier_fuzzing.test.py
     TIMEOUT "120"
   )
+  add_ros_test(
+    test/ray_ground_classifier_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 ## install stuff

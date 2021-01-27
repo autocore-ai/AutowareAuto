@@ -66,6 +66,10 @@ if(BUILD_TESTING)
     test/voxel_grid_fuzzing.test.py
     TIMEOUT "120"
   )
+  add_ros_test(
+    test/voxel_grid_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 target_compile_options(${VOXEL_GRID_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)

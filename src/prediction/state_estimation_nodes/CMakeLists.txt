@@ -58,6 +58,10 @@ if(BUILD_TESTING)
     test/state_estimation_node_bad.test.py
     TIMEOUT "10"
   )
+  add_ros_test(
+    test/state_estimation_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE param)
