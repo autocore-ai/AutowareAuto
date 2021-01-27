@@ -40,7 +40,7 @@ def generate_launch_description():
     control_command_param = DeclareLaunchArgument(
         'control_command',
         default_value="raw",  # use "raw", "basic" or "high_level"
-        description='command control mode topic name')
+        description='command control mode')
 
     # Default lgsvl_interface params
     lgsvl_interface_param = DeclareLaunchArgument(
@@ -62,7 +62,7 @@ def generate_launch_description():
         parameters=[
             LaunchConfiguration('lgsvl_interface_param'),
             # overwrite parameters from yaml here
-            {"control_command.name": LaunchConfiguration('control_command')}
+            {"control_command": LaunchConfiguration('control_command')}
         ],
         remappings=[
             ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
@@ -74,13 +74,9 @@ def generate_launch_description():
         ]
     )
 
-    # ros2 web bridge
-    # lgsvl_bridge = launch.actions.ExecuteProcess(cmd=["rosbridge"], shell=True)
-
     ld = LaunchDescription([
         control_command_param,
         lgsvl_interface_param,
         lgsvl_interface
-        # lgsvl_bridge  # TODO(c.ho) bring this back once ADE version of web bridge is correct
     ])
     return ld

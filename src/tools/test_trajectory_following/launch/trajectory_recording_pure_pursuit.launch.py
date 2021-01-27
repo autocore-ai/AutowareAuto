@@ -133,7 +133,6 @@ def generate_launch_description():
         package="test_trajectory_following",
         node_executable="joy_ctrl_record_replay_traj.py",
         node_name="joy_ctrl_record_replay_traj",
-        parameters=[],
         remappings=[
             ("vehicle_kinematic_state", "/vehicle/vehicle_kinematic_state")
         ],
@@ -163,7 +162,7 @@ def generate_launch_description():
         node_namespace='perception',
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
-        remappings=[("points_in", "lidar_front/points_filtered")]
+        remappings=[("points_in", "/lidar_front/points_filtered")]
     )
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',
