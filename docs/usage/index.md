@@ -21,6 +21,13 @@ If you forget to source the installation, trying to run any `ros2 run` or `ros2 
 Package 'autoware_demos' not found: "package 'autoware_demos' not found, searching: ['/opt/ros/foxy']"
 ```
 
+Many launch configurations rely on a point cloud map, which is managed via `git lfs`. To download it, do
+```
+git lfs pull --exclude="" --include="*"
+```
+
+Optionally, you can choose a DDS implementation other than the default Cyclone DDS: @subpage choosing-a-dds-vendor
+
 # Operational Design Domain (ODD) Demos
 
 Autoware.Auto includes a growing number of demonstrations for target Operational Design Domains (ODDs), where an ODD is a formal definition of the set of conditions and circumstances an automated vehicle is designed to operate under (for reference, see [SAE J3016 section 3.22](https://www.sae.org/standards/content/j3016_201806/)).
