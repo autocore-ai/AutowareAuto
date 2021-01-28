@@ -18,4 +18,5 @@ Planning {#autoware-planning-design}
   - @subpage parking-planner-nodes
 - @subpage osm-planner
 - @subpage trajectory-planner-node-base
+- @subpage trajectory-smoother-package-design
 - @subpage trajectory-spoofer-design

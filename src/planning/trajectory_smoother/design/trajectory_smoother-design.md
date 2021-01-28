@@ -1,4 +1,4 @@
-trajectory_smoother {#trajectory_smoother-package-design}
+trajectory_smoother {#trajectory-smoother-package-design}
 ===========
 
 This is the design document for the `trajectory_smoother` package.
