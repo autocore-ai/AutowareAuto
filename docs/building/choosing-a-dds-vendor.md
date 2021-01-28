@@ -11,6 +11,7 @@ For more information about working with multiple middleware (DDS) implementation
 ```
 ade$ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
+CycloneDDS is required for integration with LGSVL.
 
 ## For FastRTPS (now FastDDS - the default in ROS Dashing):
 ```

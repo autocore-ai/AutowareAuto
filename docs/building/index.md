@@ -99,11 +99,12 @@ ade$ git pull
 ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
-If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your AutowareAuto folder and re-building:
+If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your AutowareAuto folder and re-building (where `$ROS_DISTRO` is the current distro, e.g. `foxy`):
 
 ```bash
 $ rm -rf build/ install/ log/ src/external/
 $ git pull
+$ source /opt/ros/$ROS_DISTRO/setup.bash
 $ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
