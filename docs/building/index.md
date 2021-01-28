@@ -12,17 +12,19 @@ $ cd AutowareAuto
 $ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
+Optionally, you can choose a DDS implementation other than the default Cyclone DDS: @subpage choosing-a-dds-vendor
+
 
 # How to build the code {#installation-and-development-how-to-build}
 To build all packages in Autoware.Auto, navigate into the AutowareAuto directory and run
 
 ```bash
-ade$ colcon build --cmake-args -DCMAKE_BUILD_TYPE="Release"
+ade$ colcon build
 ```
 
 It's important that you always run `colcon build` from the repository root. If everything went well, you should _not_ see "failed" on your screen, although "packages had stderr output" is okay.
 
-This assumes you want a maximally optimized build in order to run the stack as efficiently as possible. For development and/or reduced compile times, leave out the `--cmake-args -DCMAKE_BUILD_TYPE="Release"`.
+By default, this produces a maximally optimized build in order to run the stack as efficiently as possible. For debugging symbols and/or reduced compile times, you can add `--cmake-args -DCMAKE_BUILD_TYPE="Debug"` to the command line.
 
 To verify that everything works as expected, see if all tests pass:
 
