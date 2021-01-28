@@ -46,6 +46,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/ssc_interface_launch.test.py
+    TIMEOUT "30"
+  )
+
   # Unit tests
   ament_add_gtest(test_${PROJECT_NAME}
     test/test_dbw_state_machine.cpp

@@ -62,6 +62,16 @@ target_link_libraries(${XSENS_GPS_NODE_EXE} ${XSENS_GPS_NODE_LIB})
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  add_ros_test(
+    test/xsens_imu_node_launch.test.py
+    TIMEOUT "30"
+  )
+
+  add_ros_test(
+    test/xsens_gps_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 ## install stuff

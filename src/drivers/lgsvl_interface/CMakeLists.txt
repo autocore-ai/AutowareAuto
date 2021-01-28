@@ -32,6 +32,10 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/src/lgsvl_interface_node_launch.test.py
+    TIMEOUT "30"
+  )
   # gtest
   set(LGSVL_INTERFACE_GTEST test_${PROJECT_NAME}_gtest)
 
@@ -44,6 +48,7 @@ if(BUILD_TESTING)
   ament_target_dependencies(${LGSVL_INTERFACE_GTEST}
     "autoware_auto_common"
     "autoware_auto_msgs")
+
 endif()
 
 ament_auto_package(

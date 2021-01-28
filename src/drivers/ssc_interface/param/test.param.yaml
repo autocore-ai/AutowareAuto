@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    cycle_time_ms: 10
+    control_command: "basic"
+    ssc:
+      front_axle_to_cog: 1.228
+      rear_axle_to_cog: 1.5618
+      max_yaw_rate: 1.5708
+    state_machine:
+      gear_shift_velocity_threshold_mps: 0.5
+      acceleration_limits:
+        min: -5.0
+        max: 15.0
+        threshold: 1.0
+      front_steer_limits:
+        min: -0.533
+        max: 0.533
+        threshold: 0.3
+      time_step_ms: 100
+      timeout_acceleration_mps2: 3.0
+      state_transition_timeout_ms: 3000
+      gear_shift_accel_deadzone_mps2: 0.5

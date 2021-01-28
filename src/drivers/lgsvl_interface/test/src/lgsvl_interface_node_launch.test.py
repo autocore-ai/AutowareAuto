@@ -1,4 +1,4 @@
-# Copyright 2020 the Autoware Foundation
+# Copyright 2021 the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,21 +28,21 @@ import unittest
 @pytest.mark.launch_test
 def generate_test_description(ready_fn):
 
-    velodyne_cloud_node = Node(
-        package="velodyne_nodes",
-        node_executable="velodyne_cloud_node_exe",
-        node_name="vlp16_driver_node",
-        node_namespace="lidar_front",
+    # The node under test and the checker node that will pass/fail our tests:
+    lgsvl_interface_node = Node(
+        package="lgsvl_interface",
+        node_executable="lgsvl_interface_exe",
+        node_namespace="vehicle",
+        output='screen',
         parameters=[
-            os.path.join(get_package_share_directory("velodyne_nodes"), "param/test.param.yaml")
-        ],
-        arguments=["--model", "vlp16"]
+            os.path.join(get_package_share_directory('lgsvl_interface'), 'param/test.param.yaml')
+        ]
     )
 
-    context = {'vel_node': velodyne_cloud_node}
+    context = {'lgsvl_interface_node': lgsvl_interface_node}
 
     return LaunchDescription([
-        velodyne_cloud_node,
+        lgsvl_interface_node,
         # Start tests right away - no need to wait for anything
         OpaqueFunction(function=lambda context: ready_fn())]
     ), context
@@ -51,6 +51,6 @@ def generate_test_description(ready_fn):
 @launch_testing.post_shutdown_test()
 class TestProcessOutput(unittest.TestCase):
 
-    def test_exit_code(self, proc_output, proc_info, vel_node):
+    def test_exit_code(self, proc_output, proc_info, lgsvl_interface_node):
         # Check that process exits with code -15 code: termination request, sent to the program
-        launch_testing.asserts.assertExitCodes(proc_info, [-15], process=vel_node)
+        launch_testing.asserts.assertExitCodes(proc_info, [-15], process=lgsvl_interface_node)

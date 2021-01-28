@@ -1,4 +1,4 @@
-# Copyright 2020 the Autoware Foundation
+# Copyright 2021 the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,21 +28,21 @@ import unittest
 @pytest.mark.launch_test
 def generate_test_description(ready_fn):
 
-    velodyne_cloud_node = Node(
-        package="velodyne_nodes",
-        node_executable="velodyne_cloud_node_exe",
-        node_name="vlp16_driver_node",
-        node_namespace="lidar_front",
+    xsens_imu_node = Node(
+        package='xsens_nodes',
+        node_name='xsens_imu_node',
+        node_executable="xsens_imu_node_exe",
+        node_namespace="vehicle",
+        output='screen',
         parameters=[
-            os.path.join(get_package_share_directory("velodyne_nodes"), "param/test.param.yaml")
+            os.path.join(get_package_share_directory('xsens_nodes'), 'param/test.param.yaml')
         ],
-        arguments=["--model", "vlp16"]
     )
 
-    context = {'vel_node': velodyne_cloud_node}
+    context = {'xsens_imu_node': xsens_imu_node}
 
     return LaunchDescription([
-        velodyne_cloud_node,
+        xsens_imu_node,
         # Start tests right away - no need to wait for anything
         OpaqueFunction(function=lambda context: ready_fn())]
     ), context
@@ -51,6 +51,6 @@ def generate_test_description(ready_fn):
 @launch_testing.post_shutdown_test()
 class TestProcessOutput(unittest.TestCase):
 
-    def test_exit_code(self, proc_output, proc_info, vel_node):
-        # Check that process exits with code -15 code: termination request, sent to the program
-        launch_testing.asserts.assertExitCodes(proc_info, [-15], process=vel_node)
+    def test_exit_code(self, proc_output, proc_info, xsens_imu_node):
+        # In this case the device itself is not available at the determined port
+        launch_testing.asserts.assertExitCodes(proc_info, [2], process=xsens_imu_node)
