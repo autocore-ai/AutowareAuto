@@ -15,8 +15,6 @@
 #include "recordreplay_planner/recordreplay_planner.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
-#include <geometry/common_2d.hpp>
-#include <geometry/intersection.hpp>
 #include <time_utils/time_utils.hpp>
 #include <motion_common/motion_common.hpp>
 #include <common/types.hpp>
@@ -24,12 +22,12 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <map>
-
-#include "recordreplay_planner/vehicle_bounding_box.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
@@ -116,13 +114,8 @@ namespace recordreplay_planner
 {
 using geometry_msgs::msg::Point32;
 using motion::motion_common::to_angle;
-using autoware::common::geometry::intersect;
-using autoware::common::geometry::dot_2d;
 
-RecordReplayPlanner::RecordReplayPlanner(const VehicleConfig & vehicle_param)
-: m_vehicle_param(vehicle_param)
-{
-}
+RecordReplayPlanner::RecordReplayPlanner() {}
 
 // These may do more in the future
 bool8_t RecordReplayPlanner::is_recording() const noexcept
@@ -158,7 +151,6 @@ void RecordReplayPlanner::stop_replaying() noexcept
 void RecordReplayPlanner::clear_record() noexcept
 {
   m_record_buffer.clear();
-  m_cache_traj_bbox_arr.boxes.clear();
 }
 
 std::size_t RecordReplayPlanner::get_record_length() const noexcept
@@ -196,8 +188,6 @@ float64_t RecordReplayPlanner::get_min_record_distance() const
 
 void RecordReplayPlanner::record_state(const State & state_to_record)
 {
-  m_cache_traj_bbox_arr.boxes.clear();
-
   if (m_record_buffer.empty()) {
     m_record_buffer.push_back(state_to_record);
     return;
@@ -243,24 +233,6 @@ std::size_t RecordReplayPlanner::get_closest_state(const State & current_state)
   return static_cast<std::size_t>(minimum_idx);
 }
 
-const BoundingBoxArray & RecordReplayPlanner::get_traj_boxes()
-{
-  m_current_traj_bboxes.boxes.resize((m_traj_end_idx - m_traj_start_idx));
-  for (std::size_t i = {}; i < (m_traj_end_idx - m_traj_start_idx); ++i) {
-    m_current_traj_bboxes.boxes[i] = m_cache_traj_bbox_arr.boxes[i];
-    // workaround to color Green
-    m_current_traj_bboxes.boxes[i].vehicle_label = BoundingBox::MOTORCYCLE;
-  }
-  return m_current_traj_bboxes;
-}
-const BoundingBoxArray & RecordReplayPlanner::get_collision_boxes()
-{
-  if (!m_latest_collison_boxes.boxes.empty()) {
-    // workaround to color Orange
-    m_latest_collison_boxes.boxes[0].vehicle_label = BoundingBox::CYCLIST;
-  }
-  return m_latest_collison_boxes;
-}
 
 const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
 {
@@ -272,51 +244,8 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   const auto record_length = get_record_length();
   m_traj_end_idx =
     std::min(
-    {record_length - m_traj_start_idx, trajectory.points.max_size(),
-      m_cache_traj_bbox_arr.boxes.max_size()}) + m_traj_start_idx;
-
-  // Build bounding box cache
-  if (m_cache_traj_bbox_arr.boxes.empty() ||
-    m_cache_traj_bbox_arr.boxes.size() != get_record_length())
-  {
-    m_cache_traj_bbox_arr.boxes.clear();
-    m_cache_traj_bbox_arr.header = current_state.header;
-    for (std::size_t i = m_traj_start_idx; i < m_traj_end_idx; ++i) {
-      const auto boundingbox = compute_boundingbox_from_trajectorypoint(
-        m_record_buffer[i].state, m_vehicle_param);
-      m_cache_traj_bbox_arr.boxes.push_back(boundingbox);
-    }
-  }
-
-  // Reset and setup debug msg
-  m_latest_collison_boxes.boxes.clear();
-  m_latest_collison_boxes.header = m_latest_bounding_boxes.header;
-  m_current_traj_bboxes.boxes.clear();
-  m_current_traj_bboxes.header = current_state.header;
-
-
-  // Collision detection
-  for (std::size_t i = m_traj_start_idx; i < m_traj_end_idx; ++i) {
-    const size_t i_bbox = i - m_traj_start_idx;
-    const auto & boundingbox = m_cache_traj_bbox_arr.boxes[i_bbox];
-
-    // Check for collisions with all perceived obstacles
-    for (const auto & obstaclebox : m_latest_bounding_boxes.boxes) {
-      if (intersect(
-          boundingbox.corners.begin(), boundingbox.corners.end(),
-          obstaclebox.corners.begin(), obstaclebox.corners.end()) )
-      {
-        // Collision detected, set end index (non-inclusive)
-        m_traj_end_idx = i;  // This also ends the outer loop
-
-        // Visual Debug msg
-        auto collison_box = obstaclebox;
-        m_latest_collison_boxes.boxes.push_back(collison_box);
-
-        break;
-      }
-    }
-  }
+    {record_length - m_traj_start_idx, trajectory.points.max_size()}) +
+    m_traj_start_idx;
 
   // Assemble the trajectory as desired
   trajectory.header = current_state.header;
@@ -435,16 +364,6 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
     }
     record_state(s);
   }
-}
-
-void RecordReplayPlanner::update_bounding_boxes(const BoundingBoxArray & bounding_boxes)
-{
-  m_latest_bounding_boxes = bounding_boxes;
-}
-
-std::size_t RecordReplayPlanner::get_number_of_bounding_boxes() const noexcept
-{
-  return m_latest_bounding_boxes.boxes.size();
 }
 
 }  // namespace recordreplay_planner

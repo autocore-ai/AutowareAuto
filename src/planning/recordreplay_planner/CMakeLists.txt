@@ -16,7 +16,6 @@ endif()
 # Build library
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner/recordreplay_planner.cpp
-  src/recordreplay_planner/vehicle_bounding_box.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
 

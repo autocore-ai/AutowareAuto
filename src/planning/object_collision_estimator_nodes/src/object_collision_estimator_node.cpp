@@ -187,7 +187,8 @@ void ObjectCollisionEstimatorNode::estimate_collision(
   const std::shared_ptr<autoware_auto_msgs::srv::ModifyTrajectory::Request> request,
   std::shared_ptr<autoware_auto_msgs::srv::ModifyTrajectory::Response> response)
 {
-  rclcpp::Time request_time{request->original_trajectory.header.stamp};
+  rclcpp::Time request_time{request->original_trajectory.header.stamp,
+    m_last_obstacle_msg_time.get_clock_type()};
   auto elapsed_time = request_time - m_last_obstacle_msg_time;
   if (m_last_obstacle_msg_time.seconds() == 0) {
     RCLCPP_WARN(

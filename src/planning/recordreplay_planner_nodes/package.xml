@@ -15,6 +15,8 @@
   <depend>recordreplay_planner</depend>
   <depend>recordreplay_planner_actions</depend>
   <depend>motion_common</depend>
+  <depend>behavior_planner</depend>
+  <depend>object_collision_estimator_nodes</depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>

@@ -16,7 +16,6 @@
 #define RECORDREPLAY_PLANNER__RECORDREPLAY_PLANNER_HPP_
 
 #include <recordreplay_planner/visibility_control.hpp>
-#include <autoware_auto_msgs/msg/bounding_box_array.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <motion_common/config.hpp>
@@ -35,12 +34,9 @@ namespace planning
 {
 namespace recordreplay_planner
 {
-using BoundingBox = autoware_auto_msgs::msg::BoundingBox;
-using BoundingBoxArray = autoware_auto_msgs::msg::BoundingBoxArray;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using autoware_auto_msgs::msg::Trajectory;
 using Heading = decltype(decltype(State::state)::heading);
-using motion::motion_common::VehicleConfig;
 
 enum class RecordReplayState
 {
@@ -53,7 +49,7 @@ enum class RecordReplayState
 class RECORDREPLAY_PLANNER_PUBLIC RecordReplayPlanner
 {
 public:
-  explicit RecordReplayPlanner(const VehicleConfig & vehicle_param);
+  RecordReplayPlanner();
 
   // Record and replay control
   bool8_t is_recording() const noexcept;
@@ -88,15 +84,6 @@ public:
   void writeTrajectoryBufferToFile(const std::string & record_path);
   void readTrajectoryBufferFromFile(const std::string & replay_path);
 
-  // Update bounding boxes to new perception
-  void update_bounding_boxes(const BoundingBoxArray & bounding_boxes);
-
-  std::size_t get_number_of_bounding_boxes() const noexcept;
-
-  // Debug data
-  const BoundingBoxArray & get_collision_boxes();
-  const BoundingBoxArray & get_traj_boxes();
-
 private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
@@ -105,19 +92,12 @@ private:
   // Weight of heading in computations of differences between states
   float64_t m_heading_weight = 0.1;
   float64_t m_min_record_distance = 0.0;
-  VehicleConfig m_vehicle_param;
 
   std::size_t m_traj_start_idx{};
   std::size_t m_traj_end_idx{};
   std::deque<State> m_record_buffer;
-  BoundingBoxArray m_latest_bounding_boxes{};
-  BoundingBoxArray m_cache_traj_bbox_arr{};
   Trajectory m_trajectory{};
   RecordReplayState m_recordreplaystate{RecordReplayState::IDLE};
-
-  // Debug msgs
-  BoundingBoxArray m_latest_collison_boxes{};
-  BoundingBoxArray m_current_traj_bboxes{};
 };  // class RecordReplayPlanner
 }  // namespace recordreplay_planner
 }  // namespace planning
