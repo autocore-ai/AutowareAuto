@@ -4,5 +4,5 @@ export ADE_REGISTRY=registry.gitlab.com
 export ADE_IMAGES="
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/ade-dashing:master
   registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/binary-dashing:master
-  registry.gitlab.com/apexai/ade-lgsvl:2020.08-native-bridge
+  registry.gitlab.com/autowarefoundation/autoware.auto/ade-lgsvl/dashing:2020.06
 "

@@ -21,6 +21,7 @@
 
   <!-- Transitive build dependencies -->
   <depend>autoware_auto_msgs</depend>
+  <depend>lgsvl_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>time_utils</depend>

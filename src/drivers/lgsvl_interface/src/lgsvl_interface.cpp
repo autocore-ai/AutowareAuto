@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,9 +33,27 @@ namespace comp = autoware::common::helper_functions::comparisons;
 namespace lgsvl_interface
 {
 
+const std::unordered_map<WIPER_TYPE, WIPER_TYPE> LgsvlInterface::autoware_to_lgsvl_wiper {
+  {VSC::WIPER_NO_COMMAND, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+  {VSC::WIPER_OFF, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+  {VSC::WIPER_LOW, static_cast<WIPER_TYPE>(VSD::WIPERS_LOW)},
+  {VSC::WIPER_HIGH, static_cast<WIPER_TYPE>(VSD::WIPERS_HIGH)},
+  {VSC::WIPER_CLEAN, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+};
+
 const std::unordered_map<GEAR_TYPE, GEAR_TYPE> LgsvlInterface::autoware_to_lgsvl_gear {
-  {VSC::GEAR_DRIVE, static_cast<GEAR_TYPE>(LGSVL_GEAR::DRIVE)},               // Drive
-  {VSC::GEAR_REVERSE, static_cast<GEAR_TYPE>(LGSVL_GEAR::REVERSE)},           // Reverse
+  {VSC::GEAR_NO_COMMAND, static_cast<GEAR_TYPE>(VSD::GEAR_NEUTRAL)},
+  {VSC::GEAR_DRIVE, static_cast<GEAR_TYPE>(VSD::GEAR_DRIVE)},
+  {VSC::GEAR_REVERSE, static_cast<GEAR_TYPE>(VSD::GEAR_REVERSE)},
+  {VSC::GEAR_PARK, static_cast<GEAR_TYPE>(VSD::GEAR_PARKING)},
+  {VSC::GEAR_LOW, static_cast<GEAR_TYPE>(VSD::GEAR_LOW)},
+  {VSC::GEAR_NEUTRAL, static_cast<GEAR_TYPE>(VSD::GEAR_NEUTRAL)},
+};
+
+const std::unordered_map<MODE_TYPE, MODE_TYPE> LgsvlInterface::autoware_to_lgsvl_mode {
+  {VSC::MODE_NO_COMMAND, static_cast<MODE_TYPE>(VSD::VEHICLE_MODE_COMPLETE_MANUAL)},
+  {VSC::MODE_AUTONOMOUS, static_cast<MODE_TYPE>(VSD::VEHICLE_MODE_COMPLETE_AUTO_DRIVE)},
+  {VSC::MODE_MANUAL, static_cast<MODE_TYPE>(VSD::VEHICLE_MODE_COMPLETE_MANUAL)},
 };
 
 LgsvlInterface::LgsvlInterface(
@@ -99,9 +117,9 @@ LgsvlInterface::LgsvlInterface(
   }
 
   // Make publishers
-  m_cmd_pub = node.create_publisher<autoware_auto_msgs::msg::RawControlCommand>(
+  m_cmd_pub = node.create_publisher<lgsvl_msgs::msg::VehicleControlData>(
     sim_cmd_topic, rclcpp::QoS{10});
-  m_state_pub = node.create_publisher<autoware_auto_msgs::msg::VehicleStateCommand>(
+  m_state_pub = node.create_publisher<lgsvl_msgs::msg::VehicleStateData>(
     sim_state_cmd_topic, rclcpp::QoS{10});
   // Make subscribers
   if (!sim_nav_odom_topic.empty() && ("null" != sim_nav_odom_topic)) {
@@ -123,15 +141,49 @@ LgsvlInterface::LgsvlInterface(
     }
   }
 
-  m_state_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleStateReport>(
+  m_state_sub = node.create_subscription<lgsvl_msgs::msg::CanBusData>(
     sim_state_report_topic,
     rclcpp::QoS{10},
-    [this](autoware_auto_msgs::msg::VehicleStateReport::SharedPtr msg) {on_state_report(*msg);});
+    [this](lgsvl_msgs::msg::CanBusData::SharedPtr msg) {
+      autoware_auto_msgs::msg::VehicleStateReport state_report;
+      // state_report.set__fuel(nullptr);  // no fuel status from LGSVL
+      if (msg->left_turn_signal_active) {
+        state_report.set__blinker(autoware_auto_msgs::msg::VehicleStateReport::BLINKER_LEFT);
+      } else if (msg->right_turn_signal_active) {
+        state_report.set__blinker(autoware_auto_msgs::msg::VehicleStateReport::BLINKER_RIGHT);
+      } else {
+        state_report.set__blinker(autoware_auto_msgs::msg::VehicleStateReport::BLINKER_OFF);
+      }
+      if (msg->low_beams_active) {
+        state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_ON);
+      } else if (msg->high_beams_active) {
+        state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_HIGH);
+      } else {
+        state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_OFF);
+      }
 
-  m_veh_odom_sub = node.create_subscription<autoware_auto_msgs::msg::VehicleOdometry>(
+      if (msg->wipers_active) {
+        state_report.set__wiper(autoware_auto_msgs::msg::VehicleStateReport::WIPER_LOW);
+      } else {
+        state_report.set__wiper(autoware_auto_msgs::msg::VehicleStateReport::WIPER_OFF);
+      }
+
+      state_report.set__gear(static_cast<uint8_t>(msg->selected_gear));
+      // state_report.set__mode();  // no mode status from LGSVL
+      state_report.set__hand_brake(msg->parking_brake_active);
+      // state_report.set__horn()  // no horn status from LGSVL
+      on_state_report(state_report);
+    });
+
+  m_veh_odom_sub = node.create_subscription<lgsvl_msgs::msg::VehicleOdometry>(
     sim_veh_odom_topic,
     rclcpp::QoS{10},
-    [this](autoware_auto_msgs::msg::VehicleOdometry::SharedPtr msg) {odometry() = *msg;});
+    [this](lgsvl_msgs::msg::VehicleOdometry::SharedPtr msg) {
+      odometry().set__stamp(msg->header.stamp);
+      odometry().set__velocity_mps(msg->velocity);
+      odometry().set__rear_wheel_angle_rad(msg->rear_wheel_angle);
+      odometry().set__front_wheel_angle_rad(msg->front_wheel_angle);
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,26 +199,62 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
 {
   auto msg_corrected = msg;
 
-  // in autoware_auto_msgs::msg::VehicleStateCommand 1 is drive, 2 is reverse, https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/9744f6dc/src/messages/autoware_auto_msgs/msg/VehicleStateCommand.msg#L32
-  // in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
-
-  auto const iter = autoware_to_lgsvl_gear.find(msg.gear);
-
-  if (iter != autoware_to_lgsvl_gear.end()) {
-    msg_corrected.gear = iter->second;
-  } else {
-    msg_corrected.gear = static_cast<uint8_t>(LGSVL_GEAR::DRIVE);
-    RCLCPP_WARN(m_logger, "Unsupported gear value in state command, defaulting to Drive");
-  }
-
-  // Correcting blinker, they are shifted down by one,
-  // as the first value BLINKER_NO_COMMAND does not exisit in LGSVL
+  // Correcting blinker and headlights, they are shifted down by one,
+  // as the first value [BLINKER/HEADLIGHT]_NO_COMMAND does not exisit in LGSVL
   if (msg.blinker == VSC::BLINKER_NO_COMMAND) {
     msg_corrected.blinker = get_state_report().blinker;
   }
   msg_corrected.blinker--;
 
-  m_state_pub->publish(msg_corrected);
+  if (msg.headlight == VSC::HEADLIGHT_NO_COMMAND) {
+    msg_corrected.headlight = get_state_report().headlight;
+  }
+  msg_corrected.headlight--;
+
+  // Correcting gears
+  auto const gear_iter = autoware_to_lgsvl_gear.find(msg.gear);
+
+  if (gear_iter != autoware_to_lgsvl_gear.end()) {
+    msg_corrected.gear = gear_iter->second;
+  } else {
+    msg_corrected.gear = static_cast<uint8_t>(VSD::GEAR_DRIVE);
+    RCLCPP_WARN(m_logger, "Unsupported gear value in state command, defaulting to Drive");
+  }
+
+  // Correcting wipers
+  auto const wiper_iter = autoware_to_lgsvl_wiper.find(msg.wiper);
+
+  if (wiper_iter != autoware_to_lgsvl_wiper.end()) {
+    msg_corrected.wiper = wiper_iter->second;
+  } else {
+    msg_corrected.wiper = static_cast<uint8_t>(VSD::WIPERS_OFF);
+    RCLCPP_WARN(m_logger, "Unsupported wiper value in state command, defaulting to OFF");
+  }
+
+  // Correcting mode
+  auto const mode_iter = autoware_to_lgsvl_mode.find(msg.mode);
+
+  if (mode_iter != autoware_to_lgsvl_mode.end()) {
+    msg_corrected.mode = mode_iter->second;
+  } else {
+    msg_corrected.mode = static_cast<uint8_t>(VSD::VEHICLE_MODE_COMPLETE_MANUAL);
+    RCLCPP_WARN(m_logger, "Unsupported mode value in state command, defaulting to COMPLETE MANUAL");
+  }
+
+  lgsvl_msgs::msg::VehicleStateData state_data;
+  state_data.header.set__stamp(msg_corrected.stamp);
+  state_data.set__blinker_state(msg_corrected.blinker);
+  state_data.set__headlight_state(msg_corrected.headlight);
+  state_data.set__wiper_state(msg_corrected.wiper);
+  state_data.set__current_gear(msg_corrected.gear);
+  state_data.set__vehicle_mode(msg_corrected.mode);
+  state_data.set__hand_brake_active(msg_corrected.hand_brake);
+  state_data.set__horn_active(msg_corrected.horn);
+  state_data.set__autonomous_mode_active(
+    msg_corrected.mode ==
+    VSD::VEHICLE_MODE_COMPLETE_AUTO_DRIVE ? true : false);
+
+  m_state_pub->publish(state_data);
   return true;
 }
 
@@ -202,9 +290,13 @@ bool8_t LgsvlInterface::send_control_command(
 bool8_t LgsvlInterface::send_control_command(const autoware_auto_msgs::msg::RawControlCommand & msg)
 {
   // Front steer semantically is z up, ccw positive, but LGSVL thinks its the opposite
-  auto msg_corrected = msg;
-  msg_corrected.front_steer = -msg.front_steer;
-  m_cmd_pub->publish(msg_corrected);
+  lgsvl_msgs::msg::VehicleControlData control_data;
+  control_data.set__acceleration_pct(static_cast<float>(msg.throttle) / 100.f);
+  control_data.set__braking_pct(static_cast<float>(msg.brake) / 100.f);
+  control_data.set__target_wheel_angle(-static_cast<float>(msg.front_steer) / 100.f);
+  // control_data.set__target_wheel_angular_rate();  // Missing angular rate in raw command
+  // control_data.set__target_gear(); // Missing target gear in raw command
+  m_cmd_pub->publish(control_data);
   return true;
 }
 

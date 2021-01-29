@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,12 @@
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
 #include <autoware_auto_msgs/srv/autonomy_mode_change.hpp>
+
+#include <lgsvl_msgs/msg/vehicle_odometry.hpp>
+#include <lgsvl_msgs/msg/can_bus_data.hpp>
+#include <lgsvl_msgs/msg/vehicle_control_data.hpp>
+#include <lgsvl_msgs/msg/vehicle_state_data.hpp>
+
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -66,12 +72,10 @@ constexpr bool NO_PUBLISH = false;
 
 // in lgsvl 0 is drive and 1 is reverse https://github.com/lgsvl/simulator/blob/cb937deb8e633573f6c0cc76c9f451398b8b9eff/Assets/Scripts/Sensors/VehicleStateSensor.cs#L70
 using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
+using VSD = lgsvl_msgs::msg::VehicleStateData;
+using WIPER_TYPE = decltype(VSC::wiper);
 using GEAR_TYPE = decltype(VSC::gear);
-enum class LGSVL_GEAR : GEAR_TYPE
-{
-  DRIVE = 0u,
-  REVERSE = 1u,
-};
+using MODE_TYPE = decltype(VSC::mode);
 
 /// Platform interface implementation for LGSVL. Bridges data to and from the simulator
 /// where custom logic is required to get simulator data to adhere to ROS conventions.
@@ -111,8 +115,10 @@ public:
     autoware_auto_msgs::srv::AutonomyModeChange_Request::SharedPtr request) override;
 
 private:
-  // Mapping from Autoware Gear to LGSVL Gear values
+  // Mappings from Autoware to LGSVL values
+  static const std::unordered_map<WIPER_TYPE, WIPER_TYPE> autoware_to_lgsvl_wiper;
   static const std::unordered_map<GEAR_TYPE, GEAR_TYPE> autoware_to_lgsvl_gear;
+  static const std::unordered_map<MODE_TYPE, MODE_TYPE> autoware_to_lgsvl_mode;
 
   // Convert odometry into vehicle kinematic state and pose
   void on_odometry(const nav_msgs::msg::Odometry & msg);
@@ -120,15 +126,15 @@ private:
   // store state_report with gear value correction
   void on_state_report(const autoware_auto_msgs::msg::VehicleStateReport & msg);
 
-  rclcpp::Publisher<autoware_auto_msgs::msg::RawControlCommand>::SharedPtr m_cmd_pub{};
-  rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_pub{};
+  rclcpp::Publisher<lgsvl_msgs::msg::VehicleControlData>::SharedPtr m_cmd_pub{};
+  rclcpp::Publisher<lgsvl_msgs::msg::VehicleStateData>::SharedPtr m_state_pub{};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleKinematicState>::SharedPtr
     m_kinematic_state_pub{};
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_pub{};
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr m_pose_pub{};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_nav_odom_sub{};
-  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_sub{};
-  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleOdometry>::SharedPtr m_veh_odom_sub{};
+  rclcpp::Subscription<lgsvl_msgs::msg::CanBusData>::SharedPtr m_state_sub{};
+  rclcpp::Subscription<lgsvl_msgs::msg::VehicleOdometry>::SharedPtr m_veh_odom_sub{};
 
   Table1D m_throttle_table;
   Table1D m_brake_table;

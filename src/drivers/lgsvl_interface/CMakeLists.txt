@@ -47,8 +47,8 @@ if(BUILD_TESTING)
   add_dependencies(${LGSVL_INTERFACE_GTEST} ${PROJECT_NAME})
   ament_target_dependencies(${LGSVL_INTERFACE_GTEST}
     "autoware_auto_common"
-    "autoware_auto_msgs")
-
+    "autoware_auto_msgs"
+    "lgsvl_msgs")
 endif()
 
 ament_auto_package(
