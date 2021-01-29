@@ -356,7 +356,6 @@ test_amd64_dashing:
   <<: *test_base
   needs:
     - build_amd64_dashing
-  allow_failure: true
 
 test_arm64_dashing:
   variables:
@@ -370,7 +369,6 @@ test_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - build_arm64_dashing
-  allow_failure: true
 
 test_amd64_foxy:
   variables:
@@ -460,7 +458,6 @@ volume_amd64_dashing:
   <<: *volume_base
   needs:
     - test_amd64_dashing
-  allow_failure: true
 
 volume_arm64_dashing:
   stage: deploy
@@ -480,7 +477,6 @@ volume_arm64_dashing:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - test_arm64_dashing
-  allow_failure: true
 
 volume_amd64_foxy:
   stage: deploy
