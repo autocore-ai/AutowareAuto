@@ -1,8 +1,8 @@
 Choosing a DDS Vendor {#choosing-a-dds-vendor}
 ==============================================
 
-Choosing a DDS vendor is usually as simple as changing the `RMW_IMPLEMENTATION` environment variable.
-This can either be done by changing the value that is added to the `.aderc` file in the `ADE_DOCKER_RUN_ARGS` or by overriding it manually using the commands below.
+Choosing a DDS vendor is usually as simple as changing the `RMW_IMPLEMENTATION` environment variable. It can be set after building Autoware, as long as the respective `rmw_*` packages are installed before building, because the software is built for all the available typesupports installed. The rmw layer loads a given `rmw_*` implementation at runtime via the `RMW_IMPLEMENTATION` variable, unless there's only one, in which case shortcuts to the installed RMW implementation. The change can also be made more permanent by changing it in the `ADE_DOCKER_RUN_ARGS` in the `.aderc`.
+
 For more information about why you would want to use a different DDS vendor and which ones are available, see [this ROS Index article](https://index.ros.org/doc/ros2/Concepts/About-Different-Middleware-Vendors/).
 For more information about working with multiple middleware (DDS) implementations, see [this ROS Index article](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations/).
 
