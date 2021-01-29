@@ -189,7 +189,7 @@ class ControllerTestingNode(Node):
                 self.publish_trajectory(now)
 
         elif self.param_real_time_sim:      # Realtime im update step
-            self.upadtes_vehicle_state()
+            self.update_vehicle_state()
             self.publish_state(now)
 
         # incase controller is stuck, check for timeout and plot report
@@ -197,13 +197,15 @@ class ControllerTestingNode(Node):
             # assuming non-realtime is at least 10 times faster, and adding 1 sec buffer
             assumed_timeout = (self.param_stop_n_report_time_s / 10.0) + 1.0
             if (self.get_clock().now() - self.init_time) > Duration(seconds=assumed_timeout):
-                self.final_report()
+                # only call in manual testing
+                # self.final_report()
+                self.shutdown()
 
     def control_callback(self, current_command_msg):
         """Store contol command and if faster than realtime, trigger simulator update."""
         self._current_command = self.convert_to_bicycle_command(current_command_msg)
         if not self.param_real_time_sim:
-            self.upadtes_vehicle_state()
+            self.update_vehicle_state()
             # TODO(s.merkli) develop this further:
             # Check if we have to send another trajectory or just the current state?
             # Ignore the next callback if trajectory triggered?
@@ -218,12 +220,14 @@ class ControllerTestingNode(Node):
     def control_diag_callback(self, diag_msg):
         self._diag_msgs.append(diag_msg)
 
-    def upadtes_vehicle_state(self):
+    def update_vehicle_state(self):
         """Update simulator state and publish."""
         # Check if we want to continue with the simulation
         if self.param_stop_n_report_time_s != 0:
             if self._simulator.simulation_time >= self.param_stop_n_report_time_s:
-                self.final_report()
+                # only call in manual testing
+                # self.final_report()
+                self.shutdown()
 
         # Trigger one simulation step and update current state. In externally
         # controlled simulations, we need to update the simulation time
@@ -387,6 +391,7 @@ class ControllerTestingNode(Node):
         # Show all figures in a blocking manner, once they're closed, exit.
         pp.show()
 
+    def shutdown(self):
         # TODO(s.merkli) deal with the shutdown better: Looking for a signal_shutdown()
         # equivalent here? rclpy.shutdown() deadlocks This probably only
         # works, because this node is the only one running in spinner?
