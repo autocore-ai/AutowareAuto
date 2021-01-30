@@ -1,4 +1,4 @@
-// Copyright 2020 The Autoware Foundation
+// Copyright 2021 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 The Autoware Foundation
+/// \copyright Copyright 2021 The Autoware Foundation
 /// \file
 /// \brief This file defines the hello_world_node class.
 
@@ -22,8 +22,6 @@
 #include <hello_world/hello_world.hpp>
 
 #include <rclcpp/rclcpp.hpp>
-
-#include <string>
 
 namespace autoware
 {
@@ -36,7 +34,6 @@ class HELLO_WORLD_PUBLIC HelloWorldNode : public rclcpp::Node
 {
 public:
   /// \brief default constructor, starts driver
-  /// \param[in] node_name name of the node for rclcpp internals
   /// \throw runtime error if failed to start threads or configure driver
   explicit HelloWorldNode(const rclcpp::NodeOptions & options);
 

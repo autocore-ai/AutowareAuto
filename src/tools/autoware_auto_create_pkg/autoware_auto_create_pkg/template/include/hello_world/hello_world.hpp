@@ -1,4 +1,4 @@
-// Copyright 2020 The Autoware Foundation
+// Copyright 2021 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 The Autoware Foundation
+/// \copyright Copyright 2021 The Autoware Foundation
 /// \file
 /// \brief This file defines the hello_world class.
 
@@ -20,7 +20,8 @@
 #define HELLO_WORLD__HELLO_WORLD_HPP_
 
 #include <hello_world/visibility_control.hpp>
-#include <iostream>
+
+#include <cstdint>
 
 namespace autoware
 {

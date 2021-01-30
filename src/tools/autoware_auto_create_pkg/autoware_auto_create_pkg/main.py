@@ -64,8 +64,9 @@ def find_and_replace(filename, pkg_name, email, description=None, maintainer=Non
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--destination",
-                        required=True,
-                        help="Absolute path to new package (without package name)."
+                        required=False,
+                        default=".",
+                        help="Path to new package (without package name)."
                              "e.g., ~/autoware_ws/src")
     parser.add_argument("--pkg-name",
                         required=True,

@@ -1,4 +1,4 @@
-// Copyright 2020 The Autoware Foundation
+// Copyright 2021 The Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
 
 #include "hello_world/hello_world_node.hpp"
 
-//lint -e537 NOLINT  // cpplint vs pclint
-#include <string>
-
 namespace autoware
 {
 namespace hello_world
 {
 
 HelloWorldNode::HelloWorldNode(const rclcpp::NodeOptions & options)
-:  Node("hello_wolrd", options),
+:  Node("hello_world", options),
   verbose(true)
 {
+  print_hello();
 }
 
 int32_t HelloWorldNode::print_hello() const
@@ -35,3 +33,9 @@ int32_t HelloWorldNode::print_hello() const
 
 }  // namespace hello_world
 }  // namespace autoware
+
+#include "rclcpp_components/register_node_macro.hpp"
+
+// This acts as an entry point, allowing the component to be
+// discoverable when its library is being loaded into a running process
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::hello_world::HelloWorldNode)
