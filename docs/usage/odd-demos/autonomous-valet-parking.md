@@ -40,12 +40,12 @@ A sample car is available, based on a real-life vehicle used by many members of 
 
 ## Physical demo
 
-The physical AVP demo was tested with the following hardware:
+The physical AVP demo was tested with a Lexus RX 450h with
 
-- 2 Velodyne VLP-32Cs
-- an AutonomouStuff Spectra industrial PC.
-- an autonomouStuff PACMod drive-by-wire system
-- the AutonomouStuff Speed and Steering Control (SSC) software.
+- the [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/) DBW interface
+- 2 [Velodyne VLP-32Cs](https://velodynelidar.com/products/ultra-puck/)
+- an [AutonomouStuff Spectra](https://autonomoustuff.com/products/astuff-spectra) industrial PC.
+- the [AutonomouStuff Speed and Steering Control](https://autonomoustuff.com/products/astuff-speed-steering-control-software) (SSC) software.
 
 ## Simulation demo
 
@@ -85,7 +85,7 @@ Whether using your own maps or the existing ones:
 
 ```console
 $ ade enter
-ade$ source /opt/AuotwareAuto/setup.bash
+ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
 ```
 
