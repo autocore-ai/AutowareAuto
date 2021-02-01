@@ -134,8 +134,9 @@ TEST_F(transforms, static_dynamic_tfs)
   const auto traj_pub = pub_node->create_publisher<Trajectory>(traj_topic, rclcpp::QoS{10LL});
   const auto state_pub = pub_node->create_publisher<State>(state_topic, rclcpp::QoS{10LL});
   const auto tf_pub = pub_node->create_publisher<TFMessage>(tf_topic, rclcpp::QoS{10LL});
+  const rclcpp::QoS transient_local_qos = rclcpp::QoS{10LL}.transient_local();
   const auto static_tf_pub =
-    pub_node->create_publisher<TFMessage>(static_tf_topic, rclcpp::QoS{10LL});
+    pub_node->create_publisher<TFMessage>(static_tf_topic, transient_local_qos);
   // Controller node
   const auto ctrl = std::make_shared<TestTFControllerNode>();
   // Match

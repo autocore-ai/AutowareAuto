@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 ### Build
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/controller_common_nodes/controller_node_base.cpp)
+  src/controller_common_nodes/controller_base_node.cpp)
 
 ### Test
 if(BUILD_TESTING)
