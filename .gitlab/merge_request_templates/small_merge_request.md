@@ -34,7 +34,7 @@ Mark all the items that are done, and cross out items not applicable to this MR.
 
 1. Basic checks
    1. [ ] The MR title describes what is being done on the ticket
-   1. [ ] The MR does not introduce code that might require testing
+   1. [ ] The MR does not require additional tests or documentation to be written
    1. [ ] The first commit has a proper [commit message](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-commits) to be used as a basis for the squashed commit created at the very end
 1. Code correctness
    1. [ ] The problem/feature is solved (reproducibly)
