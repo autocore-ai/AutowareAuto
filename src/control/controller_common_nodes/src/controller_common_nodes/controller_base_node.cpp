@@ -86,10 +86,15 @@ void ControllerBaseNode::init(
   using rclcpp::QoS;
   // Subs
   using SubAllocT = rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void>>;
+  // TODO(#825): Remove ifdef
+  #ifdef ROS_DISTRO_FOXY
   // Since Foxy, static transforms are not published periodically but instead with
   // a StaticBroadcasterQoS which has transient_local durability. If the subscriber
   // isn't also transient_local, it will often miss the static transform message.
-  const QoS transient_local_qos = QoS{10}.transient_local();
+  const QoS static_tf_qos = QoS{10}.transient_local();
+  #elif ROS_DISTRO_DASHING
+  const QoS static_tf_qos = QoS{10};
+  #endif  // ROS_DISTRO_FOXY
   m_state_sub = create_subscription<State>(
     state_topic, QoS{10},
     [this](const State::SharedPtr msg) {on_state(msg);}, SubAllocT{});
@@ -100,7 +105,7 @@ void ControllerBaseNode::init(
     tf_topic, QoS{10},
     [this](const TFMessage::SharedPtr msg) {on_tf(msg);}, SubAllocT{});
   m_static_tf_sub = create_subscription<TFMessage>(
-    static_tf_topic, transient_local_qos,
+    static_tf_topic, static_tf_qos,
     [this](const TFMessage::SharedPtr msg) {on_static_tf(msg);}, SubAllocT{});
   // Pubs
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
