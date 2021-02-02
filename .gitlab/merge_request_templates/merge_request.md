@@ -63,7 +63,6 @@ Mark all the items that are done.
 1. Testing
    1. [ ] Code coverage with unit tests does not decrease. Aim for coverage with unit tests of 90+%; else create a follow-up ticket
    1. [ ] Unit tests make sense and cover the business logic and error cases
-   1. [ ] For a new ROS2 node, at least the basic launch integration test is included
    1. [ ] Integration tests are sensible and not flaky
 
 </details>
@@ -71,8 +70,9 @@ Mark all the items that are done.
 <details>
   <summary markdown="span"><a name="new-node">Checklist for new ROS2 nodes</a></summary>
 
-1. [ ]  Every nodes is [registered as a component](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-components)
-1. [ ]  The [naming conventions](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware-common-naming-guidelines.html) are followed
+1. [ ] Every node is [registered as a component](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-components)
+1. [ ] The [naming conventions](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware-common-naming-guidelines.html) are followed
+1. [ ] At least the basic launch integration test is included
 
 </details>
 
