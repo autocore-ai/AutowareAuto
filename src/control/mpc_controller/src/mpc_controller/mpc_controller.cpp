@@ -45,14 +45,12 @@ using AcadoReal = real_t;
 
 constexpr auto HORIZON = static_cast<std::size_t>(ACADO_N);
 // State variable indices
-static_assert(ACADO_NX == 6, "Unexpected num of state variables");
+static_assert(ACADO_NX == 4, "Unexpected num of state variables");
 constexpr auto NX = static_cast<std::size_t>(ACADO_NX);
 constexpr auto IDX_X = 0U;
 constexpr auto IDX_Y = 1U;
 constexpr auto IDX_HEADING = 2U;
 constexpr auto IDX_VEL_LONG = 3U;
-constexpr auto IDX_ACCEL = 4U;
-constexpr auto IDX_WHEEL_ANGLE = 5U;
 // Control variable indices
 static_assert(ACADO_NU == 2, "Unexpected num of control variables");
 constexpr auto NU = static_cast<std::size_t>(ACADO_NU);
@@ -173,15 +171,11 @@ void MpcController::initial_conditions(const Point & state)
   acadoVariables.x0[IDX_HEADING] =
     static_cast<AcadoReal>(motion_common::to_angle(state.heading));
   acadoVariables.x0[IDX_VEL_LONG] = static_cast<AcadoReal>(state.longitudinal_velocity_mps);
-  acadoVariables.x0[IDX_ACCEL] = static_cast<AcadoReal>(state.acceleration_mps2);
-  acadoVariables.x0[IDX_WHEEL_ANGLE] = static_cast<AcadoReal>(state.front_wheel_angle_rad);
   // Initialization stuff
   acadoVariables.x[IDX_X] = acadoVariables.x0[IDX_X];
   acadoVariables.x[IDX_Y] = acadoVariables.x0[IDX_Y];
   acadoVariables.x[IDX_HEADING] = acadoVariables.x0[IDX_HEADING];
   acadoVariables.x[IDX_VEL_LONG] = acadoVariables.x0[IDX_VEL_LONG];
-  acadoVariables.x[IDX_ACCEL] = acadoVariables.x0[IDX_ACCEL];
-  acadoVariables.x[IDX_WHEEL_ANGLE] = acadoVariables.x0[IDX_WHEEL_ANGLE];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,12 +216,12 @@ Command MpcController::interpolated_command(const std::chrono::nanoseconds x0_ti
   {
     ret.rear_wheel_angle_rad = {};
     // interpolation
-    const auto idx = static_cast<std::size_t>(count) * static_cast<std::size_t>(NX);
-    const auto longitudinal0 = static_cast<Real>(acadoVariables.x[idx + IDX_ACCEL]);
-    const auto lateral0 = static_cast<Real>(acadoVariables.x[idx + IDX_WHEEL_ANGLE]);
-    const auto jdx = (static_cast<std::size_t>(count) + 1U) * static_cast<std::size_t>(NX);
-    const auto longitudinal1 = static_cast<Real>(acadoVariables.x[jdx + IDX_ACCEL]);
-    const auto lateral1 = static_cast<Real>(acadoVariables.x[jdx + IDX_WHEEL_ANGLE]);
+    const auto idx = count * ACADO_NU;
+    const auto longitudinal0 = static_cast<Real>(acadoVariables.u[idx + IDX_JERK]);
+    const auto lateral0 = static_cast<Real>(acadoVariables.u[idx + IDX_WHEEL_ANGLE_RATE]);
+    const auto jdx = (count + 1U) * ACADO_NU;
+    const auto longitudinal1 = static_cast<Real>(acadoVariables.u[jdx + IDX_JERK]);
+    const auto lateral1 = static_cast<Real>(acadoVariables.u[jdx + IDX_WHEEL_ANGLE_RATE]);
     ret.front_wheel_angle_rad = motion_common::interpolate(lateral0, lateral1, t);
     ret.long_accel_mps2 = motion_common::interpolate(longitudinal0, longitudinal1, t);
     ret.velocity_mps = acadoVariables.x[(idx * NX) + IDX_VEL_LONG];
@@ -254,8 +248,9 @@ const MpcController::Trajectory & MpcController::get_computed_trajectory() const
     pt.lateral_velocity_mps = Real{};
     const auto heading = static_cast<Real>(acadoVariables.x[idx + IDX_HEADING]);
     pt.heading = motion_common::from_angle(heading);
-    pt.acceleration_mps2 = static_cast<Real>(acadoVariables.x[idx + IDX_ACCEL]);
-    pt.front_wheel_angle_rad = static_cast<Real>(acadoVariables.x[idx + IDX_WHEEL_ANGLE]);
+    const auto jdx = NU * i;
+    pt.acceleration_mps2 = static_cast<Real>(acadoVariables.u[jdx + IDX_JERK]);
+    pt.heading_rate_rps = static_cast<Real>(acadoVariables.u[jdx + IDX_WHEEL_ANGLE_RATE]);
   }
   return m_computed_trajectory;
 }
@@ -294,18 +289,18 @@ void MpcController::apply_bounds(const LimitsConfig & cfg) noexcept
 {
   static_assert(ACADO_HARDCODED_CONSTRAINT_VALUES == 0, "Constraints not hard coded");
   constexpr auto NUM_CTRL_CONSTRAINTS = 2U;
-  constexpr auto NUM_STATE_CONSTRAINTS = 3U;
+  constexpr auto NUM_STATE_CONSTRAINTS = 1U;
   for (std::size_t i = {}; i < HORIZON; ++i) {
     {
       const auto idx = i * NUM_CTRL_CONSTRAINTS;
-      constexpr auto idx_jx = 0U;
-      constexpr auto idx_delta_dot = 1U;
-      acadoVariables.lbValues[idx + idx_jx] = static_cast<AcadoReal>(cfg.jerk().min());
-      acadoVariables.ubValues[idx + idx_jx] = static_cast<AcadoReal>(cfg.jerk().max());
-      acadoVariables.lbValues[idx + idx_delta_dot] =
-        static_cast<AcadoReal>(cfg.steer_angle_rate().min());
-      acadoVariables.ubValues[idx + idx_delta_dot] =
-        static_cast<AcadoReal>(cfg.steer_angle_rate().max());
+      constexpr auto idx_ax = 0U;
+      constexpr auto idx_delta = 1U;
+      acadoVariables.lbValues[idx + idx_ax] = static_cast<AcadoReal>(cfg.acceleration().min());
+      acadoVariables.ubValues[idx + idx_ax] = static_cast<AcadoReal>(cfg.acceleration().max());
+      acadoVariables.lbValues[idx + idx_delta] =
+        static_cast<AcadoReal>(cfg.steer_angle().min());
+      acadoVariables.ubValues[idx + idx_delta] =
+        static_cast<AcadoReal>(cfg.steer_angle().max());
     }
     {
       // DifferentialState or Affine constraints are sometimes put into different structs
@@ -315,16 +310,10 @@ void MpcController::apply_bounds(const LimitsConfig & cfg) noexcept
       // have constraints
       // If you're changing this, check the order in the code generation script
       constexpr auto idx_u = 0U;
-      constexpr auto idx_ax = 1U;
-      constexpr auto idx_delta = 2U;
       acadoVariables.lbAValues[idx + idx_u] =
         static_cast<AcadoReal>(cfg.longitudinal_velocity().min());
       acadoVariables.ubAValues[idx + idx_u] =
         static_cast<AcadoReal>(cfg.longitudinal_velocity().max());
-      acadoVariables.lbAValues[idx + idx_ax] = static_cast<AcadoReal>(cfg.acceleration().min());
-      acadoVariables.ubAValues[idx + idx_ax] = static_cast<AcadoReal>(cfg.acceleration().max());
-      acadoVariables.lbAValues[idx + idx_delta] = static_cast<AcadoReal>(cfg.steer_angle().min());
-      acadoVariables.ubAValues[idx + idx_delta] = static_cast<AcadoReal>(cfg.steer_angle().max());
     }
   }
 }

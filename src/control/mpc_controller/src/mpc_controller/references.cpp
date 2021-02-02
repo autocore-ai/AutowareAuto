@@ -36,7 +36,7 @@ using AcadoReal = real_t;
 constexpr auto HORIZON = static_cast<std::size_t>(ACADO_N);
 constexpr auto NU = static_cast<std::size_t>(ACADO_NU);
 // State variables
-static_assert(ACADO_NX == 6, "Unexpected num of state variables");
+static_assert(ACADO_NX == 4, "Unexpected num of state variables");
 constexpr auto NX = static_cast<std::size_t>(ACADO_NX);
 // constexpr auto IDX_X = 0U;
 // constexpr auto IDX_Y = 1U;
@@ -49,16 +49,14 @@ constexpr auto IDYN_Y = 1U;
 constexpr auto IDYN_HEADING = 2U;
 constexpr auto IDYN_VEL_LONG = 3U;
 // Reference variable indices
-static_assert(ACADO_NY == 8, "Unexpected number of reference variables");
+static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
 constexpr auto NY = static_cast<std::size_t>(ACADO_NY);
 constexpr auto IDY_X = 0U;
 constexpr auto IDY_Y = 1U;
 constexpr auto IDY_HEADING = 2U;
 constexpr auto IDY_VEL_LONG = 3U;
-constexpr auto IDY_ACCEL = 4U;
-constexpr auto IDY_WHEEL_ANGLE = 5U;
-constexpr auto IDY_JERK = 6U;
-constexpr auto IDY_WHEEL_RATE = 7U;
+constexpr auto IDY_ACC = 4U;
+constexpr auto IDY_STEER = 5U;
 
 ////////////////////////////////////////////////////////////////////////////////
 void MpcController::apply_weights(const OptimizationConfig & cfg)
@@ -98,7 +96,7 @@ void MpcController::apply_nominal_weights(const StateWeight & cfg, const Index s
   }
   // 0 == hardcoded, 1 == variable, but time invariant, 2 == time varying
   static_assert(ACADO_WEIGHTING_MATRICES_TYPE == 2, "Weighting matrices should vary per timestep)");
-  static_assert(ACADO_NY == 8, "Unexpected number of reference variables");
+  static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
   for (Index i = start; i < end; ++i) {
     constexpr auto NY2 = NY * NY;
     const auto idx = i * NY2;
@@ -108,14 +106,10 @@ void MpcController::apply_nominal_weights(const StateWeight & cfg, const Index s
       static_cast<AcadoReal>(cfg.heading());
     acadoVariables.W[idx + (IDY_VEL_LONG * NY) + IDY_VEL_LONG] =
       static_cast<AcadoReal>(cfg.longitudinal_velocity());
-    acadoVariables.W[idx + (IDY_ACCEL * NY) + IDY_ACCEL] =
+    acadoVariables.W[idx + (IDY_ACC * NY) + IDY_ACC] =
       static_cast<AcadoReal>(cfg.acceleration());
-    acadoVariables.W[idx + (IDY_WHEEL_ANGLE * NY) + IDY_WHEEL_ANGLE] =
+    acadoVariables.W[idx + (IDY_STEER * NY) + IDY_STEER] =
       static_cast<AcadoReal>(cfg.steer_angle());
-    acadoVariables.W[idx + (IDY_JERK * NY) + IDY_JERK] =
-      static_cast<AcadoReal>(cfg.jerk());
-    acadoVariables.W[idx + (IDY_WHEEL_RATE * NY) + IDY_WHEEL_RATE] =
-      static_cast<AcadoReal>(cfg.steer_angle_rate());
   }
 }
 
@@ -139,7 +133,7 @@ void MpcController::zero_nominal_weights(const Index start, Index end)
   }
   // 0 == hardcoded, 1 == variable, but time invariant, 2 == time varying
   static_assert(ACADO_WEIGHTING_MATRICES_TYPE == 2, "Weighting matrices should vary per timestep)");
-  static_assert(ACADO_NY == 8, "Unexpected number of reference variables");
+  static_assert(ACADO_NY == 6, "Unexpected number of reference variables");
   constexpr auto NY2 = NY * NY;
   std::fill(&acadoVariables.W[start * NY2], &acadoVariables.W[end * NY2], AcadoReal{});
   // Zero initialization, above; std::fill preferred over memset for type safety
@@ -216,10 +210,6 @@ void MpcController::set_reference(
     acadoVariables.y[ydx + IDY_VEL_LONG] = static_cast<AcadoReal>(pt.longitudinal_velocity_mps);
     acadoVariables.y[ydx + IDY_HEADING] =
       static_cast<AcadoReal>(motion_common::to_angle(pt.heading));
-    acadoVariables.y[ydx + IDY_ACCEL] = AcadoReal{};
-    acadoVariables.y[ydx + IDY_WHEEL_ANGLE] = AcadoReal{};
-    acadoVariables.y[ydx + IDY_JERK] = AcadoReal{};
-    acadoVariables.y[ydx + IDY_WHEEL_RATE] = AcadoReal{};
   }
 }
 

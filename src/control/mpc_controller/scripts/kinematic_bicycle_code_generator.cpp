@@ -23,7 +23,7 @@ int main(int argc, char * const argv[])
 
   Function rf;
   Function rfN;
-  rf << x << y << yaw << u << ax << delta << jx << delta_dot;
+  rf << x << y << yaw << u << ax << delta;
   rfN << x << y << yaw << u;
 
   BMatrix W = eye<bool>(rf.getDim());
@@ -48,8 +48,6 @@ int main(int argc, char * const argv[])
   ocp.subjectTo(0.01 <= u <= 35.0);
   ocp.subjectTo(-0.331 <= delta <= 0.331);
   ocp.subjectTo(-3.0 <= ax <= 3.0);
-  ocp.subjectTo(-10.0 <= jx <= 10.0);
-  ocp.subjectTo(-0.331 <= delta_dot <= 0.331);
 
   //
   // Export the code:
@@ -75,7 +73,7 @@ int main(int argc, char * const argv[])
   // mpc.set(SPARSE_QP_SOLUTION, SPARSE_SOLVER);
   // mpc.set(QP_SOLVER, QP_FORCES);
 
-  mpc.set(LEVENBERG_MARQUARDT, 1.0E-3);
+  mpc.set(LEVENBERG_MARQUARDT, 1.0E2);
 
   mpc.set(GENERATE_TEST_FILE, NO);
   mpc.set(GENERATE_MAKE_FILE, NO);
