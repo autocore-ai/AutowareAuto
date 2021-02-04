@@ -96,14 +96,16 @@ void BehaviorPlannerNode::init()
     RCLCPP_INFO(get_logger(), "Waiting for service...");
   }
 
-  m_modify_trajectory_client = this->create_client<ModifyTrajectory>("estimate_collision");
-  while (!m_modify_trajectory_client->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(get_logger(), "Interrupted while waiting for service.");
-      rclcpp::shutdown();
-      return;
+  if (declare_parameter("enable_object_collision_estimator").get<bool>()) {
+    m_modify_trajectory_client = this->create_client<ModifyTrajectory>("estimate_collision");
+    while (!m_modify_trajectory_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(get_logger(), "Interrupted while waiting for service.");
+        rclcpp::shutdown();
+        return;
+      }
+      RCLCPP_INFO(get_logger(), "Waiting for service...");
     }
-    RCLCPP_INFO(get_logger(), "Waiting for service...");
   }
 
   // Setup subscribers
@@ -302,14 +304,19 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
     trajectory.header.frame_id = "map";
     trajectory.header.stamp = msg->header.stamp;
 
-    auto request = std::make_shared<ModifyTrajectory::Request>();
-    request->original_trajectory = trajectory;
-    auto result =
-      m_modify_trajectory_client->async_send_request(
-      request,
-      std::bind(
-        &BehaviorPlannerNode::modify_trajectory_response,
-        this, std::placeholders::_1));
+    // If object collision estimation is enabled, send trajectory through the collision estimator
+    if (m_modify_trajectory_client) {
+      auto request = std::make_shared<ModifyTrajectory::Request>();
+      request->original_trajectory = trajectory;
+      auto result =
+        m_modify_trajectory_client->async_send_request(
+        request,
+        std::bind(
+          &BehaviorPlannerNode::modify_trajectory_response,
+          this, std::placeholders::_1));
+    } else {
+      m_trajectory_pub->publish(trajectory);
+    }
   }
 }
 

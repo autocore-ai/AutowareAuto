@@ -83,6 +83,7 @@ private:
   rclcpp_action::Client<PlanTrajectoryAction>::SharedPtr m_lane_planner_client;
   rclcpp_action::Client<PlanTrajectoryAction>::SharedPtr m_parking_planner_client;
   rclcpp::Client<HADMapService>::SharedPtr m_map_client;
+  // May be nullptr if disabled
   rclcpp::Client<ModifyTrajectory>::SharedPtr m_modify_trajectory_client;
   rclcpp::Subscription<State>::SharedPtr m_ego_state_sub{};
   rclcpp::Subscription<Route>::SharedPtr m_route_sub{};
