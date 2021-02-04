@@ -34,18 +34,6 @@ using Eigen::Matrix;
 using autoware::common::types::float32_t;
 const float32_t TOL = 1.0E-6F;
 
-template<typename T, uint64_t H, uint64_t W>
-void print(const Matrix<T, H, W> & A)
-{
-  std::cerr << "\nPrint Matrix:\n\n";
-  for (uint64_t i = 0; i < H; ++i) {
-    for (uint64_t j = 0; j < W; ++j) {
-      std::cerr << A(i, j) << ", \t";
-    }
-    std::cerr << "\n";
-  }
-}
-
 // example 5.4, in Kalman Filtering Theory and Practice using Matlab, pg 193-194
 TEST(srcf_core, univariate)
 {
@@ -75,7 +63,7 @@ TEST(srcf_core, univariate)
   float32_t pdf = -0.5F * (log2pi + logf(S) + (err * err) / S);
   EXPECT_LT(fabsf(core.scalar_update(z(0), R(0), H, P, x) - pdf), TOL) << pdf;
   EXPECT_LT(fabsf(x(0) - 24.0F / 13.0F), TOL);
-  EXPECT_LT(fabsf(P(0) - sqrtf(22.0 / 13.0)), TOL);
+  EXPECT_LT(fabsf(P(0) - sqrtf(22.0F / 13.0F)), TOL);
   // temporal update 1->2
   P(0) = F(0) * P(0);
   B(0) = G(0) * Q(0);
@@ -121,27 +109,27 @@ TEST(srcf_core, multivariate)
   float32_t likelihood = core.scalar_update(z(0), R(0, 0), H.row(0), C, x);
   //// check intermediate values
   // These values are from the worked example in the book
-  EXPECT_LT(fabsf(x(0) - (35.0 / 37.0)), TOL2);
-  EXPECT_LT(fabsf(x(1) - (56.0 / 37.0)), TOL2);
+  EXPECT_LT(fabsf(x(0) - (35.0F / 37.0F)), TOL2);
+  EXPECT_LT(fabsf(x(1) - (56.0F / 37.0F)), TOL2);
   // check C, computed manually with scipy
-  EXPECT_LT(fabsf(C(0, 0) - (1.97278785)), TOL2);
-  EXPECT_LT(fabsf(C(1, 0) - (0.01369992)), TOL2);
-  EXPECT_LT(fabsf(C(1, 1) - (0.49300665)), TOL2);
+  EXPECT_LT(fabsf(C(0, 0) - (1.97278785F)), TOL2);
+  EXPECT_LT(fabsf(C(1, 0) - (0.01369992F)), TOL2);
+  EXPECT_LT(fabsf(C(1, 1) - (0.49300665F)), TOL2);
   // observation update 1b
   likelihood += core.scalar_update(z(1), R(1, 1), H.row(1), C, x);
   //// check final values
   // These values are from the worked example in the book
-  EXPECT_LT(fabsf(x(0) - (467.0 / 361.0)), TOL2);
-  EXPECT_LT(fabsf(x(1) - (2189.0 / 1444.0)), TOL2);
+  EXPECT_LT(fabsf(x(0) - (467.0F / 361.0F)), TOL2);
+  EXPECT_LT(fabsf(x(1) - (2189.0F / 1444.0F)), TOL2);
   // check C
-  EXPECT_LT(fabsf(C(0, 0) - (0.63157895)), TOL2);
-  EXPECT_LT(fabsf(C(1, 0) - (0.00438596)), TOL2);
-  EXPECT_LT(fabsf(C(1, 1) - (0.49300665)), TOL2);
+  EXPECT_LT(fabsf(C(0, 0) - (0.63157895F)), TOL2);
+  EXPECT_LT(fabsf(C(1, 0) - (0.00438596F)), TOL2);
+  EXPECT_LT(fabsf(C(1, 1) - (0.49300665F)), TOL2);
   // check likelihood of exact matrix:
   // S = H * P * H' + R = [37, 6; 6, 40]
   // err = z - (H * x) = [-1; 1]
   // P(err | 0, S) = -5.506280400650966 (from scipy)
-  EXPECT_LT(fabsf(likelihood - (-5.506280400650966)), 0.01F) << likelihood;
+  EXPECT_LT(fabsf(likelihood - (-5.506280400650966F)), 0.01F) << likelihood;
   // Close enough, < 1% relative error
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::stop();
@@ -232,7 +220,7 @@ TEST(srcf_core, degenerate)
   EXPECT_LT(fabsf(C(1, 1) - (1)), TOL);
   // S = [sig^2, sig^2; sig^2, 2*sig^2]
   // z = err = x = 0
-  EXPECT_LT(fabsf(ll - (-29.468897182338893)), 1.0E-5F) << ll;
+  EXPECT_LT(fabsf(ll - (-29.468897182338893F)), 1.0E-5F) << ll;
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::stop();
 }
@@ -274,7 +262,7 @@ TEST(srcf_core, triangularization)
     1, -1, 1,
     1, 1, 0;
   Matrix<float32_t, 3, 3> C(A), D(A), E(A);
-  Matrix<float32_t, 3, 1> B;  // zero
+  Matrix<float32_t, 3, 1> B{Matrix<float32_t, 3, 1>::Zero()};
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::start();
   core.right_lower_triangularize_matrices(A, B);
@@ -369,7 +357,7 @@ TEST(esrcf, convergence)
     0.0F, 0.0F, 0.1F, 0.0F,
     0.0F, 0.0F, 0.0F, 0.1F;
 
-  Matrix<float32_t, 4, 1> x({0, 0, 1, -1});  // all 0's
+  Matrix<float32_t, 4, 1> x({0, 0, 1, -1});
   // cholesky of: (so there is some covariance wrt hidden state
   // 1   0   0.5 0
   // 0   1   0   0.5
@@ -397,8 +385,8 @@ TEST(esrcf, convergence)
   // microseconds_100 = 0.1s
   std::chrono::nanoseconds microseconds_100(100000000LL);
   for (uint32_t iteration = 0; iteration < 30; ++iteration) {
-    x(0) += 0.1;
-    x(1) -= 0.1;
+    x(0) += 0.1F;
+    x(1) -= 0.1F;
     kf.temporal_update(microseconds_100);
     // covariance should grow wrt postfit
     EXPECT_GT(kf.get_covariance()(0, 0), P_p(0, 0));
@@ -448,7 +436,7 @@ TEST(esrcf, convergence)
       norm += P_last(i, j) * P_last(i, j);
     }
   }
-  EXPECT_LE(sqrtf(norm), 0.0005);
+  EXPECT_LE(sqrtf(norm), 0.0005F);
   // TODO(ltbj): implement memory_test after the completion of #39
   // osrf_testing_tools_cpp::memory_test::stop();
 }
@@ -582,14 +570,16 @@ TEST(esrcf, hidden_state)
 TEST(esrcf, imm_mix)
 {
   static const uint32_t dim = 2U;
-  Matrix<float32_t, dim, dim> P1, P2, P, C, GQ;
-  Matrix<float32_t, dim, 1> x1, x2, x_mix;
+  Matrix<float32_t, dim, dim> P1, P2, P, C;
   P1 << 2.0F, 2.0F, 2.0F, 4.0F;
   P2 << 2.0F, 1.0F, 1.0F, 2.0F;
   C = P1;
-  Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
+  Matrix<float32_t, dim, dim> GQ{Matrix<float32_t, dim, dim>::Zero()};
 
+  Eigen::LLT<Eigen::Ref<decltype(C)>> llt(C);
   C(0U, 1U) = 0.0F;
+
+  Matrix<float32_t, dim, 1> x1, x2, x_mix;
   const float32_t u1 = 0.75F;
   const float32_t u2 = 0.25F;
   x1 = {-3.0F, 5.0F};

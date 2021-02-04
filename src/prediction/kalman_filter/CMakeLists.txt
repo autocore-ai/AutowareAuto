@@ -35,6 +35,7 @@ if(BUILD_TESTING)
 
   # gtest
   ament_add_gtest(${KALMAN_FILTER_GTEST} test/src/test_kalman_filter.cpp)
+  autoware_set_compile_options(${KALMAN_FILTER_GTEST})
   target_include_directories(${KALMAN_FILTER_GTEST} PRIVATE "test/include" "include")
   ament_target_dependencies(${KALMAN_FILTER_GTEST}
     "motion_model" "autoware_auto_common")
