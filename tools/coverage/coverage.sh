@@ -39,7 +39,9 @@ if [ ${SKIP_BUILD} -eq 0 ]; then
   colcon build \
     --ament-cmake-args \
       -DCMAKE_CXX_FLAGS="${COVERAGE_FLAGS}" \
-      -DCMAKE_C_FLAGS="${COVERAGE_FLAGS}"
+      -DCMAKE_C_FLAGS="${COVERAGE_FLAGS}" \
+    --cmake-args \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
   lcov --config-file .lcovrc --base-directory ${PWD} --capture --directory build -o lcov.base --initial > log/latest_lcov_stdout.logs
 fi
 
