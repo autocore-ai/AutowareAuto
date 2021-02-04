@@ -26,6 +26,9 @@ Many launch configurations rely on a point cloud map, which is managed via `git 
 git lfs pull --exclude="" --include="*"
 ```
 
+In case you run multiple ROS2 applications on machines in the same network, they will interfere with each other.
+To avoid it, set the environment variable `ROS_DOMAIN_ID` to a distinct value between 0 and 232 on the machines.
+
 # Operational Design Domain (ODD) Demos
 
 Autoware.Auto includes a growing number of demonstrations for target Operational Design Domains (ODDs), where an ODD is a formal definition of the set of conditions and circumstances an automated vehicle is designed to operate under (for reference, see [SAE J3016 section 3.22](https://www.sae.org/standards/content/j3016_201806/)).

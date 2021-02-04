@@ -7,7 +7,6 @@ You need to be inside an ADE container, or have installed the dependencies manua
 If you haven't done so already, get the source code with 
 
 ```bash
-$ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 $ cd AutowareAuto
 $ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
