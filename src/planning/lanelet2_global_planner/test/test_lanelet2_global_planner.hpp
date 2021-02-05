@@ -182,15 +182,15 @@ TEST_F(TestGlobalPlannerFullMap, test_find_parkingaccess)
   lanelet::Id expect_parking_access_id = 9538;
   lanelet::Id parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
   EXPECT_EQ(parking_access_id, expect_parking_access_id);
-  parking_id = 8663;
-  expect_parking_access_id = 10140;
+  parking_id = 8429;
+  expect_parking_access_id = 8308;
   parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
   EXPECT_EQ(parking_access_id, expect_parking_access_id);
-  parking_id = 8664;
-  expect_parking_access_id = 10150;
+  parking_id = 9552;
+  expect_parking_access_id = 9140;
   parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
   EXPECT_EQ(parking_access_id, expect_parking_access_id);
-  parking_id = 101930;
+  parking_id = 7663;
   expect_parking_access_id = 9140;
   parking_access_id = node_ptr->find_parkingaccess_from_parking(parking_id);
   EXPECT_EQ(parking_access_id, expect_parking_access_id);
@@ -210,13 +210,13 @@ TEST_F(TestGlobalPlannerFullMap, test_find_lane)
   std::vector<lanelet::Id> lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
   EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6518, 6525}));
 
-  parking_access_id = 10140;
+  parking_access_id = 8308;
   lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
-  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6399}));
+  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6399, 6392}));
 
-  parking_access_id = 10150;
+  parking_access_id = 9140;
   lane_id = node_ptr->find_lane_from_parkingaccess(parking_access_id);
-  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6392}));
+  EXPECT_EQ(lane_id, (std::vector<lanelet::Id>{6392, 6399}));
 }
 
 // test find route giving a single lane option

@@ -100,54 +100,34 @@ void Lanelet2MapVisualizer::visualize_map_callback(
       marker_t,
       "lanelet_triangles", lls, color_lanelets));
 
-  bool8_t use_linestring_parking_definition = true;
+  // for parking spots defined as areas (LaneletOSM definition)
+  auto ll_areas = autoware::common::had_map_utils::getAreaLayer(sub_map);
+  auto ll_parking_areas = autoware::common::had_map_utils::subtypeAreas(ll_areas, "parking_spot");
+  auto ll_parking_access_areas = autoware::common::had_map_utils::subtypeAreas(
+    ll_areas,
+    "parking_access");
 
-  if (use_linestring_parking_definition) {
-    // for parking spots and access areas defined by linestrings (Parkopedia
-    // sample map)
-    auto ll_linestrings = autoware::common::had_map_utils::getLineStringLayer(sub_map);
-    auto ll_parking_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
-      ll_linestrings, "parking_spot");
-    auto ll_parking_access_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
-      ll_linestrings, "parking_access");
-    auto ll_pickup_dropoff_linestrings = autoware::common::had_map_utils::subtypeLineStrings(
-      ll_linestrings, "parking_spot,drop_off,pick_up");
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::areasBoundaryAsMarkerArray(
+      marker_t, "parking_area_bounds",
+      ll_parking_areas, color_parking_bounds));
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::areasBoundaryAsMarkerArray(
+      marker_t, "parking_access_area_bounds",
+      ll_parking_access_areas, color_parking_bounds));
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::areasAsTriangleMarkerArray(
+      marker_t, "parking_area_triangles",
+      ll_parking_areas, color_parking));
+  insertMarkerArray(
+    map_marker_array,
+    autoware::common::had_map_utils::areasAsTriangleMarkerArray(
+      marker_t, "parking_access_area_triangles",
+      ll_parking_access_areas, color_parking_access));
 
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsMarkerArray(
-        marker_t, "parking_spots", ll_parking_linestrings, color_parking_bounds));
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsMarkerArray(
-        marker_t, "parking_access_areas",
-        ll_parking_access_linestrings, color_parking_access_bounds));
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
-        marker_t,
-        "parking_triangles", ll_parking_linestrings, color_parking));
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
-        marker_t,
-        "parking_access_triangles", ll_parking_access_linestrings, color_parking_access));
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
-        marker_t,
-        "pickup_dropoff_triangles", ll_pickup_dropoff_linestrings, color_pickup_dropoff));
-  } else {
-    // for parking spots defined as areas (LaneletOSM definition)
-    auto ll_areas = autoware::common::had_map_utils::getAreaLayer(sub_map);
-    auto ll_parking_areas = autoware::common::had_map_utils::subtypeAreas(ll_areas, "parking");
-
-    insertMarkerArray(
-      map_marker_array,
-      autoware::common::had_map_utils::areasBoundaryAsMarkerArray(
-        marker_t, "parking_area_bounds",
-        ll_parking_areas, color_parking_bounds));
-  }
   // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
   m_timer = this->create_wall_timer(
     std::chrono::seconds(1),

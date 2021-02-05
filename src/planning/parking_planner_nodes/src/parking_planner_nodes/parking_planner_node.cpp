@@ -75,6 +75,8 @@ using autoware::common::geometry::bounding_box::minimum_perimeter_bounding_box;
 using lanelet::Point3d;
 using lanelet::Polygon3d;
 using lanelet::LineString3d;
+using lanelet::Area;
+using lanelet::Areas;
 using lanelet::utils::getId;
 
 ParkingPlannerNode::ParkingPlannerNode(
@@ -214,22 +216,24 @@ void ParkingPlannerNode::debug_publish_obstacles(
   std_msgs::msg::ColorRGBA color_obstacles;
   autoware::common::had_map_utils::setColor(&color_obstacles, 1.0f, 1.0f, 1.0f, 1.0f);
 
-  std::vector<LineString3d> all_obstacle_linestrings{};
+  Areas all_obstacle_areas;
   for (const auto & the_obstacle : obstacles) {
-    LineString3d obstacle_linestring(getId(), {});
+    Area area;
+    LineString3d obstacle_bound(getId(), {});
     for (const auto & pt : the_obstacle.get_vertices() ) {
-      obstacle_linestring.push_back(
+      obstacle_bound.push_back(
         Point3d(
           getId(), std::get<0>(pt.get_coord()),
           std::get<1>(pt.get_coord()), 0.0));
     }
-    all_obstacle_linestrings.push_back(obstacle_linestring);
+    area.setOuterBound({obstacle_bound});
+    all_obstacle_areas.push_back(area);
   }
 
   m_debug_obstacles_publisher->publish(
-    autoware::common::had_map_utils::lineStringsAsTriangleMarkerArray(
+    autoware::common::had_map_utils::areasAsTriangleMarkerArray(
       marker_t, "parking_debug_obstacles",
-      all_obstacle_linestrings,
+      all_obstacle_areas,
       color_obstacles));
 }
 

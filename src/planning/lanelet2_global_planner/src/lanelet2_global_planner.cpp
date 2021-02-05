@@ -78,7 +78,7 @@ void Lanelet2GlobalPlanner::parse_lanelet_element()
         lanelet::Id lane_cad_id = *lanelet.attribute("cad_id").asId();
         result_lane = near_road_map.emplace(lane_cad_id, lane_id);
         if (!result_lane.second) {
-          throw std::runtime_error("Lanelet2GlobalPlanner: Parsing osm lane map fail");
+          throw std::runtime_error("Lanelet2GlobalPlanner: Parsing osm lane from map fail");
         }
       }
     }
@@ -86,38 +86,38 @@ void Lanelet2GlobalPlanner::parse_lanelet_element()
     // parsing lane elements
     typedef std::unordered_map<lanelet::Id, std::vector<lanelet::Id>>::iterator it;
     std::pair<it, bool8_t> result;
-    for (const auto & linestring : osm_map->lineStringLayer) {
+    for (const auto & area : osm_map->areaLayer) {
       // Map version 1 (no parking access element): mapping a parking to lanes
-      if (linestring.hasAttribute("subtype") &&
-        linestring.hasAttribute("cad_id") &&
-        linestring.hasAttribute("near_roads") &&
-        linestring.attribute("subtype") == "parking")
+      if (area.hasAttribute("subtype") &&
+        area.hasAttribute("cad_id") &&
+        area.hasAttribute("near_roads") &&
+        area.attribute("subtype") == "parking")
       {
         // build vector of parking id
-        lanelet::Id parking_id = linestring.id();
+        lanelet::Id parking_id = area.id();
         parking_id_list.push_back(parking_id);
 
         // near road id value ("near_roads")
-        std::string lanes_str = linestring.attribute("near_roads").value();
+        std::string lanes_str = area.attribute("near_roads").value();
         std::vector<lanelet::Id> near_road_ids = lanelet_chr2num(lanes_str);
         result = parking_lane_map.emplace(parking_id, near_road_ids);
         if (!result.second) {
-          throw std::runtime_error("Lanelet2GlobalPlanner: Parsing osm linestring map fail");
+          throw std::runtime_error("Lanelet2GlobalPlanner: Parsing osm parking_lane from map fail");
         }
       }
 
       // Map version 2 (with parking access element):
       // mapping a parking spot to parking accesses
-      if (linestring.hasAttribute("subtype") &&
-        linestring.hasAttribute("parking_accesses") &&
-        (linestring.attribute("subtype") == "parking_spot" ||
-        linestring.attribute("subtype") == "parking_spot,drop_off,pick_up"))
+      if (area.hasAttribute("subtype") &&
+        area.hasAttribute("parking_accesses") &&
+        (area.attribute("subtype") == "parking_spot" ||
+        area.attribute("subtype") == "parking_spot,drop_off,pick_up"))
       {
         // build vector of parking id
-        lanelet::Id parking_id = linestring.id();
+        lanelet::Id parking_id = area.id();
         parking_id_list.push_back(parking_id);
         // get associate parking accesses
-        std::string parking_access_str = linestring.attribute("parking_accesses").value();
+        std::string parking_access_str = area.attribute("parking_accesses").value();
         std::vector<lanelet::Id> parking_access_ids = lanelet_str2num(parking_access_str);
         // insert to a map
         result = parking2access_map.emplace(parking_id, parking_access_ids);
@@ -127,13 +127,13 @@ void Lanelet2GlobalPlanner::parse_lanelet_element()
       }
 
       // mapping a parking access to lanes
-      if (linestring.hasAttribute("subtype") &&
-        linestring.hasAttribute("ref_lanelet") &&
-        linestring.attribute("subtype") == "parking_access")
+      if (area.hasAttribute("subtype") &&
+        area.hasAttribute("ref_lanelet") &&
+        area.attribute("subtype") == "parking_access")
       {
         // get associate lanes
-        lanelet::Id parking_access_id = linestring.id();
-        std::string near_lane_str = linestring.attribute("ref_lanelet").value();
+        lanelet::Id parking_access_id = area.id();
+        std::string near_lane_str = area.attribute("ref_lanelet").value();
         std::vector<lanelet::Id> near_lane_ids = lanelet_str2num(near_lane_str);
         // insert to a map
         result = access2lane_map.emplace(parking_access_id, near_lane_ids);
@@ -239,36 +239,36 @@ const
   // make this function more robust.
 
   // do not refine point at failure
-  if (!osm_map->lineStringLayer.exists(parking_id)) {
+  if (!osm_map->areaLayer.exists(parking_id)) {
     return input_point;
   }
-  const auto parking_ls = osm_map->lineStringLayer.get(parking_id);
+  const auto parking_poly = osm_map->areaLayer.get(parking_id).outerBoundPolygon().basicPolygon();
 
   // we assume that parking spot is rectangle shape which has 5 points
   // where first and last point overlap
-  if (parking_ls.size() != 5) {
+  if (parking_poly.size() != 5) {
     return input_point;
   }
 
   // find centerline of parking spot
-  const auto & p0 = parking_ls[0];
-  const auto & p1 = parking_ls[1];
-  const auto & p2 = parking_ls[2];
-  const auto & p3 = parking_ls[3];
+  const auto & p0 = parking_poly[0];
+  const auto & p1 = parking_poly[1];
+  const auto & p2 = parking_poly[2];
+  const auto & p3 = parking_poly[3];
 
   TrajectoryPoint center_p1, center_p2;
 
   // find longer side of parking spot
   if (lanelet::geometry::distance2d(p0, p1) > lanelet::geometry::distance2d(p1, p2)) {
-    const auto c_p1 = (p0.basicPoint2d() + p3.basicPoint2d()) / 2.0;
-    const auto c_p2 = (p1.basicPoint2d() + p2.basicPoint2d()) / 2.0;
+    const auto c_p1 = (p0 + p3) / 2.0;
+    const auto c_p2 = (p1 + p2) / 2.0;
     center_p1.x = c_p1.x();
     center_p1.y = c_p1.y();
     center_p2.x = c_p2.x();
     center_p2.y = c_p2.y();
   } else {
-    const auto c_p1 = (p0.basicPoint2d() + p1.basicPoint2d()) / 2.0;
-    const auto c_p2 = (p2.basicPoint2d() + p3.basicPoint2d()) / 2.0;
+    const auto c_p1 = (p0 + p1) / 2.0;
+    const auto c_p2 = (p2 + p3) / 2.0;
     center_p1.x = c_p1.x();
     center_p1.y = c_p1.y();
     center_p2.x = c_p2.x();
@@ -297,9 +297,9 @@ bool8_t Lanelet2GlobalPlanner::point_in_parking_spot(
   const lanelet::Point3d & point, const lanelet::Id & parking_id)
 const
 {
-  if (osm_map->lineStringLayer.exists(parking_id)) {
-    const auto parking_ls = osm_map->lineStringLayer.get(parking_id);
-    const auto parking_poly = lanelet::BasicPolygon3d(parking_ls.basicLineString());
+  if (osm_map->areaLayer.exists(parking_id)) {
+    const auto parking_area = osm_map->areaLayer.get(parking_id);
+    const auto parking_poly = parking_area.outerBoundPolygon().basicPolygon();
 
     return lanelet::geometry::within(point, parking_poly);
   } else {
@@ -311,17 +311,17 @@ std::string Lanelet2GlobalPlanner::get_primitive_type(const lanelet::Id & prim_i
 {
   if (osm_map->laneletLayer.exists(prim_id)) {
     return "lane";
-  } else if (osm_map->lineStringLayer.exists(prim_id)) {
-    const auto linestring = osm_map->lineStringLayer.get(prim_id);
-    if (linestring.hasAttribute("subtype") &&
-      linestring.hasAttribute("parking_accesses") &&
-      (linestring.attribute("subtype") == "parking_spot" ||
-      linestring.attribute("subtype") == "parking_spot,drop_off,pick_up"))
+  } else if (osm_map->areaLayer.exists(prim_id)) {
+    const auto area = osm_map->areaLayer.get(prim_id);
+    if (area.hasAttribute("subtype") &&
+      area.hasAttribute("parking_accesses") &&
+      (area.attribute("subtype") == "parking_spot" ||
+      area.attribute("subtype") == "parking_spot,drop_off,pick_up"))
     {
       return "parking";
-    } else if (linestring.hasAttribute("subtype") &&  // NOLINT
-      linestring.hasAttribute("ref_lanelet") &&
-      linestring.attribute("subtype") == "parking_access")
+    } else if (area.hasAttribute("subtype") &&  // NOLINT
+      area.hasAttribute("ref_lanelet") &&
+      area.attribute("subtype") == "parking_access")
     {
       return "drivable_area";
     } else {
@@ -367,7 +367,7 @@ lanelet::Id Lanelet2GlobalPlanner::find_nearroute_from_parking(const lanelet::Id
 const
 {
   lanelet::Id lane_id = -1;
-  if (osm_map->lineStringLayer.exists(park_id)) {
+  if (osm_map->areaLayer.exists(park_id)) {
     // search the map
     auto it = parking_lane_map.find(park_id);
     if (it != parking_lane_map.end()) {
@@ -384,7 +384,7 @@ lanelet::Id Lanelet2GlobalPlanner::find_parkingaccess_from_parking(const lanelet
 const
 {
   lanelet::Id parking_access_id = -1;
-  if (osm_map->lineStringLayer.exists(park_id)) {
+  if (osm_map->areaLayer.exists(park_id)) {
     // search the map
     auto it_parking = parking2access_map.find(park_id);
     if (it_parking != parking2access_map.end()) {
@@ -401,7 +401,7 @@ std::vector<lanelet::Id> Lanelet2GlobalPlanner::find_lane_from_parkingaccess(
   const lanelet::Id & parkaccess_id) const
 {
   std::vector<lanelet::Id> lane_id{};
-  if (osm_map->lineStringLayer.exists(parkaccess_id)) {
+  if (osm_map->areaLayer.exists(parkaccess_id)) {
     // search the map
     auto it_lane = access2lane_map.find(parkaccess_id);
     if (it_lane != access2lane_map.end()) {
@@ -467,17 +467,17 @@ bool8_t Lanelet2GlobalPlanner::compute_parking_center(
 {
   bool8_t result = false;
   // Point3d parking_center;
-  if (osm_map->lineStringLayer.exists(parking_id) &&
-    osm_map->lineStringLayer.get(parking_id).size() > 0U)
+  if (osm_map->areaLayer.exists(parking_id) &&
+    osm_map->areaLayer.get(parking_id).outerBoundPolygon().size() > 0U)
   {
     // sum x,y,z points
     float64_t mean_x = 0.0;
     float64_t mean_y = 0.0;
     float64_t mean_z = 0.0;
-    lanelet::LineString3d ls3d = osm_map->lineStringLayer.get(parking_id);
-    size_t num_points = ls3d.size();
+    const auto area3d = osm_map->areaLayer.get(parking_id).outerBoundPolygon().basicPolygon();
+    size_t num_points = area3d.size();
     std::for_each(
-      ls3d.begin(), ls3d.end(), [&](lanelet::Point3d p)
+      area3d.begin(), area3d.end(), [&](lanelet::BasicPoint3d p)
       {
         mean_x += p.x() / static_cast<float64_t>(num_points);
         mean_y += p.y() / static_cast<float64_t>(num_points);

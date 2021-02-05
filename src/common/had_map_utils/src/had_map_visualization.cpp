@@ -65,7 +65,7 @@ void setMarkerHeader(
   const std_msgs::msg::ColorRGBA & c,
   const int32_t & action,
   const int32_t & type,
-  const float32_t & lss)
+  const float32_t & scale)
 {
   m->header.frame_id = frame_id;
   m->header.stamp = t;
@@ -81,21 +81,21 @@ void setMarkerHeader(
   m->pose.orientation.y = 0.0;
   m->pose.orientation.z = 0.0;
   m->pose.orientation.w = 1.0;
-  m->scale.x = lss;
-  m->scale.y = lss;
-  m->scale.z = lss;
+  m->scale.x = scale;
+  m->scale.y = scale;
+  m->scale.z = scale;
   m->color = c;
 }
 
-void lineString2Marker(
+visualization_msgs::msg::Marker lineString2Marker(
   const rclcpp::Time & t,
   const lanelet::LineString3d & ls,
-  visualization_msgs::msg::Marker * line_strip,
   const std::string & frame_id,
   const std::string & ns, const std_msgs::msg::ColorRGBA & c, const float32_t & lss)
 {
+  visualization_msgs::msg::Marker line_strip;
   setMarkerHeader(
-    line_strip, static_cast<int32_t>(ls.id()), t, frame_id, ns, c,
+    &line_strip, static_cast<int32_t>(ls.id()), t, frame_id, ns, c,
     visualization_msgs::msg::Marker::ADD,
     visualization_msgs::msg::Marker::LINE_STRIP,
     lss);
@@ -105,18 +105,20 @@ void lineString2Marker(
     p.x = (*i).x();
     p.y = (*i).y();
     p.z = (*i).z();
-    line_strip->points.push_back(p);
+    line_strip.points.push_back(p);
   }
+  return line_strip;
 }
 
-void lineString2Marker(
+visualization_msgs::msg::Marker lineString2Marker(
   const rclcpp::Time & t,
-  const lanelet::ConstLineString3d & ls, visualization_msgs::msg::Marker * line_strip,
+  const lanelet::ConstLineString3d & ls,
   const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
   const float32_t & lss)
 {
+  visualization_msgs::msg::Marker line_strip;
   setMarkerHeader(
-    line_strip, static_cast<int32_t>(ls.id()), t, frame_id, ns, c,
+    &line_strip, static_cast<int32_t>(ls.id()), t, frame_id, ns, c,
     visualization_msgs::msg::Marker::ADD,
     visualization_msgs::msg::Marker::LINE_STRIP,
     lss);
@@ -126,8 +128,9 @@ void lineString2Marker(
     p.x = (*i).x();
     p.y = (*i).y();
     p.z = (*i).z();
-    line_strip->points.push_back(p);
+    line_strip.points.push_back(p);
   }
+  return line_strip;
 }
 
 visualization_msgs::msg::MarkerArray lineStringsAsMarkerArray(
@@ -141,8 +144,7 @@ visualization_msgs::msg::MarkerArray lineStringsAsMarkerArray(
 
   for (auto lsi = linestrings.begin(); lsi != linestrings.end(); lsi++) {
     lanelet::LineString3d ls = *lsi;
-    visualization_msgs::msg::Marker line_strip;
-    lineString2Marker(t, ls, &line_strip, "map", ns, c, lss);
+    visualization_msgs::msg::Marker line_strip = lineString2Marker(t, ls, "map", ns, c, lss);
     marker_array.markers.push_back(line_strip);
   }
   return marker_array;
@@ -166,19 +168,19 @@ visualization_msgs::msg::MarkerArray laneletsBoundaryAsMarkerArray(
 
     visualization_msgs::msg::Marker left_line_strip, right_line_strip, center_line_strip;
     if (!exists(added, left_ls.id())) {
-      lineString2Marker(t, left_ls, &left_line_strip, "map", "left_lane_bound", c, lss);
+      left_line_strip = lineString2Marker(t, left_ls, "map", "left_lane_bound", c, lss);
       marker_array.markers.push_back(left_line_strip);
       added.insert(left_ls.id());
     }
     if (!exists(added, right_ls.id())) {
-      lineString2Marker(
-        t, right_ls, &right_line_strip, "map", "right_lane_bound", c, lss);
+      right_line_strip = lineString2Marker(
+        t, right_ls, "map", "right_lane_bound", c, lss);
       marker_array.markers.push_back(right_line_strip);
       added.insert(right_ls.id());
     }
     if (viz_centerline && !exists(added, center_ls.id())) {
-      lineString2Marker(
-        t, center_ls, &center_line_strip, "map", "center_lane_line",
+      center_line_strip = lineString2Marker(
+        t, center_ls, "map", "center_lane_line",
         c, std::max(lss * 0.1f, 0.01f));
       marker_array.markers.push_back(center_line_strip);
       added.insert(center_ls.id());
@@ -187,18 +189,18 @@ visualization_msgs::msg::MarkerArray laneletsBoundaryAsMarkerArray(
   return marker_array;
 }
 
-void basicPolygon2Marker(
+visualization_msgs::msg::Marker basicPolygon2Marker(
   const rclcpp::Time & t,
   const int32_t & line_id,
   const lanelet::BasicPolygon3d & pg,
-  visualization_msgs::msg::Marker * line_strip,
   const std::string & frame_id,
   const std::string & ns,
   const std_msgs::msg::ColorRGBA & c,
   const float32_t & lss)
 {
+  visualization_msgs::msg::Marker line_strip;
   setMarkerHeader(
-    line_strip, line_id, t, frame_id, ns, c,
+    &line_strip, line_id, t, frame_id, ns, c,
     visualization_msgs::msg::Marker::ADD,
     visualization_msgs::msg::Marker::LINE_STRIP,
     lss);
@@ -208,14 +210,15 @@ void basicPolygon2Marker(
     p.x = (*i).x();
     p.y = (*i).y();
     p.z = (*i).z();
-    line_strip->points.push_back(p);
+    line_strip.points.push_back(p);
   }
   geometry_msgs::msg::Point pb;
   auto i = pg.begin();
   pb.x = (*i).x();
   pb.y = (*i).y();
   pb.z = (*i).z();
-  line_strip->points.push_back(pb);
+  line_strip.points.push_back(pb);
+  return line_strip;
 }
 
 visualization_msgs::msg::MarkerArray areasBoundaryAsMarkerArray(
@@ -228,12 +231,12 @@ visualization_msgs::msg::MarkerArray areasBoundaryAsMarkerArray(
   float32_t lss = 0.1f;
   visualization_msgs::msg::MarkerArray marker_array;
   for (auto area : areas) {
-    visualization_msgs::msg::Marker line_strip;
-
     lanelet::CompoundPolygon3d cpg = area.outerBoundPolygon();
     lanelet::BasicPolygon3d bpg = cpg.basicPolygon();
 
-    basicPolygon2Marker(t, pg_count, bpg, &line_strip, "map", ns, c, lss);
+    visualization_msgs::msg::Marker line_strip = basicPolygon2Marker(
+      t, pg_count, bpg, "map", ns, c,
+      lss);
     marker_array.markers.push_back(line_strip);
     pg_count++;
   }
@@ -248,23 +251,24 @@ visualization_msgs::msg::MarkerArray polygonsBoundaryAsMarkerArray(
   float32_t lss = 0.1f;
   visualization_msgs::msg::MarkerArray marker_array;
   for (auto poly : polygons) {
-    visualization_msgs::msg::Marker line_strip;
     lanelet::BasicPolygon3d bpg = poly.basicPolygon();
-    basicPolygon2Marker(t, pg_count, bpg, &line_strip, "map", ns, c, lss);
+    visualization_msgs::msg::Marker line_strip = basicPolygon2Marker(
+      t, pg_count, bpg, "map", ns, c,
+      lss);
     marker_array.markers.push_back(line_strip);
     pg_count++;
   }
   return marker_array;
 }
 
-void bbox2Marker(
+visualization_msgs::msg::Marker bbox2Marker(
   const rclcpp::Time & t, const int32_t & line_id, const float64_t lower[], const float64_t upper[],
-  visualization_msgs::msg::Marker * line_strip,
   const std::string & frame_id, const std::string & ns,
   const std_msgs::msg::ColorRGBA & c, const float32_t & lss)
 {
+  visualization_msgs::msg::Marker line_strip;
   setMarkerHeader(
-    line_strip, line_id, t, frame_id, ns, c,
+    &line_strip, line_id, t, frame_id, ns, c,
     visualization_msgs::msg::Marker::ADD,
     visualization_msgs::msg::Marker::LINE_STRIP,
     lss);
@@ -275,11 +279,12 @@ void bbox2Marker(
   tl.x = lower[0]; tl.y = upper[0]; tl.z = 0.0;
   tr.x = upper[0]; tr.y = upper[0]; tr.z = 0.0;
 
-  line_strip->points.push_back(bl);
-  line_strip->points.push_back(br);
-  line_strip->points.push_back(tr);
-  line_strip->points.push_back(tl);
-  line_strip->points.push_back(bl);
+  line_strip.points.push_back(bl);
+  line_strip.points.push_back(br);
+  line_strip.points.push_back(tr);
+  line_strip.points.push_back(tl);
+  line_strip.points.push_back(bl);
+  return line_strip;
 }
 
 visualization_msgs::msg::MarkerArray boundingBoxAsMarkerArray(
@@ -289,35 +294,27 @@ visualization_msgs::msg::MarkerArray boundingBoxAsMarkerArray(
 {
   float32_t lss = 0.2f;
   visualization_msgs::msg::MarkerArray marker_array;
-  visualization_msgs::msg::Marker line_strip;
-
-  bbox2Marker(t, 0, upper, lower, &line_strip, "map", ns, c, lss);
+  visualization_msgs::msg::Marker line_strip = bbox2Marker(t, 0, upper, lower, "map", ns, c, lss);
   marker_array.markers.push_back(line_strip);
   return marker_array;
 }
 
-void toGeomMsgPt(const geometry_msgs::msg::Point32 & src, geometry_msgs::msg::Point * dst)
+geometry_msgs::msg::Point toGeomMsgPt(const geometry_msgs::msg::Point32 & src)
 {
-  if (dst == nullptr) {
-    throw std::runtime_error("toGeomMsgPt() dest pointer is null");
-    return;
-  }
-
-  dst->x = static_cast<float32_t>(src.x);
-  dst->y = static_cast<float32_t>(src.y);
-  dst->z = static_cast<float32_t>(src.z);
+  geometry_msgs::msg::Point dst;
+  dst.x = static_cast<float32_t>(src.x);
+  dst.y = static_cast<float32_t>(src.y);
+  dst.z = static_cast<float32_t>(src.z);
+  return dst;
 }
 
-void toGeomMsgPt32(const lanelet::BasicPoint3d & src, geometry_msgs::msg::Point32 * dst)
+geometry_msgs::msg::Point32 toGeomMsgPt32(const lanelet::BasicPoint3d & src)
 {
-  if (dst == nullptr) {
-    throw std::runtime_error("toGeomMsgPt32() dest pointer is null");
-    return;
-  }
-
-  dst->x = static_cast<float32_t>(src.x());
-  dst->y = static_cast<float32_t>(src.y());
-  dst->z = static_cast<float32_t>(src.z());
+  geometry_msgs::msg::Point32 dst;
+  dst.x = static_cast<float32_t>(src.x());
+  dst.y = static_cast<float32_t>(src.y());
+  dst.z = static_cast<float32_t>(src.z());
+  return dst;
 }
 void adjacentPoints(
   const size_t i, const size_t N,
@@ -339,32 +336,18 @@ void adjacentPoints(
   }
 }
 
-void lanelet2Triangle(
-  const lanelet::ConstLanelet & ll,
-  std::vector<geometry_msgs::msg::Polygon> * triangles)
+std::vector<geometry_msgs::msg::Polygon> lanelet2Triangle(
+  const lanelet::ConstLanelet & ll)
 {
-  if (triangles == nullptr) {
-    throw std::runtime_error("lanelet2Triangle() dest pointer is null");
-    return;
-  }
-  triangles->clear();
-  geometry_msgs::msg::Polygon ll_poly;
-  lanelet2Polygon(ll, &ll_poly);
-  polygon2Triangle(ll_poly, triangles);
+  geometry_msgs::msg::Polygon ls_poly = lanelet2Polygon(ll);
+  return polygon2Triangle(ls_poly);
 }
 
-void lineString2Triangle(
-  const lanelet::LineString3d & ls,
-  std::vector<geometry_msgs::msg::Polygon> * triangles)
+std::vector<geometry_msgs::msg::Polygon> area2Triangle(
+  const lanelet::Area & area)
 {
-  if (triangles == nullptr) {
-    throw std::runtime_error("lineString2Triangle() dest pointer is null");
-    return;
-  }
-  triangles->clear();
-  geometry_msgs::msg::Polygon ls_poly;
-  lineString2Polygon(ls, &ls_poly);
-  polygon2Triangle(ls_poly, triangles);
+  geometry_msgs::msg::Polygon ls_poly = area2Polygon(area);
+  return polygon2Triangle(ls_poly);
 }
 
 // Is angle AOB less than 180?
@@ -395,10 +378,10 @@ bool8_t isWithinTriangle(
   return (c1 > 0.0 && c2 > 0.0 && c3 > 0.0) || (c1 < 0.0 && c2 < 0.0 && c3 < 0.0);
 }
 
-void polygon2Triangle(
-  const geometry_msgs::msg::Polygon & polygon,
-  std::vector<geometry_msgs::msg::Polygon> * triangles)
+std::vector<geometry_msgs::msg::Polygon> polygon2Triangle(
+  const geometry_msgs::msg::Polygon & polygon)
 {
+  std::vector<geometry_msgs::msg::Polygon> triangles;
   geometry_msgs::msg::Polygon poly = polygon;
   size_t num_vertices = poly.points.size();
 
@@ -441,7 +424,7 @@ void polygon2Triangle(
     triangle.points.push_back(p0);
     triangle.points.push_back(p1);
     triangle.points.push_back(p2);
-    triangles->push_back(triangle);
+    triangles.push_back(triangle);
     auto it = poly.points.begin();
     std::advance(it, clipped_vertex);
     poly.points.erase(it);
@@ -461,44 +444,40 @@ void polygon2Triangle(
     adjacentPoints(i_prev, num_vertices, poly, &p0, &p1, &p2);
     is_acute_angle.at(i_prev) = isAcuteAngle(p0, p1, p2);
   }
+  return triangles;
 }
 
-void lineString2Polygon(
-  const lanelet::LineString3d & ls,
-  geometry_msgs::msg::Polygon * polygon)
+
+geometry_msgs::msg::Polygon area2Polygon(
+  const lanelet::ConstArea & area)
 {
-  if (polygon == nullptr) {
-    throw std::runtime_error("lineString2Polygon() polygon is null pointer!");
-    return;
-  }
+  geometry_msgs::msg::Polygon polygon;
+  polygon.points.clear();
+  polygon.points.reserve(area.outerBoundPolygon().size());
 
-  polygon->points.clear();
-  polygon->points.reserve(ls.size());
-
-  for (const auto & pt : ls) {
-    geometry_msgs::msg::Point32 pt32;
-    toGeomMsgPt32(pt.basicPoint(), &pt32);
-    polygon->points.push_back(pt32);
-  }
+  std::transform(
+    area.outerBoundPolygon().begin(),
+    area.outerBoundPolygon().end(),
+    std::back_inserter(polygon.points),
+    [](lanelet::ConstPoint3d pt) {return toGeomMsgPt32(pt.basicPoint());});
+  return polygon;
 }
 
-void lanelet2Polygon(
-  const lanelet::ConstLanelet & ll,
-  geometry_msgs::msg::Polygon * polygon)
+geometry_msgs::msg::Polygon lanelet2Polygon(
+  const lanelet::ConstLanelet & ll)
 {
-  if (polygon == nullptr) {
-    throw std::runtime_error("lanelet2Polygon() polygon is null pointer!");
-    return;
-  }
-  lanelet::CompoundPolygon3d ll_poly = ll.polygon3d();
-  polygon->points.clear();
-  polygon->points.reserve(ll_poly.size());
+  geometry_msgs::msg::Polygon polygon;
 
-  for (const auto & pt : ll_poly) {
-    geometry_msgs::msg::Point32 pt32;
-    toGeomMsgPt32(pt.basicPoint(), &pt32);
-    polygon->points.push_back(pt32);
-  }
+  const lanelet::CompoundPolygon3d & ll_poly = ll.polygon3d();
+  polygon.points.clear();
+  polygon.points.reserve(ll_poly.size());
+
+  std::transform(
+    ll_poly.begin(),
+    ll_poly.end(),
+    std::back_inserter(polygon.points),
+    [](lanelet::ConstPoint3d pt) {return toGeomMsgPt32(pt.basicPoint());});
+  return polygon;
 }
 
 visualization_msgs::msg::MarkerArray laneletsAsTriangleMarkerArray(
@@ -521,14 +500,13 @@ visualization_msgs::msg::MarkerArray laneletsAsTriangleMarkerArray(
     1.0);
 
   for (auto ll : lanelets) {
-    std::vector<geometry_msgs::msg::Polygon> triangles;
-    lanelet2Triangle(ll, &triangles);
+    std::vector<geometry_msgs::msg::Polygon> triangles = lanelet2Triangle(ll);
 
     for (auto tri : triangles) {
       geometry_msgs::msg::Point tri0[3];
 
       for (size_t i = 0; i < 3; i++) {
-        toGeomMsgPt(tri.points[i], &tri0[i]);
+        tri0[i] = toGeomMsgPt(tri.points[i]);
 
         marker.points.push_back(tri0[i]);
         marker.colors.push_back(c);
@@ -542,14 +520,14 @@ visualization_msgs::msg::MarkerArray laneletsAsTriangleMarkerArray(
   return marker_array;
 }
 
-visualization_msgs::msg::MarkerArray lineStringsAsTriangleMarkerArray(
-  const rclcpp::Time & t, const std::string & ns, const lanelet::LineStrings3d & linestrings,
+visualization_msgs::msg::MarkerArray areasAsTriangleMarkerArray(
+  const rclcpp::Time & t, const std::string & ns, const lanelet::Areas & areas,
   const std_msgs::msg::ColorRGBA & c)
 {
   visualization_msgs::msg::MarkerArray marker_array;
   visualization_msgs::msg::Marker marker;
 
-  if (linestrings.empty()) {
+  if (areas.empty()) {
     return marker_array;
   }
 
@@ -559,20 +537,16 @@ visualization_msgs::msg::MarkerArray lineStringsAsTriangleMarkerArray(
     visualization_msgs::msg::Marker::TRIANGLE_LIST,
     1.0);
 
-  for (auto ls : linestrings) {
-    std::vector<geometry_msgs::msg::Polygon> triangles;
-    lineString2Triangle(ls, &triangles);
-
+  for (auto area : areas) {
+    std::vector<geometry_msgs::msg::Polygon> triangles = area2Triangle(area);
     for (auto tri : triangles) {
-      geometry_msgs::msg::Point tri0[3];
-
       for (size_t i = 0; i < 3; i++) {
-        toGeomMsgPt(tri.points[i], &tri0[i]);
-        marker.points.push_back(tri0[i]);
+        marker.points.push_back(toGeomMsgPt(tri.points[i]));
         marker.colors.push_back(c);
       }
     }
   }
+
   if (!marker.points.empty()) {
     marker_array.markers.push_back(marker);
   }
