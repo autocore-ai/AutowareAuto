@@ -1,5 +1,5 @@
-Motion model {#motion-model}
-========
+Motion Model {#motion-model}
+============
 
 # Purpose / Use cases
 

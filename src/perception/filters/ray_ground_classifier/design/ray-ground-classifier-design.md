@@ -1,5 +1,5 @@
-ray_ground_classifier
-=================
+ray_ground_classifier {#ray-ground-classifier-design}
+=====================
 
 # Purpose / Use cases
 

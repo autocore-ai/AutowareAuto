@@ -1,4 +1,4 @@
-velodyne_driver
+velodyne_driver {#velodyne-driver-design}
 ===============
 
 # Why we implemented this feature

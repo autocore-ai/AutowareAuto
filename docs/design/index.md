@@ -13,4 +13,4 @@ This section of the Autoware.Auto documentation describes how the software is de
 - @subpage autoware-planning-design
 - @subpage autoware-prediction-design
 - @subpage autoware-tools-design
-- @subpage autoware-vehicle-interfaces-design
+- @subpage autoware-urdf-design

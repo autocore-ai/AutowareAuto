@@ -1,4 +1,4 @@
-Autoware.Auto Support Guidelines{#support-guidelines}
+Autoware.Auto Support Guidelines {#support-guidelines}
 ================================
 
 [TOC]

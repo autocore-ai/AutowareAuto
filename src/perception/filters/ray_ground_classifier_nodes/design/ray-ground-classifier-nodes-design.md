@@ -1,5 +1,5 @@
-ray_ground_classifier_nodes
-=============
+ray_ground_classifier_nodes {#ray-ground-classifier-nodes-design}
+===========================
 
 # Purpose / Use cases
 
@@ -45,7 +45,7 @@ Finally, to simplify logic, ray id sequences must be contiguous, e.g. a sequence
 is not recognized as two rays, but rather three.
 
 See the
-[RayGroundClassifier](@ref md_src_perception_filters_ray_ground_classifier_design_ray-ground-classifier-design)
+[RayGroundClassifier](@ref ray-ground-classifier-design)
 design doc for more details.
 
 ## Inputs / Outputs / API

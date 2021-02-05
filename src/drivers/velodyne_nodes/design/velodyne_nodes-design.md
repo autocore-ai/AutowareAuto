@@ -1,5 +1,5 @@
-velodyne_nodes
-=============
+velodyne_nodes {#velodyne-nodes-design}
+==============
 
 
 # Purpose / Use cases

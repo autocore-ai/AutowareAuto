@@ -1,5 +1,5 @@
-More Thuente Line Search
-=============
+More Thuente Line Search {#more-thuente-line-search-design}
+========================
 
 We implement a More-Thuente Line Search method as one of the line search methods. It implements and CRPT interface of the `LineSearch` class from the `line_search.hpp`.
 

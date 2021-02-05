@@ -1,5 +1,5 @@
-Covariance Insertion Node
-===========
+Covariance Insertion Node {#covariance-insertion-nodes-design}
+=========================
 
 # Purpose / Use cases
 <!-- Required -->

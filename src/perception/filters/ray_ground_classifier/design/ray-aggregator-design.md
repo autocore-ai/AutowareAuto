@@ -1,5 +1,5 @@
-ray_aggregator
-=================
+ray_aggregator {#ray-aggregator-design}
+==============
 
 # Purpose / Use cases
 

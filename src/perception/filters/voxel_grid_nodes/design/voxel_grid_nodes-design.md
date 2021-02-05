@@ -1,5 +1,5 @@
-voxel_grid_nodes
-===========
+voxel_grid_nodes {#voxel-grid-nodes-design}
+================
 
 This is the design document for the `voxel_grid_nodes` package.
 

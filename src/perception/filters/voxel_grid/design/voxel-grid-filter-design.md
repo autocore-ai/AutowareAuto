@@ -1,4 +1,4 @@
-voxel_grid_filter
+voxel_grid_filter {#voxel-grid-filter-design}
 =================
 
 

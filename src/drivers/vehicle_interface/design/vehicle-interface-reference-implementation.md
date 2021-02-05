@@ -1,4 +1,4 @@
-Vehicle-Interface-Reference-Implementation-{#vehicle-interface-reference-implementation}
+Vehicle-Interface-Reference-Implementation {#vehicle-interface-reference-implementation}
 ==========================================
 
 [TOC]

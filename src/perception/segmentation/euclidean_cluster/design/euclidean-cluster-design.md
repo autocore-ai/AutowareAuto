@@ -1,4 +1,4 @@
-euclidean_cluster
+euclidean_cluster {#euclidean-cluster-design}
 =================
 
 

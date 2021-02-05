@@ -1,5 +1,5 @@
-State Estimation Node
-========
+State Estimation Node {#state-estimation-nodes-design}
+=====================
 
 # Purpose / Use cases
 

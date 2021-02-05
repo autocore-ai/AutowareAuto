@@ -1,5 +1,5 @@
-Point cloud filter transform nodes {#point-cloud-filter-transform-nodes}
-=============
+point_cloud_filter_transform_nodes {#point-cloud-filter-transform-nodes}
+==================================
 
 # Purpose / Use cases
 

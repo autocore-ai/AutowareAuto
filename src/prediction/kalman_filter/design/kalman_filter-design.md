@@ -1,5 +1,5 @@
-kalman_filter
-========
+kalman_filter {#kalman-filter-design}
+=============
 
 # Purpose / Use cases
 

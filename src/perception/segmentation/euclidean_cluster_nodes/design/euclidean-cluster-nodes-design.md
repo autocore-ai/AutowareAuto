@@ -1,5 +1,5 @@
-euclidean_cluster_nodes
-=================
+euclidean_cluster_nodes {#euclidean-cluster-nodes-design}
+=======================
 
 # Purpose / Use cases
 
