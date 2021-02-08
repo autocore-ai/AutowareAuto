@@ -69,6 +69,14 @@ enum PlannerType
   UNKNOWN
 };
 
+/// \brief Enum representing the direction that a vehicle will park
+///        in a parking spot relative to the spot's entrance
+enum class ParkingDirection
+{
+  HEAD_IN,  ///< Front of the vehicle is facing away from the entrance
+  TOE_IN    ///< Rear of the vehicle is facing away from the entrance
+};
+
 struct RouteWithType
 {
   Route route;
@@ -108,6 +116,14 @@ public:
 
 private:
   RouteWithType get_current_subroute();
+
+  /// \brief Function to calculate if target parking orientation is HEAD_IN or TOE_IN
+  /// \param[in] parking_point TrajectoryPoint with heading for the target parking location
+  /// \param[in] closest_lane_point Nearest TrajectoryPoint to the parking location on a lanelet
+  /// \return ParkingDirection object representing HEAD_IN or TOE_IN
+  ParkingDirection get_parking_direction(
+    const TrajectoryPoint & parking_point,
+    const TrajectoryPoint & closest_lane_point);
   std::vector<RouteWithType> m_subroutes;
   std::size_t m_current_subroute;
 

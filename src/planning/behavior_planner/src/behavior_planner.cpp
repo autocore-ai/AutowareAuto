@@ -157,11 +157,24 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
     //  create subroute when Planner Type changes
     if (type != prev_type) {
       if (prev_type == PlannerType::PARKING && type == PlannerType::LANE) {
+        // Determine parking direction and set offset direction accordingly
+        float32_t route_offset = m_config.subroute_goal_offset_parking2lane;
+        const auto closest_lane_point = get_closest_point_on_lane(
+          subroute.route.start_point,
+          primitive.id, lanelet_map_ptr, 0.0f);
+        const auto parking_dir = get_parking_direction(
+          subroute.route.start_point, closest_lane_point);
+
+        if (parking_dir == ParkingDirection::HEAD_IN) {
+          // Add extra distance for vehicle length
+          route_offset = -(route_offset + 1.0f);
+        }
+
         // create parking subroute
         // set goal to closest poin on lane from starting point
         subroute.route.goal_point = get_closest_point_on_lane(
           subroute.route.start_point,
-          primitive.id, lanelet_map_ptr, m_config.subroute_goal_offset_parking2lane);
+          primitive.id, lanelet_map_ptr, route_offset);
         m_subroutes.push_back(subroute);
 
         // reinitialize for next subroute
@@ -171,10 +184,23 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
         subroute.route.start_point = subroute.route.goal_point;
       }
       if (prev_type == PlannerType::LANE && type == PlannerType::PARKING) {
+        // Determine parking direction and set offset direction accordingly
+        float32_t route_offset = m_config.subroute_goal_offset_lane2parking;
+        const auto closest_lane_point = get_closest_point_on_lane(
+          route.goal_point, prev_primitive.id,
+          lanelet_map_ptr, 0.0f);
+        const auto parking_dir = get_parking_direction(
+          route.goal_point, closest_lane_point);
+
+        if (parking_dir == ParkingDirection::HEAD_IN) {
+          // Add extra distance for vehicle length
+          route_offset = -(route_offset + 1.0f);
+        }
+
         // Currently, we assume that final goal is close to lane.
         subroute.route.goal_point = get_closest_point_on_lane(
           route.goal_point, prev_primitive.id,
-          lanelet_map_ptr, m_config.subroute_goal_offset_lane2parking);
+          lanelet_map_ptr, route_offset);
         m_subroutes.push_back(subroute);
 
         // reinitialize for next subroute
@@ -232,6 +258,24 @@ RouteWithType BehaviorPlanner::get_current_subroute()
   return m_subroutes.at(m_current_subroute);
 }
 
+ParkingDirection BehaviorPlanner::get_parking_direction(
+  const TrajectoryPoint & parking_point,
+  const TrajectoryPoint & closest_lane_point)
+{
+  // Calculate angle from parking point to closest lane point
+  const auto direction_vector = minus_2d(closest_lane_point, parking_point);
+  const float32_t diff_angle = std::atan2(direction_vector.y, direction_vector.x);
+
+  // Get heading angle of parking point
+  const auto heading_angle = motion::motion_common::to_angle(parking_point.heading);
+
+  // If absolute difference between angles is gt pi/2, the parking orientation is head-in
+  if (std::fabs(diff_angle - heading_angle) > autoware::common::types::PI_2) {
+    return ParkingDirection::HEAD_IN;
+  } else {
+    return ParkingDirection::TOE_IN;
+  }
+}
 
 TrajectoryPoint BehaviorPlanner::get_sub_goal()
 {
