@@ -34,6 +34,7 @@ run_cmd() {
         rm $out
         exit 1
     fi
+    rm $out
 }
 
 cpp_files=$(git diff --cached --name-only --diff-filter=ACMRT | grep -E "\.(c|cpp|h|hpp)$")
@@ -45,13 +46,24 @@ if [[ -n ${cpp_files} ]]; then
 
     echo "Running uncrustify"
     echo "---------------"
-    if ament_uncrustify --reformat ${cpp_files} &> /tmp/uncrustify_output; then
+    out=/tmp/uncrustify_output
+    if ament_uncrustify --reformat ${cpp_files} &> $out; then
         echo "No errors found"
         echo
     else
-        echo "Some files were reformatted, please check the changes and commit again"
-        exit 1
+        # ament_uncrustify returns code 1 both if it reformatted files or if it failed because something went wrong
+        # internally. Let's disambiguate
+        if grep -q "reformatted file" $out; then
+            echo "Some files were reformatted, please check the changes, then stage and commit again"
+            rm $out
+            exit 1
+        else
+            cat $out
+            rm $out
+            exit 2
+        fi
     fi
+    rm $out
 
     run_cmd "cpplint" ${cpp_files}
     run_cmd "cppcheck" ${cpp_files}
