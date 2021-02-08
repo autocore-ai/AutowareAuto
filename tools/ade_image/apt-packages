@@ -21,9 +21,12 @@ netstat-nat
 nodejs
 openssh-client
 python3-bloom
+python3-catkin-pkg
+python3-colcon-common-extensions
 python3-pip
 shellcheck
 strace
+twine
 vim
 
 # DDS Dependencies
