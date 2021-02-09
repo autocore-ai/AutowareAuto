@@ -36,7 +36,7 @@ constexpr std::size_t HORIZON_LENGTH = 30;
 constexpr std::size_t MAX_NUMBER_OF_OBSTACLES = 10;
 
 /// Maximum number of hyperplanes per obstacle supported by the NLP planner
-constexpr std::size_t MAX_HYPERPLANES_PER_OBSTACLE = 4;
+constexpr std::size_t MAX_HYPERPLANES_PER_OBSTACLE = 5;
 
 /// Maximum number of ego vehicle hyperplanes supported by the NLP planner
 constexpr std::size_t MAX_EGO_HYPERPLANES = 4;
