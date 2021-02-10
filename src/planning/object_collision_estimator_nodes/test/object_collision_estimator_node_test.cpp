@@ -118,9 +118,6 @@ void object_collision_estimator_node_test(
   exec.add_node(dummy_obstacle_publisher);
   exec.add_node(estimate_collision_client_node);
 
-  // Spin the Executor in a separate thread.
-  std::thread spin_thread([&exec]() {exec.spin();});
-
   // produce fake trajectory and obstacles
   const std::chrono::milliseconds dt(100);
   auto trajectory = constant_velocity_trajectory(
@@ -161,6 +158,8 @@ void object_collision_estimator_node_test(
   // publish the list of obstacles to the obstacles topic
   pub->publish(bbox_array);
 
+  exec.spin_some();
+
   // wait till the service interface is ready
   while (!estimate_collision_client->wait_for_service(1s)) {
     EXPECT_EQ(rclcpp::ok(), true);
@@ -176,7 +175,9 @@ void object_collision_estimator_node_test(
 
   // Wait for the result to be returned
   std::chrono::milliseconds span(100);
-  while (result_future.wait_for(span) == std::future_status::timeout) {}
+  while (result_future.wait_for(span) == std::future_status::timeout) {
+    exec.spin_some();
+  }
 
   auto result = result_future.get();
   auto updated_trajectory = result->modified_trajectory;
@@ -213,14 +214,13 @@ void object_collision_estimator_node_test(
 
   // clean up
   rclcpp::shutdown();
-  spin_thread.join();
 }
 
-TEST(object_collision_estimator_node, DISABLED_sanity) {
+TEST(object_collision_estimator_node, sanity) {
   object_collision_estimator_node_test(100, 40);
 }
 
-TEST(object_collision_estimator_node, DISABLED_short_trajectory) {
+TEST(object_collision_estimator_node, short_trajectory) {
   object_collision_estimator_node_test(3, 1);
   object_collision_estimator_node_test(3, 2);
 
@@ -230,11 +230,11 @@ TEST(object_collision_estimator_node, DISABLED_short_trajectory) {
   object_collision_estimator_node_test(0, 2);
 }
 
-TEST(object_collision_estimator_node, DISABLED_emergency_stop) {
+TEST(object_collision_estimator_node, emergency_stop) {
   object_collision_estimator_node_test(100, 0);
   object_collision_estimator_node_test(100, 1);
 }
 
-TEST(object_collision_estimator_node, DISABLED_no_obstacle) {
+TEST(object_collision_estimator_node, no_obstacle) {
   object_collision_estimator_node_test(100, 101);
 }

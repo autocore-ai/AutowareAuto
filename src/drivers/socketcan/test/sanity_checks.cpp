@@ -25,6 +25,7 @@
 #include <linux/can/raw.h>
 
 #include <socketcan/socket_can_sender.hpp>
+#include <socketcan/socket_can_receiver.hpp>
 
 #include <gtest/gtest.h>
 #include <cstring>
@@ -33,6 +34,7 @@
 #include <string>
 
 using autoware::drivers::socketcan::SocketCanSender;
+using autoware::drivers::socketcan::SocketCanReceiver;
 
 using autoware::drivers::socketcan::CanId;
 using autoware::drivers::socketcan::StandardFrame;
@@ -42,7 +44,7 @@ using autoware::drivers::socketcan::MAX_DATA_LENGTH;
 
 
 // Exercise the CanId stuff
-TEST(socket_can_sender, id_bad)
+TEST(socket_can_basics, id_bad)
 {
   // Bad frame type
   EXPECT_THROW(CanId{0x6000'0000U}, std::domain_error);
@@ -55,7 +57,7 @@ TEST(socket_can_sender, id_bad)
   EXPECT_THROW(construct(ExtendedFrame), std::domain_error);
 }
 
-TEST(socket_can_sender, id)
+TEST(socket_can_basics, id)
 {
   // Default
   {
@@ -85,17 +87,20 @@ TEST(socket_can_sender, id)
     EXPECT_EQ(id.get(), 0U);
   }
 }
+
 // Sanity checks on constructor
-TEST(socket_can_sender, bad_constructor)
+TEST(socket_can_basics, bad_constructor)
 {
   {
     const std::string long_name{"abcdefghijklmnopqrs"};
     ASSERT_GE(long_name.size(), 14U);
     EXPECT_THROW(SocketCanSender{long_name}, std::domain_error);
+    EXPECT_THROW(SocketCanReceiver{long_name}, std::domain_error);
   }
   {
     constexpr auto nonexistent_interface = "foo";
     EXPECT_THROW(SocketCanSender{nonexistent_interface}, std::runtime_error);
+    EXPECT_THROW(SocketCanReceiver{nonexistent_interface}, std::runtime_error);
   }
 }
 
