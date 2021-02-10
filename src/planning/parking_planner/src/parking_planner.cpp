@@ -14,13 +14,12 @@
 
 // This file contains the "main entry point" of the parking planner in the form of
 // a class "ParkingPlanner" and its main method, "plan" (at the end of the file).
-#include <CGAL/Boolean_set_operations_2.h>
 
 #include <common/types.hpp>
 #include <geometry/common_2d.hpp>
 #include <geometry/convex_hull.hpp>
 #include <geometry/hull_pockets.hpp>
-#include <had_map_utils/had_map_visualization.hpp>
+#include <geometry_msgs/msg/point32.hpp>
 #include <motion_common/motion_common.hpp>
 
 #include <iostream>
@@ -57,10 +56,6 @@ using autoware::common::geometry::norm_2d;
 using autoware::common::geometry::times_2d;
 using autoware::common::geometry::get_normal;
 using Point = geometry_msgs::msg::Point32;
-using Kernel = CGAL::Exact_predicates_exact_constructions_kernel;
-using CGAL_Point = Kernel::Point_2;
-using CGAL_Polygon = CGAL::Polygon_2<Kernel>;
-using CGAL_Polygon_with_holes = CGAL::Polygon_with_holes_2<Kernel>;
 
 PlanningResult::PlanningResult(
   const Trajectory<float64_t> trajectory,
@@ -337,101 +332,6 @@ autoware_auto_msgs::msg::Trajectory convert_parking_planner_to_autoware_trajecto
   return trajectory;
 }
 
-// TODO(s.me) this is getting a bit long, break up
-lanelet::Polygon3d coalesce_drivable_areas(
-  const autoware_auto_msgs::msg::Route & route,
-  const lanelet::LaneletMapPtr & lanelet_map_ptr)
-{
-  CGAL_Polygon_with_holes drivable_area;
-
-  for (const auto & map_primitive : route.primitives) {
-    // Attempt to obtain a polygon from the primitive ID
-    geometry_msgs::msg::Polygon current_area_polygon{};
-    const auto & lanelet_layer = lanelet_map_ptr->laneletLayer;
-    const auto & current_lanelet_candidate = lanelet_layer.find(map_primitive.id);
-    if (current_lanelet_candidate != lanelet_layer.end()) {
-      current_area_polygon = autoware::common::had_map_utils::lanelet2Polygon(
-        *current_lanelet_candidate);
-    } else {
-      const auto & area_layer = lanelet_map_ptr->areaLayer;
-      const auto & current_area_candidate = area_layer.find(map_primitive.id);
-      if (current_area_candidate != area_layer.end()) {
-        current_area_polygon =
-          autoware::common::had_map_utils::area2Polygon(*current_area_candidate);
-      } else {
-        // This might happen if a primitive is on the route, but outside of the bounding box that we
-        // query the map for. Not sure how to deal with this at this point though.
-        std::cerr << "Error: primitive ID " << map_primitive.id << " not found, skipping" <<
-          std::endl;
-      }
-    }
-
-    if (drivable_area.outer_boundary().size() > 0) {
-      // Convert current_area_polygon to a CGAL_Polygon and make sure the orientation is correct
-      CGAL_Polygon to_join{};
-      CGAL_Polygon_with_holes temporary_union;
-      const auto first_point = current_area_polygon.points.begin();
-      for (auto area_point_it =
-        current_area_polygon.points.begin();
-        // Stop if we run out of points, or if we encounter the first point again
-        area_point_it < current_area_polygon.points.end() &&
-        !(first_point != area_point_it && first_point->x == area_point_it->x &&
-        first_point->y == area_point_it->y);
-        area_point_it++)
-      {
-        to_join.push_back(CGAL_Point(area_point_it->x, area_point_it->y));
-      }
-
-      if (to_join.is_clockwise_oriented() ) {
-        to_join.reverse_orientation();
-      }
-
-      // Merge this CGAL polygon with the growing drivable_area. We need an intermediate merge
-      // result because as far as I can tell from the CGAL docs, I can't "join to" a polygon
-      // in-place with the join() interface.
-      const auto polygons_overlap = CGAL::join(drivable_area, to_join, temporary_union);
-      if (!polygons_overlap && !drivable_area.outer_boundary().is_empty()) {
-        // TODO(s.me) cancel here? Right now we just ignore that polygon, if it doesn't
-        // overlap with the rest, there is no way to get to it anyway
-        std::cerr << "Error: polygons in union do not overlap!" << std::endl;
-      } else {
-        drivable_area = temporary_union;
-      }
-    } else {
-      // Otherwise, just set the current drivable area equal to the area to add to it, because
-      // CGAL seems to do "union(empty, non-empty) = empty" for some reason.
-      const auto first_point = current_area_polygon.points.begin();
-      for (auto area_point_it =
-        current_area_polygon.points.begin();
-        area_point_it < current_area_polygon.points.end() &&
-        // Stop if we run out of points, or if we encounter the first point again
-        !(first_point != area_point_it && first_point->x == area_point_it->x &&
-        first_point->y == area_point_it->y);
-        area_point_it++)
-      {
-        drivable_area.outer_boundary().push_back(CGAL_Point(area_point_it->x, area_point_it->y));
-      }
-      if (drivable_area.outer_boundary().is_clockwise_oriented() ) {
-        drivable_area.outer_boundary().reverse_orientation();
-      }
-    }
-  }
-
-  // At this point, all the polygons from the route should be merged into drivable_area,
-  // and we now need to turn this back into a lanelet polygon.
-  std::vector<lanelet::Point3d> lanelet_drivable_area_points{};
-  lanelet_drivable_area_points.reserve(drivable_area.outer_boundary().size());
-  for (auto p = drivable_area.outer_boundary().vertices_begin();
-    p != drivable_area.outer_boundary().vertices_end(); p++)
-  {
-    lanelet_drivable_area_points.emplace_back(
-      lanelet::Point3d(
-        lanelet::utils::getId(), CGAL::to_double(p->x()),
-        CGAL::to_double(p->y()), 0.0));
-  }
-  lanelet::Polygon3d lanelet_drivable_area(lanelet::utils::getId(), lanelet_drivable_area_points);
-  return lanelet_drivable_area;
-}
 
 Trajectory<float64_t> ParkingPlanner::create_trajectory_from_states(
   const std::vector<VehicleState<float64_t>> & states_input,

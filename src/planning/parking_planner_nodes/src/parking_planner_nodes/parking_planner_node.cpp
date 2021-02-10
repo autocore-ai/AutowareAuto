@@ -22,6 +22,7 @@
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/Polygon.h>
 #include <autoware_auto_msgs/srv/had_map_service.hpp>
+#include <had_map_utils/had_map_computation.hpp>
 #include <had_map_utils/had_map_conversion.hpp>
 #include <had_map_utils/had_map_visualization.hpp>
 #include <had_map_utils/had_map_query.hpp>
@@ -301,7 +302,10 @@ AutowareTrajectory ParkingPlannerNode::plan_trajectory(
 {
   // ---- Merge the drivable areas into one lanelet::Polygon3d --------------------------
   // TODO(s.me) For experiments, we take dummy data here.
-  const Polygon3d drivable_area = parking_planner::coalesce_drivable_areas(route, lanelet_map_ptr);
+  const Polygon3d drivable_area =
+    autoware::common::had_map_utils::coalesce_drivable_areas(
+    route,
+    lanelet_map_ptr);
 
   // ---- Obtain "list of bounding obstacles" of drivable surface -----------------------
   const auto obstacles = parking_planner::convert_drivable_area_to_obstacles(drivable_area);

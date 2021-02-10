@@ -57,10 +57,6 @@ PARKING_PLANNER_PUBLIC autoware_auto_msgs::msg::Trajectory
 convert_parking_planner_to_autoware_trajectory(
   const Trajectory<float64_t> & parking_trajectory);
 
-PARKING_PLANNER_PUBLIC lanelet::Polygon3d coalesce_drivable_areas(
-  const autoware_auto_msgs::msg::Route & route,
-  const lanelet::LaneletMapPtr & lanelet_map_ptr);
-
 /// \brief Results of a parking planning call
 class PARKING_PLANNER_PUBLIC PlanningResult
 {
