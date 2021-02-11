@@ -71,7 +71,7 @@ On Terminal 2, you should see the following message output:
 
 ```
 [behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: sent parking trajectory action goal
-[behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: Recieved trajectory from planner
+[behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: Received trajectory from planner
 ```
 
 ## Verify that Behavior Planner outputs a Trajectory for MPC to follow

@@ -36,7 +36,7 @@ int32_t main(const int32_t argc, char ** const argv)
     rclcpp::init(argc, argv);
     rclcpp::NodeOptions options;
 
-    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("HAD_Map_Clinet");
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("HAD_Map_Client");
     rclcpp::Client<autoware_auto_msgs::srv::HADMapService>::SharedPtr client =
       node->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Service");
 
@@ -74,7 +74,7 @@ int32_t main(const int32_t argc, char ** const argv)
 
     autoware_auto_msgs::msg::HADMapBin msg = result.get()->map;
     autoware::common::had_map_utils::fromBinaryMsg(msg, sub_map);
-    std::cerr << "had map client - size of recieved map " << sub_map->size() << "\n";
+    std::cerr << "had map client - size of received map " << sub_map->size() << "\n";
     ret = 0;
   } catch (const std::exception & e) {
     std::cerr << e.what() << "\n";

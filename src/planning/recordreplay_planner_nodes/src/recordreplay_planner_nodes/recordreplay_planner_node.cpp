@@ -35,24 +35,9 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const rclcpp::NodeOptions & nod
 {
   const auto ego_topic = "vehicle_state";
   const auto trajectory_topic = "planned_trajectory";
-  const auto heading_weight =
-    static_cast<float64_t>(declare_parameter("heading_weight").get<float32_t>());
-  const auto min_record_distance =
-    static_cast<float64_t>(declare_parameter("min_record_distance").get<float32_t>());
+  const auto heading_weight = declare_parameter("heading_weight").get<float64_t>();
+  const auto min_record_distance = declare_parameter("min_record_distance").get<float64_t>();
 
-  m_enable_object_collision_estimator =
-    static_cast<bool8_t>(declare_parameter("enable_object_collision_estimator").get<bool8_t>());
-
-  init(ego_topic, trajectory_topic, heading_weight, min_record_distance);
-}
-
-void RecordReplayPlannerNode::init(
-  const std::string & ego_topic,
-  const std::string & trajectory_topic,
-  const float64_t heading_weight,
-  const float64_t min_record_distance
-)
-{
   using rclcpp::QoS;
   using namespace std::chrono_literals;
 
@@ -96,16 +81,16 @@ void RecordReplayPlannerNode::init(
     create_publisher<Trajectory>(trajectory_topic, QoS{10}, PubAllocT{});
 
   // Set up services
-  m_modify_trajectory_client = this->create_client<ModifyTrajectory>("estimate_collision");
-  while (m_enable_object_collision_estimator &&
-    !m_modify_trajectory_client->wait_for_service(3s))
-  {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(get_logger(), "Interrupted while waiting for service.");
-      rclcpp::shutdown();
-      return;
+  if (declare_parameter("enable_object_collision_estimator").get<bool>()) {
+    m_modify_trajectory_client = this->create_client<ModifyTrajectory>("estimate_collision");
+    while (!m_modify_trajectory_client->wait_for_service(3s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(get_logger(), "Interrupted while waiting for service.");
+        rclcpp::shutdown();
+        return;
+      }
+      RCLCPP_INFO(get_logger(), "Waiting for service connection...");
     }
-    RCLCPP_INFO(get_logger(), "Waiting for service connection...");
   }
 
   // Create and set a planner object that we'll talk to
@@ -135,8 +120,8 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
     RCLCPP_INFO_ONCE(this->get_logger(), "Replaying recorded ego postion as trajectory");
     const auto & traj_raw = m_planner->plan(*msg);
 
-    // Request service to consider object collision
-    if (m_enable_object_collision_estimator) {
+    // Request service to consider object collision if enabled
+    if (m_modify_trajectory_client) {
       auto request = std::make_shared<ModifyTrajectory::Request>();
       request->original_trajectory = traj_raw;
       auto result = m_modify_trajectory_client->async_send_request(

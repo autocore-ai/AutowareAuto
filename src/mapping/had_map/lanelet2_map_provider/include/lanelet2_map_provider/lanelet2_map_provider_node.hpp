@@ -74,7 +74,7 @@ private:
   /// If the origin not defined by parameters, get the transform describing
   /// the map origin (earth->map transform, set by the pcd
   /// map provider). Geocentric  lanelet2 coordinates can then be projected intro the map frame.
-  /// Must be recieved before the node can call the map provider constructor, and start the
+  /// Must be received before the node can call the map provider constructor, and start the
   /// service handler
   void get_map_origin();
   float64_t m_origin_lat;  /// map orgin in latitude, longitude and elevatopm

@@ -26,7 +26,7 @@ The workflow of the publisher can be summarized as the following:
 5. Transform the read point cloud into an ndt map using [DynamicNDTMap](@ref autoware::localization::ndt::DynamicNDTMap).
 6. Serialize the ndt map representation into a `PointCloud2` message where each point represents a single cell in the ndt map.
 7. Publish the resulting `PointCloud2` message containing the ndt map.
-8. Convert the point cloud into a `sensor_msgs::msg::PointCloud2` with a Point type suitable to be recieved by rviz2.
+8. Convert the point cloud into a `sensor_msgs::msg::PointCloud2` with a Point type suitable to be received by rviz2.
 9. Publish the resulting `PointCloud2` message containing the full point cloud
 
 The published ndt map point cloud message has the following fields:

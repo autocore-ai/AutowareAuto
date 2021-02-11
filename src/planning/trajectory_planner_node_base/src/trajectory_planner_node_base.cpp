@@ -135,18 +135,18 @@ void TrajectoryPlannerNodeBase::map_response(rclcpp::Client<HADMapService>::Shar
   auto lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
   autoware::common::had_map_utils::fromBinaryMsg(future.get()->map, lanelet_map_ptr);
 
-  RCLCPP_INFO(get_logger(), "start planning");
+  RCLCPP_INFO(get_logger(), "Start planning");
   const auto & trajectory = plan_trajectory(m_goal_handle->get_goal()->sub_route, lanelet_map_ptr);
-  RCLCPP_INFO(get_logger(), "finished_planning");
+  RCLCPP_INFO(get_logger(), "Finished planning");
 
   if (is_trajectory_valid(trajectory)) {
     auto result = std::make_shared<PlanTrajectoryAction::Result>();
     result->result = PlanTrajectoryAction::Result::SUCCESS;
     result->trajectory = trajectory;
     m_goal_handle->succeed(result);
-    RCLCPP_INFO(get_logger(), "sent planned trajectory with %d points", trajectory.points.size());
+    RCLCPP_INFO(get_logger(), "Sent planned trajectory with %d points", trajectory.points.size());
   } else {
-    RCLCPP_INFO(get_logger(), "aborting planning due to invalid trajectory");
+    RCLCPP_INFO(get_logger(), "Aborting planning due to invalid trajectory");
     auto result = std::make_shared<PlanTrajectoryAction::Result>();
     result->result = PlanTrajectoryAction::Result::FAIL;
     m_goal_handle->abort(result);

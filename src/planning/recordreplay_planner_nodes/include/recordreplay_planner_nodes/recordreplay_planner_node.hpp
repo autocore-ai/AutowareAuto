@@ -64,22 +64,16 @@ public:
 protected:
   rclcpp_action::Server<RecordTrajectory>::SharedPtr m_recordserver;
   rclcpp_action::Server<ReplayTrajectory>::SharedPtr m_replayserver;
+  // May be nullptr if disabled
   rclcpp::Client<ModifyTrajectory>::SharedPtr m_modify_trajectory_client;
-  std::shared_ptr<GoalHandleRecordTrajectory> m_recordgoalhandle{nullptr};
-  std::shared_ptr<GoalHandleReplayTrajectory> m_replaygoalhandle{nullptr};
+  std::shared_ptr<GoalHandleRecordTrajectory> m_recordgoalhandle;
+  std::shared_ptr<GoalHandleReplayTrajectory> m_replaygoalhandle;
 
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
   PlannerPtr m_planner{nullptr};
 
 private:
-  RECORDREPLAY_PLANNER_NODES_LOCAL void init(
-    const std::string & ego_topic,
-    const std::string & trajectory_topic,
-    const float64_t heading_weight,
-    const float64_t min_record_distance);
-
-
   RECORDREPLAY_PLANNER_NODES_LOCAL void on_ego(const State::SharedPtr & msg);
 
   RECORDREPLAY_PLANNER_NODES_LOCAL void modify_trajectory_response(

@@ -159,9 +159,9 @@ void BehaviorPlannerNode::result_callback(const PlanTrajectoryGoalHandle::Wrappe
   if (result.result->result == PlanTrajectoryAction::Result::SUCCESS &&
     !result.result->trajectory.points.empty())
   {
-    RCLCPP_INFO(get_logger(), "Recieved trajectory from planner");
+    RCLCPP_INFO(get_logger(), "Received trajectory from planner");
   } else {
-    RCLCPP_ERROR(get_logger(), "Planner failed to calculate !!");
+    RCLCPP_ERROR(get_logger(), "Planner failed to calculate!!");
   }
 
   auto trajectory = result.result->trajectory;
@@ -217,11 +217,11 @@ void BehaviorPlannerNode::request_trajectory(const RouteWithType & route_with_ty
   switch (planner_type) {
     case behavior_planner::PlannerType::LANE:
       m_lane_planner_client->async_send_goal(action_goal, send_goal_options);
-      RCLCPP_INFO(get_logger(), "sent lane trajectory action goal");
+      RCLCPP_INFO(get_logger(), "Sent lane trajectory action goal");
       break;
     case behavior_planner::PlannerType::PARKING:
       m_parking_planner_client->async_send_goal(action_goal, send_goal_options);
-      RCLCPP_INFO(get_logger(), "sent parking trajectory action goal");
+      RCLCPP_INFO(get_logger(), "Sent parking trajectory action goal");
       break;
     default:
       break;
@@ -233,7 +233,7 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
 {
   // Do nothing if localization result is not received yet.
   if (!m_tf_buffer->canTransform("map", msg->header.frame_id, tf2::TimePointZero)) {
-    RCLCPP_INFO(get_logger(), "waiting for localization result to become available");
+    RCLCPP_INFO(get_logger(), "Waiting for localization result to become available");
     return;
   }
 
@@ -253,7 +253,7 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
       const auto now = std::chrono::system_clock::now();
       const auto throttle_time = std::chrono::duration<float64_t>(3);
       if (now - previous_output_arrived_goal > throttle_time) {
-        RCLCPP_INFO(get_logger(), "trying to change gear");
+        RCLCPP_INFO(get_logger(), "Trying to change gear");
         previous_output_arrived_goal = now;
       }
       RCLCPP_INFO(get_logger(), "Reached goal. Wait for another route");
@@ -281,7 +281,7 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
     // TODO(mitsudome-r): replace this with throttled output in foxy
     const auto now = std::chrono::system_clock::now();
     if (now - previous_output > throttle_time) {
-      RCLCPP_INFO(get_logger(), "trying to change gear");
+      RCLCPP_INFO(get_logger(), "Trying to change gear");
       previous_output = now;
     }
 
@@ -376,7 +376,7 @@ void BehaviorPlannerNode::map_response(rclcpp::Client<HADMapService>::SharedFutu
   m_lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
   autoware::common::had_map_utils::fromBinaryMsg(future.get()->map, m_lanelet_map_ptr);
 
-  RCLCPP_INFO(get_logger(), "receieved map");
+  RCLCPP_INFO(get_logger(), "Received map");
 
   // TODO(mitsudome-r) move to handle_accepted() when synchronous service is available
   m_planner->set_route(*m_route, m_lanelet_map_ptr);
