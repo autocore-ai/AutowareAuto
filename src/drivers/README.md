@@ -3,7 +3,7 @@ Drivers {#autoware-drivers-design}
 
 # Domain Description
 
-The `drivers` sub-directory contains nodes and libraries which directly interface with physical 
+The `drivers` sub-directory contains nodes and libraries which directly interface with physical
 vehicle sensors and systems crucial to autonomous driving or to external simulator systems.
 
 # Subpages

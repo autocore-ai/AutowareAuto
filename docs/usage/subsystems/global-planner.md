@@ -1,7 +1,7 @@
 Starting and testing the global planner {#global-planner-howto}
 =======================================
 
-[TOC]
+@tableofcontents
 
 # How to start the stack
 

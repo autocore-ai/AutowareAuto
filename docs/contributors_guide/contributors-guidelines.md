@@ -1,7 +1,7 @@
 Guidelines and Best Practices {#contributor-guidelines}
 ===========
 
-[TOC]
+@tableofcontents
 
 # Contribution Workflow
 
@@ -134,8 +134,8 @@ repository base directory, do:
 
 For [code coverage](https://en.wikipedia.org/wiki/Code_coverage), we use the popular [GNU tool
 `lcov`](http://ltp.sourceforge.net/coverage/lcov.php) for generating statistics about line coverage. For every merge
-request, we run our testsuite and report the percentage of lines covered. We aim for a 100% line coverage and
-continuously improve our testsuite to achieve that number. In particular, we do not accept changes that reduce the
+request, we run our test suite and report the percentage of lines covered. We aim for a 100% line coverage and
+continuously improve our test suite to achieve that number. In particular, we do not accept changes that reduce the
 coverage value. If a merge request has a lower line coverage than `master`, we will request the contributor to add more
 tests.
 
@@ -253,7 +253,7 @@ RCLCPP_COMPONENTS_REGISTER_NODE(composition_example::ListenerNode)
 
 The following is a minimal `CMakeLists.txt` file which uses the recommended `ament_cmake_auto` macros, registers a
 single component, builds a stand-alone node which uses the component, and exports it as a dependency for downstream
-packages. It can be conventiently created by
+packages. It can be conveniently created by
 [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html):
 
 ```{cmake}

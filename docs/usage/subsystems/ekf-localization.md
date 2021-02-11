@@ -1,7 +1,7 @@
 Running the EKF filter for localization {#ekf-localization-howto}
 =======================================
 
-[TOC]
+@tableofcontents
 
 # Ndt EKF smooth localization
 

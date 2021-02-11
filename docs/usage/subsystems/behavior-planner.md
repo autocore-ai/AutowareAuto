@@ -1,7 +1,7 @@
 Starting and testing the behavior planner {#behavior-planner-howto}
 =======================================
 
-[TOC]
+@tableofcontents
 
 # How to start the stack
 

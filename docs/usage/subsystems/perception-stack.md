@@ -1,7 +1,7 @@
 3D perception stack {#perception-stack-howto}
 ============
 
-[TOC]
+@tableofcontents
 
 # Running the Autoware.Auto 3D perception stack
 

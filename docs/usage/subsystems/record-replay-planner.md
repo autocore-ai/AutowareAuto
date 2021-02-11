@@ -6,7 +6,7 @@ Record/Replay Planner {#recordreplay-planner-howto}
 # Record/Replay a Trajectory in LGSVL
 
 Autoware.Auto is capable of recording a path of waypoints to disk and then loading and attempting to follow that path.
-This demonstration combines several subsystems including @ref ndt-howto "NDT Localization" and the @ref perception-stack-howto.
+This demonstration combines several subsystems including @ref ndt-initialization "NDT Localization" and the @ref perception-stack-howto.
 To test this functionality, do the following:
 
 ## Prerequisites

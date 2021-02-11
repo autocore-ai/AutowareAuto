@@ -1,7 +1,7 @@
 How to Write Tests and Measure Coverage {#how-to-write-tests-and-measure-coverage}
 ========
 
-[TOC]
+@tableofcontents
 
 # Goals {#how-to-write-tests-and-measure-coverage-goals}
 

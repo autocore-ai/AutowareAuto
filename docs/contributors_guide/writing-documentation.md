@@ -1,7 +1,7 @@
 Writing Documentation {#writing-documentation}
 =====================
 
-[TOC]
+@tableofcontents
 
 # General
 
@@ -82,7 +82,7 @@ after the title and use the anchor to link to other parts of the documentation. 
 New document {#new-document}
 =================
 
-[TOC]
+@tableofcontents
 
 # First section
 
@@ -113,7 +113,7 @@ lives.
 Inside `document.md`:
 
 ```md
-[TOC]
+@tableofcontents
 
 # Foo {#document-foo}
 ```
@@ -125,7 +125,7 @@ then the URL is https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/
 Inside `document.md`:
 
 ```md
-[TOC]
+@tableofcontents
 
 # Foo
 ```

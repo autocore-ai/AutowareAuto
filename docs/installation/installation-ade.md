@@ -1,7 +1,7 @@
 Installation with ADE {#installation-ade}
 =====================
 
-[TOC]
+@tableofcontents
 
 # Goals {#installation-and-development-goals}
 
@@ -15,9 +15,9 @@ This article demonstrates how to use the Agile Development Environment (ADE) to 
 
 Follow the [install](https://ade-cli.readthedocs.io/en/latest/install.html) instructions, which are reproduced here for convenience:
 
-1. Verify that the requirements [listed here](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) are fulfilled
-2. Download the statically-linked binary from the [Releases](https://gitlab.com/ApexAI/ade-cli/-/releases) page of the `ade-cli` project
-3. Name the binary `ade` and install it in your `PATH` (on Ubuntu, `/usr/local/bin` is recommended)
+1. Verify that the requirements [listed here](https://ade-cli.readthedocs.io/en/latest/install.html#requirements) are fulfilled. In particular, if docker was not used before, one may need to go through the [docker post-install steps](https://docs.docker.com/engine/install/linux-postinstall/).
+2. Download the latest statically-linked binary for your platform from the [Releases](https://gitlab.com/ApexAI/ade-cli/-/releases) page of the `ade-cli` project
+3. Name the binary `ade` and install it in `PATH`. On Ubuntu, `/usr/local/bin` is recommended for system-wide installation, otherwise choose e.g. `~/.local/bin` for a local installation that doesn't require `sudo` rights.
 4. Make the binary executable: `chmod +x ade`
 5. Check that it is installed:
 
@@ -58,16 +58,28 @@ $ cd ~/adehome
 $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
 
-## Sharing files between your host and ADE
-You might want to share files such as dotfiles or handy programs from your host machine with ADE. If you only have
-a single `adehome` directory, there is a way to do that without duplicating them: move them inside the `adehome` directory,
-then symlink them to their regular location. For instance, you could move `~/.bashrc` to `~/adehome/.bashrc` and make
-`~/.bashrc` be a symlink to that. It will then appear as `~/.bashrc` to the host machine and to ADE. You
-can also put handy programs in `~/.local/bin` and move the entire `~/.local` directory. The opposite direction
-will not work, files in a Docker container can not be symlinks to the outside.
+## Sharing files between the host system and ADE
+It might come in handy to share files such as dotfiles or utility programs from your host machine
+with ADE. If you only have a single `adehome` directory, there is a way to do that without
+duplicating them: move them inside the `adehome` directory, then create a symlink in the host system
+to their regular location. For instance,
 
+```
+$ cd ~
+$ mv ~/.bashrc ~/ade-home/.bashrc
+$ ln -s ~/ade-home/.bashrc
+```
 
-# Entering your development environment
+It will then appear as `~/.bashrc` to the host system and to ADE.
+
+Another option is to put utility programs into `~/adehome/.local/bin` and symlink. The opposite
+direction will not work, files in a Docker container can not be symlinks to the outside.
+
+@note The programs have to be self-contained! They should not depend on loading libraries from e.g.
+`/usr/lib`.
+
+# Entering the development environment
+
 ```
 $ cd AutowareAuto
 ```
@@ -91,13 +103,45 @@ Choose one, then launch with:
 ade --rc .aderc-amd64-foxy  start --update --enter
 ```
 
-Now you should have a terminal inside ADE, ready for @ref usage, or for developing Autoware.Auto.
+Congratulations! Now you should have a terminal inside ADE:
 
+```
+$ade:~$
+```
+
+The next steps are to proceed to @ref usage, or to work on the Autoware.Auto code itself as
+described in @ref contributors-guide.
+
+# What is where inside ADE?
+
+Upon entering, ADE outputs the images used to create the environment; e.g.
+
+```
+$ ade enter
+Entering ade with following images:
+ade-foxy    | 8b1e0efdde07 | master  | registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/ade-foxy:master
+binary-foxy | 0e582f863d4c | master  | registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/binary-foxy:master
+foxy        | 2020.06      | 2020.06 | registry.gitlab.com/autowarefoundation/autoware.auto/ade-lgsvl/foxy:2020.06
+```
+
+The images are mounted under `/opt`:
+
+```
+@ade:~$ ls /opt
+AutowareAuto # image: binary-foxy:master
+lgsvl        # image: ade-lgsvl/foxy:2020.06
+ros          # image: ade-foxy:master
+```
+
+The code in `/opt/AutowareAuto` is built from a particular version of the master branch of
+Autoware.Auto. The master branch is built multiple times a day in CI; see the [container
+registry](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/container_registry). With
+`ade ... --update`, the latest available version of each image is downloaded.
 
 # Cleanup {#installation-and-development-cleanup}
 
 ADE uses Docker, and over time unused images, containers, and volumes begin to clutter the hard
-drive. Follow the steps below to clean the Docker filesytem of stale images.
+drive. Follow the steps below to clean the Docker file system of stale images.
 
 
 ## Start relevant Docker resources {#installation-and-development-start-relevant-docker-resources}

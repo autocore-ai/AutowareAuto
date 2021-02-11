@@ -1,7 +1,10 @@
 Design {#design}
 ======
 
-This section of the Autoware.Auto documentation describes how the software is designed.
+This section describes how the individual packages in Autoware.Auto are designed.
+
+For an overview of the architecture and how the packages are connected to solve an ODD, refer to the
+individual ODDs listed at @ref usage-odd-demos.
 
 - @subpage autoware-common-design
 - @subpage autoware-control-design

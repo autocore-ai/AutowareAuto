@@ -1,7 +1,7 @@
 How to Write Integration Tests {#integration-testing}
 ========
 
-[TOC]
+@tableofcontents
 
 # Goals {#integration-tests-1}
 

@@ -1,6 +1,8 @@
 point_cloud_filter_transform_nodes {#point-cloud-filter-transform-nodes}
 ==================================
 
+@tableofcontents
+
 # Purpose / Use cases
 
 To properly separate concerns and make it easier to reuse data (i.e. prerecorded bag data, or from the simulator),

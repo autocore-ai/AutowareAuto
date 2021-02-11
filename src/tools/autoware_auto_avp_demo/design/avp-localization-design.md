@@ -7,7 +7,7 @@ In accordance with REP-105[1] and guided by the design principals laid out in \r
 
 ---
 
-[TOC]
+@tableofcontents
 
 
 # Frames

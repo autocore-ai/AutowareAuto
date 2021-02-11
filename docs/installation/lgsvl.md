@@ -1,7 +1,7 @@
 LGSVL simulator {#lgsvl}
 ========
 
-[TOC]
+@tableofcontents
 
 # LGSVL simulator: running the LGSVL simulator alongside Autoware.Auto
 
@@ -21,7 +21,8 @@ The following guide assumes that the LGSVL simulator will be run from inside an 
 [ADE installation instructions](https://ade-cli.readthedocs.io/en/latest/install.html) to install it
 - NVidia graphics card
 - If using Docker engine version 19.03 or later, [install Native GPU Support](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)).
-- If using Docker engine with a version less than 19.03, either upgrade Docker or [install nvidia-docker2](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0)).
+- If using Docker engine with a version less than 19.03, either upgrade Docker or [install nvidia-docker2](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0))
+- Cyclone DDS is the DDS vendor; see @ref choosing-a-dds-vendor
 
 # Using the simulator
 
@@ -53,7 +54,7 @@ To start the LGSVL simulator, in the same terminal window:
 ade$ /opt/lgsvl/simulator
 ```
 
-Now start your favorite browser and go to [http://127.0.0.1:8080](http://127.0.0.1:8080) where simulations can be configured.
+Now start your favorite browser on the host system (outside of ADE!) and go to [http://127.0.0.1:8080](http://127.0.0.1:8080) where simulations can be configured.
 
 @note When running LGSVL Simulator in a Docker container, the "Open Browser..." button in the simulator window does not work.
 
@@ -75,7 +76,9 @@ Creating a simulation configuration takes only a few clicks in the browser. The 
 
 ### Choosing a map
 
-Following the [LGSVL instructions](https://www.lgsvlsimulator.com/docs/maps-tab/#where-to-find-maps), click the `Add new` button and enter a name (e.g. `Autonomous Stuff parking lot`) and the link to the asset bundle from [this site](https://content.lgsvlsimulator.com/maps/autonomoustuff/) containing the map data:
+The goal is to create a map configuration for the AutonomouStuff parking lot. If that map is already available on the first launch of the simulation, nothings needs to be done.
+
+Else follow the [LGSVL instructions](https://www.lgsvlsimulator.com/docs/maps-tab/#where-to-find-maps), click the `Add new` button and enter a name (e.g. `AutonomouStuff parking lot`) and the link to the asset bundle from [this site](https://content.lgsvlsimulator.com/maps/autonomoustuff/) containing the map data:
 
 `https://assets.lgsvlsimulator.com/ec057870762b5a967a451c93444b67d0b64e9656/environment_AutonomouStuff`
 
@@ -84,9 +87,10 @@ Once submitted, this will download the map automatically.
 @image html images/lgsvl-map.png "Choosing a map"
 
 ### Configuring a vehicle
+The goal is to create a vehicle configuration for the AutonomouStuff parking lot.
 
-Following [LGSVL instructions](https://www.lgsvlsimulator.com/docs/vehicles-tab/#how-to-add-a-vehicle),
-to configure the Lexus model, click the vehicles tab, then `Add new` and enter
+Follow the [LGSVL instructions](https://www.lgsvlsimulator.com/docs/vehicles-tab/#how-to-add-a-vehicle),
+to configure the Lexus model: click the vehicles tab, then `Add new` and enter
 `Lexus2016RXHybrid` as name and
 
 `https://assets.lgsvlsimulator.com/ea5e32fe566065c6d1bbf1f0728d6654c94e375d/vehicle_AWFLexus2016RXHybrid`
@@ -124,17 +128,23 @@ To create a new simulation, follow the below steps:
 @image html images/lgsvl-simulation-general.png "Configuring the simulation"
 @image html images/lgsvl-simulation-map-and-vehicle.png "Configuring the simulation map and vehicle"
 
-### Starting the simulation
+### Starting the simulation {#lgsvl-start-simulation}
 
-Once the simulation has been created, you can select and run it by clicking the play button. The Lexus should appear in a 3D rendering in the `LGSVL Simulator` window (not in the browser).
+Once the simulation has been created, select it by clicking on its white box first, then run it by clicking the play button.
 
-The next step is to control the Lexus and to drive around using the arrow keys on the keyboard. Press `F1` to see a list of short cuts and press the cookie button in bottom left corner for mor UI controls.
+@image html images/lgsvl-simulation-start.png "Starting the simulation" width=80%
+
+The Lexus should appear in a 3D rendering in the `LGSVL Simulator` window (not in the browser).
+
+The next step is to control the Lexus and to drive around. Press `F1` to see a list of shortcuts and press the cookie button in bottom left corner for more UI controls.
+
+The essential commands are to use the arrow keys to steer and accelerate, and the `Page Up` and `Page Down` keys to switch between forward and reverse driving.
 
 Congratulations if everything is working up to this point. The setup of LGSVL is completed.
 
 @image html images/lgsvl-controls.png "Controlling the Lexus"
 
-@todo Uncomment joystick session when tested again
+@todo #850 Uncomment joystick session when tested again
 
 <!-- ### Controlling LGSVL with a joystick -->
 

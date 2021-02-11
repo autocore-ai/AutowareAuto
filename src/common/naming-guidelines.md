@@ -11,7 +11,7 @@ While these guidelines could not possibly cover every naming scenario, they prov
 
 ---
 
-[TOC]
+@tableofcontents
 
 # Package Names
 

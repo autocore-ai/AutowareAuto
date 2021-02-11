@@ -1,6 +1,8 @@
 System Dependencies and Target Environments {#target-environments}
 ===========================================
 
+@tableofcontents
+
 Autoware.Auto targets the environments and applications listed below, for which automated tests ensure the code works properly. The target environments may change in future versions of Autoware.Auto.
 
 The Autoware foundation provides no support on other platforms than those listed below.

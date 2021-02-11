@@ -8,7 +8,7 @@ First, you must be in an ADE and/or have built Autoware.Auto yourself.
 Then, execute either of those two:
 ```{bash}
 # To use the preinstalled Autoware.Auto in ADE:
-source /opt/AutowareAuto/setup.bash
+ade$ source /opt/AutowareAuto/setup.bash
 # To use the Autoware you built yourself:
 source ~/AutowareAuto/install/setup.bash
 ```
@@ -29,7 +29,7 @@ git lfs pull --exclude="" --include="*"
 In case you run multiple ROS2 applications on machines in the same network, they will interfere with each other.
 To avoid it, set the environment variable `ROS_DOMAIN_ID` to a distinct value between 0 and 232 on the machines.
 
-# Operational Design Domain (ODD) Demos
+# Operational Design Domain (ODD) Demos {#usage-odd-demos}
 
 Autoware.Auto includes a growing number of demonstrations for target Operational Design Domains (ODDs), where an ODD is a formal definition of the set of conditions and circumstances an automated vehicle is designed to operate under (for reference, see [SAE J3016 section 3.22](https://www.sae.org/standards/content/j3016_201806/)).
 
@@ -38,17 +38,15 @@ Most demonstrations are intended to be used on both a real car and in a simulato
 Each article below contains instructions on how to set up, launch and control one demonstration.
 For demonstrations that work on a real car, the hardware requirements are also described.
 
-The demonstration documentation assumes a working knowledge of Autoware.Auto.
+- @subpage avpdemo (@subpage avpdemo-impressions "Impressions")
 
-- @subpage avpdemo
-
-# General Demos
+# General Demos {#usage-general-demos}
 
 The following pages describe how to run demonstrations which showcase specific pieces of functionality within the Autoware.Auto architecture.
 
 - @subpage behavior-planner-howto
 - @subpage global-planner-howto
-- @subpage ndt-howto
+- @subpage ndt-initialization
 - @subpage ekf-localization-howto
 - @subpage trajectory-following-howto
 - @subpage perception-stack-howto

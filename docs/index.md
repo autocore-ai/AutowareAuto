@@ -43,4 +43,8 @@ Check the @subpage support-guidelines for various ways to get help.
 * To get an overview of the algorithms and individual packages in Autoware.Auto, read @subpage design.
 * As you start working on the source code or documentation, please see the @subpage contributors-guide.
 
-![Autoware.Auto testing vehicle](images/lexus.jpg)
+@htmlonly
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/MC7n8vwiLcg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+@endhtmlonly

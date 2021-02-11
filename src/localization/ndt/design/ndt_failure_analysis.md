@@ -1,7 +1,7 @@
 NDT Failure Analysis {#ndt-failure-analysis}
 ===========================================
 
-[TOC]
+@tableofcontents
 
 # Introduction
 

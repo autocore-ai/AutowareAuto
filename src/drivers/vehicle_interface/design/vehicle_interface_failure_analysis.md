@@ -1,7 +1,7 @@
 Vehicle interface failure analysis {#vehicle-interface-failure-analysis}
 =======================================================================
 
-[TOC]
+@tableofcontents
 
 The purpose of this document is to identify ways in which the vehicle interface component
 might fail, and to determine mitigation strategies for these failure modalities.

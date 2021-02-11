@@ -1,7 +1,7 @@
 How to Develop in a Fork {#develop-in-a-fork}
 ========================
 
-[TOC]
+@tableofcontents
 
 # Using fork-and-pull {#fork-and-pull}
 

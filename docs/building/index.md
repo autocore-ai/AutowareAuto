@@ -1,7 +1,7 @@
 Building {#building}
 ========
 
-[TOC]
+@tableofcontents
 
 # Prerequisites
 You need to be inside an ADE container, or have installed the dependencies manually. See @ref installation.
@@ -17,7 +17,7 @@ Optionally, you can choose a DDS implementation other than the default Cyclone D
 
 
 # How to build the code {#installation-and-development-how-to-build}
-To build all packages in Autoware.Auto, navigate into the AutowareAuto directory and run
+To build all packages in Autoware.Auto, navigate into the `AutowareAuto` directory and run
 
 ```{bash}
 ade$ colcon build
@@ -81,7 +81,7 @@ colcon build --build-base build_mybranch --install-base install_mybranch
 ### Seeing compiler commands
 To see the compiler and linker invocations for a package, use
 ```{bash}
-`VERBOSE=1 colcon build --packages-up-to <package_name> --event-handlers console_direct+
+VERBOSE=1 colcon build --packages-up-to <package_name> --event-handlers console_direct+
 ```
 
 
@@ -100,7 +100,7 @@ ade$ git pull
 ade$ vcs import < autoware.auto.$ROS_DISTRO.repos
 ```
 
-If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your AutowareAuto folder and re-building (where `$ROS_DISTRO` is the current distro, e.g. `foxy`):
+If you are using Autoware.Auto outside of `ade`, try updating your system and running the following in your `AutowareAuto` folder and re-building (where `$ROS_DISTRO` is the current distro, e.g. `foxy`):
 
 ```{bash}
 $ rm -rf build/ install/ log/ src/external/

@@ -1,7 +1,7 @@
 Vehicle interface high-level design {#vehicle-interface-high-level-design}
 ==========================================================================
 
-[TOC]
+@tableofcontents
 
 A vehicle interface interfaces a general autonomous driving software stack with a specific vehicle.
 This includes the transmission of commands *to* the vehicle hardware, and the receipt of reports or

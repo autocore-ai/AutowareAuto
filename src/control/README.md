@@ -3,11 +3,11 @@ Control {#autoware-control-design}
 
 # Domain Description
 
-The `control` sub-directory contains nodes and libraries related to the controller functionalities 
-of the vehicle. 
-Packages under this directory enable the autonomous vehicle to follow a reference trajectory 
+The `control` sub-directory contains nodes and libraries related to the controller functionalities
+of the vehicle.
+Packages under this directory enable the autonomous vehicle to follow a reference trajectory
 appropriately by converting the input trajectory into longitudinal and lateral commands.
-To ensure safety, testing framework modules and libraries which report errors and system statistics 
+To ensure safety, testing framework modules and libraries which report errors and system statistics
 regarding the controller may also be packages under this directory.
 
 # Subpages

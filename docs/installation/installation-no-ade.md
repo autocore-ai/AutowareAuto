@@ -1,7 +1,7 @@
 Installation w/o ADE {#installation-no-ade}
 ====================
 
-[TOC]
+@tableofcontents
 
 # Goals {#installation-noade-goals-noade}
 

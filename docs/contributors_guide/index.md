@@ -11,7 +11,6 @@ You should begin with the contributor guidelines.
 - @subpage integration-testing
 - @subpage error-handling
 - @subpage how-to-write-tests-and-measure-coverage
-- @subpage git-subtrees
 
 You can also find additional informative articles listed below.
 

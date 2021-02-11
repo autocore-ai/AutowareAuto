@@ -1,7 +1,7 @@
 How to Handle Errors at the Node Level {#error-handling}
 ========
 
-[TOC]
+@tableofcontents
 
 # Goals {#error-handling-1}
 

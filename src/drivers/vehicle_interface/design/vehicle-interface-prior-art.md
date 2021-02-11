@@ -1,7 +1,7 @@
 Vehicle interface prior art {#vehicle-interface-prior-art}
 =========================================================
 
-[TOC]
+@tableofcontents
 
 This document is intended to review prior art in terms of vehicle interface implementations and
 implementation of components.

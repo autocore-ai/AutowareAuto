@@ -38,7 +38,7 @@ Depending on the use case, some subset of components may be needed.
 
 ---
 
-[TOC]
+@tableofcontents
 
 
 # Introduction

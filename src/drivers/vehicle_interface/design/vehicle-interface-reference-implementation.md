@@ -1,7 +1,7 @@
 Vehicle-Interface-Reference-Implementation {#vehicle-interface-reference-implementation}
 ==========================================
 
-[TOC]
+@tableofcontents
 
 This document defines a reference implementation for the vehicle interface component.
 A software component (i.e. a library, executable, set of executables, or software black box) that
@@ -384,4 +384,3 @@ Autoware:
 - [SteerCmd](https://github.com/CPFL/Autoware/blob/master/ros/src/msgs/autoware_msgs/msg/SteerCmd.msg)
 - [VehicleCmd](https://github.com/CPFL/Autoware/blob/master/ros/src/msgs/autoware_msgs/msg/VehicleCmd.msg)
 - [VehicleStatus](https://github.com/CPFL/Autoware/blob/master/ros/src/msgs/autoware_msgs/msg/VehicleStatus.msg)
-

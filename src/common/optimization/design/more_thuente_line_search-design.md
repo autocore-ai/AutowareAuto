@@ -1,4 +1,4 @@
-More Thuente Line Search {#more-thuente-line-search-design}
+More-Thuente Line Search {#more-thuente-line-search-design}
 ========================
 
 We implement a More-Thuente Line Search method as one of the line search methods. It implements and CRPT interface of the `LineSearch` class from the `line_search.hpp`.
@@ -17,9 +17,9 @@ We assume here, that one of the following two cases holds:
 - We search for a *minimum* of the function \f$f\f$ starting at some point \f$x_0\f$. Then \f$\phi^\prime(0) = f^\prime(x_0) < 0\f$.
 - We search for a *maximum* of the function \f$f\f$ starting at some point \f$x_0\f$. Then \f$\phi^\prime(0) = f^\prime(x_0) > 0\f$.
 
-The implementation will implicitly assume the type of the problem (minimization vs maximization) based on the sign of the derivative \f$f^\prime(x_0)\f$. 
+The implementation will implicitly assume the type of the problem (minimization vs maximization) based on the sign of the derivative \f$f^\prime(x_0)\f$.
 
-Additionally, the step \f$\alpha\f$ as well as its bounds must be non-negative. 
+Additionally, the step \f$\alpha\f$ as well as its bounds must be non-negative.
 
 # Short paper recap
 ## Definitions
@@ -29,14 +29,14 @@ It is assumed that the objective function \f$\phi: \mathbb{R} \rightarrow \mathb
     \mid \phi^\prime(\alpha) \mid \le \eta \mid \phi^\prime(0) \mid
 \f]
 
-Usually, \f$\mu\f$ is a small value below \f$1/2\f$ and \f$\eta\f$ is a value close to \f$1\f$. Note that \f$\mu \le \eta\f$. 
+Usually, \f$\mu\f$ is a small value below \f$1/2\f$ and \f$\eta\f$ is a value close to \f$1\f$. Note that \f$\mu \le \eta\f$.
 
 In our case, with an optimization function \f$f(x)\f$, starting point \f$x_0\f$, direction of optimization \f$d\f$ and step length \f$\alpha\f$, we define the function \f$\phi\f$ as follows (Equation 1.3 in the paper):
 \f[
     \phi(\alpha) \equiv f(x_0 + \alpha p), \hspace{5mm} \alpha \geq 0
 \f]
 
-During the procedure we make use of an auxiliary function \f$\psi(\alpha)\f$ defined as follows (just before Equation. 2.1 in the paper): 
+During the procedure we make use of an auxiliary function \f$\psi(\alpha)\f$ defined as follows (just before Equation. 2.1 in the paper):
 \f[
   \psi(\alpha) \equiv \phi(\alpha) - \mu \phi^\prime(0) \alpha
 \f]
@@ -49,9 +49,9 @@ The algorithm can be summarized as follows (follows the *Search Algorithm* in Se
 \f[
     \psi(\alpha_t) \le 0, \hspace{10mm} \phi^\prime(\alpha_t) > 0
 \f]
-After this statement becomes true the algorithm above starts using function \f$\phi\f$ in the steps 2. and 3. instead. 
+After this statement becomes true the algorithm above starts using function \f$\phi\f$ in the steps 2. and 3. instead.
 
-For a given step \f$\alpha_t\f$ and an interval of values \f$[\alpha_l, \alpha_u]\f$: 
+For a given step \f$\alpha_t\f$ and an interval of values \f$[\alpha_l, \alpha_u]\f$:
 1. Check if the Strong Wolfe Conditions hold for \f$\alpha_t\f$. If they do - terminate the procedure with \f$\alpha_t\f$ as the result.
 2. Generate next step length from the interval \f$[\alpha_l, \alpha_u]\f$ and the current step using either function \f$\psi\f$ or \f$\phi\f$. This part is shown in the Section 4 "TRIAL VALUE SELECTION" in the paper.
 3. Update the interval \f$[\alpha_l, \alpha_u]\f$ using either function \f$\psi\f$ or \f$\phi\f$ and the current step \f$\alpha_t\f$. This part is covered in two algorithms: *Updating Algorithm* (right after theorem 2.1 in the paper) when the \f$\psi\f$ function is still used and *Modified Updating Algorithm* (shown after theorem 3.2 in the paper) used after we switch to using function \f$\phi\f$. These algorithms differ solely in the function used within them.

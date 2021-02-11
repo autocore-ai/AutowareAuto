@@ -1,7 +1,7 @@
 Controller Reference Implementation {#controller-reference-implementation}
 ===================================
 
-[TOC]
+@tableofcontents
 
 
 This document defines a reference implementation for the controller component.
@@ -337,4 +337,3 @@ Algorithm Status Messages
 - [PlanningStatus](https://github.com/ApolloAuto/apollo/blob/51651b9105e55c14e65cc2bd349b479e55fffa36/modules/planning/proto/planning_status.proto)
 - [LocalizationStatus](https://github.com/ApolloAuto/apollo/blob/51651b9105e55c14e65cc2bd349b479e55fffa36/modules/localization/proto/localization_status.proto)
 - [PlanningStats](https://github.com/ApolloAuto/apollo/blob/51651b9105e55c14e65cc2bd349b479e55fffa36/modules/planning/proto/planning_stats.proto)
-

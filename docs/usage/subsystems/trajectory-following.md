@@ -1,7 +1,7 @@
 Trajectory Following {#trajectory-following-howto}
 ============
 
-[TOC]
+@tableofcontents
 
 # Simple trajectory following in LGSVL
 

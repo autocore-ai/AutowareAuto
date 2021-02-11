@@ -1,7 +1,7 @@
 Support Guidelines {#support-guidelines}
 ================================
 
-[TOC]
+@tableofcontents
 
 # Overview{#support-guidelines-overview}
 

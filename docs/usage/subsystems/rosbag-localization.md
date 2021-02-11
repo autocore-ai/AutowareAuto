@@ -1,7 +1,7 @@
 Localization Demo using rosbag {#rosbag-localization-howto}
 ==============================
 
-[TOC]
+@tableofcontents
 
 # Running the Localization Demo
 
