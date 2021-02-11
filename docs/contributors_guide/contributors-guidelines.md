@@ -1,52 +1,35 @@
-Guidelines and Best-Practices {#contributor-guidelines}
+Guidelines and Best Practices {#contributor-guidelines}
 ===========
 
 [TOC]
 
 # Contribution Workflow
 
-1. [Create an issue](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=) defining your intended contribution.
+1. [Create an issue](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=) defining your intended contribution
   1. Use one of the provided templates [by selecting one from the drop-down list](https://docs.gitlab.com/ee/user/project/description_templates.html#using-the-templates).
   2. Select yourself in the `Assignee` field.
   3. If you have permissions to do so, assign to an appropriate milestone. If you do not have permissions, [mention](https://about.gitlab.com/blog/2016/03/08/gitlab-tutorial-its-all-connected/#mention-others-and-assign) a [maintainer](https://gitlab.com/groups/autowarefoundation/autoware.auto/committers/-/group_members) in the issue for milestone assignment.
   4. The issue template you choose will assign one appropriate label for the issue type (bug, discussion, feature, or improvement).
      Assign any additional labels from the available list that you feel are appropriate for the issue's status or other attributes.
 
-2. Create a Fork
+2. Create a fork
   1. For more information about the fork-and-pull model, see the [Develop in a Fork](@ref develop-in-a-fork) page.
 
-3. Develop
-  1. See the rest of this document for guidelines and best-practices on contributing to Autoware.Auto.
+3. Write code
 
-4. Create a Merge Request
+4. Create a merge request
   1. For more information about the fork-and-pull model, see the [Develop in a Fork](@ref develop-in-a-fork) page.
 
-5. Finish a Merge Request
+5. Finish a merge request
   1. In order for a merge request to be merged to Autoware.Auto, it must meet the following criteria:
     - All discussions on the merge request must be resolved.
+    - All items of the merge-request checklist are checked off.
     - It must be approved by at least one maintainer.
     - CI jobs for the merge request must have passed successfully.
   2. If you have permissions, the "Merge" button will show up automatically on your merge request once the above criteria are met.
-     If you do not have permissions, ask a maintainer to merge the merge request if the above criteria are met.
-  3. If your merge request is from your fork to the Autoware.Auto repository and you have to rebase prior to merging, make sure you notify a maintainer as soon as possible after your rebase.
-     If another merge request is merged after you rebase, but before yours is merged, you will have to rebase again, which will trigger CI jobs to run again and slow down the merging of your merge request.
+     If you do not have permissions and the above criteria are met, assign the merge request to a [maintainer](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/project_members).
+  3. If another merge request is merged before yours, your merge request is out of date and needs to be rebased and CI needs to run again.
 
-
-# System Dependencies and Target Environments
-
-Autoware.Auto targets the environments and applications listed below. These may change in future versions.
-
-## Target Platforms
-
-- `amd64` / `x86_64` (Intel/AMD)
-- `arm64` / `aarch64` / `arm64v8` (ARM v8, 64-bit)
-
-## Target Versions
-
-| ROS Version                         | Operating System | System Dependencies
-|-------------------------------------|------------------|------------------------------------------------------------------------------------------------|
-| ROS2 Foxy (**active development**)  | Ubuntu 20.04 LTS | [REP-2000 section](https://www.ros.org/reps/rep-2000.html#foxy-fitzroy-may-2020-may-2023)      |
-| ROS2 Dashing (**maintenance only**) | Ubuntu 18.04 LTS | [REP-2000 section](https://www.ros.org/reps/rep-2000.html#dashing-diademata-may-2019-may-2021) |
 
 # Guidelines for General Code Development
 
@@ -56,14 +39,14 @@ CMake is the preferred build system, it should integrate with Colcon.
 Deviations need to be approved by the maintainers.
 
 The requirements for C++14 and Python 3.7+ align with compiler and tooling support found in ROS Foxy.
-This may change in the future as new OS or ROS environments are targeted.
+This may change in the future as new OS or ROS environments are targeted; see @ref target-environments for details.
 
 ## Building
 See @ref building.
 
 ## Committing
 
-Developers should commit and push regularly to their fork on GitLab to avoid data loss. Commit messages should follow
+Developers should commit and push regularly to GitLab to avoid data loss. Commit messages should follow
 common standards as laid out in this [post](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html). In
 summary,
 
@@ -156,14 +139,14 @@ continuously improve our testsuite to achieve that number. In particular, we do 
 coverage value. If a merge request has a lower line coverage than `master`, we will request the contributor to add more
 tests.
 
-Coverage for the latest successful CI run on the `master` branch is
+The coverage report for the latest successful CI run on the `master` branch is available
 [here](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/coverage/index.html).
 
-Instructions for generating a coverage report can be found here: @ref how-to-write-tests-and-measure-coverage-coverage.
+Check @ref how-to-write-tests-and-measure-coverage-coverage for details to create that report manually.
 
-For information about writing unit or integration tests, see @ref how-to-write-tests-and-measure-coverage and @ref integration-testing.
+The articles on @ref how-to-write-tests-and-measure-coverage and @ref integration-testing have further details on writing tests.
 
-## Resources
+## C++ Resources
 
 - [cppreference.com](https://en.cppreference.com/w/)
 - [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
@@ -172,7 +155,7 @@ For information about writing unit or integration tests, see @ref how-to-write-t
 
 In general, Autoware.Auto follows the [ROS 2 Developer
 Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/) for contributions, except where noted. Some special
-items of note which are not described in the ROS 2 Developer Guide are listed below.
+items of note that are not described in the ROS 2 Developer Guide are listed below.
 
 ## Creating a New Package
 
@@ -182,7 +165,7 @@ the boilerplate code can be automatically generated by utilizing the `autoware_a
 
 For more information on using the tool, see \ref autoware_auto_create_pkg-package-design.
 
-## 3-Tier Development Pattern
+## 2-Tier Development Pattern
 
 In all but the most trivial utilities, it is best to implement a code pattern with *at least* two tiers of abstraction
 which would look something like:
@@ -241,7 +224,7 @@ To implement your node as a Component, it must conform to the items below (using
 - Must inherit from `rclcpp::Node` or a subclass (such as `rclcpp::LifecycleNode`)
 - Must use a single-argument constructor in the form of:
 
-```c++
+```{cpp}
 namespace composition_example
 {
 class ListenerNode: public rclcpp::Node {
@@ -256,7 +239,7 @@ class ListenerNode: public rclcpp::Node {
 
 - Must contain a registration macro and header in a single translation unit. For example, the following at the bottom of your `cpp` file would suffice:
 
-```c++
+```{cpp}
 // Insert at bottom of translation unit, e.g. listener_node.cpp
 #include <rclcpp_components/register_node_macro.hpp>
 // Use fully-qualified name in registration
@@ -273,7 +256,7 @@ single component, builds a stand-alone node which uses the component, and export
 packages. It can be conventiently created by
 [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html):
 
-```cmake
+```{cmake}
 cmake_minimum_required(VERSION 3.5)
 project(composition_example)
 
@@ -308,7 +291,7 @@ ament_auto_package()
 
 The following is a minimal `package.xml` file to go with the above `CMakeLists.txt` example:
 
-```xml
+```{xml}
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">

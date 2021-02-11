@@ -707,7 +707,7 @@ This component would be a wrapper around `tf2::BufferCore`.
 
 The following API is proposed:
 
-```cpp
+```{cpp}
 class LocalBufferCore : protected tf2::BufferCore
 {
 public:

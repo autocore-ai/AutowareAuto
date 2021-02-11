@@ -1,4 +1,4 @@
-How to write integration tests {#integration-testing}
+How to Write Integration Tests {#integration-testing}
 ========
 
 [TOC]
@@ -145,13 +145,13 @@ add an integration test:
    ...
    ```
 3. Build `~/workspace/`, or just the `my_cool_pkg` package, using `colcon`:
-   ```bash
+   ```{bash}
    $ ade enter
    ade$ cd ~/workspace/
    ade$ colcon build --merge-install --packages-select my_cool_pkg
    ```
 4. Run the integration test
-   ```bash
+   ```{bash}
    $ ade enter
    ade$ cd ~/workspace/
    ade$ colcon test --merge-install --packages-select my_cool_pkg --ctest-args -R integration
@@ -232,7 +232,7 @@ Here are the steps to add multiple-executable integration tests:
 1. Create two files
     1. `~/workspace/src/my_cool_pkg/test/expected_outputs/talker_exe.regex` with content `.*`
     2. `~/workspace/src/my_cool_pkg/test/expected_outputs/listener_exe.regex` with content
-```bash
+```{bash}
    10
    15
    20
@@ -254,13 +254,13 @@ integration_tests(
     3. More information about the python script can be found in the
     [Q&A](@ref how-to-write-integration-tests-how-does-integration-tests-work) section
 3. Build `~/workspace/`, or just the `my_cool_pkg` package, using `colcon`:
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon build --merge-install --packages-select my_cool_pkg
 ```
 4. Run the integration test
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon test --merge-install --packages-select my_cool_pkg --ctest-args -R integration
@@ -336,13 +336,13 @@ integration_tests(
 ...
 ```
 6. Build `~/workspace/`, or just the `my_cool_pkg` package, using `colcon`:
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon build --merge-install --packages-select my_cool_pkg
 ```
 7. Run the integration test
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon test --merge-install --packages-select my_cool_pkg --ctest-args -R integration
@@ -387,13 +387,13 @@ integration_tests(
 )
 ```
 3. Build `~/workspace/`, or just the `my_cool_pkg` package, using `colcon`:
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon build --merge-install --packages-select my_cool_pkg
 ```
 4. Run the integration test
-```bash
+```{bash}
 $ ade enter
 ade$ cd ~/workspace/
 ade$ colcon test --merge-install --packages-select my_cool_pkg --ctest-args -R integration

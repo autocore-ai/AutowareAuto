@@ -1,4 +1,4 @@
-How to handle errors at the node level {#error-handling}
+How to Handle Errors at the Node Level {#error-handling}
 ========
 
 [TOC]

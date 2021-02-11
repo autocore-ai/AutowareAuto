@@ -1,4 +1,4 @@
-Autoware.Auto Support Guidelines {#support-guidelines}
+Support Guidelines {#support-guidelines}
 ================================
 
 [TOC]
@@ -6,16 +6,16 @@ Autoware.Auto Support Guidelines {#support-guidelines}
 # Overview{#support-guidelines-overview}
 
 We provide several mechanism for getting help and this article describes those mechanisms.
-Whether you have run into a problem using Autoware or you just want more information about some aspect of it not covered in the documentation one of the below options should have you covered.
+Whether you have run into a problem using Autoware.Auto or you just want more information about some aspect of it not covered in the documentation, one of the below options should have you covered.
 Using the correct resource will ensure you get a helpful response to your query quickly.
 The following should be the general set of steps for obtaining support, depending on your specific need:
 
-#. Read the docs
-#. Depending on your question:
-  #. Ask support questions and describe unconfirmed bugs on [ROS Answers with the `autoware` tag](https://answers.ros.org/questions/ask/?tags=autoware)
-  #. Start general Autoware discussions on [the Autoware category at ROS Discourse](https://discourse.ros.org/c/autoware)
-  #. For confirmed bugs or feature requests, create a [new issue on the Autoware.Auto Gitlab](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=)
-#. Message the `committers-autoware-auto` channel [on the Autoware Developer's Slack](https://autoware.herokuapp.com/)
+1. Read the docs
+2. Depending on your question:
+  1. Ask support questions and describe unconfirmed bugs on [ROS Answers with the `autoware` tag](https://answers.ros.org/questions/ask/?tags=autoware)
+  2. Start general Autoware discussions on [the Autoware category at ROS Discourse](https://discourse.ros.org/c/autoware)
+  3. For confirmed bugs or feature requests, create a [new issue on the Autoware.Auto Gitlab](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=)
+3. Message the `committers-autoware-auto` channel [on the Autoware Developer's Slack](https://autoware.herokuapp.com/)
 
 # General Information: Documentation{#support-guidelines-general-info}
 
@@ -37,13 +37,13 @@ The Autoware category is also where high-level announcements are made about Auto
 
 # Confirmed Bugs or Feature Requests: Gitlab Issues{#support-guidelines-gitlab-issues}
 
-If you have discovered a bug that has been confirmed by others or you would like to request that a new feature be added to Autoware.Auto, consider [creating a new issue on Gitlab](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=).
+If you have discovered a bug that has been confirmed by others or you would like to request that a new feature be added to Autoware.Auto, consider [creating a new issue on Gitlab](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/new?issue%5Bassignee_id%5D=&issue%5Bmilestone_id%5D=) and choosing the relevant template.
 If you have the background, feel free to also create a Merge Request to resolve the issue!
 Just remember to read over our @ref contributors-guide to know what to expect from a review of your Merge Request.
 
 # Real-time Communication: Autoware Developer's Slack{#support-guidelines-slack}
 
-Please remember that Slack is not for any of the cases mentioned above and is mostly a gathering place for developers.
+Please remember that our [Slack server](https://autoware.herokuapp.com/) is not for any of the cases mentioned above and is mostly a gathering place for developers.
 If you are seeking support, want to start a discussion, or want to request a feature, Slack is the wrong avenue.
 However, if your question on [ROS Answers](@ref support-guidelines-ros-answers) has gone unanswered for a reasonable amount of time, messaging the `committers-autoware-auto` channel is appropriate.
 

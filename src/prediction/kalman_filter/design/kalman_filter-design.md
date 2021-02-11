@@ -109,7 +109,7 @@ The configuration input to the kalman filter is as follows:
 
 - A motion model, which has the following API:
 
-```cpp
+```{cpp}
 /// \brief Do prediction based on current state, store result somewhere else.
 ///        This is intended to be used with motion planning/collision avoidance
 void predict(Eigen::Array<float32_t, NumStates> & x, const rclcpp::Duration & dt) = 0;
@@ -133,7 +133,6 @@ const rclcpp::Duration & dt) = 0;
 float32_t operator[](const uint64_t idx) const = 0;
 /// \brief Set the state
 void set_state(const Eigen::Array<float32_t, NumStates> & x) = 0;
-// TODO(c.ho) make this private for friends only?
 Eigen::Array<float32_t, NumStates> & get_state();
 ```
   For an EKF, this model describes the nonlinear prediction function and the

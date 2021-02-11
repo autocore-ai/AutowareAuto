@@ -1,5 +1,7 @@
-How to develop in a fork {#develop-in-a-fork}
+How to Develop in a Fork {#develop-in-a-fork}
 ========================
+
+[TOC]
 
 # Using fork-and-pull {#fork-and-pull}
 
@@ -18,26 +20,22 @@ The basic flow consists of the following steps.
 
    To make a fork, click the "fork" button in the top-right corner of the Autoware.Auto "Project overview" screen.
 
-   ![Location of the "fork" button](images/autowareauto_fork_button_location.png)
+   @image html images/autowareauto_fork_button_location.png "Location of the fork button" width=1000px
 
 3. Clone your fork locally to create a *local copy*.
 
-   ```shell
-   $ git clone git@gitlab.com:[your_username_here]/AutowareAuto.git
-   ```
+       $ git clone git@gitlab.com:[your_username_here]/AutowareAuto.git
 
    You can find the URL for cloning your fork by clicking the "Clone" button in the "Project overview" screen or "Repository - Files" screen of *your fork*.
 
-   ![Location of the "Clone" button](images/autowareauto_clone_button_location.png)
+   @image html images/autowareauto_clone_button_location.png "Location of the Clone button" width=1000px
 
 4. In your local copy, create a new branch to do your work in.
    Give the branch a descriptive name.
    GitLab uses the pattern `[issuenumber]-[issue-name-with-hyphens]`.
    For example, if you are doing work for issue #42, "Calculate the answer to the ultimate question", you could name your branch like so:
 
-   ```shell
-   $ git checkout -b 42-calculate-the-answer-to-the-ultimate-question
-   ```
+       $ git checkout -b 42-calculate-the-answer-to-the-ultimate-question
 
    This will create a new branch and put your local working copy into it.
    It is important to note that **this new branch is still only stored on your computer**.
@@ -55,17 +53,13 @@ The basic flow consists of the following steps.
    Begin by adding the upstream repository location to your local repository's settings as a remote repository.
    *You only need to do this the first time.*
 
-   ```shell
-   $ git remote add upstream https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
-   ```
+       $ git remote add upstream https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 
    Now that the upstream repository location is set, bring your branch up-to-date with the upstream repository's master branch.
 
-   ```shell
-   $ git checkout master
-   $ git fetch upstream
-   $ git merge upstream/master
-   ```
+       $ git checkout master
+       $ git fetch upstream
+       $ git merge upstream/master
 
    The final command updates the `master` branch of your local copy to match the `master` branch of the Autoware.Auto repository.
    It is very important to use the `git merge` command to do this.
@@ -80,49 +74,43 @@ The basic flow consists of the following steps.
    This is done using the [`git rebase` command](https://git-scm.com/book/en/v2/Git-Branching-Rebasing).
    You will be rebasing your changes onto the latest commit in the `master` branch.
 
-   ```shell
-   $ git checkout 42-calculate-the-answer-to-the-ultimate-question
-   $ git rebase master
-   ```
+       $ git checkout 42-calculate-the-answer-to-the-ultimate-question
+       $ git rebase master
 
 9. Finally, push your changes to the copy of *your fork* on the GitLab server.
 
    If this is the first time you are pushing this branch, you need to tell Git where the branch on your fork (not the Autoware.Auto repository) is.
 
-   ```shell
-   $ git push --set-upstream origin 42-calculate-the-answer-to-the-ultimate-question
-   ```
+       $ git push --set-upstream origin 42-calculate-the-answer-to-the-ultimate-question
 
    If you have pushed this branch before, then you do not need to set the destination branch, but you do need to do a force-push.
 
-   ```shell
-   $ git push -f
-   ```
+       $ git push -f
 
-You now have a copy of your branch with your proposed changes in *your fork* on the GitLab servers.
-If you are ready for this work to be merged into the Autoware.Auto repository's `master` branch, you must now create a merge request.
+   You now have a copy of your branch with your proposed changes in *your fork* on the GitLab servers.
+   If you are ready for this work to be merged into the Autoware.Auto repository's `master` branch, you must now create a merge request.
 
 10. Create a merge request to merge your changes into the primary fork.
 
-When you perform the `git push` command, above, for the first time, the result from the GitLab server will contain a URL that you can use to create a merge request from your branch.
+    When you perform the `git push` command, above, for the first time, the result from the GitLab server will contain a URL that you can use to create a merge request from your branch.
 
-![URL to create a merge request directly](images/autoware-merge-request.png)
+    @image html images/autoware-merge-request.png "URL to create a merge request directly" width=1000px
 
-Alternatively, you can create a merge request through the GitLab website. On the Autoware.Auto project page, and on the page for your fork, there will be a button to create a merge request.
+    Alternatively, you can create a merge request through the GitLab website. On the Autoware.Auto project page, and on the page for your fork, there will be a button to create a merge request.
 
-![Button to create a merge request](images/autoware-merge-request-project.png)
+    @image html images/autoware-merge-request-project.png "Button to create a merge request" width=1000px
 
-If your merge request closes the issue you created in the first step above, its description should contain the words "Closes #<issue_number>".
-See the [Gitlab documentation](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically) for more details.
+    If your merge request closes the issue you created in the first step above, its description should contain the words "Closes #<issue_number>".
+    See the [Gitlab documentation](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically) for more details.
 
-[If your merge request isn't quite ready for review](https://docs.gitlab.com/ee/user/project/merge_requests/work_in_progress_merge_requests.html):
-  1. Add "WIP: " to the beginning of your merge request's title and it will automatically be marked as Work in Progress.
-  2. Remove "WIP: " when your merge request is ready for review. See the next step for how to let a maintainer know that it is ready.
-  3. WIP merge requests can not be merged.
+    [If your merge request isn't quite ready for review](https://docs.gitlab.com/ee/user/project/merge_requests/work_in_progress_merge_requests.html):
+      1. Add "WIP: " to the beginning of your merge request's title and it will automatically be marked as Work in Progress.
+      2. Remove "WIP: " when your merge request is ready for review. See the next step for how to let a maintainer know that it is ready.
+      3. WIP merge requests can not be merged.
 
-When your merge request is ready for review:
-  1. Assign it to a [maintainer](https://gitlab.com/groups/autowarefoundation/autoware.auto/committers/-/group_members) and [add the "review" label](https://docs.gitlab.com/ee/user/project/labels.html#assign-and-unassign-labels).
-  2. If you do not have permissions to change milestones or labels on your merge request or are not sure who should review your request, [mention](https://about.gitlab.com/blog/2016/03/08/gitlab-tutorial-its-all-connected/#mention-others-and-assign) a [maintainer](https://gitlab.com/groups/autowarefoundation/autoware.auto/committers/-/group_members) in the comments for assignment.
+    When your merge request is ready for review:
+      1. Assign it to a [maintainer](https://gitlab.com/groups/autowarefoundation/autoware.auto/committers/-/group_members) and [add the "review" label](https://docs.gitlab.com/ee/user/project/labels.html#assign-and-unassign-labels).
+      2. If you do not have permissions to change milestones or labels on your merge request or are not sure who should review your request, [mention](https://about.gitlab.com/blog/2016/03/08/gitlab-tutorial-its-all-connected/#mention-others-and-assign) a [maintainer](https://gitlab.com/groups/autowarefoundation/autoware.auto/committers/-/group_members) in the comments for assignment.
 
 During the review process, you may need to make additional changes in response to comments from reviewers, so you must watch your merge request and respond to comments as soon as possible.
 When you push your changes, the merge request will be updated automatically and the Continuous Integration system will also be run.
@@ -148,20 +136,16 @@ Note that doing this places the following restrictions on your own merge request
 2. You must rebase and ensure a clean history, containing only your changes, prior to making a merge request.
    If you follow the instructions here to rebase your branch before making a merge request then this should not be a problem.
 
-To include the changes from another merge request in your own branch, prior to them being merged into the `master` branch, you need to get that branch into your local copy and merge it into your branch.
+   To include the changes from another merge request in your own branch, prior to them being merged into the `master` branch, you need to get that branch into your local copy and merge it into your branch.
 
 3. In your local copy, fetch the latest from the upstream repository.
 
-   ```shell
-   $ git fetch
-   ```
+       $ git fetch
 
 4. Change to your branch and merge in the changes from the branch for the merge request you wish to use.
 
-   ```shell
-   $ git checkout 42-calculate-the-answer-to-the-ultimate-question
-   $ git merge upstream/41-calculate-the-ultimate-question
-   ```
+       $ git checkout 42-calculate-the-answer-to-the-ultimate-question
+       $ git merge upstream/41-calculate-the-ultimate-question
 
 5. Follow the [above steps](#fork-and-pull) for how to rebase your branch when the branch you depend on has been merged and your branch is ready to be merged into `master`.
 
@@ -185,7 +169,7 @@ You can fix this situation and bring your local copy back into line with the rem
 
 Create a new branch from `master`, then reset `master` to match the upstream.
 
-```shell
+```{bash}
 $ git checkout -b my-branch-for-some-new-change
 $ git checkout master
 $ git reset --hard upstream/master

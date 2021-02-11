@@ -1,6 +1,8 @@
 Running the EKF filter for localization {#ekf-localization-howto}
 =======================================
 
+[TOC]
+
 # Ndt EKF smooth localization
 
 This demo aims to show Kalman filter smoothing on top of NDT localization. The pose messages from

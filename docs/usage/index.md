@@ -6,18 +6,18 @@ The instructions linked below assume that you have "sourced your installation".
 First, you must be in an ADE and/or have built Autoware.Auto yourself.
 
 Then, execute either of those two:
-```bash
+```{bash}
 # To use the preinstalled Autoware.Auto in ADE:
 source /opt/AutowareAuto/setup.bash
 # To use the Autoware you built yourself:
-source ~/AutowareAuto/install/setup.bash 
+source ~/AutowareAuto/install/setup.bash
 ```
 
 That will set a few environment variables, e.g. `$AMENT_PREFIX_PATH`. To reset those variables, it's easiest to just open a new terminal.
 
 If you forget to source the installation, trying to run any `ros2 run` or `ros2 launch` commands will only print something like:
 
-```bash
+```{bash}
 Package 'autoware_demos' not found: "package 'autoware_demos' not found, searching: ['/opt/ros/foxy']"
 ```
 

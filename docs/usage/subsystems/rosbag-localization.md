@@ -1,6 +1,8 @@
 Localization Demo using rosbag {#rosbag-localization-howto}
 ==============================
 
+[TOC]
+
 # Running the Localization Demo
 
 1. Setup the Autoware environment following instructions in the [installation guide](@ref installation).

@@ -1,4 +1,4 @@
-Writing documentation {#writing-documentation}
+Writing Documentation {#writing-documentation}
 =====================
 
 [TOC]
@@ -45,6 +45,17 @@ impractical; e.g.
 To ease code review, it is recommended that each sentence start on a new line.
 This doesn't break paragraphs unless a blank line is included.
 
+### Code snippets
+
+Start a fenced code block and add the language (`cpp, py, bash, xml` ...) for syntax highlighting in braces; e.g.,
+
+    ```{cpp}
+    int main()
+    {
+      return 0;
+    }
+    ```
+
 ## Images
 
 Illustrations and screenshots are great to make a point and can save a lot of text. Place an image
@@ -52,7 +63,12 @@ into the `docs/images` folder and refer to it as
 
     @image html images/foo.png "image caption"
 
-This way of including ensures that doxygen fails if it cannot find the image.
+This way of including ensures that doxygen fails if it cannot find the image. Optionally, one can
+set e.g. the width of the image in the output in absolute or relative size to prevent a large image
+from disrupting the reading flow:
+
+    @image html images/foo.png "image caption" width=1000px
+    @image html images/foo.png "image caption" width=50%
 
 ## Integrating a new document
 
@@ -135,7 +151,7 @@ Use the imperative to describe each entity. Finish each section with a period `.
 
 For example:
 
-```c++
+```{c++}
 /// Analyse input for consistency.
 /// @param input The input, assumed `>= 1.2`.
 /// \throws A `std::invalid_argument` if invalid.
@@ -152,7 +168,7 @@ renaming/restructuring to make the code self-explanatory.
 
 Don't add this comment as it doesn't provide useful information
 
-```c++
+```{cpp}
 // distance
 double distance = 3.2;
 ```

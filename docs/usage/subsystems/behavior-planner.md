@@ -1,6 +1,8 @@
 Starting and testing the behavior planner {#behavior-planner-howto}
 =======================================
 
+[TOC]
+
 # How to start the stack
 
 Start simulation as described in @ref lgsvl.

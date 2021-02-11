@@ -1,6 +1,8 @@
 Starting and testing the global planner {#global-planner-howto}
 =======================================
 
+[TOC]
+
 # How to start the stack
 
 Start simulation as described in @ref lgsvl.
@@ -47,7 +49,7 @@ Optionally, to send a goal position/heading programmatically:
 *terminal 4*
 ```
 > ade enter
-ade$ 
+ade$
 ros2 topic pub --once /planning/goal_pose geometry_msgs/msg/PoseStamped "{
 header:
   {stamp:
@@ -67,9 +69,9 @@ pose:
 "
 ```
 
-The path with lane IDs should be output in *terminal 3*. 
+The path with lane IDs should be output in *terminal 3*.
 
-**Note** To choose a different parking spot, click `2D Nav Goal` in `rviz` and listen to the message with 
+**Note** To choose a different parking spot, click `2D Nav Goal` in `rviz` and listen to the message with
 
     ros2 topic echo /goal_pose
 
@@ -77,7 +79,7 @@ and update the values in the message in YAML format above.
 
 # Passing metrics
 
-The output message looks like 
+The output message looks like
 
 ```
 ...
@@ -88,8 +90,8 @@ primitives:
   primitive_type: drivable_area
 - id: 6581
   primitive_type: lane
-  
-# lots of lanes omitted  
+
+# lots of lanes omitted
 
 - id: 6700
   primitive_type: lane
@@ -108,6 +110,6 @@ Searching for its coordinates, they are:
 To graphically inspect this, install the `qgis` tool with:
 
     sudo apt install qgis
-    
+
 and follow [this tutorial](https://wiki.openstreetmap.org/wiki/QGIS_tutorial) to open the .osm file.
 Finally, install a plugin called `Lat Lon Tools` and enter the coordinates to pinpoint the node with a red crosshair.

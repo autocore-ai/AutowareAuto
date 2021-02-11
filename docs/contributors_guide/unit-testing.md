@@ -1,4 +1,4 @@
-How to write tests and measure coverage {#how-to-write-tests-and-measure-coverage}
+How to Write Tests and Measure Coverage {#how-to-write-tests-and-measure-coverage}
 ========
 
 [TOC]
@@ -193,7 +193,7 @@ This example assumes that the package `my_cool_pkg` is generated with
 
 In `my_cool_pkg/test`, create the gtest entrypoint `gtest_main.cpp`:
 
-```cpp
+```{cpp}
 #include "gtest/gtest.h"
 #include "my_cool_pkg/my_cool_pkg.hpp"
 int main(int argc, char * argv[])
@@ -205,7 +205,7 @@ int main(int argc, char * argv[])
 
 Create the `gtest` code file `test_my_cool_pkg.cpp`:
 
-```cpp
+```{cpp}
 #include "gtest/gtest.h"
 #include "my_cool_pkg/my_cool_pkg.hpp"
 TEST(test_my_cool_pkg, test_hello) {
@@ -248,7 +248,7 @@ that helps simplify adding `gtest` code. Details can be viewed in
 
 By default, all necessary test files (ELF, CTesttestfile.cmake, etc.) are compiled by `colcon`:
 
-```bash
+```{bash}
 ade$ cd ~/workspace/
 ade$ colcon build --merge-install --packages-select my_cool_pkg
 ```
@@ -260,7 +260,7 @@ Test files are generated under `~/workspace/build/my_cool_pkg`.
 
 To run test on a specific package, call:
 
-```bash
+```{bash}
 ade$ colcon test --merge-install --packages-select my_cool_pkg
 
 Starting >>> my_cool_pkg
@@ -277,7 +277,7 @@ The test command output contains a brief report of all the test results.
 
 To get job-wise information of all executed tests, call:
 
-```bash
+```{bash}
 ade$ colcon test-result --all
 
 build/my_cool_pkg/test_results/my_cool_pkg/copyright.xunit.xml: 8 tests, 0 errors, 0 failures, 0 skipped
@@ -300,7 +300,7 @@ containing symbolic links to the most recent package-level build and test output
 To print the tests' details while the tests are being run, use the
 `--event-handlers console_cohesion+` option to print the details directly to the console:
 
-```bash
+```{bash}
 ade$ colcon test --merge-install --event-handlers console_cohesion+ --packages-select my_cool_pkg
 
 ...
@@ -369,7 +369,7 @@ Use the commands below to generate coverage information for `my_cool_pkg`:
 \note `package_coverage.sh` prompts to delete `build`, `install`, and `log` directories, if present. Answer with `y` to
 delete, or clean your build before generating the coverage report.
 
-```bash
+```{bash}
 ade$ cd AutowareAuto
 ade$ git lfs install
 ade$ git lfs pull --include="*" --exclude=""

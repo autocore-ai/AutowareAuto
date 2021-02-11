@@ -74,7 +74,7 @@ false, it is assumed that the user will then need to check for an
 
 Basic usage:
 
-```cpp
+```{cpp}
 // set size
 assigner.set_size(16U, 16U);
 // set weights

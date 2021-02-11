@@ -1,6 +1,8 @@
 Initializing the NDT localizer {#ndt-howto}
 ==============================
 
+[TOC]
+
 # Starting localization
 
 * Start LGSVL with @ref lgsvl

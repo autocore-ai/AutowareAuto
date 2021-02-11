@@ -1,11 +1,15 @@
-Autonomous Valet Parking demonstration {#avpdemo}
+Autonomous Valet Parking Demonstration {#avpdemo}
 =================================================
+
+[TOC]
 
 The Autonomous Valet Parking (AVP) demonstration uses Autoware.Auto to provide a valet parking service in the parking lot ODD.
 
-![Autonomous valet parking](images/valet_parking.jpeg)
+@image html images/valet_parking.jpeg "Autonomous valet parking" width=800px
 
 # Description of the demonstration
+
+@todo Do a gallery page with images?
 
 The AVP demonstration uses Autoware.Auto to provide the following functions:
 
@@ -16,58 +20,75 @@ The AVP demonstration uses Autoware.Auto to provide the following functions:
 4. Drive to a pre-defined pick-up zone (e.g. the exit from a carpark).
 5. Automatically stop for obstacles while achieving the above.
 
-# System architecture for the AVP ODD
+The easiest way repeat the demonstration is to run it as @ref avpdemo-simulation.
+Given appropriate hardware, it can of course be repeated in real life as well as detailed in @ref avpdemo-physical.
 
-The system architecture that was developed to address the AVP ODD in Autoware.Auto is given below:
+# Simulation demonstration {#avpdemo-simulation}
 
-![Autoware.Auto AVP Architecture](images/AVP_Architecture.png)
+The simulation AVP demo was tested with hardware that satisfies requirements for the LGSVL simulator.
+To run the LGSVL simulator, you will need an NVIDIA graphics card. Additional information about requirements can be found [here](https://www.lgsvlsimulator.com/docs/faq/#what-are-the-recommended-system-specs-what-are-the-minimum-required-system-specs).
+
+@warning If the machine is oversubscribed by running both the simulation and the autonomous-driving stack, expect a performance degradation due to latencies, for example in the localization module.
 
 # Prerequisites {#avpdemo-prerequisites}
 
-To run this demo, you will need to provide the following.
+To run this demo, the following inputs are needed:
 
-- A point cloud map of a carpark, for localisation.
-- A HDMap (vector map) of a carpark, for navigation.
-- A simulated world of a carpark, if the demo will be run on a simulator.
-- A simulated version of your car.
+- A point-cloud map of a carpark, for localization.
+- An HDMap (vector map) of a carpark, for navigation.
+
+If @ref lgsvl is set up as explained, these two components should be available out of the box in simulation under `/opt/AutowareAuto/share/autoware_auto_avp_demo/data`.
+
+@todo Do we have the list of requirements on the map? It's seems quite vague here and I'm sure the demo would just fail if some subtle detail in the map is off
+
+## Setup and launching
+
+-# @ref installation-and-development-install-ade.
+-# Follow the instructions on the @ref lgsvl page to install, launch, and configure a vehicle and simulation using the AutonomousStuff Parking Lot map.
+-# In a new terminal, run the launch file for Milestone 3:
+
+        $ ade enter
+        ade$ source /opt/AutowareAuto/setup.bash
+        ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
+
+## Initializing the localization
+
+@todo describe how to initialize localization, what to do as a user
+
+
+## Driving to the drop-off zone
+@todo Describe location in words, add an image from the unity rendering
+
+@anchor avp-parking-spots
+@image html images/avp-parking-spots.png "Location of drop-off area and target parking spot" width=25%
+
+## Controlling the vehicle through a web interface
+
+Open `http://127.0.0.1:8000/` on the host system in a web browser to send goal poses to the vehicle. This requires that
+
+- the vehicle be manually driven to the location on the map indicated in the image [above](@ref avp-parking-spots),
+- the stack be initialized and localized in the map
+
+@image html images/avp-web-interface.png "Autonomous valet parking web interface" width=40%
+
+# Hardware requirements
+
+# Physical demonstration {#avpdemo-physical}
+
+The physical AVP demonstration was performed at a carpark in San Jose in 2020 with a Lexus RX 450h equipped with
+
+- the [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/) DBW interface,
+- 2 [Velodyne VLP-32Cs](https://velodynelidar.com/products/ultra-puck/),
+- an [AutonomouStuff Spectra](https://autonomoustuff.com/products/astuff-spectra) industrial PC,
+- the [AutonomouStuff Speed and Steering Control](https://autonomoustuff.com/products/astuff-speed-steering-control-software) (SSC) software,
+
+Check this [video](https://www.youtube.com/watch?v=MC7n8vwiLcg) to see it in action.
 
 A sample carpark is available, based on a real single-level carpark in San Jose, California.
 
 A sample car is available, based on a real-life vehicle used by many members of the Autoware Foundation.
 
 
-# Hardware requirements
-
-## Physical demo
-
-The physical AVP demo was tested with a Lexus RX 450h with
-
-- the [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/) DBW interface
-- 2 [Velodyne VLP-32Cs](https://velodynelidar.com/products/ultra-puck/)
-- an [AutonomouStuff Spectra](https://autonomoustuff.com/products/astuff-spectra) industrial PC.
-- the [AutonomouStuff Speed and Steering Control](https://autonomoustuff.com/products/astuff-speed-steering-control-software) (SSC) software.
-
-## Simulation demo
-
-The simulation AVP demo was tested with hardware that satisfies requirements for the LGSVL simulator.
-To run the LGSVL simulator, you will need an NVIDIA graphics card. Additional information about requirements can be found [here](https://www.lgsvlsimulator.com/docs/faq/#what-are-the-recommended-system-specs-what-are-the-minimum-required-system-specs).
-
-# Setup and launching (simulator)
-
-The AVP demo can be run in the LGSVL simulator.
-You can use the included sample carpark, or your own carpark.
-If using your own carpark, you will need to provide a simulated world for it as described in @ref avpdemo-prerequisites.
-
-1. @ref installation-and-development-install-ade and install the @ref lgsvl.
-2. Follow the instructions on the @ref lgsvl page to configure a vehicle and simulation using the AutonomouStuff Parking Lot map (AS Parking Lot).
-3. Follow the instructions on the @ref lgsvl page to launch the simulator.
-4. In a new terminal, run the launch file for Milestone 3:
-
-```console
-$ ade enter
-ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
-```
 
 # Setup and launching (hardware)
 
@@ -88,6 +109,12 @@ $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
 ```
+
+# System architecture for the AVP ODD
+
+The system architecture that was developed to address the AVP ODD in Autoware.Auto is given below:
+
+![Autoware.Auto AVP Architecture](images/AVP_Architecture.png)
 
 
 # Related packages

@@ -21,7 +21,7 @@ Follow the [install](https://ade-cli.readthedocs.io/en/latest/install.html) inst
 4. Make the binary executable: `chmod +x ade`
 5. Check that it is installed:
 
-```bash
+```{bash}
 $ which ade
 /path/to/ade
 $ ade --version
@@ -70,10 +70,28 @@ will not work, files in a Docker container can not be symlinks to the outside.
 # Entering your development environment
 ```
 $ cd AutowareAuto
+```
+
+To start the default environment:
+
+```
 $ ade start --update --enter
 ```
 
-Now you should have a terminal inside ADE, ready for @ref usage, or for developing Autoware.Auto
+There are several preconfigured environments to choose from by specifying an ADE rc file. To see
+what is available, run
+
+```
+ls -l .aderc*
+```
+
+Choose one, then launch with:
+
+```
+ade --rc .aderc-amd64-foxy  start --update --enter
+```
+
+Now you should have a terminal inside ADE, ready for @ref usage, or for developing Autoware.Auto.
 
 
 # Cleanup {#installation-and-development-cleanup}
@@ -86,7 +104,7 @@ drive. Follow the steps below to clean the Docker filesytem of stale images.
 
 First, verify that ADE is running:
 
-```bash
+```
 $ cd ~/adehome/AutowareAuto
 $ ade start
 ```
@@ -102,7 +120,7 @@ Docker resources that are not started/running **will be removed**!
 
 To assess the disk usage situation, run the following command:
 
-```console
+```
 $ docker system df
 TYPE                TOTAL               ACTIVE              SIZE                RECLAIMABLE
 Images              13                  11                  14.03GB             916.9MB (6%)
@@ -114,9 +132,9 @@ Build Cache         0                   0                   0B                  
 
 ## Remove unused docker items {#installation-and-development-remove-unused-docker-items}
 
-Use `docker system prune` to remove unused Docker items:
+Use `docker system prune` to remove any Docker items not used for currently running containers:
 
-```console
+```
 $ docker system prune -a --volumes
 ```
 
@@ -127,12 +145,12 @@ Here are solutions for a few specific errors:
 
 When starting `ade` with GPU support enabled for NVIDIA graphics, you may sometimes receive the following error:
 
-```console
+```
 docker: Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "process_linux.go:449: container init caused \"process_linux.go:432: running prestart hook 0 caused \\\"error running hook: exit status 1, stdout: , stderr: nvidia-container-cli: initialization error: cuda error: forward compatibility was attempted on non supported hw\\\\n\\\"\"": unknown.
 ERROR: Command return non-zero exit code (see above): 125
 ```
 
-This usually indicates that a new NVIDIA graphics driver has been installed (usually via `apt`) but the system has not yet been restarted.
+This usually indicates that a new NVIDIA graphics driver has been installed (usually via `apt`) but the system has not yet been restarted. A similar message may appear if the graphics driver is not available, for example because of resuming after suspend.
 
 ### Solution
 
@@ -146,7 +164,7 @@ For more information you can review the discussion that lead to this decision in
 
 To resolve this issue, simply remove the line `export ADE_DISABLE_NVIDIA_DOCKER=true` from the `.aderc` file that you are using and restart `ade` with:
 
-```console
+```
 ade$ exit
 $ ade stop
 $ ade start --update --enter
