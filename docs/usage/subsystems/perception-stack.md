@@ -48,23 +48,56 @@ $ ade enter
 ade$ udpreplay -r -1 route_small_loop_rw.pcap
 ```
   4. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the front lidar:
-```console
+
+Dashing:
+
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
 ```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
+```
+
   5. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the rear lidar:
+
+Dashing:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_rear __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test_rear.param.yaml
 ```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_rear --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test_rear.param.yaml
+```
 2. Running a simulator: To do this, see [Running the LGSVL Simulator along side Autoware.Auto](lgsvl.html)
 3. Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) and then launch the node:
+
+Dashing:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 __ns:=/lidar_front __params:=/opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
+```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
 ```
 
 \note
@@ -107,10 +140,20 @@ Now that the prerequisites have been brought up, the perception stack can be lau
 
 This node transforms point clouds from the `velodyne_node` to a common frame. In a new terminal, do:
 
+Dashing:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe __ns:=/lidar_front __params:=/opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
+```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
 ```
 
 ![Autoware.Auto transformed points snapshot](autoware-auto-transformed-points.png)
@@ -119,10 +162,20 @@ ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_no
 
 This node classifies point cloud points according to whether they are ground or non-ground. In a new terminal, do:
 
+Dashing:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe __params:=/opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml --remap points_in:=/lidar_front/points_filtered
+```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe --ros-args --params-file /opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml --remap points_in:=/lidar_front/points_filtered
 ```
 
 ![Autoware.Auto ray ground filter snapshot](autoware-auto-ray-ground-filter-smaller.png)
@@ -131,10 +184,20 @@ ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe _
 
 This node clusters non-ground points into objects and publishes bounding boxes. In a new terminal, do:
 
+Dashing:
+
 ```console
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_node_exe __params:=/opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground
+```
+
+Foxy:
+
+```console
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_node_exe --ros-args --params-file /opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground
 ```
 
 ![Autoware.Auto bounding boxes segmentation snapshot](autoware-auto-bounding-boxes-smaller.png)

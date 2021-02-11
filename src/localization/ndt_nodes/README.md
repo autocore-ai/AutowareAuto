@@ -51,7 +51,13 @@ Inside the ade, source the workspace. If you are using precompiled version sourc
 
 Run the node with the paramter file as an argument:
 
+Dashing:
+
 `ros2 run ndt_nodes ndt_map_publisher_exe __params:=path/to/map_publisher.param.yaml`
+
+Foxy:
+
+`ros2 run ndt_nodes ndt_map_publisher_exe --ros-args --params-file path/to/map_publisher.param.yaml`
 
 Alternatively use a launch file:
 `ros2 launch ndt_nodes map_provider.launch.py`

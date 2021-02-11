@@ -17,8 +17,17 @@ Here is a short recap of the most important parts.
 For more details, see the `spinnaker_camera_node.param.template.yaml` file.
 
 It can be used to run the node as follows:
+
+Dashing:
+
 ```bash
 ros2 run spinnaker_camera_nodes spinnaker_camera_node_main __params:=./install/spinnaker_camera_nodes/share/spinnaker_camera_nodes/param/spinnaker_camera_node.param.template.yaml
+```
+
+Foxy:
+
+```bash
+ros2 run spinnaker_camera_nodes spinnaker_camera_node_main --ros-args --params-file ./install/spinnaker_camera_nodes/share/spinnaker_camera_nodes/param/spinnaker_camera_node.param.template.yaml
 ```
 
 ### Configuring cameras
