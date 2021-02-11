@@ -22,11 +22,14 @@
 #include <recordreplay_planner_actions/action/replay_trajectory.hpp>
 
 #include <autoware_auto_msgs/msg/trajectory.hpp>
+#include <autoware_auto_msgs/msg/trajectory_point.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/srv/modify_trajectory.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <motion_common/motion_common.hpp>
 #include <motion_common/config.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <common/types.hpp>
 
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -45,13 +48,17 @@ namespace recordreplay_planner_nodes
 {
 using PlannerPtr = std::unique_ptr<motion::planning::recordreplay_planner::RecordReplayPlanner>;
 using autoware_auto_msgs::msg::Trajectory;
+using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::srv::ModifyTrajectory;
 using recordreplay_planner_actions::action::RecordTrajectory;
 using recordreplay_planner_actions::action::ReplayTrajectory;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Transform = geometry_msgs::msg::TransformStamped;
 using motion::motion_common::Real;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
 
+/// \brief ROS Node for recording and replaying trajectories
 class RECORDREPLAY_PLANNER_NODES_PUBLIC RecordReplayPlannerNode : public rclcpp::Node
 {
 public:
@@ -71,17 +78,36 @@ protected:
 
   rclcpp::Subscription<State>::SharedPtr m_ego_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
+  rclcpp::Publisher<MarkerArray>::SharedPtr m_trajectory_viz_pub{};
   PlannerPtr m_planner{nullptr};
 
 private:
-  RECORDREPLAY_PLANNER_NODES_LOCAL void on_ego(const State::SharedPtr & msg);
+  /// \brief Converts a TrajectoryPoint to a Marker for visualization
+  /// \param[in] traj_point The TrajectoryPoint
+  /// \param[in] frame_id The name of the frame of reference in which the marker should be placed
+  /// \param[in] index A sequential index. When combined with namespace, makes a unique id
+  /// \param[in] ns The namespace for the marker
+  /// \returns A visualization_msgs::msg::Marker
+  RECORDREPLAY_PLANNER_NODES_LOCAL Marker to_marker(
+    const TrajectoryPoint & traj_point,
+    const std::string & frame_id,
+    int32_t index,
+    const std::string & ns);
 
+  /// \brief Converts a Trajectory to a MarkerArray for visualization
+  /// \param[in] traj The Trajectory
+  /// \param[in] ns The namespace for the markers
+  /// \returns A visaulization_msgs::msg::MarkerArray
+  RECORDREPLAY_PLANNER_NODES_LOCAL MarkerArray to_markers(
+    const Trajectory & traj, const std::string & ns);
+
+  /// \brief Clears the list of recorded markers
+  RECORDREPLAY_PLANNER_NODES_LOCAL void clear_recorded_markers();
+
+  RECORDREPLAY_PLANNER_NODES_LOCAL void on_ego(const State::SharedPtr & msg);
   RECORDREPLAY_PLANNER_NODES_LOCAL void modify_trajectory_response(
     rclcpp::Client<ModifyTrajectory>::SharedFuture future);
 
-  // TODO(s.me) there does not seem to be a RecordTrajectory::SharedPtr? Also
-  // the return types need to be changed to the rclcpp_action types once the package
-  // is available.
   RECORDREPLAY_PLANNER_NODES_LOCAL rclcpp_action::GoalResponse record_handle_goal(
     const rclcpp_action::GoalUUID & uuid,
     const std::shared_ptr<const RecordTrajectory::Goal> goal);
@@ -99,6 +125,7 @@ private:
     const std::shared_ptr<GoalHandleReplayTrajectory> goal_handle);
 
   std::string m_odom_frame_id{};
+  MarkerArray m_recorded_markers{};
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 

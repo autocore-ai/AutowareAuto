@@ -62,8 +62,10 @@ public:
   // Clear the internal recording buffer
   void clear_record() noexcept;
 
-  // Add a new state to the record
-  void record_state(const State & state_to_record);
+  /// \brief Add a new state to the record buffer
+  /// \param[in] state_to_record A state to attempt to add to the recording buffer
+  /// \return True if state was added to record buffer, False otherwise
+  bool record_state(const State & state_to_record);
 
   // Replay trajectory from stored plan. The current state of the vehicle is given
   // and the trajectory will be chosen from the stored plan such that the starting

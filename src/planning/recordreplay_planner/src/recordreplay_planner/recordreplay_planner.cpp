@@ -186,11 +186,11 @@ float64_t RecordReplayPlanner::get_min_record_distance() const
 }
 
 
-void RecordReplayPlanner::record_state(const State & state_to_record)
+bool RecordReplayPlanner::record_state(const State & state_to_record)
 {
   if (m_record_buffer.empty()) {
     m_record_buffer.push_back(state_to_record);
-    return;
+    return true;
   }
 
   auto previous_state = m_record_buffer.back();
@@ -201,6 +201,9 @@ void RecordReplayPlanner::record_state(const State & state_to_record)
 
   if (static_cast<float64_t>(distance_sq) >= (m_min_record_distance * m_min_record_distance) ) {
     m_record_buffer.push_back(state_to_record);
+    return true;
+  } else {
+    return false;
   }
 }
 
