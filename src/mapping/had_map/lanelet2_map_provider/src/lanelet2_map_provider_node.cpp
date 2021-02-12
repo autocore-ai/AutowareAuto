@@ -31,6 +31,7 @@
 #include <chrono>
 #include <string>
 #include <memory>
+#include <utility>
 
 #include "autoware_auto_msgs/srv/had_map_service.hpp"
 #include "autoware_auto_msgs/msg/had_map_bin.hpp"
@@ -44,25 +45,34 @@ namespace autoware
 namespace lanelet2_map_provider
 {
 Lanelet2MapProviderNode::Lanelet2MapProviderNode(const rclcpp::NodeOptions & options)
-: Node("Lanelet2MapProvider", options),
-  m_origin_set(false),
-  m_verbose(true),
-  m_map_filename(declare_parameter("map_osm_file").get<std::string>())
+: Node("Lanelet2MapProvider", options)
 {
-  declare_parameter("latitude");
-  declare_parameter("longitude");
-  declare_parameter("elevation");
-
-  if (get_parameter("latitude", m_origin_lat) &&
-    get_parameter("longitude", m_origin_lon) &&
-    get_parameter("elevation", m_origin_ele))
-  {
-    m_origin_set = true;
+  const std::string map_filename = declare_parameter("map_osm_file").get<std::string>();
+  const float64_t origin_offset_lat = declare_parameter("origin_offset_lat", 0.0);
+  const float64_t origin_offset_lon = declare_parameter("origin_offset_lon", 0.0);
+  if (has_parameter("latitude") && has_parameter("longitude") && has_parameter("elevation")) {
+    const float64_t origin_lat = declare_parameter("latitude").get<float64_t>();
+    const float64_t origin_lon = declare_parameter("longitude").get<float64_t>();
+    const float64_t origin_alt = declare_parameter("elevation").get<float64_t>();
+    LatLonAlt map_origin{origin_lat, origin_lon, origin_alt};
+    m_map_provider = std::make_unique<Lanelet2MapProvider>(
+      map_filename, map_origin, origin_offset_lat, origin_offset_lon);
+  } else {
+    /// This could potentially also read the same yaml that the ndt map publisher reads
+    auto earth_from_map = get_map_origin();
+    m_map_provider = std::make_unique<Lanelet2MapProvider>(
+      map_filename, std::move(
+        earth_from_map), origin_offset_lat, origin_offset_lon);
   }
-  init();
+
+  m_map_service =
+    this->create_service<autoware_auto_msgs::srv::HADMapService>(
+    "HAD_Map_Service", std::bind(
+      &Lanelet2MapProviderNode::handle_request, this,
+      std::placeholders::_1, std::placeholders::_2));
 }
 
-void Lanelet2MapProviderNode::get_map_origin()
+geometry_msgs::msg::TransformStamped Lanelet2MapProviderNode::get_map_origin()
 {
   std::unique_ptr<tf2_ros::Buffer> buffer = nullptr;
   rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
@@ -73,14 +83,13 @@ void Lanelet2MapProviderNode::get_map_origin()
     std::make_shared<tf2_ros::TransformListener>(*buffer);
 
   rclcpp::WallRate loop_rate(std::chrono::milliseconds(100));
-  bool8_t got_map_origin = false;
 
-  while (!got_map_origin && rclcpp::ok()) {
+  while (rclcpp::ok()) {
     try {
       geometry_msgs::msg::TransformStamped tfs =
         buffer->lookupTransform("earth", "map", tf2::TimePointZero);
-      m_earth_to_map = tfs;
-      got_map_origin = true;
+      // No exception – we got the transform
+      return tfs;
     } catch (tf2::TransformException & ex) {
       RCLCPP_INFO(
         this->get_logger(),
@@ -89,34 +98,9 @@ void Lanelet2MapProviderNode::get_map_origin()
     }
     loop_rate.sleep();
   }
+  throw std::runtime_error("rclcpp error");
 }
 
-void Lanelet2MapProviderNode::init()
-{
-  m_map_provider = std::make_unique<Lanelet2MapProvider>(m_map_filename);
-
-  if (!m_origin_set) {
-    get_map_origin();
-  }
-  load_map();
-
-  m_map_service =
-    this->create_service<autoware_auto_msgs::srv::HADMapService>(
-    "HAD_Map_Service", std::bind(
-      &Lanelet2MapProviderNode::handle_request, this,
-      std::placeholders::_1, std::placeholders::_2));
-}
-
-void Lanelet2MapProviderNode::load_map()
-{
-  if (m_origin_set) {
-    m_map_provider->set_geographic_coords(m_origin_lat, m_origin_lon, m_origin_ele);
-  } else {
-    m_map_provider->set_earth_to_map_transform(m_earth_to_map);
-    m_map_provider->calculate_geographic_coords();
-  }
-  m_map_provider->load_map();
-}
 
 // This function should extract requested correct submap from the fullmap
 // convert to binary format and then fill response
@@ -133,7 +117,7 @@ void Lanelet2MapProviderNode::handle_request(
 
   auto primitive_sequence = request->requested_primitives;
 
-  // special  case where we send existing map as is
+  // special case where we send existing map as is
   if (primitive_sequence.size() == 1 && *(primitive_sequence.begin()) ==
     autoware_auto_msgs::srv::HADMapService_Request::FULL_MAP)
   {
