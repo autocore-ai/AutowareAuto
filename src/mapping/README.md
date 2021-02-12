@@ -7,7 +7,7 @@ The `mapping` sub-directory contains nodes and libraries which create and publis
 autonomous driving, such as semantic maps and 3D pointcloud maps.
 
 # Subpages
-
+- @subpage lanelet2-map-for-autoware-auto
 - @subpage lanelet2-map-provider
 - @subpage mapping-design
 - @subpage ndt-mapping-nodes
