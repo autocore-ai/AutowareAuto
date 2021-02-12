@@ -8,8 +8,8 @@
       mass_kg: 1500.0
       yaw_inertia_kgm2: 12.0
       width_m: 1.83
-      front_overhang_m: 1.0
-      rear_overhang_m: 1.03
+      front_overhang_m: 0.5
+      rear_overhang_m: 0.5
     optimization_weights:
       steering: 1.0
       throttle: 1.0
