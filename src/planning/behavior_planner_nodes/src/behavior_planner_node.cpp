@@ -256,7 +256,7 @@ void BehaviorPlannerNode::on_ego_state(const State::SharedPtr & msg)
         RCLCPP_INFO(get_logger(), "Trying to change gear");
         previous_output_arrived_goal = now;
       }
-      RCLCPP_INFO(get_logger(), "Reached goal. Wait for another route");
+      RCLCPP_INFO_ONCE(get_logger(), "Reached goal. Wait for another route");
     } else if (m_planner->has_arrived_subroute_goal(m_ego_state)) {
       // send next subroute
       m_planner->set_next_subroute();

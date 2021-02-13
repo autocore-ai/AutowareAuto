@@ -167,7 +167,7 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
 
         if (parking_dir == ParkingDirection::HEAD_IN) {
           // Add extra distance for vehicle length
-          route_offset = -(route_offset + 1.0f);
+          route_offset = -(route_offset + 3.0f);
         }
 
         // create parking subroute
@@ -194,7 +194,7 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
 
         if (parking_dir == ParkingDirection::HEAD_IN) {
           // Add extra distance for vehicle length
-          route_offset = -(route_offset + 1.0f);
+          route_offset = -(route_offset + 3.0f);
         }
 
         // Currently, we assume that final goal is close to lane.

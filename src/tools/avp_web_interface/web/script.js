@@ -109,8 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var button = document.querySelector("[name='" + button_name + "']");
         button.addEventListener('click', () => { publishGoalPose(position.x, position.y, orientation.z, orientation.w); });
     }
-
-    registerCallback("park_forward", {x: -95.875, y: 57.707}, {z: 0.901, w: 0.434});
+    registerCallback("park_forward", {x: -96.46856384277344, y: 58.39532775878906}, {z: 0.42554035782814026, w: 0.9049394130706787});
     registerCallback("park_reverse", {x: -98.56259155273438, y: 60.99168395996094}, {z: -0.42844402469653825, w: 0.9035683248663778});
     registerCallback("return", {x: -26.73, y: 108.795}, {z: 0.342, w: 0.939});
 })
