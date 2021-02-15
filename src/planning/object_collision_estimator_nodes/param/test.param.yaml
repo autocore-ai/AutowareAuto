@@ -15,4 +15,5 @@
     trajectory_smoother:
       kernel_std: 5.0
       kernel_size: 25
+    staleness_threshold_ms: 500
     target_frame_id: "map"

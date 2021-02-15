@@ -55,6 +55,7 @@ TEST(mytest_base, basic)
   node_options_ob.append_parameter_override("stop_margin", 5.0);
   node_options_ob.append_parameter_override("trajectory_smoother.kernel_std", 5.0);
   node_options_ob.append_parameter_override("trajectory_smoother.kernel_size", 25);
+  node_options_ob.append_parameter_override("staleness_threshold_ms", 500);
   node_options_ob.append_parameter_override("target_frame_id", "map");
   auto object_collision_estimator_node = std::make_shared<ObjectCollisionEstimatorNode>(
     node_options_ob);

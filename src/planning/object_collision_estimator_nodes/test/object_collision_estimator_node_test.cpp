@@ -84,6 +84,9 @@ void object_collision_estimator_node_test(
     "safety_factor",
     1.1);
   node_options.append_parameter_override(
+    "staleness_threshold_ms",
+    500);
+  node_options.append_parameter_override(
     "target_frame_id",
     "map");
   node_options.append_parameter_override(

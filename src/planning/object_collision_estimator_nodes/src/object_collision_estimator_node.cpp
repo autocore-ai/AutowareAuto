@@ -95,6 +95,13 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     ).get<uint32_t>())
   };
 
+  // Object staleness time threshold
+  m_staleness_threshold_ms = std::chrono::milliseconds(
+    static_cast<uint32_t>(declare_parameter(
+      "staleness_threshold_ms"
+    ).get<uint32_t>())
+  );
+
   // the tf frame in which planned local trajectories are published
   m_target_frame_id =
     static_cast<std::string>(declare_parameter(
@@ -194,7 +201,7 @@ void ObjectCollisionEstimatorNode::estimate_collision(
     RCLCPP_WARN(
       this->get_logger(),
       "No obstacle information has been received. Collision estimation will have no effect");
-  } else if (elapsed_time > 500ms) {
+  } else if (elapsed_time > m_staleness_threshold_ms) {
     RCLCPP_WARN(
       this->get_logger(),
       "Outdated obstacle information."
