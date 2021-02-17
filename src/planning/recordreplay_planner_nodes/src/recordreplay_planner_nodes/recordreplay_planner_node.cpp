@@ -39,6 +39,8 @@ RecordReplayPlannerNode::RecordReplayPlannerNode(const rclcpp::NodeOptions & nod
   const auto trajectory_viz_topic = "planned_trajectory_viz";
   const auto heading_weight = declare_parameter("heading_weight").get<float64_t>();
   const auto min_record_distance = declare_parameter("min_record_distance").get<float64_t>();
+  m_goal_distance_threshold_m = declare_parameter("goal_distance_threshold_m").get<float32_t>();
+  m_goal_angle_threshold_rad = declare_parameter("goal_angle_threshold_rad").get<float32_t>();
 
   using rclcpp::QoS;
   using namespace std::chrono_literals;
@@ -219,6 +221,11 @@ void RecordReplayPlannerNode::on_ego(const State::SharedPtr & msg)
       auto feedback_msg = std::make_shared<ReplayTrajectory::Feedback>();
       feedback_msg->remaining_length = static_cast<int32_t>(traj_raw.points.size());
       m_replaygoalhandle->publish_feedback(feedback_msg);
+    }
+
+    if (m_planner->reached_goal(*msg, m_goal_distance_threshold_m, m_goal_angle_threshold_rad)) {
+      m_replaygoalhandle->succeed(std::make_shared<ReplayTrajectory::Result>());
+      m_planner->stop_replaying();
     }
   }
 }

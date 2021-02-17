@@ -56,3 +56,8 @@ ade$ ros2 action send_goal /planning/replaytrajectory recordreplay_planner_actio
 The vehicle should automatically stop for any detected obstacles on the path.
 
 @note In LGSVL, you can use the `n` key to enable and disable dynamic traffic.
+
+When the vehicle reaches to the goal of the replayed trajectory, the planner stops automatically and outputs `status::SUCCEED` to the terminal in which you ran the `ros2 action send_goal` command.
+You can modify end conditions by tuning parameters in [recordreplay_planner.param.yaml](src/tools/autoware_auto_avp_demo/param/recordreplay_planner.param.yaml). The planner terminates planning when both of the following conditions are satisfied:
+* goal_distance_threshold_m: threshold for the distance between `nav_base` frame and the last point in the replayed trajectory
+* goal_angle_threshold_rad: threshold for the heading angle between `nav_base` frame and the last point in the replayed trajectory

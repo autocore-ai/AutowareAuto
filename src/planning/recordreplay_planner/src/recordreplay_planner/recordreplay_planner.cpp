@@ -283,7 +283,7 @@ const Trajectory & RecordReplayPlanner::from_record(const State & current_state)
   // guaranteed to be dynamically feasible. One could implement a proper velocity
   // profile here in the future.
   if (m_traj_end_idx > m_traj_start_idx) {
-    const auto traj_last_idx = m_traj_end_idx - 1U;
+    const auto traj_last_idx = publication_len - 1U;
     trajectory.points[traj_last_idx].longitudinal_velocity_mps = 0.0;
     trajectory.points[traj_last_idx].lateral_velocity_mps = 0.0;
     trajectory.points[traj_last_idx].acceleration_mps2 = 0.0;
@@ -367,6 +367,29 @@ void RecordReplayPlanner::readTrajectoryBufferFromFile(const std::string & repla
     }
     record_state(s);
   }
+}
+
+bool8_t RecordReplayPlanner::reached_goal(
+  const State & current_state,
+  const float64_t & distance_thresh,
+  const float64_t & angle_thresh) const
+{
+  if (m_trajectory.points.empty()) {
+    return false;
+  }
+
+  const auto & goal_state = m_trajectory.points.back();
+  const auto & ego_state = current_state.state;
+  const auto distance2d =
+    static_cast<float64_t>(std::hypot(ego_state.x - goal_state.x, ego_state.y - goal_state.y));
+  const auto angle_diff_rad =
+    static_cast<float64_t>(std::abs(to_angle(ego_state.heading - goal_state.heading)));
+  if (distance2d < distance_thresh &&
+    angle_diff_rad < angle_thresh)
+  {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace recordreplay_planner

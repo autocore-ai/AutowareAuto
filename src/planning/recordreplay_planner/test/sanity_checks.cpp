@@ -290,3 +290,45 @@ TEST(RecordreplayWriteReadTrajectory, readTrajectoryEmptyPath)
 
   ASSERT_THROW(planner.readTrajectoryBufferFromFile(""), std::runtime_error);
 }
+
+TEST(RecordreplayReachGoal, checkReachGoalCondition)
+{
+  const auto N = 6;
+  auto planner = helper_create_and_record_example(N);
+
+  const float64_t distance_thresh = 1.0;
+  const float64_t angle_thresh = autoware::common::types::PI_2;
+
+  // vehicle 1.5 meters away from the last point in the trajectory
+  {
+    const float32_t x = 3.5F;
+    const float32_t heading = 0.0F;
+    const auto vehicle_state = make_state(
+      x, 0.0F, heading, 0.0F, 0.0F, 0.0F,
+      system_clock::from_time_t({}));
+    planner.plan(vehicle_state);
+    EXPECT_FALSE(planner.reached_goal(vehicle_state, distance_thresh, angle_thresh));
+  }
+
+  // vehicle facing in opposite direction from the last point in the trajectory
+  {
+    const float32_t x = 5.0F;
+    const float32_t heading = -autoware::common::types::PI;
+    const auto vehicle_state = make_state(
+      x, 0.0F, heading, 0.0F, 0.0F, 0.0F,
+      system_clock::from_time_t({}));
+    planner.plan(vehicle_state);
+    EXPECT_FALSE(planner.reached_goal(vehicle_state, distance_thresh, angle_thresh));
+  }
+
+  // vehicle state is the same as the last point in the trajectory
+  {
+    const float32_t x = 5.0F;
+    const float32_t heading = 0.0F;
+    const auto vehicle_state = make_state(
+      x, 0.0F, heading, 0.0F, 0.0F, 0.0F,
+      system_clock::from_time_t({}));
+    planner.plan(vehicle_state);
+    EXPECT_TRUE(planner.reached_goal(vehicle_state, distance_thresh, angle_thresh));
+  }
+}

@@ -86,6 +86,17 @@ public:
   void writeTrajectoryBufferToFile(const std::string & record_path);
   void readTrajectoryBufferFromFile(const std::string & replay_path);
 
+  /**
+   * \brief Judges whether current_state has reached the last point in record buffer
+   * \param current_state current state of the vehicle
+   * \param distance_thresh threshold of euclidean distance between the current statethe and the last point in meters
+   * \param angle_thresh threshold of difference in the headings of the current_state and the last point in radians
+   * \return true if both distance and angle conditions are satisfied
+   */
+  bool8_t reached_goal(
+    const State & current_state, const float64_t & distance_thresh,
+    const float64_t & angle_thresh) const;
+
 private:
   // Obtain a trajectory from the internally-stored recording buffer
   RECORDREPLAY_PLANNER_LOCAL const Trajectory & from_record(const State & current_state);
