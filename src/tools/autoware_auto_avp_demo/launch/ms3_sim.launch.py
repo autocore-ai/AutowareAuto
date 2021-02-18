@@ -84,6 +84,7 @@ def generate_launch_description():
         package='lgsvl_interface',
         node_executable='lgsvl_interface_exe',
         node_namespace='vehicle',
+        node_name='lgsvl_interface_node',
         output='screen',
         parameters=[
           LaunchConfiguration('lgsvl_interface_param_file'),
@@ -140,7 +141,7 @@ def generate_launch_description():
     mpc = Node(
         package='mpc_controller_nodes',
         node_executable='mpc_controller_node_exe',
-        node_name='mpc_controller',
+        node_name='mpc_controller_node',
         node_namespace='control',
         parameters=[LaunchConfiguration('mpc_param_file')]
     )

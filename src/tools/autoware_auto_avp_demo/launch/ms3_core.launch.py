@@ -79,6 +79,11 @@ def generate_launch_description():
         default_value='True',
         description='Launch RVIZ2 in addition to other nodes'
     )
+    with_obstacles_param = DeclareLaunchArgument(
+        'with_obstacles',
+        default_value='True',
+        description='Enable obstacle detection'
+    )
     scan_downsampler_param = DeclareLaunchArgument(
         'scan_downsampler_param_file',
         default_value=scan_downsampler_param_file,
@@ -121,6 +126,7 @@ def generate_launch_description():
         package='euclidean_cluster_nodes',
         node_executable='euclidean_cluster_node_exe',
         node_namespace='perception',
+        condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
         remappings=[
             ("points_in", "points_nonground")
@@ -137,6 +143,7 @@ def generate_launch_description():
         package='ray_ground_classifier_nodes',
         node_executable='ray_ground_classifier_cloud_node_exe',
         node_namespace='perception',
+        condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         remappings=[("points_in", "/lidars/points_fused")]
     )
@@ -176,11 +183,13 @@ def generate_launch_description():
         package='lanelet2_map_provider',
         node_executable='lanelet2_map_provider_exe',
         node_namespace='had_maps',
+        node_name='lanelet2_map_provider_node',
         parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
     )
     lanelet2_map_visualizer = Node(
         package='lanelet2_map_provider',
         node_executable='lanelet2_map_visualizer_exe',
+        node_name='lanelet2_map_visualizer_node',
         node_namespace='had_maps'
     )
     global_planner = Node(
@@ -212,6 +221,7 @@ def generate_launch_description():
         node_name='object_collision_estimator_node',
         node_namespace='planning',
         node_executable='object_collision_estimator_node_exe',
+        condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('object_collision_estimator_param_file')],
         remappings=[
             ('obstacle_topic', '/perception/lidar_bounding_boxes'),
@@ -222,7 +232,10 @@ def generate_launch_description():
         node_name='behavior_planner_node',
         node_namespace='planning',
         node_executable='behavior_planner_node_exe',
-        parameters=[LaunchConfiguration('behavior_planner_param_file')],
+        parameters=[
+            LaunchConfiguration('behavior_planner_param_file'),
+            {'enable_object_collision_estimator': LaunchConfiguration('with_obstacles')}
+        ],
         output='screen',
         remappings=[
             ('HAD_Map_Service', '/had_maps/HAD_Map_Service'),
@@ -250,6 +263,7 @@ def generate_launch_description():
         ray_ground_classifier_param,
         scan_downsampler_param,
         with_rviz_param,
+        with_obstacles_param,
         recordreplay_planner_param,
         lanelet2_map_provider_param,
         lane_planner_param,
