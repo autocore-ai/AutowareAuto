@@ -27,8 +27,8 @@
         min_steer_angle_rate_rps: -0.6
         max_steer_angle_rate_rps: 0.6
       vehicle:
-        cg_to_front_m: 2.74
-        cg_to_rear_m: 0.1
+        cg_to_front_m: 1.228
+        cg_to_rear_m: 1.5618
         front_corner_stiffness: 17000.0
         rear_corner_stiffness: 20000.0
         mass_kg: 1460.0

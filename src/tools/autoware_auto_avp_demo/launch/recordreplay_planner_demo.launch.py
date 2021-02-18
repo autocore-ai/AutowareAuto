@@ -45,7 +45,7 @@ def generate_launch_description():
     mpc_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/mpc.param.yaml')
     object_collision_estimator_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/object_collision_estimator.param.yaml')
+        avp_demo_pkg_prefix, 'param/object_collision_estimator_rrp.param.yaml')
     recordreplay_planner_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/recordreplay_planner.param.yaml')
 
