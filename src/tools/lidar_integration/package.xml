@@ -5,7 +5,7 @@
     <version>0.0.1</version>
     <description>executables to facilitate integration tests for lidar-related software</description>
     <maintainer email="opensource@apex.ai">Frederik Beaujean</maintainer>
-    <license>Apex.AI License</license>
+    <license>Apache 2.0</license>
 
     <buildtool_depend>ament_cmake_auto</buildtool_depend>
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
