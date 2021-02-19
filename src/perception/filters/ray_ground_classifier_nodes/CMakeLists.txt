@@ -14,7 +14,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(use_OMP TRUE)
+set(use_OMP FALSE)
 if(use_OMP)
   find_package(OpenMP REQUIRED)
   set(OpenMP_LIBS gomp)

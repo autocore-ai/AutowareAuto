@@ -10,7 +10,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-set(use_OMP TRUE)
+set(use_OMP FALSE)
 if(use_OMP)
   find_package(OpenMP REQUIRED)
   set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})
