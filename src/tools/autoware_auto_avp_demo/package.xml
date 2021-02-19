@@ -27,6 +27,7 @@
     <exec_depend>mpc_controller_nodes</exec_depend>
     <exec_depend>ndt_nodes</exec_depend>
     <exec_depend>object_collision_estimator_nodes</exec_depend>
+    <exec_depend>off_map_obstacles_filter_nodes</exec_depend>
     <exec_depend>parking_planner_nodes</exec_depend>
     <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
     <exec_depend>point_cloud_fusion_nodes</exec_depend>
