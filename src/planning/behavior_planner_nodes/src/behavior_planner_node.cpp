@@ -39,13 +39,26 @@ void BehaviorPlannerNode::init()
   using namespace std::chrono_literals;
 
   // Setup planner
+  const auto cg_to_front_m =
+    static_cast<float32_t>(declare_parameter("vehicle.cg_to_front_m").get<float64_t>());
+  const auto cg_to_rear_m =
+    static_cast<float32_t>(declare_parameter("vehicle.cg_to_rear_m").get<float64_t>());
+  const auto front_overhang_m =
+    static_cast<float32_t>(declare_parameter("vehicle.front_overhang_m").get<float64_t>());
+  const auto rear_overhang_m =
+    static_cast<float32_t>(declare_parameter("vehicle.rear_overhang_m").get<float64_t>());
+  const auto cg_to_vehicle_center =
+    ( (cg_to_front_m + front_overhang_m) - (rear_overhang_m + cg_to_rear_m) ) * 0.5F;
+
   const behavior_planner::PlannerConfig config{
     static_cast<float32_t>(declare_parameter("goal_distance_thresh").get<float64_t>()),
     static_cast<float32_t>(declare_parameter("stop_velocity_thresh").get<float64_t>()),
     static_cast<float32_t>(declare_parameter("heading_weight").get<float64_t>()),
     static_cast<float32_t>(declare_parameter("subroute_goal_offset_lane2parking").get<float64_t>()),
-    static_cast<float32_t>(declare_parameter("subroute_goal_offset_parking2lane").get<float64_t>())
+    static_cast<float32_t>(declare_parameter("subroute_goal_offset_parking2lane").get<float64_t>()),
+    cg_to_vehicle_center
   };
+
   m_planner = std::make_unique<behavior_planner::BehaviorPlanner>(config);
 
   // Setup Tf Buffer with listener
