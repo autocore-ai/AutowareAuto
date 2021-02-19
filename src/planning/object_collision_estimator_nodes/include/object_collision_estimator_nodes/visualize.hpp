@@ -42,6 +42,15 @@ MarkerArray toVisualizationMarkerArray(const BoundingBoxArray bboxes, const size
 {
   MarkerArray marker_array{};
 
+  // delete previous markers
+  // TODO(mitsudome-r): remove delete_marker once lifetime is supported by rviz
+  Marker delete_marker{};
+  delete_marker.header = bboxes.header;
+  delete_marker.ns = "bounding_box";
+  delete_marker.action = Marker::DELETEALL;
+  marker_array.markers.push_back(delete_marker);
+
+  // create markers for bounding boxes
   Marker marker{};
   marker.header = bboxes.header;
   marker.ns = "bounding_box";
