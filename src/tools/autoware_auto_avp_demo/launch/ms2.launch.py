@@ -52,10 +52,8 @@ def generate_launch_description():
     recordreplay_planner_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/recordreplay_planner.param.yaml')
 
-    pc_filter_transform_pkg_prefix = get_package_share_directory(
-        'point_cloud_filter_transform_nodes')
     pc_filter_transform_param_file = os.path.join(
-        pc_filter_transform_pkg_prefix, 'param/vlp16_sim_lexus_filter_transform.param.yaml')
+        avp_demo_pkg_prefix, 'param/pc_filter_transform.param.yaml')
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
