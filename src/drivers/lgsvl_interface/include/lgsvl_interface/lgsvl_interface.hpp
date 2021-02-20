@@ -39,7 +39,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_interface/platform_interface.hpp>
 
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+
 #include <chrono>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -92,6 +96,7 @@ public:
     const std::string & sim_nav_odom_topic,
     const std::string & sim_veh_odom_topic,
     const std::string & kinematic_state_topic,
+    const std::string & sim_odom_child_frame,
     Table1D && throttle_table,
     Table1D && brake_table,
     Table1D && steer_table,
@@ -135,10 +140,18 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_nav_odom_sub{};
   rclcpp::Subscription<lgsvl_msgs::msg::CanBusData>::SharedPtr m_state_sub{};
   rclcpp::Subscription<lgsvl_msgs::msg::VehicleOdometry>::SharedPtr m_veh_odom_sub{};
+  rclcpp::TimerBase::SharedPtr m_nav_base_tf_timer{};
 
   Table1D m_throttle_table;
   Table1D m_brake_table;
   Table1D m_steer_table;
+
+  // transforms
+  std::shared_ptr<tf2_ros::Buffer> m_tf_buffer;
+  std::shared_ptr<tf2_ros::TransformListener> m_tf_listener;
+
+  bool m_nav_base_tf_set{false};
+  autoware_auto_msgs::msg::VehicleKinematicState m_nav_base_in_child_frame{};
 
   bool m_odom_set{false};  // TODO(c.ho) this should be optional<Vector3>
   geometry_msgs::msg::Vector3 m_odom_zero{};

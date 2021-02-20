@@ -18,7 +18,10 @@
 #include <gtest/gtest.h>
 #include <lgsvl_interface/visibility_control.hpp>
 #include <lgsvl_interface/lgsvl_interface.hpp>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <memory>
+#include <chrono>
+
 
 using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
 using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
@@ -30,6 +33,7 @@ const auto sim_state_rpt_topic = "test_lgsvl/state_report";
 const auto sim_nav_odom_topic = "test_lgsvl/gnss_odom";
 const auto sim_veh_odom_topic = "test_lgsvl/vehicle_odom";
 const auto kinematic_state_topic = "test_vehicle_kinematic_state";
+const auto sim_odom_child_frame = "base_link";
 
 class LgsvlInterface_test : public ::testing::Test
 {
@@ -37,6 +41,7 @@ protected:
   void SetUp() override
   {
     rclcpp::init(0, nullptr);
+
     node_ = std::make_shared<rclcpp::Node>("lgsvl_interface_test_node", "/gtest");
     lgsvl_interface_ = std::make_unique<lgsvl_interface::LgsvlInterface>(
       *node_,
@@ -46,9 +51,23 @@ protected:
       sim_nav_odom_topic,
       sim_veh_odom_topic,
       kinematic_state_topic,
+      sim_odom_child_frame,
       Table1D({0.0, 3.0}, {0.0, 100.0}),
       Table1D({-3.0, 0.0}, {100.0, 0.0}),
       Table1D({-0.331, 0.331}, {-100.0, 100.0}));
+
+    broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_);
+
+    using namespace std::chrono_literals; // NOLINT
+    timer_ = node_->create_wall_timer(
+      100ms,
+      [this]() {
+        geometry_msgs::msg::TransformStamped nav_base_tf{};
+        nav_base_tf.header.stamp = node_->now();
+        nav_base_tf.header.frame_id = "base_link";
+        nav_base_tf.child_frame_id = "nav_base";
+        broadcaster_->sendTransform(nav_base_tf);
+      });
   }
 
   void TearDown() override
@@ -58,7 +77,9 @@ protected:
 
 public:
   rclcpp::Node::SharedPtr node_;
+  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> broadcaster_;
   std::unique_ptr<lgsvl_interface::LgsvlInterface> lgsvl_interface_;
+  rclcpp::TimerBase::SharedPtr timer_{};
 };
 
 template<typename T>

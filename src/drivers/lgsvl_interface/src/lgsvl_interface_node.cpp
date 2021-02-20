@@ -42,6 +42,8 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
     declare_parameter("use_nav_odometry_topic", true) ?
     "gnss_odom" : "";
   const auto kinematic_state_topic = "vehicle_kinematic_state";
+  const std::string sim_odom_child_frame =
+    declare_parameter("lgsvl.odom_child_frame", "base_link");
   const auto table = [this](const std::string & prefix_raw) -> Table1D {
       const std::string prefix = "lgsvl." + prefix_raw + ".";
       return Table1D{
@@ -66,6 +68,7 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
       sim_nav_odom_topic,
       sim_veh_odom_topic,
       kinematic_state_topic,
+      sim_odom_child_frame,
       table("throttle"),
       table("brake"),
       table("steer"),
