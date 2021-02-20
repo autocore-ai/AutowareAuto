@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,15 +35,10 @@ using autoware::common::types::bool8_t;
 
 namespace autoware
 {
-namespace motion
-{
 namespace planning
 {
 namespace lanelet2_global_planner
 {
-Lanelet2GlobalPlanner::Lanelet2GlobalPlanner()
-{
-}
 
 void Lanelet2GlobalPlanner::load_osm_map(
   const std::string & file,
@@ -277,19 +272,23 @@ const
 
   // calculate refined point
   TrajectoryPoint refined_point;
-  refined_point = autoware::common::geometry::closest_segment_point_2d(
-    center_p1, center_p2,
-    input_point);
+
+  // Get centerpoint of centerline
+  refined_point.x = (center_p1.x + center_p2.x) / 2.0;
+  refined_point.y = (center_p1.y + center_p2.y) / 2.0;
+
   const auto direction_vector = autoware::common::geometry::minus_2d(center_p2, center_p1);
   const auto angle_center_line = std::atan2(direction_vector.y, direction_vector.x);
   const auto heading_center_line = ::motion::motion_common::from_angle(angle_center_line);
   const auto angle_diff =
     std::abs(::motion::motion_common::to_angle(input_point.heading - heading_center_line));
+
   if (angle_diff < M_PI / 2) {
     refined_point.heading = heading_center_line;
   } else {
     refined_point.heading = ::motion::motion_common::from_angle(angle_center_line + M_PI);
   }
+
   return refined_point;
 }
 
@@ -539,5 +538,4 @@ std::vector<lanelet::Id> Lanelet2GlobalPlanner::lanelet_str2num(const std::strin
 }
 }  // namespace lanelet2_global_planner
 }  // namespace planning
-}  // namespace motion
 }  // namespace autoware

@@ -40,13 +40,11 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 using autoware::common::types::TAU;
-using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
+using autoware::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
 using autoware_auto_msgs::msg::Complex32;
 using std::placeholders::_1;
 
 namespace autoware
-{
-namespace motion
 {
 namespace planning
 {
@@ -62,30 +60,6 @@ autoware_auto_msgs::msg::TrajectoryPoint convertToTrajectoryPoint(
   const auto angle = tf2::getYaw(pose.orientation);
   pt.heading = ::motion::motion_common::from_angle(angle);
   return pt;
-}
-
-Complex32 to_2d_quaternion(float64_t yaw_angle)
-{
-  Complex32 heading;
-  heading.real = static_cast<float32_t>(std::cos(yaw_angle / 2.0));
-  heading.imag = static_cast<float32_t>(std::sin(yaw_angle / 2.0));
-  return heading;
-}
-
-float64_t to_yaw_angle(const Complex32 & quat_2d)
-{
-  // theta = atan2(2qxqw, 1-2(qw)^2)
-  const float64_t sin_y =
-    2.0F * static_cast<float64_t>(quat_2d.real) * static_cast<float64_t>(quat_2d.imag);
-  const float64_t cos_y =
-    1.0F - 2.0F * static_cast<float64_t>(quat_2d.imag) * static_cast<float64_t>(quat_2d.imag);
-  const float64_t rad_quad = std::atan2(sin_y, cos_y);
-
-  if (rad_quad < 0) {
-    return rad_quad + TAU;
-  } else {
-    return rad_quad;
-  }
 }
 
 Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
@@ -198,7 +172,7 @@ void Lanelet2GlobalPlannerNode::current_pose_cb(
   start_pose.pose.position.x = msg->state.x;
   start_pose.pose.position.y = msg->state.y;
   start_pose.pose.position.z = 0.0;
-  const auto yaw = to_yaw_angle(msg->state.heading);
+  const auto yaw = motion::motion_common::to_angle(msg->state.heading);
   tf2::Quaternion tf2_quat;
   tf2_quat.setRPY(0.0, 0.0, yaw);
   start_pose.pose.orientation = tf2::toMsg(tf2_quat);
@@ -282,8 +256,7 @@ bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
 
 }  // namespace lanelet2_global_planner
 }  // namespace planning
-}  // namespace motion
 }  // namespace autoware
 
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  autoware::motion::planning::lanelet2_global_planner_nodes::Lanelet2GlobalPlannerNode)
+  autoware::planning::lanelet2_global_planner_nodes::Lanelet2GlobalPlannerNode)

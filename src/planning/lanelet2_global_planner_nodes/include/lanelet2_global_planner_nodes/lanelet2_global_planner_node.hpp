@@ -47,11 +47,9 @@
 using namespace std::chrono_literals;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
-using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
+using autoware::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
 
 namespace autoware
-{
-namespace motion
 {
 namespace planning
 {
@@ -88,7 +86,6 @@ private:
 };
 }  // namespace lanelet2_global_planner_nodes
 }  // namespace planning
-}  // namespace motion
 }  // namespace autoware
 
 #endif  // LANELET2_GLOBAL_PLANNER_NODES__LANELET2_GLOBAL_PLANNER_NODE_HPP_

@@ -35,7 +35,7 @@ namespace fs = ghc::filesystem;
 
 using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
-using autoware::motion::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
+using autoware::planning::lanelet2_global_planner::Lanelet2GlobalPlanner;
 
 class TestGlobalPlannerBasicMap : public ::testing::Test
 {

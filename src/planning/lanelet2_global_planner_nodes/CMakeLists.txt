@@ -25,7 +25,7 @@ target_include_directories(${GB_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DI
 
 set(GB_PLANNER_NODE_EXE ${GB_PLANNER_NODE_LIB}_exe)
 rclcpp_components_register_node(${GB_PLANNER_NODE_LIB}
-  PLUGIN "autoware::motion::planning::lanelet2_global_planner_nodes::Lanelet2GlobalPlannerNode"
+  PLUGIN "autoware::planning::lanelet2_global_planner_nodes::Lanelet2GlobalPlannerNode"
   EXECUTABLE ${GB_PLANNER_NODE_EXE}
 )
 
