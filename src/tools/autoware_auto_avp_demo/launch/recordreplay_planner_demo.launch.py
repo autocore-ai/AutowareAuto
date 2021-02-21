@@ -96,7 +96,7 @@ def generate_launch_description():
     )
     with_obstacle_detection_param = DeclareLaunchArgument(
         'with_obstacle_detection',
-        default_value='True',
+        default_value='False',
         description='Use obstacle detection to stop for obstacles'
     )
     ndt_localizer_param = DeclareLaunchArgument(
