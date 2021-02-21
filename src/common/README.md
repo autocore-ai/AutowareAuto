@@ -8,6 +8,7 @@ across the Autoware.Auto system.
 
 # Subpages
 
+- @subpage autoware-auto-tf2-design
 - @subpage autoware-rviz-plugins
 - @subpage covariance-insertion-nodes-design
 - @subpage geometry-interval
