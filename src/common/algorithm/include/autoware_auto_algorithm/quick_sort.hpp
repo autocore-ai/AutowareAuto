@@ -38,6 +38,7 @@ public:
   QuickSorter(QuickSorter const &) = delete;
   QuickSorter & operator=(QuickSorter const &) = delete;
   QuickSorter(QuickSorter &&) = default;
+  /// \brief Move equals operator
   QuickSorter & operator=(QuickSorter &&) = default;
 
   /// \brief Default constructor, do not reserve capacity for stack
@@ -129,6 +130,7 @@ private:
   /// all bigger elements right of it.
   /// \param[in] first Start of the range to partition
   /// \param[in] last End (included) of the range to partition, used as pivot
+  /// \param[in] comp Element comparison function
   /// \return Iterator to the pivot element in the range
   template<typename Compare>
   static RandomIt partition(RandomIt first, RandomIt last, Compare comp)

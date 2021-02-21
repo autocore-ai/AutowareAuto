@@ -58,7 +58,6 @@ public:
 
   /// \param map_from_base_link The transform that transforms things from base_link to map.
   /// \param msg The bounding boxes array to filter – will be modified.
-  /// \return True if the bbox overlaps any map element.
   /// This function assumes that bboxes are 2.5d, i.e. only have yaw but no roll or pitch.
   void remove_off_map_bboxes(
     const geometry_msgs::msg::TransformStamped & map_from_base_link,

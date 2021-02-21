@@ -123,7 +123,7 @@ public:
   }
 
 private:
-  Eigen::Matrix<float32_t, NumStates, 1U> m_state;
+  Eigen::Matrix<float32_t, NumStates, 1U> m_state;  ///< Internal state space storage
 };  // class MotionModel
 }  // namespace motion_model
 }  // namespace motion

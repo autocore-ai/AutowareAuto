@@ -166,7 +166,6 @@ private:
   /// \param[in] r_m the radius in meters
   /// \param[in] th_ind the index of the azimuth in lookup tables (angle about the z-axis)
   /// \param[in] phi_ind the altitude angle index from lookup tables(angle orthogonal to z-axis)
-  /// \return none
   inline void polar_to_xyz(
     autoware::common::types::PointXYZIF & pt,
     const float32_t r_m,

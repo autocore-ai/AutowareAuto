@@ -18,6 +18,7 @@ src/external/
 lcov/
 .cov/
 html/
+xml/
 latex/
 .coverage*
 .msg.md

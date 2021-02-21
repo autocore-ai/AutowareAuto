@@ -30,6 +30,7 @@ namespace autoware
 {
 namespace covariance_insertion
 {
+/// @brief Class for performing covariance insertion
 class COVARIANCE_INSERTION_PUBLIC CovarianceInsertion
 {
 public:
@@ -60,6 +61,7 @@ public:
     const std::vector<common::types::float64_t> & covariance);
 
 private:
+  /// Map of covariance values
   std::map<std::string, std::vector<common::types::float64_t>> m_covariances;
 };
 }  // namespace covariance_insertion
