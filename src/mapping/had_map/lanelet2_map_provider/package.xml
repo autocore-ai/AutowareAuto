@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>lanelet2_map_provider</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>Load and distribute lanelet2 map contents to other nodes to aid autonomous driving function</description>
   <maintainer email="simon.thompson@tier4.jp">Simon Thompson</maintainer>
   <license>Apache 2.0</license>

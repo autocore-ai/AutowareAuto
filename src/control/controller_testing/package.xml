@@ -3,7 +3,7 @@
 
 <package format="3">
   <name>controller_testing</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>Allows for closed-loop testing of motion models.</description>
   <maintainer email="josh.whitley@autoware.org">Josh Whitley</maintainer>
   <license>Apache License 2.0</license>

@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>parking_planner</name>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <description>Parking planner for maneuvering into and out of parking stalls</description>
     <maintainer email="opensource@embotech.com">Embotech AG, Zurich, Switzerland</maintainer>
     <license>Apache License 2.0</license>

@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
     <name>xsens_driver</name>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <description>(Mostly) static memory implementation of a xsens driver in one process</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>

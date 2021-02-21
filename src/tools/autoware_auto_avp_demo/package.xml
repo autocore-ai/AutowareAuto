@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>autoware_auto_avp_demo</name>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <description>A package containing launch and configuration files for the Autoware AVP 2020 demo.</description>
     <maintainer email="josh.whitley@autoware.org">Joshua Whitley</maintainer>
     <license>Apache 2.0</license>

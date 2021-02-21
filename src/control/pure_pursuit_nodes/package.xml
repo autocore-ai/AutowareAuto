@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
     <name>pure_pursuit_nodes</name>
-    <version>0.0.2</version>
+    <version>1.0.0</version>
     <description>ROS2 node wrappers around pure pursuit</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>

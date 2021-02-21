@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>ray_ground_classifier_nodes</name>
-    <version>0.0.2</version>
+    <version>1.0.0</version>
     <description>Boilerplate ROS 2 node wrappers around ray_ground_classifier</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache License 2.0</license>

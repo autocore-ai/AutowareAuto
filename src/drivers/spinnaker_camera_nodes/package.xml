@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
     <name>spinnaker_camera_nodes</name>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <description>A node for the Spinnaker camera SDK wrapper.</description>
     <maintainer email="opensource@apex.ai">Igor Bogoslavskyi</maintainer>
     <license>Apache Licence 2.0</license>
