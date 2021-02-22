@@ -34,15 +34,15 @@
         mass_kg: 1460.0
         yaw_inertia_kgm2: 2170.0
         width_m: 2.0
-        front_overhang_m: 0.5
-        rear_overhang_m: 0.5
+        front_overhang_m: 1.0
+        rear_overhang_m: 1.03
       behavior:
         stop_rate_mps2: 3.0
         time_step_ms: 100
         is_temporal_reference: true
       weights:
         nominal:
-          pose: 10.0
+          pose: 1000.0
           heading: 10.0
           longitudinal_velocity: 10.0
           lateral_velocity: 10.0
