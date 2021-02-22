@@ -14,7 +14,6 @@ stages:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - apk add --update-cache git
     - mv ros-deps tools/ade_image
-    - cp autoware.auto.dashing.repos tools/ade_image
     - cp autoware.auto.foxy.repos tools/ade_image
     - cd tools/ade_image
     - export ADE_SHA=$(find . -type f | sort | xargs sha256sum | sha256sum | rev | cut -c 4- | rev)
@@ -204,37 +203,9 @@ stages:
     - docker container rm -f $(docker container ls --filter "status=exited" -q)
     - docker image rm $(docker image ls -q)
 
-gen_ros_deps_dashing:
-  image: ros:dashing
-  <<: *gen_deps_base
-
 gen_ros_deps_foxy:
   image: ros:foxy
   <<: *gen_deps_base
-
-ade_amd64_dashing:
-  variables:
-    ARCH: amd64
-    DOCKER_DRIVER: overlay2
-    ROS_DISTRO: dashing
-    UBUNTU_DISTRO: bionic
-  <<: *ade_base
-  needs:
-    - gen_ros_deps_dashing
-
-ade_arm64_dashing:
-  variables:
-    ARCH: arm64
-    DOCKER_DRIVER: overlay2
-    ROS_DISTRO: dashing
-    UBUNTU_DISTRO: bionic
-  tags:
-    - arm64
-  <<: *ade_base
-  needs:
-    - gen_ros_deps_dashing
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
 
 ade_amd64_foxy:
   variables:
@@ -260,28 +231,6 @@ ade_arm64_foxy:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
-build_barebones_amd64_dashing:
-  image: ubuntu:bionic
-  variables:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-    ROS_DISTRO: dashing
-  <<: *build_barebones_base
-  needs:
-    - gen_ros_deps_dashing
-
-build_barebones_arm64_dashing:
-  image: ubuntu:bionic
-  tags:
-    - arm64
-  variables:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-    ROS_DISTRO: dashing
-  <<: *build_barebones_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - gen_ros_deps_dashing
-
 build_barebones_amd64_foxy:
   image: ubuntu:focal
   variables:
@@ -304,28 +253,6 @@ build_barebones_arm64_foxy:
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
 
-build_amd64_dashing:
-  variables:
-    ARCH: amd64
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-  <<: *build_base
-  needs:
-    - ade_amd64_dashing
-
-build_arm64_dashing:
-  variables:
-    ARCH: arm64
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-  tags:
-    - arm64
-  <<: *build_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - ade_arm64_dashing
-
 build_amd64_foxy:
   variables:
     ARCH: amd64
@@ -347,28 +274,6 @@ build_arm64_foxy:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - job: ade_arm64_foxy
-
-test_amd64_dashing:
-  variables:
-    ARCH: amd64
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-  <<: *test_base
-  needs:
-    - build_amd64_dashing
-
-test_arm64_dashing:
-  variables:
-    ARCH: arm64
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-  tags:
-    - arm64
-  <<: *test_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - build_arm64_dashing
 
 test_amd64_foxy:
   variables:
@@ -443,40 +348,6 @@ pages:
   needs:
     - coverage
     - docs
-
-volume_amd64_dashing:
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  variables:
-    ARCH: amd64
-    DOCKER_DRIVER: overlay2
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-    UBUNTU_DISTRO: bionic
-  <<: *volume_base
-  needs:
-    - test_amd64_dashing
-
-volume_arm64_dashing:
-  stage: deploy
-  image: docker
-  services:
-    - docker:dind
-  tags:
-    - arm64
-  variables:
-    ARCH: arm64
-    DOCKER_DRIVER: overlay2
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DISTRO: dashing
-    UBUNTU_DISTRO: bionic
-  <<: *volume_base
-  only:
-    - branches@autowarefoundation/autoware.auto/AutowareAuto
-  needs:
-    - test_arm64_dashing
 
 volume_amd64_foxy:
   stage: deploy
