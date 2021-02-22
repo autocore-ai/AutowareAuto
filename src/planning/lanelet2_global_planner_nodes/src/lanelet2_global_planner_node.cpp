@@ -24,6 +24,7 @@
 #include <motion_common/motion_common.hpp>
 
 #include <autoware_auto_msgs/msg/complex32.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
 #include <lanelet2_global_planner_nodes/lanelet2_global_planner_node.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <common/types.hpp>
@@ -172,10 +173,9 @@ void Lanelet2GlobalPlannerNode::current_pose_cb(
   start_pose.pose.position.x = msg->state.x;
   start_pose.pose.position.y = msg->state.y;
   start_pose.pose.position.z = 0.0;
-  const auto yaw = motion::motion_common::to_angle(msg->state.heading);
-  tf2::Quaternion tf2_quat;
-  tf2_quat.setRPY(0.0, 0.0, yaw);
-  start_pose.pose.orientation = tf2::toMsg(tf2_quat);
+  start_pose.pose.orientation =
+      motion::motion_common::to_quat<geometry_msgs::msg::Quaternion>(
+          msg->state.heading);
   start_pose.header = msg->header;
 
   // transform to "map" frame if needed
