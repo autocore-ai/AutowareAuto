@@ -9,6 +9,7 @@ environment. It comes with a pre-built version of Autoware.Auto, so that you wil
 if you do not want to.
 
 - @subpage installation-ade
+- @subpage installation-ade-arm64
 
 Autoware.Auto can also be built without the use of [ADE](https://ade-cli.readthedocs.io/en/latest/)
 for cases where a more granular control of the installation environment is needed.
