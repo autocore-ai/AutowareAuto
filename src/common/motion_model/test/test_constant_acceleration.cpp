@@ -1,4 +1,4 @@
-// Copyright 2018 the Autoware Foundation
+// Copyright 2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef TEST_CONSTANT_ACCELERATION_HPP_
-#define TEST_CONSTANT_ACCELERATION_HPP_
-
 #include <common/types.hpp>
 #include <motion_model/constant_acceleration.hpp>
+
+#include <gtest/gtest.h>
 
 using autoware::common::types::float32_t;
 
@@ -165,4 +164,3 @@ TEST(constant_acceleration, basic)
   ASSERT_FLOAT_EQ(model[ACCELERATION_X], ax);
   ASSERT_FLOAT_EQ(model[ACCELERATION_Y], ay);
 }
-#endif  // TEST_CONSTANT_ACCELERATION_HPP_

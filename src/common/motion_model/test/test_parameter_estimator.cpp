@@ -1,4 +1,4 @@
-// Copyright 2018 the Autoware Foundation
+// Copyright 2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef TEST_PARAMETER_ESTIMATOR_HPP_
-#define TEST_PARAMETER_ESTIMATOR_HPP_
-
 #include <common/types.hpp>
 #include <motion_model/parameter_estimator.hpp>
+
+#include <gtest/gtest.h>
 
 using Eigen::Matrix;
 using autoware::motion::motion_model::ParameterEstimator;
@@ -56,4 +55,3 @@ TEST(motion_model, parameter_estimator)
   ASSERT_FLOAT_EQ(model[0], 1.0F);
   ASSERT_FLOAT_EQ(model[1], 2.0F);
 }
-#endif  // TEST_PARAMETER_ESTIMATOR_HPP_

@@ -42,7 +42,12 @@ if(BUILD_TESTING)
 
   # gtest
   set(MOTION_MODEL_GTEST motion_model_gtest)
-  ament_add_gtest(${MOTION_MODEL_GTEST} test/src/test_motion_models.cpp)
+  ament_add_gtest(${MOTION_MODEL_GTEST}
+    test/test_catr.cpp
+    test/test_constant_acceleration.cpp
+    test/test_constant_velocity.cpp
+    test/test_parameter_estimator.cpp
+  )
   target_include_directories(${MOTION_MODEL_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${MOTION_MODEL_GTEST} ${PROJECT_NAME})
   ament_target_dependencies(${MOTION_MODEL_GTEST})

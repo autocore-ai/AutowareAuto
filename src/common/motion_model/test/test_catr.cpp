@@ -1,4 +1,4 @@
-// Copyright 2018 the Autoware Foundation
+// Copyright 2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef TEST_CATR_HPP_
-#define TEST_CATR_HPP_
-
 #include <common/types.hpp>
-#include "motion_model/catr_model.hpp"
+#include <motion_model/catr_model.hpp>
+
+#include <gtest/gtest.h>
 
 using autoware::motion::motion_model::CatrModel;
 using autoware::motion::motion_model::CatrState;
@@ -399,4 +398,3 @@ TEST(catr_model, catr_jacobian)
     // std::cerr << "\n";
   }
 }
-#endif  // TEST_CATR_HPP_
