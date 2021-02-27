@@ -1,4 +1,8 @@
 repositories:
+  src/external/acado_vendor:
+    type: git
+    url: https://gitlab.com/autowarefoundation/autoware.auto/acado_vendor.git
+    version: 1.0.0
   src/external/autoware_auto_msgs:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git

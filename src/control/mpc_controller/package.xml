@@ -16,7 +16,7 @@
   <depend>controller_common</depend>
   <depend>motion_common</depend>
 
-  <build_depend>ament_acado</build_depend>
+  <build_depend>acado_vendor</build_depend>
   <build_depend>motion_testing</build_depend>
   <build_depend>time_utils</build_depend>
 
