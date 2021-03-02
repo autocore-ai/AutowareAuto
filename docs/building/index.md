@@ -65,6 +65,33 @@ To add a compiler flag to all packages, e.g. for enabling the undefined behavior
 colcon build --cmake-args -DCMAKE_CXX_FLAGS="-fsanitize=undefined"
 ```
 
+#### Compilation Optimization And Debugging Parameters {#building-compilation-optimization-flags}
+
+While building Autoware.Auto, here are some common options for compilation build types:
+- Release (Optimized and fast)
+- Debug (With debug flags but slow because not all compilation optimizations are applied)
+- RelWithDebInfo (Fast and allows debugging to a fair-enough degree)
+
+```{bash}
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+```
+These flags are then passed into [autoware_set_compile_options](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/tools/autoware_auto_cmake/cmake/autoware_auto_cmake.cmake#L51)
+function for the nodes that use it in their respective `CMakeLists.txt` files.
+
+If there is no `CMAKE_BUILD_TYPE` given, and `autoware_set_compile_options` is used, then the code is 
+built optimized and without debug flags.
+
+#### Compilation Database Generation {#building-compilation-database}
+
+In order to let IDEs analyze the build dependencies and symbol relationships, [a compilation database](https://colcon.readthedocs.io/en/released/user/how-to.html#cmake-packages-generating-compile-commands-json)
+can be generated with the following flag:
+
+```{bash}
+colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
+
 ### Cleaning the build output
 `colcon` isn't very good at being stateless, so when you build, make changes, and build again, you can sometimes end up with a different result than when you build from scratch. To make sure you're getting a fresh build of a package, just do
 
