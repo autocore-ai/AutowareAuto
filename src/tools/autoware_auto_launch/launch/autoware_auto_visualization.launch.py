@@ -34,6 +34,8 @@ def generate_launch_description():
     avp_web_interface_pkg_prefix = get_package_share_directory(
         'avp_web_interface')
     web_files_root = os.path.join(avp_web_interface_pkg_prefix, 'web')
+    rviz_cfg_path = os.path.join(get_package_share_directory('autoware_auto_launch'),
+                                 'config', 'avp.rviz')
 
     # Arguments
     with_rviz_param = DeclareLaunchArgument(
@@ -43,7 +45,7 @@ def generate_launch_description():
     )
     rviz_cfg_path_param = DeclareLaunchArgument(
         'rviz_cfg_path_param',
-        default_value='',
+        default_value=rviz_cfg_path,
         description='Launch RVIZ2 with the specified config file'
     )
 
@@ -52,7 +54,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', str(rviz_cfg_path_param)],
+        arguments=['-d', LaunchConfiguration("rviz_cfg_path_param")],
         condition=IfCondition(LaunchConfiguration('with_rviz')),
         remappings=[("initialpose", "/localization/initialpose"),
                     ("goal_pose", "/planning/goal_pose")],

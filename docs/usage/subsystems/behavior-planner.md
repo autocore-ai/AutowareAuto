@@ -16,8 +16,13 @@ In `Traffic` tab, untick all selection.
 The `Weather` tab is irrelevant
 
 *terminal 1*
-```
+
+```console
 # start sim according to instructions above but don't drive away yet to make sure we can localize ourselves
+# then start RViz2 for visualization
+> ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 ```
 
 *terminal 2*

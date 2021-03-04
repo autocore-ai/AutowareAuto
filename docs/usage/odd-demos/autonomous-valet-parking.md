@@ -44,7 +44,7 @@ These instructions were tested successfully on a number of machines, these are t
 * Intel(R) Core(TM) i9-9900KF CPU @ 3.60GHz (16 virtual cores) with 64GB RAM
 * NVIDIA GeForce RTX 2080 with 8 GB memory
 
-@warning If the machine is overloaded by running both the simulation and the autonomous-driving stack, expect a performance degradation; see @ref avpdemo-simulation-troubleshooting-resources
+@warning If the machine is overloaded by running both the simulation and the autonomous-driving stack, expect a performance degradation. See @ref avpdemo-simulation-troubleshooting-resources. It is recommended to run the Simulator and RViz2 one one machine and the autoware stack on a second machine.
 
 ## Setup and launching {#avpdemo-simulation-launch}
 
@@ -56,7 +56,12 @@ Running and controlling the simulation requires two separate terminals.
 -# Next open **terminal 1** in ADE and follow the instructions on the @ref lgsvl page to install, configure, and run the simulator:
 
         $ ade enter
-        ade$ /opt/lgsvl/simulator
+        ade$ /opt/lgsvl/simulator &
+
+-# Also in **terminal 1**, launch visualization:
+
+        ade$ source /opt/AutowareAuto/setup.bash
+        ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 
 @warning If starting the simulation immediately by pressing the play button in the LGSVL web GUI,
 the Autoware.Auto stack will emit warnings and error messages upon launch until localization is
@@ -65,7 +70,7 @@ the Play button!
 
 ### Launching
 
--# Open a new **terminal 2**, run the launch file for Milestone 3 as follows to use the pre-compiled packages from `/opt/AutowareAuto`:
+-# Open a new **terminal 2**, either in the same ADE instance or in a new ADE instance on an second machine, run the launch file for Milestone 3 as follows to use the pre-compiled packages from `/opt/AutowareAuto`:
 
         $ ade enter
         ade$ source /opt/AutowareAuto/setup.bash
@@ -81,7 +86,7 @@ the Play button!
 
     To interrupt the launched processes, hit `Ctrl c`. Turning the simulation off while building can save compute resources to accelerate the build.
 
-When following the steps above, one RViz window should pop up showing what the Autoware.Auto stack
+When following the steps above, the RViz window should show what the Autoware.Auto stack
 sees. The system is initially not localized, and the car is tentatively placed at the origin of the
 map frame. **Terminal 2** displays output related to starting the stack similar to:
 
@@ -195,6 +200,8 @@ There are various manifestations pointing to this of lack resources:
 
 **Solution**: Either run the simulation and the Autoware.Auto stack on separate machines (recommended), or run both on a more powerful computer with a better GPU.
 
+When running Autoware on two separate machines, make sure the two machines are in the same subnet and UDP multicast is not blocked by firewall or router.
+
 ### Localization
 
 After starting the simulation and the stack, the console is full of errors like this:
@@ -245,11 +252,15 @@ Whether using your own maps or the existing ones:
 1. @ref installation-and-development-install-ade
 2. In a new terminal, run the launch file for Milestone 3:
 
-```console
-$ ade enter
-ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
-```
+        $ ade enter
+        ade$ source /opt/AutowareAuto/setup.bash
+        ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
+
+3. In another terminal, Launch RViz2 for visualization.
+
+        $ ade enter
+        ade$ source /opt/AutowareAuto/setup.bash
+        ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 
 # System architecture for the AVP ODD
 

@@ -19,7 +19,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import ExecuteProcess
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -39,7 +38,6 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/euclidean_cluster.param.yaml')
     ray_ground_classifier_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
-    rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms3.rviz')
     scan_downsampler_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/scan_downsampler_ms3.param.yaml')
     lanelet2_map_provider_param_file = os.path.join(
@@ -58,10 +56,6 @@ def generate_launch_description():
     point_cloud_fusion_node_pkg_prefix = get_package_share_directory(
         'point_cloud_fusion_nodes')
 
-    avp_web_interface_pkg_prefix = get_package_share_directory(
-        'avp_web_interface')
-    web_files_root = os.path.join(avp_web_interface_pkg_prefix, 'web')
-
     # Arguments
 
     euclidean_cluster_param = DeclareLaunchArgument(
@@ -73,11 +67,6 @@ def generate_launch_description():
         'ray_ground_classifier_param_file',
         default_value=ray_ground_classifier_param_file,
         description='Path to config file for Ray Ground Classifier'
-    )
-    with_rviz_param = DeclareLaunchArgument(
-        'with_rviz',
-        default_value='True',
-        description='Launch RVIZ2 in addition to other nodes'
     )
     with_obstacles_param = DeclareLaunchArgument(
         'with_obstacles',
@@ -146,15 +135,6 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         remappings=[("points_in", "/lidars/points_fused")]
-    )
-    rviz2 = Node(
-        package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
-        arguments=['-d', str(rviz_cfg_path)],
-        condition=IfCondition(LaunchConfiguration('with_rviz')),
-        remappings=[("initialpose", "/localization/initialpose"),
-                    ("goal_pose", "/planning/goal_pose")],
     )
     scan_downsampler = Node(
         package='voxel_grid_nodes',
@@ -247,23 +227,10 @@ def generate_launch_description():
         ]
     )
 
-    web_bridge = Node(
-        package='rosbridge_server',
-        node_name='rosbridge_server_node',
-        node_namespace='gui',
-        node_executable='rosbridge_websocket'
-    )
-
-    web_server = ExecuteProcess(
-      cmd=["python3", "-m", "http.server", "8000"],
-      cwd=web_files_root
-    )
-
     return LaunchDescription([
         euclidean_cluster_param,
         ray_ground_classifier_param,
         scan_downsampler_param,
-        with_rviz_param,
         with_obstacles_param,
         lanelet2_map_provider_param,
         lane_planner_param,
@@ -283,7 +250,4 @@ def generate_launch_description():
         object_collision_estimator,
         behavior_planner,
         off_map_obstacles_filter,
-        rviz2,
-        web_server,
-        web_bridge,
     ])

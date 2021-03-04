@@ -130,9 +130,9 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             "rviz_cfg_path",
             default_value=os.path.join(
-                                autoware_auto_avp_demo_pkg_path,
+                                get_package_share_directory('autoware_auto_launch'),
                                 'config',
-                                'ms3.rviz'
+                                'avp.rviz'
                             )
         ),
 

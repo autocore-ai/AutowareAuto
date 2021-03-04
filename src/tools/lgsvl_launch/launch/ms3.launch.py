@@ -43,7 +43,8 @@ def generate_launch_description():
 #        avp_demo_pkg_prefix, 'param/odom_state_estimator.param.yaml')
     ray_ground_classifier_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/ray_ground_classifier.param.yaml')
-    rviz_cfg_path = os.path.join(avp_demo_pkg_prefix, 'config/ms3.rviz')
+    rviz_cfg_path = os.path.join(get_package_share_directory('autoware_auto_launch'),
+                                 'config/avp.rviz')
     scan_downsampler_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/scan_downsampler_ms3.param.yaml')
     ndt_localizer_param_file = os.path.join(
