@@ -1,0 +1,36 @@
+/**:
+  ros__parameters:
+    vehicle:
+      cg_to_front_m: 1.228
+      cg_to_rear_m: 1.5618
+      front_corner_stiffness: 0.1
+      rear_corner_stiffness: 0.1
+      mass_kg: 1500.0
+      yaw_inertia_kgm2: 12.0
+      width_m: 1.6
+      front_overhang_m: 0.5
+      rear_overhang_m: 0.5
+    optimization_weights:
+      steering: 1.0
+      throttle: 1.0
+      goal: 0.5
+    state_bounds:
+      lower:
+        x_m: -300.0
+        y_m: -300.0
+        velocity_mps: -3.0
+        heading_rad: -6.2832
+        steering_rad: -0.67
+      upper:
+        x_m: 300.0
+        y_m: 300.0
+        velocity_mps: 3.0
+        heading_rad: 6.2832
+        steering_rad: 0.67
+    command_bounds:
+      lower:
+        steering_rate_rps: -5.0
+        throttle_mps2: -5.0
+      upper:
+        steering_rate_rps: 5.0
+        throttle_mps2: 5.0

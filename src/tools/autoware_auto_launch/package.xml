@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_auto_launch</name>
+  <version>1.0.0</version>
+  <description>AutowareAuto launch files</description>
+  <maintainer email="jilada.eccleston@tier4.jp">Jilada Eccleston</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>avp_web_interface</exec_depend>
+  <exec_depend>behavior_planner_nodes</exec_depend>
+  <exec_depend>euclidean_cluster_nodes</exec_depend>
+  <exec_depend>lane_planner_nodes</exec_depend>
+  <exec_depend>lanelet2_global_planner_nodes</exec_depend>
+  <exec_depend>lanelet2_map_provider</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>lexus_rx_450h_description</exec_depend>
+  <exec_depend>lgsvl_interface</exec_depend>
+  <exec_depend>mpc_controller_nodes</exec_depend>
+  <exec_depend>ndt_nodes</exec_depend>
+  <exec_depend>object_collision_estimator_nodes</exec_depend>
+  <exec_depend>off_map_obstacles_filter_nodes</exec_depend>
+  <exec_depend>parking_planner_nodes</exec_depend>
+  <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
+  <exec_depend>point_cloud_fusion_nodes</exec_depend>
+  <exec_depend>ray_ground_classifier_nodes</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rosbridge_suite</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>ssc_interface</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>velodyne_nodes</exec_depend>
+  <exec_depend>voxel_grid_nodes</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

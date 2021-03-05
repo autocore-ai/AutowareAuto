@@ -1,0 +1,9 @@
+/**:
+  ros__parameters:
+    ip: "10.31.32.93"
+    port: 8302
+    cloud_size:  55000
+    topic: "points_raw"
+    frame_id: "lidar_front"
+    timeout_ms: 10
+    rpm:        600
