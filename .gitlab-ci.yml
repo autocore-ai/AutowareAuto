@@ -242,7 +242,6 @@ ade_arm64_foxy:
     - gen_ros_deps_foxy
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-    - tags@autowarefoundation/autoware.auto/AutowareAuto
 
 build_barebones_amd64_foxy:
   image: ubuntu:focal
@@ -267,7 +266,6 @@ build_barebones_arm64_foxy:
     - gen_ros_deps_foxy
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-    - tags@autowarefoundation/autoware.auto/AutowareAuto
 
 build_amd64_foxy:
   variables:
@@ -288,7 +286,6 @@ build_arm64_foxy:
   <<: *build_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-    - tags@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - job: ade_arm64_foxy
 
@@ -311,7 +308,6 @@ test_arm64_foxy:
   <<: *test_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-    - tags@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - build_arm64_foxy
 
@@ -361,16 +357,14 @@ pages:
   stage: deploy
   image: alpine
   script:
-  - if [ -n "$CI_COMMIT_TAG" ]; then mkdir -p "public/$CI_COMMIT_TAG"; mv docs/_build/html/* "public/$CI_COMMIT_TAG/"; mv coverage "public/$CI_COMMIT_TAG/"; fi
-  - if [ -n "$CI_COMMIT_BRANCH" ]; then mkdir -p "public/$CI_COMMIT_BRANCH"; mv docs/_build/html/* "public/$CI_COMMIT_BRANCH/"; mv coverage "public/$CI_COMMIT_BRANCH/"; fi
+    - mv docs/_build/html public
+    - mv coverage public
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
       - public
-  rules:
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == "release"
-    - if: $CI_COMMIT_BRANCH == "master"
+  only:
+    - master
   needs:
     - coverage
     - docs
@@ -406,6 +400,5 @@ volume_arm64_foxy:
   <<: *volume_base
   only:
     - branches@autowarefoundation/autoware.auto/AutowareAuto
-    - tags@autowarefoundation/autoware.auto/AutowareAuto
   needs:
     - test_arm64_foxy
