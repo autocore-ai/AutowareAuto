@@ -357,14 +357,16 @@ pages:
   stage: deploy
   image: alpine
   script:
-    - mv docs/_build/html public
-    - mv coverage public
+  - if [ -n "$CI_COMMIT_TAG" ]; then mkdir -p "public/$CI_COMMIT_TAG"; mv docs/_build/html "public/$CI_COMMIT_TAG/"; mv coverage "public/$CI_COMMIT_TAG/"; fi
+  - if [ -n "$CI_COMMIT_BRANCH" ]; then mkdir -p "public/$CI_COMMIT_BRANCH"; mv docs/_build/html "public/$CI_COMMIT_BRANCH/"; mv coverage "public/$CI_COMMIT_BRANCH/"; fi
   artifacts:
     name: "$CI_JOB_NAME"
     paths:
       - public
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "master"
   needs:
     - coverage
     - docs
