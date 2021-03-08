@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #ifndef STATE_ESTIMATION_NODES__MEASUREMENT_HPP_
@@ -20,10 +20,10 @@
 
 #include <common/types.hpp>
 #include <state_estimation_nodes/visibility_control.hpp>
-#include <state_estimation_nodes/time.hpp>
 
 #include <Eigen/Core>
 
+#include <chrono>
 #include <cstdint>
 #include <tuple>
 
@@ -66,7 +66,7 @@ public:
   /// @param[in]  variances         The variances of the measured values.
   ///
   explicit Measurement(
-    const MeasurementBasedTime & acquisition_time,
+    const std::chrono::system_clock::time_point & acquisition_time,
     const MeasurementVector & values, const VarianceVector & variances = {})
   : m_acquisition_time{acquisition_time}, m_measurement_values{values}, m_variances{variances} {}
 
@@ -86,7 +86,7 @@ public:
   ///
   /// @return     The acquisition time of the measurement.
   ///
-  inline const MeasurementBasedTime & get_acquisition_time() const noexcept
+  inline const std::chrono::system_clock::time_point & get_acquisition_time() const noexcept
   {
     return m_acquisition_time;
   }
@@ -146,7 +146,7 @@ private:
   static constexpr MeasurementModalityArray kMeasurementModalitiesArray {
     kMeasurementModalities ...};
   /// Time of the acquisition.
-  MeasurementBasedTime m_acquisition_time;
+  std::chrono::system_clock::time_point m_acquisition_time;
   /// Stores values for the current measurement.
   MeasurementVector m_measurement_values{};
   /// Stores variances of the current measurement.

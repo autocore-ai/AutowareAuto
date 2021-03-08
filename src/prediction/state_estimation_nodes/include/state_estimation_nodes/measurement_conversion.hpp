@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #ifndef STATE_ESTIMATION_NODES__MEASUREMENT_CONVERSION_HPP_
 #define STATE_ESTIMATION_NODES__MEASUREMENT_CONVERSION_HPP_
 
-#include <state_estimation_nodes/measurement.hpp>
-#include <motion_model/constant_acceleration.hpp>
-#include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <motion_model/constant_acceleration.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/time.hpp>
+#include <state_estimation_nodes/measurement.hpp>
+
 #include <Eigen/Geometry>
 
 namespace autoware

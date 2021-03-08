@@ -47,10 +47,9 @@ namespace kalman_filter
 template<int32_t NumStates, int32_t ProcessNoiseDim>
 class Esrcf
 {
+public:
   using state_vec_t = typename SrcfCore<NumStates, ProcessNoiseDim>::state_vec_t;
   using square_mat_t = typename SrcfCore<NumStates, ProcessNoiseDim>::square_mat_t;
-
-public:
   /// \brief constructor
   /// \param[inout] model motion model used for state propagation and jacobian calculation
   /// \param[in] GQ_chol_prod reference to cholesky factor of process noise covariance
@@ -100,6 +99,12 @@ public:
   const square_mat_t & get_covariance() const
   {
     return m_is_mat1_covariance ? m_square_mat1 : m_square_mat2;
+  }
+
+  /// \brief Get state as a passthrough to the motion model.
+  const state_vec_t & get_state() const
+  {
+    return m_model_ptr->get_state();
   }
 
   /// \brief Do temporal update: update state estimate, compute jacobian, update covariance

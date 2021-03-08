@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 
@@ -22,8 +22,8 @@
 
 #include <common/types.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <kalman_filter/esrcf.hpp>
 #include <motion_model/constant_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -32,17 +32,19 @@
 #include <rclcpp/subscription.hpp>
 #include <state_estimation_nodes/kalman_filter_wrapper.hpp>
 #include <state_estimation_nodes/measurement.hpp>
+#include <state_estimation_nodes/measurement_conversion.hpp>
 #include <state_estimation_nodes/visibility_control.hpp>
 
 #include <tf2/buffer_core.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <Eigen/Geometry>
 
+#include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace autoware
 {
@@ -78,31 +80,33 @@ private:
   ///
   /// @param[in]  msg   Odometry message.
   ///
-  void odom_callback(const OdomMsgT::SharedPtr msg);
+  void STATE_ESTIMATION_NODES_LOCAL odom_callback(const OdomMsgT::SharedPtr msg);
 
   /// Gets called when a new pose message arrives.
   ///
   /// @param[in]  msg   Pose message.
   ///
-  void pose_callback(const PoseMsgT::SharedPtr msg);
+  void STATE_ESTIMATION_NODES_LOCAL pose_callback(const PoseMsgT::SharedPtr msg);
 
   /// Gets called when a new twist message arrives.
   ///
   /// @param[in]  msg   The twist message that holds speed measurement.
   ///
-  void twist_callback(const TwistMsgT::SharedPtr msg);
+  void STATE_ESTIMATION_NODES_LOCAL twist_callback(const TwistMsgT::SharedPtr msg);
 
   /// Predict the state and publish the current estimate.
-  void predict_and_publish_current_state();
+  void STATE_ESTIMATION_NODES_LOCAL predict_and_publish_current_state();
 
   /// Publish the currently estimated state.
-  void publish_current_state();
+  void STATE_ESTIMATION_NODES_LOCAL publish_current_state();
 
   /// Update the latest orientation with newer one.
-  void update_latest_orientation_if_needed(const geometry_msgs::msg::QuaternionStamped & rotation);
+  void STATE_ESTIMATION_NODES_LOCAL update_latest_orientation_if_needed(
+    const geometry_msgs::msg::QuaternionStamped & rotation);
 
   /// Get the transformation from a frame in a provided header to the current frame.
-  geometry_msgs::msg::TransformStamped get_transform(const std_msgs::msg::Header & header);
+  geometry_msgs::msg::TransformStamped STATE_ESTIMATION_NODES_LOCAL get_transform(
+    const std_msgs::msg::Header & header);
 
   template<typename MessageT>
   using CallbackFnT = void (StateEstimationNode::*)(const typename MessageT::SharedPtr);
@@ -124,6 +128,11 @@ private:
 
   std::shared_ptr<rclcpp::Publisher<OdomMsgT>> m_publisher{};
   std::shared_ptr<rclcpp::Publisher<TfMsgT>> m_tf_publisher{};
+
+  std::chrono::system_clock::duration m_init_timeout{};
+  std::chrono::system_clock::duration m_expected_time_between_publish_requests{};
+  std::chrono::system_clock::duration m_history_length{};
+  std::chrono::system_clock::time_point m_time_of_last_publish{};
 
   rclcpp::TimerBase::SharedPtr m_wall_timer{};
 

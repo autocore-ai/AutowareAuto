@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #ifndef STATE_ESTIMATION_NODES__KALMAN_FILTER_WRAPPER_HPP_
@@ -22,8 +22,10 @@
 #include <kalman_filter/esrcf.hpp>
 #include <motion_model/constant_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <state_estimation_nodes/history.hpp>
 #include <state_estimation_nodes/measurement.hpp>
-#include <state_estimation_nodes/measurement_time_keeper.hpp>
+#include <state_estimation_nodes/measurement_typedefs.hpp>
+#include <state_estimation_nodes/steady_time_grid.hpp>
 #include <state_estimation_nodes/visibility_control.hpp>
 
 #include <Eigen/Core>
@@ -44,8 +46,9 @@ namespace prediction
 /// @brief      This class provides a high level interface to the Kalman Filter allowing to predict
 ///             the state of the filter with time and observe it by receiving ROS messages.
 ///
-/// @tparam     MotionModelT  An underlying motion model.
-/// @tparam     kNumOfStates  Number of states of the system.
+/// @tparam     MotionModelT      An underlying motion model.
+/// @tparam     kNumOfStates      Number of states of the system.
+/// @tparam     kProcessNoiseDim  Dimentionality of the noise.
 ///
 template<typename MotionModelT, std::int32_t kNumOfStates, std::int32_t kProcessNoiseDim>
 class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
@@ -61,6 +64,15 @@ class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
   template<std::int32_t kLength>
   using VectorT = Eigen::Matrix<common::types::float32_t, kLength, 1>;
 
+  using HistoryT = History<
+    FilterT,
+    kNumOfStates,
+    PredictionEvent,
+    ResetEvent<FilterT>,
+    MeasurementPose,
+    MeasurementSpeed,
+    MeasurementPoseAndSpeed>;
+
 public:
   ///
   /// @brief      Create an EKF wrapper.
@@ -75,6 +87,7 @@ public:
   ///                                        velocity in 1D, it will be 2x1.
   /// @param[in]  expected_dt                Expected time difference between updates of the filter.
   /// @param[in]  frame_id                   The frame id in which tracking takes place.
+  /// @param[in]  history_duration           Length of history of events.
   /// @param[in]  mahalanobis_threshold      The threshold on the Mahalanobis distance for ourlier
   ///                                        rejection.
   /// @param[in]  motion_model               The motion model that is to be used. Mostly present
@@ -85,13 +98,15 @@ public:
     const RectangularMatrixT<kNumOfStates, kProcessNoiseDim> & process_noise,
     const std::chrono::nanoseconds & expected_dt,
     const std::string & frame_id,
+    const std::chrono::nanoseconds & history_duration = std::chrono::milliseconds{5000},
     common::types::float32_t mahalanobis_threshold =
     std::numeric_limits<common::types::float32_t>::max(),
     const MotionModelT & motion_model = MotionModelT{})
   : m_motion_model{motion_model},
     m_initial_covariance_factor{initial_covariance_factor},
     m_frame_id{frame_id},
-    m_mahalanobis_threshold{mahalanobis_threshold}
+    m_mahalanobis_threshold{mahalanobis_threshold},
+    m_expected_prediction_period{expected_dt}
   {
     static_assert(
       motion_model.get_num_states() == kNumOfStates,
@@ -100,19 +115,22 @@ public:
     SquareMatrixT<kNumOfStates> F;
     m_motion_model.compute_jacobian(F, expected_dt);
     m_GQ_left_factor = F * process_noise;
-    m_ekf = std::make_unique<FilterT>(m_motion_model, m_GQ_left_factor);
+    m_filter = std::make_unique<FilterT>(m_motion_model, m_GQ_left_factor);
+    m_history = std::make_unique<HistoryT>(
+      *m_filter,
+      static_cast<std::size_t>(history_duration / expected_dt),
+      m_mahalanobis_threshold);
   }
 
   ///
   /// Reset the filter state using the default covariance and state derived from the measurement.
   ///
-  /// @param[in]  measurement              The measurement form which we intitialize the state.
-  /// @param[in]  time_of_event_occurance  The time of event occurance from some global clock.
+  /// @param[in]  measurement              The measurement from which we initialize the state.
   ///
   /// @tparam     MeasurementT             Type of measurement.
   ///
   template<typename MeasurementT>
-  void reset(const MeasurementT & measurement, const GlobalTime & time_of_event_occurance);
+  void add_reset_event_to_history(const MeasurementT & measurement);
 
   ///
   /// Reset the filter state. This must be called at least once to start / tracking.
@@ -124,34 +142,23 @@ public:
   ///                                      with variances on the diagonal: diag([s]).
   /// @param[in]  event_timestamp          The event timestamp. Ideally this should be in the same
   ///                                      clock as the one that timestamps the messages.
-  /// @param[in]  time_of_event_occurance  The time of event occurance from some global clock.
   ///
-  void reset(
+  void add_reset_event_to_history(
     const VectorT<kNumOfStates> & state,
     const SquareMatrixT<kNumOfStates> & initial_covariance_chol,
-    const MeasurementBasedTime & event_timestamp,
-    const GlobalTime & time_of_event_occurance);
+    const std::chrono::system_clock::time_point & event_timestamp);
 
   ///
-  /// Predict state of filter at a provided time. The update will be ignored if this time is before
-  /// the last recorded update time.
-  ///
-  /// @param[in]  time_of_update       The time of update as reported by some global clock.
-  ///
-  /// @tparam     kTimeReferenceFrame  The enum value that defines the basis of our clock's time.
+  /// Predict state of filter at the next timestep defined by the period of this node.
   ///
   /// @return     true if the update was successful and false otherwise. In case false is returned,
   ///             this update had no effect on the state of the filter.
   ///
-  template<TimeReferenceFrame kTimeReferenceFrame>
-  common::types::bool8_t temporal_update(
-    const Time<kTimeReferenceFrame> & time_of_update);
+  common::types::bool8_t add_next_temporal_update_to_history();
 
   ///
   /// Update the filter state with a measurement.
   ///
-  /// @param[in]  message_received_time  The time from some global clock when the message has been
-  ///                                    received.
   /// @param[in]  measurement            The measurement. It is expected to be a concrete
   ///                                    instantiation of the Measurement class.
   ///
@@ -162,30 +169,22 @@ public:
   ///             unsuccessful update, the state of the underlying filter has not been changed.
   ///
   template<typename MeasurementT>
-  common::types::bool8_t observation_update(
-    const GlobalTime & message_received_time,
-    const MeasurementT & measurement);
+  common::types::bool8_t add_observation_to_history(const MeasurementT & measurement);
 
   /// Check if the filter is is_initialized with a state.
-  common::types::bool8_t is_initialized() const noexcept
+  inline common::types::bool8_t is_initialized() const noexcept
   {
-    return m_ekf_initialized && m_time_keeper.is_initialized();
+    return (m_history) && (!m_history->empty()) && m_time_grid.is_initialized();
   }
 
   /// Get the current state of the system as an odometry message.
   nav_msgs::msg::Odometry get_state() const;
 
 private:
-  /// Check if the vectors pass the Mahalanobis gate.
-  common::types::bool8_t passes_mahalanobis_gate(
-    const VectorT<kNumOfStates> & sample,
-    const VectorT<kNumOfStates> & mean,
-    const SquareMatrixT<kNumOfStates> & covariance_factor) const;
-
-  /// Shows if this filter has been initialized with a stateful measurement.
-  common::types::bool8_t m_ekf_initialized{};
+  /// An implementation of the filter used internally.
+  std::unique_ptr<FilterT> m_filter{};
   /// Time represented in a frame based on the last measurement timestamp.
-  MeasurementBasedTimeKeeper m_time_keeper{};
+  SteadyTimeGrid m_time_grid{};
   /// We own our motion model and store it here.
   MotionModelT m_motion_model;
   /// We own the left factor of the matrix GQ = m_GQ_left_factor * m_GQ_left_factor.T
@@ -195,12 +194,14 @@ private:
   /// will be diag([s]). Otherwise this is a lower triangular Cholesky factor of the state
   /// covariance matrix.
   SquareMatrixT<kNumOfStates> m_initial_covariance_factor;
-  /// The kalman filter class that takes care of the state estimation.
-  std::unique_ptr<FilterT> m_ekf{};
   /// Frame in which the estimation happens, e.g. "odom".
   std::string m_frame_id{};
   /// The threshold on the Mahalanobis distance used to reject outliers.
   common::types::float32_t m_mahalanobis_threshold{};
+  /// History of all events is stored here.
+  std::unique_ptr<HistoryT> m_history{};
+  /// What duration passes between prediction events.
+  std::chrono::nanoseconds m_expected_prediction_period{};
 };
 
 using ConstantAccelerationFilter =

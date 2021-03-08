@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #ifndef STATE_ESTIMATION_NODES__VISIBILITY_CONTROL_HPP_

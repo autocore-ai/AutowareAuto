@@ -26,6 +26,17 @@ using autoware::common::types::float32_t;
 
 static const float32_t TOL = 1.0E-5F;
 
+TEST(catr_model, init_empty)
+{
+  CatrModel model;
+  ASSERT_FLOAT_EQ(model[CatrState::POSE_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[CatrState::POSE_Y], 0.0F);
+  ASSERT_FLOAT_EQ(model[CatrState::VELOCITY], 0.0F);
+  ASSERT_FLOAT_EQ(model[CatrState::ACCELERATION], 0.0F);
+  ASSERT_FLOAT_EQ(model[CatrState::HEADING], 0.0F);
+  ASSERT_FLOAT_EQ(model[CatrState::TURN_RATE], 0.0F);
+}
+
 // catr model should safely decay to constant velocity
 TEST(catr_model, constant_velocity)
 {

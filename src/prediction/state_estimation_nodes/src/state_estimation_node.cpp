@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #include <state_estimation_nodes/state_estimation_node.hpp>
 
-#include <state_estimation_nodes/time.hpp>
-#include <state_estimation_nodes/measurement_conversion.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <state_estimation_nodes/measurement_conversion.hpp>
 
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+#include <functional>
+#include <limits>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <limits>
-#include <functional>
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
@@ -37,7 +37,8 @@ namespace
 {
 constexpr int kDefaultHistory{10};  // TODO(igor): remove this.
 constexpr float64_t kInvalidFrequency{-1.0};  // Frames per second.
-const std::chrono::milliseconds kDefaultTimeBetweenUpdates{100LL};
+constexpr std::chrono::milliseconds kDefaultTimeBetweenUpdates{100LL};
+constexpr std::chrono::milliseconds kDefaultHistoryLength{5000LL};
 const char kDefaultOutputTopic[]{"filtered_state"};
 constexpr auto kCovarianceMatrixRows{6U};
 constexpr auto kIndexX{0U};
@@ -49,17 +50,16 @@ static_assert(
   kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
 
 /// Convert the ROS timestamp to chrono time point.
-autoware::prediction::GlobalTime
+std::chrono::system_clock::time_point
 to_time_point(const rclcpp::Time & time)
 {
-  return autoware::prediction::GlobalTime{
-    std::chrono::system_clock::time_point{std::chrono::nanoseconds{time.nanoseconds()}}};
+  return std::chrono::system_clock::time_point{std::chrono::nanoseconds{time.nanoseconds()}};
 }
 
 void assert_all_entries_positive(const std::vector<float64_t> & entries, const std::string & tag)
 {
   for (const auto entry : entries) {
-    if (std::isnan(entry) || std::isinf(entry) || entry <= 0) {
+    if (std::isnan(entry) || std::isinf(entry) || entry <= 0.0) {
       throw std::runtime_error(tag + ": entries must all be positive.");
     }
   }
@@ -194,6 +194,7 @@ StateEstimationNode::StateEstimationNode(
       position_variance, velocity_variance, acceleration_variance),
     time_between_publish_requests,
     m_frame_id,
+    kDefaultHistoryLength,
     mahalanobis_threshold);
 
   const std::vector<std::string> empty_vector{};
@@ -223,11 +224,21 @@ StateEstimationNode::StateEstimationNode(
 
 void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 {
-  const auto time_observation_received = to_time_point(now());
   const auto transform = get_transform(msg->header);
-  m_ekf->observation_update(
-    time_observation_received, message_to_measurement<MeasurementPoseAndSpeed>(
-      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+
+  if (m_ekf->is_initialized()) {
+    if (!m_ekf->add_observation_to_history(
+        message_to_measurement<MeasurementPoseAndSpeed>(
+          *msg,
+          tf2::transformToEigen(transform).cast<float32_t>())))
+    {
+      throw std::runtime_error("Cannot add an odometry observation to history.");
+    }
+  } else {
+    m_ekf->add_reset_event_to_history(
+      message_to_measurement<MeasurementPoseAndSpeed>(
+        *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+  }
   geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
   tf2::doTransform(
     geometry_msgs::msg::QuaternionStamped{}.
@@ -235,18 +246,26 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
     set__header(msg->header),
     orientation_in_expected_frame, transform);
   update_latest_orientation_if_needed(orientation_in_expected_frame);
-  if (m_publish_data_driven) {
+  if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
 }
 
 void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 {
-  const auto time_observation_received = to_time_point(now());
   const auto transform = get_transform(msg->header);
-  m_ekf->observation_update(
-    time_observation_received, message_to_measurement<MeasurementPose>(
-      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+  if (m_ekf->is_initialized()) {
+    if (!m_ekf->add_observation_to_history(
+        message_to_measurement<MeasurementPose>(
+          *msg, tf2::transformToEigen(transform).cast<float32_t>())))
+    {
+      throw std::runtime_error("Cannot add an odometry observation to history.");
+    }
+  } else {
+    m_ekf->add_reset_event_to_history(
+      message_to_measurement<MeasurementPose>(
+        *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+  }
   geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
   tf2::doTransform(
     geometry_msgs::msg::QuaternionStamped{}.
@@ -254,7 +273,7 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
     set__header(msg->header),
     orientation_in_expected_frame, transform);
   update_latest_orientation_if_needed(orientation_in_expected_frame);
-  if (m_publish_data_driven) {
+  if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
 }
@@ -267,12 +286,14 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
       "Received twist update, but ekf has not been initialized with any state yet. Skipping.");
     return;
   }
-  const auto time_observation_received = to_time_point(now());
   const auto transform = get_transform(msg->header);
-  m_ekf->observation_update(
-    time_observation_received, message_to_measurement<MeasurementSpeed>(
-      *msg, tf2::transformToEigen(transform).cast<float32_t>()));
-  if (m_publish_data_driven) {
+  if (!m_ekf->add_observation_to_history(
+      message_to_measurement<MeasurementSpeed>(
+        *msg, tf2::transformToEigen(transform).cast<float32_t>())))
+  {
+    throw std::runtime_error("Cannot add a twist observation to history.");
+  }
+  if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
 }
@@ -287,10 +308,11 @@ geometry_msgs::msg::TransformStamped StateEstimationNode::get_transform(
 
 void StateEstimationNode::predict_and_publish_current_state()
 {
-  if (m_ekf->is_initialized()) {
-    m_ekf->temporal_update(to_time_point(now()));
-    publish_current_state();
+  if (!m_ekf->is_initialized()) {return;}
+  if (!m_ekf->add_next_temporal_update_to_history()) {
+    throw std::runtime_error("Could not perform a temporal update.");
   }
+  publish_current_state();
 }
 
 void StateEstimationNode::publish_current_state()

@@ -32,6 +32,17 @@ static const index_t VELOCITY_Y = ConstantAcceleration::States::VELOCITY_Y;
 static const index_t ACCELERATION_X = ConstantAcceleration::States::ACCELERATION_X;
 static const index_t ACCELERATION_Y = ConstantAcceleration::States::ACCELERATION_Y;
 
+TEST(constant_acceleration, init_empty)
+{
+  ConstantAcceleration model;
+  ASSERT_FLOAT_EQ(model[POSE_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[POSE_Y], 0.0F);
+  ASSERT_FLOAT_EQ(model[VELOCITY_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[VELOCITY_Y], 0.0F);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[ACCELERATION_Y], 0.0F);
+}
+
 TEST(constant_acceleration, basic)
 {
   ConstantAcceleration model;

@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #include <gtest/gtest.h>
@@ -150,7 +150,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
   create_result_odom_subscription(
-    "/state_estimation_namespace/filtered_state", node.get(),
+    "/filtered_state", node.get(),
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;
@@ -160,6 +160,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   const auto max_wait_time{std::chrono::seconds{10LL}};
   auto time_passed{std::chrono::milliseconds{0LL}};
   while (count_received_msgs < 1) {
+    msg.header.stamp = to_ros_time(std::chrono::system_clock::now());
     get_fake_odometry_publisher().publish(msg);
     rclcpp::spin_some(node);
     rclcpp::spin_some(get_fake_odometry_node());
@@ -219,7 +220,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
   std::vector<Odometry::SharedPtr> received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
   create_result_odom_subscription(
-    "/state_estimation_namespace/filtered_state", node.get(),
+    "/filtered_state", node.get(),
     [&received_msgs](
       const Odometry::SharedPtr msg) {
       received_msgs.push_back(msg);
@@ -315,7 +316,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   auto count_received_msgs{0};
   create_fake_odom_publisher("/odom_topic_1");
   create_result_odom_subscription(
-    "/state_estimation_namespace/filtered_state", node.get(),
+    "/filtered_state", node.get(),
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;
@@ -343,6 +344,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
     if (count_received_msgs < 1) {
       // We want to stop publishing after receiving the first message as publishing is only needed
       // here to enable timer-based publishing of the node under test.
+      msg.header.stamp = to_ros_time(std::chrono::system_clock::now());
       get_fake_odometry_publisher().publish(msg);
     }
     rclcpp::spin_some(node);

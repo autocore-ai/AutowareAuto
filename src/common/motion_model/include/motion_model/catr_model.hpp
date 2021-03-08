@@ -96,7 +96,8 @@ public:
   const Eigen::Matrix<float32_t, 6U, 1U> & get_state() const override;
 
 private:
-  Eigen::Matrix<float32_t, 6U, 1U> m_state;  ///< The model's internal state
+  /// The model's internal state
+  Eigen::Matrix<float32_t, 6U, 1U> m_state{Eigen::Matrix<float32_t, 6U, 1U>::Zero()};
   CatrInvariantWorkspace m_invariants;       ///< Time-invariant worker variables
   mutable CatrVariantWorkspace m_variants;   ///< Time-variant worker variables
 };  // class ConstantVelocity

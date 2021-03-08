@@ -102,7 +102,7 @@ public:
   const Eigen::Matrix<float32_t, 4U, 1U> & get_state() const override;
 
 private:
-  Eigen::Matrix<float32_t, 4U, 1U> m_state;
+  Eigen::Matrix<float32_t, 4U, 1U> m_state{Eigen::Matrix<float32_t, 4U, 1U>::Zero()};
 };  // class ConstantVelocity
 }  // namespace motion_model
 }  // namespace motion

@@ -105,7 +105,7 @@ public:
   const Eigen::Matrix<float32_t, 6U, 1U> & get_state() const override;
 
 private:
-  Eigen::Matrix<float32_t, 6U, 1U> m_state;
+  Eigen::Matrix<float32_t, 6U, 1U> m_state{Eigen::Matrix<float32_t, 6U, 1U>::Zero()};
 };  // class ConstantAcceleration
 }  // namespace motion_model
 }  // namespace motion

@@ -1,4 +1,4 @@
-# Copyright 2020 Apex.AI, Inc.
+# Copyright 2021 Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(state_estimation_node SHARED
-  include/state_estimation_nodes/time.hpp
+  include/state_estimation_nodes/history.hpp
   include/state_estimation_nodes/measurement.hpp
   include/state_estimation_nodes/measurement_conversion.hpp
   include/state_estimation_nodes/kalman_filter_wrapper.hpp
   include/state_estimation_nodes/state_estimation_node.hpp
+  include/state_estimation_nodes/steady_time_grid.hpp
   src/measurement_conversion.cpp
   src/kalman_filter_wrapper.cpp
   src/state_estimation_node.cpp)
@@ -44,8 +45,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(test_state_estimation_node
+  ament_add_gmock(test_state_estimation_node
+          test/test_history.cpp
           test/test_measurement.cpp
+          test/test_steady_time_grid.cpp
           test/test_measurement_conversion.cpp
           test/test_kalman_filter_wrapper.cpp
           test/test_state_estimation_node.cpp

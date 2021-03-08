@@ -23,6 +23,15 @@ using autoware::motion::motion_model::ConstantVelocity;
 using Eigen::Matrix;
 using autoware::common::types::float32_t;
 
+TEST(constant_velocity, init_empty)
+{
+  ConstantVelocity model;
+  ASSERT_FLOAT_EQ(model[ConstantVelocity::States::POSE_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[ConstantVelocity::States::POSE_Y], 0.0F);
+  ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_X], 0.0F);
+  ASSERT_FLOAT_EQ(model[ConstantVelocity::States::VELOCITY_Y], 0.0F);
+}
+
 TEST(constant_velocity, basic)
 {
   ConstantVelocity model;

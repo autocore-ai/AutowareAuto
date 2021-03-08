@@ -1,4 +1,4 @@
-// Copyright 2020 Apex.AI, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// \copyright Copyright 2020 Apex.AI, Inc.
+/// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
 #include <state_estimation_nodes/measurement_conversion.hpp>
@@ -29,10 +29,9 @@ static_assert(
   kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
 
 /// Convert the ROS timestamp to chrono time point.
-autoware::prediction::MeasurementBasedTime to_time_point(const rclcpp::Time & time)
+std::chrono::system_clock::time_point to_time_point(const rclcpp::Time & time)
 {
-  return autoware::prediction::MeasurementBasedTime{
-    std::chrono::system_clock::time_point{std::chrono::nanoseconds{time.nanoseconds()}}};
+  return std::chrono::system_clock::time_point{std::chrono::nanoseconds{time.nanoseconds()}};
 }
 }  // namespace
 
