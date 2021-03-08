@@ -1,54 +1,7 @@
 # Autoware.Auto
 
-[Autoware](https://www.autoware.org/) is the world's first "all-in-one" open-source
-software for self-driving vehicles hosted under the Autoware Foundation. Based on
-[ROS 2](https://index.ros.org/doc/ros2/).
+[Autoware](https://www.autoware.org/) is the world's first "all-in-one" open-source software for self-driving vehicles hosted under the Autoware Foundation.
 
-Autoware.Auto as one of the projects of Autoware Foundation is a clean slate rewrite
-of [Autoware.AI](https://autoware.ai/). Compared to Autoware.AI, Autoware.Auto has
-best possible software engineering practices which includes PR reviews, PR builds,
-100% documentation, 100% code coverage, style guide, development and release process, …
+The [Autoware.Auto project](https://www.autoware.auto/), based on [ROS 2](https://docs.ros.org/en/foxy/), is the next generation successor of the [Autoware.AI project](https://www.autoware.ai/), based on [ROS 1](http://wiki.ros.org/Documentation).
 
-It also does two more things differently: a) we have crisply defined interfaces for
-different modules (messages and APIs) and  b) architecture designed for determinism
-such that it is possible to reproduce behaviors on live and development machines.
-
-![Autoware.Auto testing vehicle](docs/images/lexus.jpg)
-
-# Use Cases
-Autoware.Auto will initially address the following 2 use case:
-1. Autonomous Valet Parking
-1. Autonomous Depot Maneuvering
-
-After the initial set of [milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones)
-will be completed, Autoware.Auto will allow you to easily map a parking lot, create
-a map for autonomous driving and drive over this parking lot entirely autonomously
-in less than 2 weeks.
-
-![Autonomous valet parking](docs/images/valet_parking.jpeg)
-
-# Supported Hardware
-**Car:** Lexus 450 LH with [Pacmod 3.0](https://autonomoustuff.com/product/small-ev-by-wire-kits/)
-DBW interface.
-
-**Sensors:**  
-1. 4 [VLP16](https://velodynelidar.com/vlp-16-hi-res.html) (or comparable sensors, e.g. VLP-32C)
-2. 16 Sonar sensors
-3. 4 [cameras](http://wiki.ros.org/pointgrey_camera_driver) (180 FOV)
-4. [Novatel GPS](https://autonomoustuff.com/product/novatel-vehicle-kits/)
-
-**ECUs:**  
-1. [Nvidia AGX Xavier](https://www.nvidia.com/en-us/deep-learning-ai/products/agx-systems/) aarch64 computer
-2. [Nuvo](https://autonomoustuff.com/product/astuff-spectra/) rugged x86-64 desktop computer
-
-# Documentation
-
-The latest documentation corresponding to the ``master`` branch can be found here:
-https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/.
-
-# Roadmap
-Functional features in Autoware.Auto will be developed according to the below roadmap.
-More granular feature planning is being done via
-[milestones](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones).
-
-![Functional feature roadmap](docs/images/aa_roadmap.png)
+Please see [the documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/) for all information, including how to build, run, and contribute to Autoware.Auto.

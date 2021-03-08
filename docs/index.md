@@ -5,7 +5,7 @@ Autoware.Auto {#index}
 
 [Autoware](https://www.autoware.org/) is the world's first "all-in-one" open-source software for self-driving vehicles hosted under the Autoware Foundation.
 
-The [Autoware.Auto project](https://www.autoware.auto/), based on [ROS 2](https://index.ros.org/doc/ros2/), is the next generation successor of the [Autoware.AI project](https://www.autoware.ai/), based on [ROS 1](http://wiki.ros.org/Documentation).
+The [Autoware.Auto project](https://www.autoware.auto/), based on [ROS 2](https://docs.ros.org/en/foxy/), is the next generation successor of the [Autoware.AI project](https://www.autoware.ai/), based on [ROS 1](http://wiki.ros.org/Documentation).
 
 The major differentiators of Autoware.Auto compared to Autoware.AI are:
 
