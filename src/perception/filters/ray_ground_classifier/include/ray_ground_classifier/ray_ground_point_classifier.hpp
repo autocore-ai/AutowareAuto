@@ -21,6 +21,7 @@
 #define RAY_GROUND_CLASSIFIER__RAY_GROUND_POINT_CLASSIFIER_HPP_
 
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include "common/types.hpp"
@@ -40,7 +41,6 @@ namespace filters
 {
 using autoware::common::types::PI;
 using autoware::common::types::TAU;
-using autoware::common::types::FEPS;
 using autoware::common::types::PointXYZIF;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -158,7 +158,9 @@ private:
 /// \return True if lhs < rhs: if lhs.r < rhs.r, if nearly same radius then lhs.z < rhs.z
 inline bool8_t operator<(const PointXYZIFR & lhs, const PointXYZIFR & rhs) noexcept
 {
-  const auto same_radius = abs_eq(lhs.m_r_xy, rhs.m_r_xy, FEPS);
+  const auto same_radius = abs_eq(
+    lhs.m_r_xy, rhs.m_r_xy,
+    std::numeric_limits<decltype(lhs.m_r_xy)>::epsilon());
   return same_radius ? (lhs.m_point->z < rhs.m_point->z) : (lhs.m_r_xy < rhs.m_r_xy);
 }
 

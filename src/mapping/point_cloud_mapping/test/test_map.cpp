@@ -23,9 +23,11 @@
 #include <gtest/gtest.h>
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <string>
+
 #include <algorithm>
+#include <limits>
 #include <set>
+#include <string>
 #include <vector>
 
 using autoware::mapping::point_cloud_mapping::PlainPointCloudMap;
@@ -153,8 +155,8 @@ void autoware::mapping::point_cloud_mapping::check_pc(PclCloud & pc, std::size_t
   std::transform(
     pc.begin(), pc.end(), std::inserter(read_pts, read_pts.end()), [](
       const auto & pt) {
-      EXPECT_NEAR(pt.x, pt.y, autoware::common::types::FEPS);
-      EXPECT_NEAR(pt.z, pt.y, autoware::common::types::FEPS);
+      EXPECT_NEAR(pt.x, pt.y, std::numeric_limits<decltype(pt.y)>::epsilon() * 10);
+      EXPECT_NEAR(pt.z, pt.y, std::numeric_limits<decltype(pt.y)>::epsilon() * 10);
       return static_cast<size_t>(pt.x);
     });
   for (auto i = 0U; i < size; ++i) {

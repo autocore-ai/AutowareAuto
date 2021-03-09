@@ -23,9 +23,9 @@
 #include <Eigen/Core>
 
 #include <cmath>
+#include <limits>
 
 using autoware::common::types::float32_t;
-using autoware::common::types::FEPS;
 
 namespace autoware
 {
@@ -79,10 +79,10 @@ public:
     for (index_t j = col_start; j < col_end; ++j) {
       const float32_t g = B(row, j);
       // TODO(c.ho) benchmark branchi-ness
-      if (fabsf(g) <= FEPS) {
+      if (fabsf(g) <= std::numeric_limits<decltype(g)>::epsilon()) {
         // c = 1, s = 0
         // Do nothing, identity rotation
-      } else if (fabsf(A(row, row)) <= FEPS) {
+      } else if (fabsf(A(row, row)) <= std::numeric_limits<decltype(g)>::epsilon()) {
         // c = 0, s = sign(g)
         for (index_t k = row; k < NumStates; ++k) {
           const float32_t tau = std::copysign(A(k, row), g);

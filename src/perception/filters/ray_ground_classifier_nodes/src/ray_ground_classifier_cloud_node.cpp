@@ -19,6 +19,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <stdlib.h>
+
+#include <limits>
 #include <string>
 
 #ifdef _OPENMP
@@ -170,8 +172,8 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
           pt = reinterpret_cast<PointXYZIF *>(&msg->data[idx]);
           // don't bother inserting the points almost (0,0).
           // Too many of those makes the bin 0 overflow
-          if ((fabsf(pt->x) > autoware::common::types::FEPS) ||
-            (fabsf(pt->y) > autoware::common::types::FEPS))
+          if ((fabsf(pt->x) > std::numeric_limits<decltype(pt->x)>::epsilon()) ||
+            (fabsf(pt->y) > std::numeric_limits<decltype(pt->y)>::epsilon()))
           {
             if (!m_aggregator.insert(pt)) {
               #ifdef _OPENMP

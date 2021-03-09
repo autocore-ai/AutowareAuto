@@ -17,6 +17,7 @@
 //lint -e537 NOLINT  // cpplint vs pclint
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 #include "common/types.hpp"
@@ -72,7 +73,8 @@ RayGroundPointClassifier::PointLabel RayGroundPointClassifier::is_ground(const P
 
   // a small fudge factor is added because we check in the sorting process for "almost zero"
   // This is because points which are almost collinear are sorted by height
-  const float32_t dr_m = (radius_m - m_prev_radius_m) + autoware::common::types::FEPS;
+  const float32_t dr_m = (radius_m - m_prev_radius_m) +
+    std::numeric_limits<decltype(dr_m)>::epsilon();
   if (dr_m < 0.0F) {
     throw std::runtime_error("Ray Ground filter must receive points in increasing radius");
   }
