@@ -15,6 +15,23 @@ $ vcs import < autoware.auto.$ROS_DISTRO.repos
 
 Optionally, you can choose a DDS implementation other than the default Cyclone DDS: @subpage choosing-a-dds-vendor
 
+# Use colcon defaults inside ADE {#building-colcon-defaults}
+After creating a fresh new ADE home, its `.bashrc` will be populated to set the [`COLCON_DEFAULTS_FILE`](https://colcon.readthedocs.io/en/released/reference/global-arguments.html?highlight=DEFAULTS#environment-variables)
+environment variable.
+
+However, if an ADE home already exists, it is strongly advised to use the provided colcon defaults file to ensure that binaries are consistently built with the same flags.
+
+To use the colcon defaults configuration file with an existing ADE home, type the following from the location of your ADE home:
+
+```{bash}
+$ export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml >> .bashrc
+```
+
+Test that the environment variable has been properly set by entering ADE and typing the following:
+
+```{bash}
+$ echo $COLCON_DEFAULTS_FILE
+```
 
 # How to build the code {#installation-and-development-how-to-build}
 To build all packages in Autoware.Auto, navigate into the `AutowareAuto` directory and run
@@ -80,8 +97,12 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 These flags are then passed into [autoware_set_compile_options](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/tools/autoware_auto_cmake/cmake/autoware_auto_cmake.cmake#L51)
 function for the nodes that use it in their respective `CMakeLists.txt` files.
 
-If there is no `CMAKE_BUILD_TYPE` given, and `autoware_set_compile_options` is used, then the code is 
-built optimized and without debug flags.
+If the [colcon defaults configuration file](#building-colcon-defaults) file is being used, Autoware.Auto will be built as `RelWithDebInfo` if `CMAKE_BUILD_TYPE` is not set.
+
+Outside ADE, if there is no `CMAKE_BUILD_TYPE` given, and `autoware_set_compile_options` is used, then the code is built optimized and without debug flags.
+
+Regardless of `CMAKE_BUILD_TYPE`, code may be built with additional flags added by the
+`autoware_set_compile_options` macro.
 
 #### Compilation Database Generation {#building-compilation-database}
 
