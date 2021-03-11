@@ -53,9 +53,9 @@ def generate_launch_description():
     # SSC interface
     ssc_interface = Node(
         package='ssc_interface',
-        node_name='ssc_interface_node',
-        node_executable='ssc_interface_node_exe',
-        node_namespace='vehicle',
+        name='ssc_interface_node',
+        executable='ssc_interface_node_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[LaunchConfiguration('ssc_interface_param')],
         remappings=[

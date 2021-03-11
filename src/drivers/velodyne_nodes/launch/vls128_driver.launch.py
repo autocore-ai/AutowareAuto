@@ -39,8 +39,8 @@ def generate_launch_description():
 
     vls128_node = launch_ros.actions.Node(
         package='velodyne_nodes',
-        node_namespace="lidar_front",
-        node_executable='velodyne_cloud_node_exe',
+        namespace="lidar_front",
+        executable='velodyne_cloud_node_exe',
         parameters=[LaunchConfiguration('vls128_node_param_file')],
         remappings=[("topic", "points_raw")],
         arguments=["--model", "vls128"]

@@ -63,11 +63,7 @@ constexpr std::chrono::nanoseconds MpcController::solver_time_step;
 MpcController::MpcController(const Config & config)
 : ControllerBase{config.behavior()},
   m_config{config},
-#ifdef ROS_DISTRO_DASHING
-  m_computed_trajectory{rosidl_generator_cpp::MessageInitialization::ALL},
-#elif defined ROS_DISTRO_FOXY
   m_computed_trajectory{rosidl_runtime_cpp::MessageInitialization::ALL},
-#endif
   m_last_reference_index{}
 {
   if (config.do_interpolate()) {
@@ -208,11 +204,7 @@ Command MpcController::interpolated_command(const std::chrono::nanoseconds x0_ti
   using std::chrono::duration;
   const auto t = duration_cast<duration<float>>(dt) / duration_cast<duration<float>>(step);
 
-#ifdef ROS_DISTRO_DASHING
-  Command ret{rosidl_generator_cpp::MessageInitialization::ALL};
-#elif defined ROS_DISTRO_FOXY
   Command ret{rosidl_runtime_cpp::MessageInitialization::ALL};
-#endif
   {
     ret.rear_wheel_angle_rad = {};
     // interpolation

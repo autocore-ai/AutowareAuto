@@ -23,9 +23,9 @@ def generate_launch_description():
     # -------------------------------- Nodes-----------------------------------
     parking_planner_node = launch_ros.actions.Node(
         package='parking_planner_nodes',
-        node_executable='parking_planner_node_exe',
-        node_name='parking_planner',
-        node_namespace='',
+        executable='parking_planner_node_exe',
+        name='parking_planner',
+        namespace='',
         output='screen',
         parameters=[
             "{}/param/defaults.param.yaml".format(

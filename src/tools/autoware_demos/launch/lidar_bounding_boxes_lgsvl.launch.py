@@ -40,8 +40,8 @@ def generate_launch_description():
     # euclidean cluster node execution definition.
     euclidean_cluster_node_runner = launch_ros.actions.Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_node_exe',
-        node_namespace='lidars',
+        executable='euclidean_cluster_node_exe',
+        namespace='lidars',
         parameters=[get_param_file('euclidean_cluster_nodes', 
             'vlp16_sim_lexus_cluster.param.yaml')],
         remappings=[
@@ -52,8 +52,8 @@ def generate_launch_description():
     # ray ground filter runner definition.
     ray_ground_runner = launch_ros.actions.Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_cloud_node_exe',
-        node_namespace='lidars',
+        executable='ray_ground_classifier_cloud_node_exe',
+        namespace='lidars',
         parameters=[get_param_file('ray_ground_classifier_nodes',
             'vlp16_sim_lexus_ray_ground.param.yaml')],
         remappings=[("points_in", "points_filtered")])
@@ -66,26 +66,26 @@ def generate_launch_description():
     # point cloud filter transform runner definition for front lidar
     filter_transform_front_runner = launch_ros.actions.Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_front',
-        node_namespace='lidar_front',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_front',
+        namespace='lidar_front',
         parameters=[filter_transform_param],
         remappings=[("points_in", "points_raw")])
 
     # point cloud filter transform runner definition for rear lidar
     filter_transform_rear_runner = launch_ros.actions.Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_rear',
-        node_namespace='lidar_rear',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_rear',
+        namespace='lidar_rear',
         parameters=[filter_transform_param],
         remappings=[("points_in", "points_raw")])
 
     # point cloud fusion runner to fuse front and rear lidar
     fuser_runner = launch_ros.actions.Node(
         package='point_cloud_fusion_nodes',
-        node_executable='pointcloud_fusion_node_exe',
-        node_namespace='lidars',
+        executable='pointcloud_fusion_node_exe',
+        namespace='lidars',
         parameters=[get_param_file('point_cloud_fusion_nodes',
             'vlp16_sim_lexus_pc_fusion.param.yaml')],
         remappings=[
@@ -101,8 +101,8 @@ def generate_launch_description():
         'lexus_rx_450h.urdf')
     robot_state_publisher_runner = launch_ros.actions.Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)])
 
     # Run rviz
@@ -112,8 +112,8 @@ def generate_launch_description():
         'lidar_bounding_boxes_lgsvl.rviz')
     rviz_runner = launch_ros.actions.Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)])
 
     return launch.LaunchDescription([

@@ -80,9 +80,9 @@ def generate_launch_description():
 
     lgsvl_interface = Node(
         package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        node_namespace='vehicle',
-        node_name='lgsvl_interface_node',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
+        name='lgsvl_interface_node',
         output='screen',
         parameters=[
           LaunchConfiguration('lgsvl_interface_param_file'),
@@ -99,37 +99,37 @@ def generate_launch_description():
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_front',
-        node_namespace='lidar_front',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_front',
+        namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         remappings=[("points_in", "points_raw")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_rear',
-        node_namespace='lidar_rear',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_rear',
+        namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         remappings=[("points_in", "points_raw")]
     )
     map_publisher = Node(
         package='ndt_nodes',
-        node_executable='ndt_map_publisher_exe',
-        node_namespace='localization',
+        executable='ndt_map_publisher_exe',
+        namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
     urdf_publisher = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)]
     )
     ndt_localizer = Node(
         package='ndt_nodes',
-        node_executable='p2d_ndt_localizer_exe',
-        node_namespace='localization',
-        node_name='p2d_ndt_localizer_node',
+        executable='p2d_ndt_localizer_exe',
+        namespace='localization',
+        name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
         remappings=[
             ("points_in", "/lidars/points_fused_downsampled"),
@@ -138,9 +138,9 @@ def generate_launch_description():
     )
     mpc = Node(
         package='mpc_controller_nodes',
-        node_executable='mpc_controller_node_exe',
-        node_name='mpc_controller_node',
-        node_namespace='control',
+        executable='mpc_controller_node_exe',
+        name='mpc_controller_node',
+        namespace='control',
         parameters=[LaunchConfiguration('mpc_param_file')]
     )
 

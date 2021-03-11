@@ -74,18 +74,18 @@ def generate_launch_description():
 
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_front',
-        node_namespace='lidar_front',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_front',
+        namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         remappings=[("points_in", "points_raw")]
     )
 
     scan_downsampler = Node(
         package='voxel_grid_nodes',
-        node_executable='voxel_grid_node_exe',
-        node_namespace='lidar_front',
-        node_name='voxel_grid_cloud_node',
+        executable='voxel_grid_node_exe',
+        namespace='lidar_front',
+        name='voxel_grid_cloud_node',
         parameters=[LaunchConfiguration('scan_downsampler_param_file')],
         remappings=[
             ("points_in", "points_filtered"),
@@ -95,9 +95,9 @@ def generate_launch_description():
 
     ndt_localizer = Node(
         package='ndt_nodes',
-        node_executable='p2d_ndt_localizer_exe',
-        node_namespace='localization',
-        node_name='p2d_ndt_localizer_node',
+        executable='p2d_ndt_localizer_exe',
+        namespace='localization',
+        name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
         remappings=[
             ("points_in", "/lidar_front/points_filtered_downsampled")
@@ -106,15 +106,15 @@ def generate_launch_description():
 
     map_publisher = Node(
         package='ndt_nodes',
-        node_executable='ndt_map_publisher_exe',
-        node_namespace='localization',
+        executable='ndt_map_publisher_exe',
+        namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
 
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)],
     )
 
@@ -123,7 +123,7 @@ def generate_launch_description():
     # TODO(yunus.caliskan): To be removed after #476
     odom_bl_publisher = Node(
         package='tf2_ros',
-        node_executable='static_transform_publisher',
+        executable='static_transform_publisher',
         arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"]
     )
 

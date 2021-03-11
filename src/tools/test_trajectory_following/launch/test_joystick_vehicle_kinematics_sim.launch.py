@@ -54,12 +54,12 @@ def generate_launch_description():
 
     joy = Node(
         package='joy',
-        node_executable='joy_node'
+        executable='joy_node'
     )
 
     joy_translator = Node(
         package='joystick_vehicle_interface_nodes',
-        node_executable='joystick_vehicle_interface_node_exe',
+        executable='joystick_vehicle_interface_node_exe',
         parameters=[LaunchConfiguration('joy_translator_param_file')],
         remappings=[
             ('vehicle_command', '/vehicle/vehicle_command')
@@ -75,8 +75,8 @@ def generate_launch_description():
 
     joy_ctrl_record_replay_traj = Node(
         package="test_trajectory_following",
-        node_executable="joy_ctrl_record_replay_traj.py",
-        node_name="joy_ctrl_record_replay_traj",
+        executable="joy_ctrl_record_replay_traj.py",
+        name="joy_ctrl_record_replay_traj",
         parameters=[],
         remappings=[
             ("vehicle_kinematic_state", "/vehicle/vehicle_kinematic_state")
@@ -86,21 +86,21 @@ def generate_launch_description():
 
     vehicle_kinematics_sim_node = Node(
         package='test_trajectory_following',
-        node_executable='vehicle_kinematics_sim.py',
-        node_namespace='vehicle',
+        executable='vehicle_kinematics_sim.py',
+        namespace='vehicle',
         output='screen',
     )
 
     lexus_rx_450h_description = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(lexus_rx_450h_urdf_path)])
 
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)]
     )
 

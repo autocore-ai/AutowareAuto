@@ -23,9 +23,9 @@ def generate_launch_description():
     # -------------------------------- Nodes-----------------------------------
     recordreplay_planner_node = launch_ros.actions.Node(
         package='recordreplay_planner_nodes',
-        node_executable='recordreplay_planner_node_exe',
-        node_name='recordreplay_planner',
-        node_namespace='planning',
+        executable='recordreplay_planner_node_exe',
+        name='recordreplay_planner',
+        namespace='planning',
         output='screen',
         parameters=[
             "{}/param/defaults.param.yaml".format(

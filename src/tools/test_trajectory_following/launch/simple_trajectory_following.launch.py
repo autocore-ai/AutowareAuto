@@ -96,9 +96,9 @@ def generate_launch_description():
 
     simple_trajectory_node = Node(
         package="test_trajectory_following",
-        node_executable="simple_trajectory.py",
-        node_name="simple_trajectory",
-        node_namespace='planning',
+        executable="simple_trajectory.py",
+        name="simple_trajectory",
+        namespace='planning',
         parameters=[LaunchConfiguration('simple_trajectory_param_file')],
         remappings=[
             ("vehicle_kinematic_state", "/vehicle/vehicle_kinematic_state")
@@ -110,17 +110,17 @@ def generate_launch_description():
 
     mpc_controller_nodes = Node(
         package="mpc_controller_nodes",
-        node_executable="mpc_controller_node_exe",
-        node_name="mpc_controller",
-        node_namespace='control',
+        executable="mpc_controller_node_exe",
+        name="mpc_controller",
+        namespace='control',
         parameters=[LaunchConfiguration('mpc_controller_param_file')],
         output='screen',
     )
 
     lgsvl_interface_node = Node(
         package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        node_namespace='vehicle',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[LaunchConfiguration('lgsvl_interface_param_file')],
         remappings=[
@@ -136,9 +136,9 @@ def generate_launch_description():
 
     controller_testing = Node(
         package="controller_testing",
-        node_executable="controller_testing_main.py",
-        node_namespace="vehicle",
-        node_name="controller_testing_node",
+        executable="controller_testing_main.py",
+        namespace="vehicle",
+        name="controller_testing_node",
         output="screen",
         parameters=[LaunchConfiguration("controller_testing_param_file"), {
             'real_time_sim': LaunchConfiguration('real_time_sim')
@@ -153,8 +153,8 @@ def generate_launch_description():
 
     vehicle_kinematics_sim_node = Node(
         package='test_trajectory_following',
-        node_executable='vehicle_kinematics_sim.py',
-        node_namespace='vehicle',
+        executable='vehicle_kinematics_sim.py',
+        namespace='vehicle',
         output='screen',
         condition=IfEqualsCondition("sim_type", "kinematics")
     )
@@ -162,15 +162,15 @@ def generate_launch_description():
     # lexus_rx_450h_description
     lexus_rx_450h_description = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(lexus_rx_450h_urdf_path)]
     )
 
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)],
         condition=IfCondition(LaunchConfiguration('with_rviz'))
     )

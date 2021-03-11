@@ -40,14 +40,14 @@ def generate_launch_description():
     # map_provider and visualizer node execution definition
     lanelet2_map_provider = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_provider_exe',
-        node_namespace='had_maps',
+        executable='lanelet2_map_provider_exe',
+        namespace='had_maps',
         parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
     )
     lanelet2_map_visualizer = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_visualizer_exe',
-        node_namespace='had_maps')
+        executable='lanelet2_map_visualizer_exe',
+        namespace='had_maps')
     # launch nodes
     return launch.LaunchDescription([
         map_provider_param,

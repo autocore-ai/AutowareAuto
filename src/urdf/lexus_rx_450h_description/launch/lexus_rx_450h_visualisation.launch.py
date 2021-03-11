@@ -13,12 +13,12 @@ def generate_launch_description():
     return launch.LaunchDescription([
         launch_ros.actions.Node(
             package='robot_state_publisher',
-            node_executable='robot_state_publisher',
-            node_name='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
             arguments=[str(urdf_path)]),
         launch_ros.actions.Node(
             package='rviz2',
-            node_executable='rviz2',
-            node_name='rviz2',
+            executable='rviz2',
+            name='rviz2',
             arguments=['-d', str(rviz_cfg_path)])
     ])

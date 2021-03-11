@@ -156,11 +156,7 @@ void MotionTestingPublisher::add_state_and_tf(
   const TrajectoryPoint & pt) noexcept
 {
   // Make transforms
-#ifdef ROS_DISTRO_DASHING
-  TransformStamped tf{rosidl_generator_cpp::MessageInitialization::ALL};
-#elif defined ROS_DISTRO_FOXY
   TransformStamped tf{rosidl_runtime_cpp::MessageInitialization::ALL};
-#endif
   tf.header.stamp = time_utils::to_message(
     time_utils::from_message(header.stamp) +
     time_utils::from_message(pt.time_from_start) +
@@ -175,21 +171,13 @@ void MotionTestingPublisher::add_state_and_tf(
   tf.transform.rotation.y = {};
   tf.transform.rotation.z = static_cast<Real>(pt.heading.imag);
   tf.transform.rotation.w = static_cast<Real>(pt.heading.real);
-#ifdef ROS_DISTRO_DASHING
-  TFMessage msg{rosidl_generator_cpp::MessageInitialization::ALL};
-#elif defined ROS_DISTRO_FOXY
   TFMessage msg{rosidl_runtime_cpp::MessageInitialization::ALL};
-#endif
   if (tf.child_frame_id != tf.header.frame_id) {
     msg.transforms.push_back(tf);
     m_tfs.push_back(msg);
   }
   // Make states
-#ifdef ROS_DISTRO_DASHING
-  State s{rosidl_generator_cpp::MessageInitialization::ALL};
-#elif defined ROS_DISTRO_FOXY
   State s{rosidl_runtime_cpp::MessageInitialization::ALL};
-#endif
   s.state = pt;
   s.header.stamp = time_utils::to_message(
     time_utils::from_message(header.stamp) +

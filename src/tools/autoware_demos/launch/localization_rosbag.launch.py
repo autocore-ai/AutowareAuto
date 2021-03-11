@@ -104,14 +104,8 @@ def generate_launch_description():
 
     rosbag_file_path_default = os.path.join(
         os.environ['HOME'],
-        'rosbag2_2020_09_23-15_58_07'
+        'rosbag2_2020_09_23-15_58_07/rosbag2_2020_09_23-15_58_07.db3'
     )
-
-    if os.environ["ROS_DISTRO"] > "dashing":
-        rosbag_file_path_default = os.path.join(
-            rosbag_file_path_default,
-            'rosbag2_2020_09_23-15_58_07.db3'
-        )
 
     return launch.LaunchDescription([
 
@@ -140,33 +134,33 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='point_cloud_filter_transform_nodes',
-            node_executable='point_cloud_filter_transform_node_exe',
-            node_name='filter_transform_vlp16_front',
-            node_namespace='lidar_front',
+            executable='point_cloud_filter_transform_node_exe',
+            name='filter_transform_vlp16_front',
+            namespace='lidar_front',
             parameters=[pc_filter_transform_param_file_path],
             remappings=[("points_in", "points_raw")]
         ),
 
         launch_ros.actions.Node(
             package='point_cloud_filter_transform_nodes',
-            node_executable='point_cloud_filter_transform_node_exe',
-            node_name='filter_transform_vlp16_rear',
-            node_namespace='lidar_rear',
+            executable='point_cloud_filter_transform_node_exe',
+            name='filter_transform_vlp16_rear',
+            namespace='lidar_rear',
             parameters=[pc_filter_transform_param_file_path],
             remappings=[("points_in", "points_raw")]
         ),
 
         launch_ros.actions.Node(
             package='ndt_nodes',
-            node_executable='ndt_map_publisher_exe',
-            node_namespace='localization',
+            executable='ndt_map_publisher_exe',
+            namespace='localization',
             parameters=[ndt_map_publisher_param]
         ),
 
         launch_ros.actions.Node(
             package='robot_state_publisher',
-            node_executable='robot_state_publisher',
-            node_name='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
             arguments=[
                 str(urdf_file_path)
             ]
@@ -174,9 +168,9 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='ndt_nodes',
-            node_executable='p2d_ndt_localizer_exe',
-            node_namespace='localization',
-            node_name='p2d_ndt_localizer_node',
+            executable='p2d_ndt_localizer_exe',
+            namespace='localization',
+            name='p2d_ndt_localizer_node',
             parameters=[ndt_localizer_param_file_path,
                         ndt_localizer_init_hack_param],
             remappings=[
@@ -190,14 +184,14 @@ def generate_launch_description():
         # TODO(yunus.caliskan): To be removed after #476
         launch_ros.actions.Node(
             package='tf2_ros',
-            node_executable='static_transform_publisher',
+            executable='static_transform_publisher',
             arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"]
         ),
 
         launch_ros.actions.Node(
             package='point_cloud_fusion_nodes',
-            node_executable='pointcloud_fusion_node_exe',
-            node_namespace='lidars',
+            executable='pointcloud_fusion_node_exe',
+            namespace='lidars',
             parameters=[point_cloud_fusion_param_file_path],
             remappings=[
                 ("output_topic", "points_fused"),
@@ -208,9 +202,9 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='voxel_grid_nodes',
-            node_executable='voxel_grid_node_exe',
-            node_namespace='lidars',
-            node_name='voxel_grid_cloud_node',
+            executable='voxel_grid_node_exe',
+            namespace='lidars',
+            name='voxel_grid_cloud_node',
             parameters=[scan_downsampler_param_file_path],
             remappings=[
                 ("points_in", "points_fused"),
@@ -220,8 +214,8 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='lanelet2_map_provider',
-            node_executable='lanelet2_map_provider_exe',
-            node_namespace='had_maps',
+            executable='lanelet2_map_provider_exe',
+            namespace='had_maps',
             parameters=[
                 {'map_osm_file': lanelet2_osm_file_path}
             ]
@@ -229,8 +223,8 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='lanelet2_map_provider',
-            node_executable='lanelet2_map_visualizer_exe',
-            node_namespace='had_maps'
+            executable='lanelet2_map_visualizer_exe',
+            namespace='had_maps'
         ),
 
         # play the rosbag data
@@ -251,8 +245,8 @@ def generate_launch_description():
         # launch RViz visualization
         launch_ros.actions.Node(
             package='rviz2',
-            node_executable='rviz2',
-            node_name='rviz2',
+            executable='rviz2',
+            name='rviz2',
             arguments=['-d', LaunchConfiguration("rviz_cfg_path")],
             condition=IfCondition(LaunchConfiguration("launch_rviz"))
         )

@@ -71,9 +71,9 @@ def generate_launch_description():
 
     controller_testing = Node(
         package="controller_testing",
-        node_executable="controller_testing_main.py",
-        node_namespace="control",
-        node_name="controller_testing_node",
+        executable="controller_testing_main.py",
+        namespace="control",
+        name="controller_testing_node",
         output="screen",
         parameters=[LaunchConfiguration("controller_testing_param_file"), {
             'real_time_sim': LaunchConfiguration('real_time_sim')
@@ -89,9 +89,9 @@ def generate_launch_description():
     )
     controller_testing_delayed = Node(
         package="controller_testing",
-        node_executable="controller_testing_main.py",
-        node_namespace="control",
-        node_name="controller_testing_node",
+        executable="controller_testing_main.py",
+        namespace="control",
+        name="controller_testing_node",
         output="screen",
         parameters=[LaunchConfiguration("controller_testing_param_file"), {
             'real_time_sim': LaunchConfiguration('real_time_sim')
@@ -111,9 +111,9 @@ def generate_launch_description():
     # mpc_controller
     mpc_controller = Node(
         package="mpc_controller_nodes",
-        node_executable="mpc_controller_node_exe",
-        # node_namespace="control",
-        node_name="mpc_controller",
+        executable="mpc_controller_node_exe",
+        # namespace="control",
+        name="mpc_controller",
         output="screen",
         parameters=[LaunchConfiguration("mpc_controller_param_file"), {}],
         remappings=[
@@ -126,15 +126,15 @@ def generate_launch_description():
 
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)],
         condition=IfCondition(LaunchConfiguration('with_rviz'))
     )
     urdf_publisher = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)]
     )
 

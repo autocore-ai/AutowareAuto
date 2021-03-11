@@ -63,11 +63,7 @@ bool BehaviorConfig::is_temporal_reference() const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 ControllerBase::ControllerBase(const BehaviorConfig & config)
 : m_config{config},
-#ifdef ROS_DISTRO_DASHING
-  m_reference_trajectory{rosidl_generator_cpp::MessageInitialization::ALL},
-#elif defined ROS_DISTRO_FOXY
   m_reference_trajectory{rosidl_runtime_cpp::MessageInitialization::ALL},
-#endif
   m_latest_reference{decltype(m_latest_reference)::min()},
   m_reference_spatial_index{},  // zero initialization
   m_reference_temporal_index{}  // zero initialization
@@ -226,11 +222,7 @@ bool ControllerBase::is_past_trajectory(const State & state) const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 Command ControllerBase::compute_stop_command(const State & state) const noexcept
 {
-#ifdef ROS_DISTRO_DASHING
-  Command ret{rosidl_generator_cpp::MessageInitialization::ALL};
-#elif defined ROS_DISTRO_FOXY
   Command ret{rosidl_runtime_cpp::MessageInitialization::ALL};
-#endif
   ret.stamp = state.header.stamp;
   // Steering angle "uses up" stopping power/grip capacity
   ret.front_wheel_angle_rad = Real{};  // zero initialization etc.

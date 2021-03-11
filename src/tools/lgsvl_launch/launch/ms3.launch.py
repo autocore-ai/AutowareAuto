@@ -134,8 +134,8 @@ def generate_launch_description():
 
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_node_exe',
-        node_namespace='perception',
+        executable='euclidean_cluster_node_exe',
+        namespace='perception',
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
         remappings=[
             ("points_in", "points_nonground")
@@ -143,25 +143,25 @@ def generate_launch_description():
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_front',
-        node_namespace='lidar_front',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_front',
+        namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         remappings=[("points_in", "points_raw")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_rear',
-        node_namespace='lidar_rear',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_rear',
+        namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         remappings=[("points_in", "points_raw")]
     )
     # point cloud fusion runner to fuse front and rear lidar
     point_cloud_fusion_node = Node(
         package='point_cloud_fusion_nodes',
-        node_executable='pointcloud_fusion_node_exe',
-        node_namespace='lidars',
+        executable='pointcloud_fusion_node_exe',
+        namespace='lidars',
         parameters=[LaunchConfiguration('point_cloud_fusion_node_param_file')],
         remappings=[
             ("output_topic", "points_fused"),
@@ -171,8 +171,8 @@ def generate_launch_description():
     )
     lgsvl_interface = Node(
         package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        node_namespace='vehicle',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[
             LaunchConfiguration('lgsvl_interface_param_file'),
@@ -189,43 +189,43 @@ def generate_launch_description():
     )
     map_publisher = Node(
         package='ndt_nodes',
-        node_executable='ndt_map_publisher_exe',
-        node_namespace='localization',
+        executable='ndt_map_publisher_exe',
+        namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
 #    odom_state_estimator = Node(
 #        package='robot_localization',
-#        node_executable='ekf_node',
-#        node_namespace='localization/odom',
+#        executable='ekf_node',
+#        namespace='localization/odom',
 #        parameters=[LaunchConfiguration('odom_state_estimator_param_file')]
 #    )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_cloud_node_exe',
-        node_namespace='perception',
+        executable='ray_ground_classifier_cloud_node_exe',
+        namespace='perception',
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         remappings=[("points_in", "/lidars/points_fused")]
     )
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)],
         condition=IfCondition(LaunchConfiguration('with_rviz')),
         remappings=[("initialpose", "/localization/initialpose")]
     )
     urdf_publisher = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)]
     )
 
     scan_downsampler = Node(
         package='voxel_grid_nodes',
-        node_executable='voxel_grid_node_exe',
-        node_namespace='lidars',
-        node_name='voxel_grid_cloud_node',
+        executable='voxel_grid_node_exe',
+        namespace='lidars',
+        name='voxel_grid_cloud_node',
         parameters=[LaunchConfiguration('scan_downsampler_param_file')],
         remappings=[
             ("points_in", "points_fused"),
@@ -234,9 +234,9 @@ def generate_launch_description():
     )
     ndt_localizer = Node(
         package='ndt_nodes',
-        node_executable='p2d_ndt_localizer_exe',
-        node_namespace='localization',
-        node_name='p2d_ndt_localizer_node',
+        executable='p2d_ndt_localizer_exe',
+        namespace='localization',
+        name='p2d_ndt_localizer_node',
         parameters=[LaunchConfiguration('ndt_localizer_param_file')],
         remappings=[
             ("points_in", "/lidars/points_fused_downsampled")
@@ -244,16 +244,16 @@ def generate_launch_description():
     )
     mpc = Node(
         package='mpc_controller_nodes',
-        node_executable='mpc_controller_node_exe',
-        node_name='mpc_controller',
-        node_namespace='control',
+        executable='mpc_controller_node_exe',
+        name='mpc_controller',
+        namespace='control',
         parameters=[LaunchConfiguration('mpc_param_file')]
     )
     recordreplay_planner = Node(
         package='recordreplay_planner_nodes',
-        node_executable='recordreplay_planner_node_exe',
-        node_name='recordreplay_planner',
-        node_namespace='planning',
+        executable='recordreplay_planner_node_exe',
+        name='recordreplay_planner',
+        namespace='planning',
         parameters=[LaunchConfiguration('recordreplay_planner_param_file')],
         remappings=[
             ('vehicle_state', '/vehicle/vehicle_kinematic_state'),

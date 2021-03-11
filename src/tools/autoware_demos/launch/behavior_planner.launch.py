@@ -38,9 +38,9 @@ def generate_launch_description():
     )
     behavior_planner = Node(
         package='behavior_planner_nodes',
-        node_name='behavior_planner_node',
-        node_namespace='planning',
-        node_executable='behavior_planner_node_exe',
+        name='behavior_planner_node',
+        namespace='planning',
+        executable='behavior_planner_node_exe',
         parameters=[LaunchConfiguration('behavior_planner_param_file')],
         output='screen',
         remappings=[
@@ -54,9 +54,9 @@ def generate_launch_description():
 
     global_planner = Node(
         package='lanelet2_global_planner_nodes',
-        node_name='lanelet2_global_planner_node',
-        node_namespace='planning',
-        node_executable='lanelet2_global_planner_node_exe',
+        name='lanelet2_global_planner_node',
+        namespace='planning',
+        executable='lanelet2_global_planner_node_exe',
         remappings=[('HAD_Map_Client', '/had_maps/HAD_Map_Service'),
                     ('vehicle_kinematic_state', '/vehicle/vehicle_kinematic_state')]
     )
@@ -68,9 +68,9 @@ def generate_launch_description():
     )
     lane_planner = Node(
         package='lane_planner_nodes',
-        node_name='lane_planner_node',
-        node_namespace='planning',
-        node_executable='lane_planner_node_exe',
+        name='lane_planner_node',
+        namespace='planning',
+        executable='lane_planner_node_exe',
         parameters=[LaunchConfiguration('lane_planner_param_file')],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
@@ -82,15 +82,15 @@ def generate_launch_description():
     )
     lanelet2_map_provider = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_provider_exe',
-        node_namespace='had_maps',
+        executable='lanelet2_map_provider_exe',
+        namespace='had_maps',
         parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
     )
 
     lanelet2_map_visualizer = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_visualizer_exe',
-        node_namespace='had_maps'
+        executable='lanelet2_map_visualizer_exe',
+        namespace='had_maps'
     )
 
     lgsvl_interface_param = DeclareLaunchArgument(
@@ -100,8 +100,8 @@ def generate_launch_description():
     )
     lgsvl_interface = Node(
         package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        node_namespace='vehicle',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[
           LaunchConfiguration('lgsvl_interface_param_file'),
@@ -119,7 +119,7 @@ def generate_launch_description():
 
     map_odom_publisher = Node(
         package='tf2_ros',
-        node_executable='static_transform_publisher',
+        executable='static_transform_publisher',
         arguments=["-57.60810852050781", "-41.382755279541016", "0", "0", "0", "0", "map", "odom"]
     )
 
@@ -130,8 +130,8 @@ def generate_launch_description():
     )
     map_publisher = Node(
         package='ndt_nodes',
-        node_executable='ndt_map_publisher_exe',
-        node_namespace='localization',
+        executable='ndt_map_publisher_exe',
+        namespace='localization',
         parameters=[LaunchConfiguration('map_publisher_param_file')]
     )
 
@@ -142,9 +142,9 @@ def generate_launch_description():
     )
     mpc_controller = Node(
         package='mpc_controller_nodes',
-        node_executable='mpc_controller_node_exe',
-        node_name='mpc_controller',
-        node_namespace='control',
+        executable='mpc_controller_node_exe',
+        name='mpc_controller',
+        namespace='control',
         parameters=[LaunchConfiguration('mpc_controller_param_file')]
     )
 
@@ -155,17 +155,17 @@ def generate_launch_description():
     )
     parking_planner = Node(
         package='parking_planner_nodes',
-        node_name='parking_planner_node',
-        node_namespace='planning',
-        node_executable='parking_planner_node_exe',
+        name='parking_planner_node',
+        namespace='planning',
+        executable='parking_planner_node_exe',
         parameters=[LaunchConfiguration('parking_planner_param_file')],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
 
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(param_path.parent / 'rviz2' / 'planner.rviz')],
         remappings=[("initialpose", "/localization/initialpose"),
                     ("goal_pose", "/planning/goal_pose")],
@@ -173,8 +173,8 @@ def generate_launch_description():
 
     urdf_publisher = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)]
     )
 

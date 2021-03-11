@@ -113,8 +113,8 @@ def generate_launch_description():
 
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_node_exe',
-        node_namespace='perception',
+        executable='euclidean_cluster_node_exe',
+        namespace='perception',
         condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
         remappings=[
@@ -130,17 +130,17 @@ def generate_launch_description():
     )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_cloud_node_exe',
-        node_namespace='perception',
+        executable='ray_ground_classifier_cloud_node_exe',
+        namespace='perception',
         condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         remappings=[("points_in", "/lidars/points_fused")]
     )
     scan_downsampler = Node(
         package='voxel_grid_nodes',
-        node_executable='voxel_grid_node_exe',
-        node_namespace='lidars',
-        node_name='voxel_grid_cloud_node',
+        executable='voxel_grid_node_exe',
+        namespace='lidars',
+        name='voxel_grid_cloud_node',
         parameters=[LaunchConfiguration('scan_downsampler_param_file')],
         remappings=[
             ("points_in", "points_fused"),
@@ -149,46 +149,46 @@ def generate_launch_description():
     )
     lanelet2_map_provider = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_provider_exe',
-        node_namespace='had_maps',
-        node_name='lanelet2_map_provider_node',
+        executable='lanelet2_map_provider_exe',
+        namespace='had_maps',
+        name='lanelet2_map_provider_node',
         parameters=[LaunchConfiguration('lanelet2_map_provider_param_file')]
     )
     lanelet2_map_visualizer = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_visualizer_exe',
-        node_name='lanelet2_map_visualizer_node',
-        node_namespace='had_maps'
+        executable='lanelet2_map_visualizer_exe',
+        name='lanelet2_map_visualizer_node',
+        namespace='had_maps'
     )
     global_planner = Node(
         package='lanelet2_global_planner_nodes',
-        node_name='lanelet2_global_planner_node',
-        node_namespace='planning',
-        node_executable='lanelet2_global_planner_node_exe',
+        name='lanelet2_global_planner_node',
+        namespace='planning',
+        executable='lanelet2_global_planner_node_exe',
         remappings=[('HAD_Map_Client', '/had_maps/HAD_Map_Service'),
                     ('vehicle_kinematic_state', '/vehicle/vehicle_kinematic_state')]
     )
     lane_planner = Node(
         package='lane_planner_nodes',
-        node_name='lane_planner_node',
-        node_namespace='planning',
-        node_executable='lane_planner_node_exe',
+        name='lane_planner_node',
+        namespace='planning',
+        executable='lane_planner_node_exe',
         parameters=[LaunchConfiguration('lane_planner_param_file')],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
     parking_planner = Node(
         package='parking_planner_nodes',
-        node_name='parking_planner_node',
-        node_namespace='planning',
-        node_executable='parking_planner_node_exe',
+        name='parking_planner_node',
+        namespace='planning',
+        executable='parking_planner_node_exe',
         parameters=[LaunchConfiguration('parking_planner_param_file')],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
     object_collision_estimator = Node(
         package='object_collision_estimator_nodes',
-        node_name='object_collision_estimator_node',
-        node_namespace='planning',
-        node_executable='object_collision_estimator_node_exe',
+        name='object_collision_estimator_node',
+        namespace='planning',
+        executable='object_collision_estimator_node_exe',
         condition=IfCondition(LaunchConfiguration('with_obstacles')),
         parameters=[LaunchConfiguration('object_collision_estimator_param_file')],
         remappings=[
@@ -197,9 +197,9 @@ def generate_launch_description():
     )
     behavior_planner = Node(
         package='behavior_planner_nodes',
-        node_name='behavior_planner_node',
-        node_namespace='planning',
-        node_executable='behavior_planner_node_exe',
+        name='behavior_planner_node',
+        namespace='planning',
+        executable='behavior_planner_node_exe',
         parameters=[
             LaunchConfiguration('behavior_planner_param_file'),
             {'enable_object_collision_estimator': LaunchConfiguration('with_obstacles')}
@@ -215,9 +215,9 @@ def generate_launch_description():
     )
     off_map_obstacles_filter = Node(
         package='off_map_obstacles_filter_nodes',
-        node_name='off_map_obstacles_filter_node',
-        node_namespace='perception',
-        node_executable='off_map_obstacles_filter_nodes_exe',
+        name='off_map_obstacles_filter_node',
+        namespace='perception',
+        executable='off_map_obstacles_filter_nodes_exe',
         parameters=[LaunchConfiguration('off_map_obstacles_filter_param_file')],
         output='screen',
         remappings=[

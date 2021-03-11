@@ -26,8 +26,8 @@ point_cloud_fusion_node_param_file = os.path.join(point_cloud_fusion_node_pkg_pr
 def generate_launch_description():
     point_cloud_fusion_nodes = Node(
         package='point_cloud_fusion_nodes',
-        node_executable='pointcloud_fusion_node_exe',
-        node_namespace='lidars',
+        executable='pointcloud_fusion_node_exe',
+        namespace='lidars',
         parameters=[point_cloud_fusion_node_param_file],
         remappings=[
             ("output_topic", "points_fused"),

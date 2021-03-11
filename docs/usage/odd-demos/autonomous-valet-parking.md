@@ -147,7 +147,7 @@ the drop-off zone.
 @anchor avp-parking-spots
 @image html images/avp-parking-spots.png "Location of drop-off area and target parking spot" width=50%
 
-From the drop-off zone, select a parking spot by clicking the `2D Goal Pose` (in ROS2 Dashing: `2D Nav Goal`) button in RViz, and click and select in the map to select a parking spot and the orientation of the car, implicitly selecting among head-in and reverse parking.
+From the drop-off zone, select a parking spot by clicking the `2D Goal Pose` button in RViz, and click and select in the map to select a parking spot and the orientation of the car, implicitly selecting among head-in and reverse parking.
 
 @image html images/avp-rviz-goal-pose.png "Selecting a parking spot with RViz" width=50%
 

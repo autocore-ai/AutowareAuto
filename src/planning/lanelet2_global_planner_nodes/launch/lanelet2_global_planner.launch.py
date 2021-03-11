@@ -23,10 +23,10 @@ import launch_ros.actions
 def generate_launch_description():
     # execution definition.
     global_planner_node_runner = launch_ros.actions.Node(
-        node_name='lanelet2_global_planner_node',
-        node_namespace='planning',
+        name='lanelet2_global_planner_node',
+        namespace='planning',
         package='lanelet2_global_planner_nodes',
-        node_executable='lanelet2_global_planner_node_exe',
+        executable='lanelet2_global_planner_node_exe',
         output='screen',
         remappings=[('HAD_Map_Client', '/had_maps/HAD_Map_Service'),
                     ('vehicle_kinematic_state', '/vehicle/vehicle_kinematic_state')],

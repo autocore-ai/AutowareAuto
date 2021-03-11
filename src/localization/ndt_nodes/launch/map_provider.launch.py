@@ -56,8 +56,8 @@ def generate_launch_description():
     # map_provide node execution definition
     map_provider_node_runner = launch_ros.actions.Node(
         package="ndt_nodes",
-        node_executable="ndt_map_publisher_exe",
-        node_namespace="localization",
+        executable="ndt_map_publisher_exe",
+        namespace="localization",
         parameters=[map_provider_param_file,
                     {"map_yaml_file": LaunchConfiguration('map_yaml_file_arg')},
                     {"map_pcd_file": LaunchConfiguration('map_pcd_file_arg')}])
@@ -73,7 +73,7 @@ def generate_launch_description():
     # map downsample node execution definition
     map_downsampler_node_runner = launch_ros.actions.Node(
         package='voxel_grid_nodes',
-        node_executable='voxel_grid_node_exe',
+        executable='voxel_grid_node_exe',
         parameters=[map_downsampler_param_file],
         remappings=[
             ("points_in", "viz_ndt_map"),

@@ -21,9 +21,9 @@ def generate_launch_description():
     """Launch object_collision_estimator_node with default configuration."""
     object_collision_estimator_node = launch_ros.actions.Node(
         package='object_collision_estimator_nodes',
-        node_executable='object_collision_estimator_node_exe',
-        node_name='object_collision_estimator_node',
-        node_namespace='planning',
+        executable='object_collision_estimator_node_exe',
+        name='object_collision_estimator_node',
+        namespace='planning',
         output='screen',
         parameters=[
             "{}/param/defaults.param.yaml".format(

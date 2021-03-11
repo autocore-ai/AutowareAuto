@@ -109,8 +109,8 @@ def generate_launch_description():
     )
     lgsvl_interface = Node(
         package='lgsvl_interface',
-        node_executable='lgsvl_interface_exe',
-        node_namespace='vehicle',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[LaunchConfiguration('lgsvl_interface_param_file')],
         remappings=[
@@ -130,8 +130,8 @@ def generate_launch_description():
     )
     joy_ctrl_record_replay_traj = Node(
         package="test_trajectory_following",
-        node_executable="joy_ctrl_record_replay_traj.py",
-        node_name="joy_ctrl_record_replay_traj",
+        executable="joy_ctrl_record_replay_traj.py",
+        name="joy_ctrl_record_replay_traj",
         parameters=[],
         remappings=[
             ("vehicle_kinematic_state", "/vehicle/vehicle_kinematic_state")
@@ -140,34 +140,34 @@ def generate_launch_description():
     )
     filter_transform_vlp16_front = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_front',
-        node_namespace='lidar_front',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_front',
+        namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
         remappings=[("points_in", "points_raw")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
-        node_executable='point_cloud_filter_transform_node_exe',
-        node_name='filter_transform_vlp16_rear',
-        node_namespace='lidar_rear',
+        executable='point_cloud_filter_transform_node_exe',
+        name='filter_transform_vlp16_rear',
+        namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
         remappings=[("points_in", "points_raw")]
     )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_cloud_node_exe',
-        node_namespace='perception',
+        executable='ray_ground_classifier_cloud_node_exe',
+        namespace='perception',
         parameters=[LaunchConfiguration('ray_ground_classifier_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
         remappings=[("points_in", "/lidar_front/points_filtered")]
     )
     euclidean_clustering = Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_node_exe',
-        node_namespace='perception',
+        executable='euclidean_cluster_node_exe',
+        namespace='perception',
         parameters=[LaunchConfiguration('euclidean_cluster_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
         remappings=[
@@ -176,23 +176,23 @@ def generate_launch_description():
     )
     mpc_controller_nodes = Node(
         package="mpc_controller_nodes",
-        node_executable="mpc_controller_node_exe",
-        node_name="mpc_controller",
-        node_namespace='control',
+        executable="mpc_controller_node_exe",
+        name="mpc_controller",
+        namespace='control',
         parameters=[LaunchConfiguration('mpc_controller_param_file')],
         output='screen',
         condition=IfCondition(LaunchConfiguration('with_mpc'))
     )
     rviz2 = Node(
         package='rviz2',
-        node_executable='rviz2',
-        node_name='rviz2',
+        executable='rviz2',
+        name='rviz2',
         arguments=['-d', str(rviz_cfg_path)]
     )
     urdf_publisher = Node(
         package='robot_state_publisher',
-        node_executable='robot_state_publisher',
-        node_name='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         arguments=[str(urdf_path)]
     )
     return LaunchDescription([
