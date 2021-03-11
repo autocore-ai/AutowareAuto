@@ -58,6 +58,14 @@ $ cd ~/adehome
 $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
 
+Checkout the [latest release](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/releases) by checking out the corresponding tag or release branch.
+Alternatively, when not checking out any specific tag, the latest `master` branch will be used
+which may include features that are still being developed. For example:
+```
+$ cd AutowareAuto
+$ git checkout tags/1.0.0 -b release-1.0.0
+```
+
 ## Sharing files between the host system and ADE
 It might come in handy to share files such as dotfiles or utility programs from your host machine
 with ADE. If you only have a single `adehome` directory, there is a way to do that without
