@@ -36,13 +36,26 @@ def generate_test_description(ready_fn):
             ("points_in", test_topic)
         ])
 
+    ray_ground_spoofer = launch_ros.actions.Node(
+        package="lidar_integration",
+        node_executable="point_cloud_mutation_spoofer_exe",
+        arguments=[
+            "--topic", test_topic,
+            "--freq", "10",
+            "--runtime", "10",
+            "--mean", "300000",
+            "--std", "50000",
+        ],
+    )
+
     ld, context = lidar_integration.get_point_cloud_mutation_launch_description(
         test_nodes=[node],
         checkers=[],  # TODO we only check that node does not crash for now
         topic=test_topic,
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())
-        ])
+        ],
+        spoofer=ray_ground_spoofer)
 
     return ld, context
 
