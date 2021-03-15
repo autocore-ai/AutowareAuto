@@ -10,12 +10,15 @@ rviz_cfg_path = package_path / Path('config/lexus_rx_450h.rviz')
 
 
 def generate_launch_description():
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
+
     return launch.LaunchDescription([
         launch_ros.actions.Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
-            arguments=[str(urdf_path)]),
+            parameters=[{'robot_description': urdf_file}]),
         launch_ros.actions.Node(
             package='rviz2',
             executable='rviz2',

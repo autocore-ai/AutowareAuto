@@ -53,6 +53,8 @@ def generate_launch_description():
         package_name='test_trajectory_following', file_name='config/default_control.rviz')
     urdf_path = get_share_file(
         package_name='lexus_rx_450h_description', file_name='urdf/lexus_rx_450h.urdf')
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
 
     # --------------------------------- Arguments -------------------------------
     joy_translator_param = DeclareLaunchArgument(
@@ -193,7 +195,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
-        arguments=[str(urdf_path)]
+        parameters=[{'robot_description': urdf_file}],
     )
     return LaunchDescription([
         joy_translator_param,

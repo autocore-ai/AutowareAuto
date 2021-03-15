@@ -90,11 +90,13 @@ def generate_launch_description():
         'vlp16_sim_lexus_pc_fusion.param.yaml'
     )
 
-    urdf_file_path = os.path.join(
+    urdf_path = os.path.join(
         get_package_share_directory('lexus_rx_450h_description'),
         'urdf',
         'lexus_rx_450h_vehicle.urdf'
     )
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
 
     lanelet2_osm_file_path = os.path.join(
         autoware_auto_avp_demo_pkg_path,
@@ -161,9 +163,7 @@ def generate_launch_description():
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
-            arguments=[
-                str(urdf_file_path)
-            ]
+            parameters=[{'robot_description': urdf_file}],
         ),
 
         launch_ros.actions.Node(

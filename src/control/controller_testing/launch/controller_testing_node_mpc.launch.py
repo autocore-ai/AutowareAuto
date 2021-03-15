@@ -41,6 +41,8 @@ def generate_launch_description():
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
 
     # Arguments
     controller_testing_param = DeclareLaunchArgument(
@@ -135,7 +137,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
-        arguments=[str(urdf_path)]
+        parameters=[{'robot_description': urdf_file}],
     )
 
     return LaunchDescription(

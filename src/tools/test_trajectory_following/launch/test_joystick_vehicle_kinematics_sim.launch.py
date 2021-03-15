@@ -40,8 +40,10 @@ def generate_launch_description():
         file_name='param/logitech_f310_velocity_cmd.param.yaml')
     rviz_cfg_path = get_share_file(
         package_name='test_trajectory_following', file_name='config/default_control.rviz')
-    lexus_rx_450h_urdf_path = get_share_file(
+    urdf_path = get_share_file(
         package_name='lexus_rx_450h_description', file_name='urdf/lexus_rx_450h.urdf')
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
 
     # --------------------------------- Arguments -------------------------------
     joy_translator_param = DeclareLaunchArgument(
@@ -95,7 +97,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
-        arguments=[str(lexus_rx_450h_urdf_path)])
+        parameters=[{'robot_description': urdf_file}])
 
     rviz2 = Node(
         package='rviz2',

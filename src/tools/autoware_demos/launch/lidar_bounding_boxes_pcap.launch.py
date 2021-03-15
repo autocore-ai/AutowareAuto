@@ -99,11 +99,14 @@ def generate_launch_description():
         'lexus_rx_450h_description')
     urdf_path = os.path.join(vehicle_description_pkg_path, 'urdf',
         'lexus_rx_450h_pcap.urdf')
+    with open(urdf_path, 'r') as infp:
+        urdf_file = infp.read()
     robot_state_publisher_runner = launch_ros.actions.Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
-        arguments=[str(urdf_path)])
+        parameters=[{'robot_description': urdf_file}],
+    )
 
     # Run rviz
     examples_pkg_path = get_package_share_directory(
