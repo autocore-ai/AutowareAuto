@@ -19,6 +19,7 @@
 #define STATE_ESTIMATION_NODES__HISTORY_HPP_
 
 #include <common/types.hpp>
+#include <helper_functions/mahalanobis_distance.hpp>
 #include <mpark_variant_vendor/variant.hpp>
 #include <state_estimation_nodes/steady_time_grid.hpp>
 
@@ -53,18 +54,8 @@ bool passes_mahalanobis_gate(
   const Eigen::Matrix<common::types::float32_t, kNumOfStates, kNumOfStates> & covariance_factor,
   const common::types::float32_t mahalanobis_threshold)
 {
-  // This is equivalent to the squared Mahalanobis distance of the form: diff.T * C.inv() * diff
-  // Instead of the covariance matrix C we have its lower-triangular factor L, such that C = L * L.T
-  // squared_mahalanobis_distance = diff.T * C.inv() * diff
-  // = diff.T * (L * L.T).inv() * diff
-  // = diff.T * L.T.inv() * L.inv() * diff
-  // = (L.inv() * diff).T * (L.inv() * diff)
-  // this allows us to efficiently find the squared Mahalanobis distance using (L.inv() * diff),
-  // which can be found as a solution to: L * x = diff.
-  const auto diff = sample - mean;
-  const auto squared_threshold = mahalanobis_threshold * mahalanobis_threshold;
-  const auto x = covariance_factor.ldlt().solve(diff);
-  return (x.transpose() * x) < squared_threshold;
+  return common::helper_functions::calculate_squared_mahalanobis_distance(
+    sample, mean, covariance_factor) < mahalanobis_threshold * mahalanobis_threshold;
 }
 
 }  // namespace detail
