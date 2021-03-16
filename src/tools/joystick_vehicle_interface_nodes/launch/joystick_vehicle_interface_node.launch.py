@@ -50,8 +50,8 @@ def generate_launch_description():
 
     # joystick driver node
     joy = launch_ros.actions.Node(
-        package='joy',
-        executable='joy_node',
+        package='joy_linux',
+        executable='joy_linux_node',
         output='screen')
 
     # joystick translator node
