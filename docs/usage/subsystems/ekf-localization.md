@@ -12,14 +12,14 @@ in LG simulator on the parking lot map.
 
 Before running the demo, ensure that ADE is running. If not, it can be started as in the example below:
 
-```console
+```{bash}
 $ cd ~/adehome/AutowareAuto
 $ ade start --update --enter
 ```
 
 Then, run the demo as follows:
 
-```console
+```{bash}
 $ ade start
 ade$ ros2 launch autoware_demos ekf_ndt_smoothing_lgsvl.launch.py
 ```

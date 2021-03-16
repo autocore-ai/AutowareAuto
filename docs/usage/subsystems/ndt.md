@@ -61,7 +61,7 @@ If the initial pose estimate was close, you should be able to drive around in th
 
 Note that the pose can be echoed and copied for later use with the second initialization method:
 
-```
+```{bash}
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 topic echo /localization/initialpose
 ```
@@ -70,7 +70,7 @@ ade$ ros2 topic echo /localization/initialpose
 
 In order to initialize localization at the spawning point of the simulation as defined in @ref lgsvl, enter the following command in a new terminal:
 
-```
+```{bash}
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 topic pub --once /localization/initialpose geometry_msgs/msg/PoseWithCovarianceStamped "
 {header : {

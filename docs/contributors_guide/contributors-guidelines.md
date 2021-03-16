@@ -69,9 +69,10 @@ Example summary line without an issue:
 There is assistance via `git` hooks to help with commit messages. Navigate to `.git/hooks` in the checkout of
 Autoware.Auto, then:
 
-    ln -s ../../.git-hooks/prepare-commit-msg  # prepend issue number
-    ln -s ../../.git-hooks/commit-msg          # check formatting of commit message
-
+```{bash}
+ln -s ../../.git-hooks/prepare-commit-msg  # prepend issue number
+ln -s ../../.git-hooks/commit-msg          # check formatting of commit message
+```
 ## Cross-platform Compatibility
 
 It is preferred to use cross-platform solutions for system-level function calls whenever possible. While the C++
@@ -95,14 +96,14 @@ Language Versions entry for Python](https://index.ros.org/doc/ros2/Contributing/
 for more information. We enforce these guidelines using linters provided with `ament` as far as possible. All
 packages should have the following in their `package.xml` files:
 
-```xml
+```{xml}
 <test_depend>ament_lint_auto</test_depend>
 <test_depend>ament_lint_common</test_depend>
 ```
 
 In addition, the following should be in the package's `CMakeLists.txt` (extended with other tests):
 
-```cmake
+```{cmake}
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -112,13 +113,17 @@ endif()
 In CI, merge requests fail if they introduce improperly formatted code. To avoid that, format the
 C++ code locally with
 
-    ament_uncrustify --reformat file.cpp         # update single file in place
-    ament_uncrustify --reformat path/to/pkg_foo  # update all C++ source files in package
+```{bash}
+ament_uncrustify --reformat file.cpp         # update single file in place
+ament_uncrustify --reformat path/to/pkg_foo  # update all C++ source files in package
+```
 
 With the above CMake setup, run all linters together with all other tests of a package as described in the [Running
 Tests](#contributors-guidelines-run-tests) section or run a specific linter; e.g.,
 
-    ament_cpplint path/to/pkg_foo
+```{bash}
+ament_cpplint path/to/pkg_foo
+```
 
 Tools such as CLion can parse the output of the previous command and provide fast navigation to
 offending lines in the code.
@@ -127,8 +132,10 @@ To lint the code automatically before each commit, activate the `pre-commit`
 [hook](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/.git-hooks/pre-commit). From the
 repository base directory, do:
 
-    cd .git/hooks
-    ln -s ../../.git-hooks/pre-commit
+```{bash}
+cd .git/hooks
+ln -s ../../.git-hooks/pre-commit
+```
 
 ## Code Coverage {#contributors-guidelines-coverage}
 
@@ -206,7 +213,7 @@ Required parameters should not have default values but fail during construction 
 To avoid the need to change parameter files based on the namespacing or node name of a node, use the "double-star"
 syntax. e.g.:
 
-```yaml
+```{yaml}
 /**:
   ros__parameters:
     param1: value

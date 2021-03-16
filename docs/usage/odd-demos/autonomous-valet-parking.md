@@ -54,15 +54,15 @@ Running and controlling the simulation requires two separate terminals.
 
 -# @ref installation-and-development-install-ade.
 -# Next open **terminal 1** in ADE and follow the instructions on the @ref lgsvl page to install, configure, and run the simulator:
-
-        $ ade enter
-        ade$ /opt/lgsvl/simulator &
-
+```{bash}
+$ ade enter
+ade$ /opt/lgsvl/simulator &
+```
 -# Also in **terminal 1**, launch visualization:
-
-        ade$ source /opt/AutowareAuto/setup.bash
-        ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
-
+```{bash}
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
+```    
 @warning If starting the simulation immediately by pressing the play button in the LGSVL web GUI,
 the Autoware.Auto stack will emit warnings and error messages upon launch until localization is
 initialized (see section below). To avoid that, do not start the simulation yet; i.e., do not press
@@ -70,27 +70,27 @@ the Play button!
 
 ### Launching
 
--# Open a new **terminal 2**, either in the same ADE instance or in a new ADE instance on an second machine, run the launch file for Milestone 3 as follows to use the pre-compiled packages from `/opt/AutowareAuto`:
-
-        $ ade enter
-        ade$ source /opt/AutowareAuto/setup.bash
-        ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
-
-    Alternatively, if the source code has been modified locally, first build, then launch:
-
-        $ ade enter
-        ade$ cd AutowareAuto
-        ade$ colcon build --packages-up-to autoware_auto_avp_demo
-        ade$ source install/setup.bash
-        ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
-
-    To interrupt the launched processes, hit `Ctrl c`. Turning the simulation off while building can save compute resources to accelerate the build.
+Open a new **terminal 2**, either in the same ADE instance or in a new ADE instance on an second machine, run the launch file for Milestone 3 as follows to use the pre-compiled packages from `/opt/AutowareAuto`:
+```{bash}
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
+```
+Alternatively, if the source code has been modified locally, first build, then launch:
+```{bash}
+$ ade enter
+ade$ cd AutowareAuto
+ade$ colcon build --packages-up-to autoware_auto_avp_demo
+ade$ source install/setup.bash
+ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
+```
+To interrupt the launched processes, hit `Ctrl c`. Turning the simulation off while building can save compute resources to accelerate the build.
 
 When following the steps above, the RViz window should show what the Autoware.Auto stack
 sees. The system is initially not localized, and the car is tentatively placed at the origin of the
 map frame. **Terminal 2** displays output related to starting the stack similar to:
 
-```
+```{bash}
 [INFO] [robot_state_publisher-1]: process started with pid [20291]
 [INFO] [lgsvl_interface_exe-2]: process started with pid [20292]
 ...
@@ -206,7 +206,7 @@ When running Autoware on two separate machines, make sure the two machines are i
 
 After starting the simulation and the stack, the console is full of errors like this:
 
-```
+```{bash}
 [object_collision_estimator_node_exe-18] [WARN] [1613130016.283356960] [planning.object_collision_estimator_node]: on_bounding_box cannot transform base_link to map.
 [behavior_planner_node_exe-19] [INFO] [1613130016.285522103] [planning.behavior_planner_node]: Waiting for localization result to become available
 [lanelet2_global_planner_node_exe-15] [ERROR] [1613130016.285673175] [planning.lanelet2_global_planner_node]: Failed to transform Pose to map frame
@@ -221,7 +221,7 @@ After starting the simulation and the stack, the console is full of errors like 
 
 If the global planner cannot reach a goal pose, it outputs the following message:
 
-```
+```{bash}
 [lanelet2_global_planner_node_exe-15] [ERROR] [planning.lanelet2_global_planner_node]: Global route has not been found!
 ```
 
@@ -251,17 +251,17 @@ Whether using your own maps or the existing ones:
 
 1. @ref installation-and-development-install-ade
 2. In a new terminal, run the launch file for Milestone 3:
-
-        $ ade enter
-        ade$ source /opt/AutowareAuto/setup.bash
-        ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
-
+```{bash}
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
+```
 3. In another terminal, Launch RViz2 for visualization.
-
-        $ ade enter
-        ade$ source /opt/AutowareAuto/setup.bash
-        ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
-
+```{bash}
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
+```
 # System architecture for the AVP ODD
 
 The system architecture that was developed to address the AVP ODD in Autoware.Auto is given below:

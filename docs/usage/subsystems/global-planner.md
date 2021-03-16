@@ -17,7 +17,7 @@ The `Weather` tab is irrelevant.
 
 *terminal 1*
 
-```console
+```{bash}
 # start sim according to instructions above but don't drive away yet to make sure we can localize ourselves
 # then start RViz2 for visualization
 > ade enter
@@ -26,7 +26,7 @@ ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 ```
 
 *terminal 2*
-```
+```{bash}
 > ade enter
 ade$ cd AutowareAuto && source install/setup.bash
 ade$ colcon build --packages-up-to autoware_auto_avp_demo
@@ -37,7 +37,7 @@ The `stdbuf` command above is needed because the default in ROS is to only outpu
 This command changes that setting to use a "line buffer" which outputs every line, providing more debugging information.
 
 *terminal 3*
-```
+```{bash}
 > ade enter
 ade$ cd AutowareAuto && source install/setup.bash
 ade$ ros2 topic echo /planning/global_path
@@ -52,7 +52,7 @@ Next, to select a parking spot graphically, click the `2D Nav Goal` button in `r
 Optionally, to send a goal position/heading programmatically:
 
 *terminal 4*
-```
+```{bash}
 > ade enter
 ade$
 ros2 topic pub --once /planning/goal_pose geometry_msgs/msg/PoseStamped "{
@@ -86,7 +86,7 @@ and update the values in the message in YAML format above.
 
 The output message looks like
 
-```
+```{yaml}
 ...
 primitives:
 - id: 8252
@@ -109,12 +109,12 @@ primitives:
 To check if the route is reasonable, open the OSM map `AutowareAuto/src/tools/autoware_auto_avp_demo/data/autonomousstuff_parking_lot.osm` in a text editor and search for `way id='9824`.
 It references a node, the center of the entrance line, `9831` in this case.
 Searching for its coordinates, they are:
-
-      <node id='9831' visible='true' version='1' lat='37.38065126054' lon='-121.90931385745'>
-
+```{xml}
+<node id='9831' visible='true' version='1' lat='37.38065126054' lon='-121.90931385745'>
+```
 To graphically inspect this, install the `qgis` tool with:
-
-    sudo apt install qgis
-
+```{bash}
+sudo apt install qgis
+```
 and follow [this tutorial](https://wiki.openstreetmap.org/wiki/QGIS_tutorial) to open the .osm file.
 Finally, install a plugin called `Lat Lon Tools` and enter the coordinates to pinpoint the node with a red crosshair.

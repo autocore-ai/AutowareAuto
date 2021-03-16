@@ -23,9 +23,9 @@ The basic flow consists of the following steps.
    @image html images/autowareauto_fork_button_location.png "Location of the fork button" width=1000px
 
 3. Clone your fork locally to create a *local copy*.
-
-       $ git clone git@gitlab.com:[your_username_here]/AutowareAuto.git
-
+   ```{bash}
+   $ git clone git@gitlab.com:[your_username_here]/AutowareAuto.git
+   ```
    You can find the URL for cloning your fork by clicking the "Clone" button in the "Project overview" screen or "Repository - Files" screen of *your fork*.
 
    @image html images/autowareauto_clone_button_location.png "Location of the Clone button" width=1000px
@@ -34,9 +34,9 @@ The basic flow consists of the following steps.
    Give the branch a descriptive name.
    GitLab uses the pattern `[issuenumber]-[issue-name-with-hyphens]`.
    For example, if you are doing work for issue #42, "Calculate the answer to the ultimate question", you could name your branch like so:
-
-       $ git checkout -b 42-calculate-the-answer-to-the-ultimate-question
-
+   ```{bash}
+   $ git checkout -b 42-calculate-the-answer-to-the-ultimate-question
+   ```
    This will create a new branch and put your local working copy into it.
    It is important to note that **this new branch is still only stored on your computer**.
    Before you can create a merge request, it must be pushed to the copy of *your fork* on the GitLab server.
@@ -52,15 +52,15 @@ The basic flow consists of the following steps.
 
    Begin by adding the upstream repository location to your local repository's settings as a remote repository.
    *You only need to do this the first time.*
-
-       $ git remote add upstream https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
-
+   ```{bash}
+   $ git remote add upstream https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
+   ```
    Now that the upstream repository location is set, bring your branch up-to-date with the upstream repository's master branch.
-
-       $ git checkout master
-       $ git fetch upstream
-       $ git merge upstream/master
-
+   ```{bash}
+   $ git checkout master
+   $ git fetch upstream
+   $ git merge upstream/master
+   ```
    The final command updates the `master` branch of your local copy to match the `master` branch of the Autoware.Auto repository.
    It is very important to use the `git merge` command to do this.
    **Do not use the `git rebase` command** to bring your local copy's `master` branch up-to-date.
@@ -73,20 +73,21 @@ The basic flow consists of the following steps.
    To ensure that your branch will apply cleanly to the `master` branch on the Autoware.Auto repository, which is a prerequisite for making a merge request, you need to bring the recent changes from the `master` branch into the branch containing your work.
    This is done using the [`git rebase` command](https://git-scm.com/book/en/v2/Git-Branching-Rebasing).
    You will be rebasing your changes onto the latest commit in the `master` branch.
-
-       $ git checkout 42-calculate-the-answer-to-the-ultimate-question
-       $ git rebase master
+   ```{bash}
+   $ git checkout 42-calculate-the-answer-to-the-ultimate-question
+   $ git rebase master
+   ```
 
 9. Finally, push your changes to the copy of *your fork* on the GitLab server.
 
    If this is the first time you are pushing this branch, you need to tell Git where the branch on your fork (not the Autoware.Auto repository) is.
-
-       $ git push --set-upstream origin 42-calculate-the-answer-to-the-ultimate-question
-
+   ```{bash}
+   $ git push --set-upstream origin 42-calculate-the-answer-to-the-ultimate-question
+   ```
    If you have pushed this branch before, then you do not need to set the destination branch, but you do need to do a force-push.
-
-       $ git push -f
-
+   ```{bash}
+   $ git push -f
+   ```
    You now have a copy of your branch with your proposed changes in *your fork* on the GitLab servers.
    If you are ready for this work to be merged into the Autoware.Auto repository's `master` branch, you must now create a merge request.
 
@@ -139,13 +140,15 @@ Note that doing this places the following restrictions on your own merge request
    To include the changes from another merge request in your own branch, prior to them being merged into the `master` branch, you need to get that branch into your local copy and merge it into your branch.
 
 3. In your local copy, fetch the latest from the upstream repository.
-
-       $ git fetch
+   ```{bash}
+   $ git fetch
+   ```
 
 4. Change to your branch and merge in the changes from the branch for the merge request you wish to use.
-
-       $ git checkout 42-calculate-the-answer-to-the-ultimate-question
-       $ git merge upstream/41-calculate-the-ultimate-question
+   ```{bash}
+   $ git checkout 42-calculate-the-answer-to-the-ultimate-question
+   $ git merge upstream/41-calculate-the-ultimate-question
+   ```
 
 5. Follow the [above steps](#fork-and-pull) for how to rebase your branch when the branch you depend on has been merged and your branch is ready to be merged into `master`.
 

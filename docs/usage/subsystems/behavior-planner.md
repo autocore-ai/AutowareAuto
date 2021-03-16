@@ -17,7 +17,7 @@ The `Weather` tab is irrelevant
 
 *terminal 1*
 
-```console
+```{bash}
 # start sim according to instructions above but don't drive away yet to make sure we can localize ourselves
 # then start RViz2 for visualization
 > ade enter
@@ -26,7 +26,7 @@ ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 ```
 
 *terminal 2*
-```
+```{bash}
 > ade enter
 ade$ cd AutowareAuto && source install/setup.bash
 ade$ colcon build --packages-up-to autoware_auto_avp_demo
@@ -37,7 +37,7 @@ The `stdbuf` command above is needed because the default in ROS is to only outpu
 This command changes that setting to use a "line buffer" which outputs every line, providing more debugging information.
 
 *terminal 3*
-```
+```{bash}
 > ade enter
 ade$ ros2 topic echo /planning/trajectory
 ```
@@ -55,13 +55,13 @@ Next, to select a parking spot graphically, click the `2D Nav Goal` button in `r
 Optionally, to send a goal position/heading programmatically:
 
 *terminal 4*
-```
+```{bash}
 > ade enter
 ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -95.875, y: 57.707, z: -1.950}, orientation: {x: -0.021, y: 0.014,z: 0.901,w: 0.434}}'} --once
 ```
 
 if you want to park in the backward direction, send:
-```
+```{bash}
 > ade enter
 ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -97.629, y: 59.872, z: 0.0}, orientation: {x: 0.0, y: 0.0,z: -0.43,w: 0.90283}}'} --once
 ```
@@ -69,14 +69,14 @@ ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: 
 ## Verify that Behavior Planner receives routes from Global Path
 On Terminal 2, you should see following message output:
 
-```
+```{bash}
 [behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: Received route
 ```
 
 ## Verify that Lane Planner and Parking Planner are called by Behavior Planner
 On Terminal 2, you should see the following message output:
 
-```
+```{bash}
 [behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: sent parking trajectory action goal
 [behavior_planner_node_exe-19] [INFO] [planning.behavior_planner_node]: Received trajectory from planner
 ```

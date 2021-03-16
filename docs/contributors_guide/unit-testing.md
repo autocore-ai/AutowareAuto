@@ -219,7 +219,7 @@ For more examples of `gtest` features, see the
 Add an entry under `BUILD_TESTING` in the `CMakeLists.txt` to compile the test the test code
 source files:
 
-```
+```{cmake}
 find_package(ament_cmake_gtest)
 set(TEST_SOURCES test/gtest_main.cpp test/test_my_cool_pkg.cpp)
 set(TEST_MY_COOL_PKG_EXE test_my_cool_pkg)
@@ -290,7 +290,6 @@ build/my_cool_pkg/test_results/my_cool_pkg/test_my_cool_pkg.gtest.xml: 1 test, 0
 build/my_cool_pkg/test_results/my_cool_pkg/uncrustify.xunit.xml: 6 tests, 0 errors, 0 failures, 0 skipped
 
 Summary: 29 tests, 0 errors, 0 failures, 0 skipped
-
 ```
 
 Look in the `~/workspace/log/test_<date>/<package_name>` directory for all the raw test

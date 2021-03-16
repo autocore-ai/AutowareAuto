@@ -40,7 +40,7 @@ ADE looks for a directory containing a file named `.adehome`
 starting with the current working directory and continuing with the
 parent directories to identify the ADE home directory to be mounted.
 
-```
+```{bash}
 $ mkdir -p ~/adehome
 $ cd ~/adehome
 $ touch .adehome
@@ -53,7 +53,7 @@ directory, or in any parent directory. Additionally, default configuration value
 overridden by setting environment variables. See the `ade --help` output for more information about
 using environment variables to define the configuration.
 
-```
+```{bash}
 $ cd ~/adehome
 $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 ```
@@ -72,7 +72,7 @@ with ADE. If you only have a single `adehome` directory, there is a way to do th
 duplicating them: move them inside the `adehome` directory, then create a symlink in the host system
 to their regular location. For instance,
 
-```
+```{bash}
 $ cd ~
 $ mv ~/.bashrc ~/ade-home/.bashrc
 $ ln -s ~/ade-home/.bashrc
@@ -88,32 +88,32 @@ direction will not work, files in a Docker container can not be symlinks to the 
 
 # Entering the development environment
 
-```
+```{bash}
 $ cd AutowareAuto
 ```
 
 To start the default environment:
 
-```
+```{bash}
 $ ade start --update --enter
 ```
 
 There are several preconfigured environments to choose from by specifying an ADE rc file. To see
 what is available, run
 
-```
+```{bash}
 ls -l .aderc*
 ```
 
 Choose one, then launch with:
 
-```
+```{bash}
 ade --rc .aderc-amd64-foxy  start --update --enter
 ```
 
 Congratulations! Now you should have a terminal inside ADE:
 
-```
+```{bash}
 $ade:~$
 ```
 
@@ -124,7 +124,7 @@ described in @ref contributors-guide.
 
 Upon entering, ADE outputs the images used to create the environment; e.g.
 
-```
+```{bash}
 $ ade enter
 Entering ade with following images:
 ade-foxy    | 8b1e0efdde07 | master  | registry.gitlab.com/autowarefoundation/autoware.auto/autowareauto/amd64/ade-foxy:master
@@ -134,7 +134,7 @@ foxy        | 2020.06      | 2020.06 | registry.gitlab.com/autowarefoundation/au
 
 The images are mounted under `/opt`:
 
-```
+```{bash}
 @ade:~$ ls /opt
 AutowareAuto # image: binary-foxy:master
 lgsvl        # image: ade-lgsvl/foxy:2020.06
@@ -156,7 +156,7 @@ drive. Follow the steps below to clean the Docker file system of stale images.
 
 First, verify that ADE is running:
 
-```
+```{bash}
 $ cd ~/adehome/AutowareAuto
 $ ade start
 ```
@@ -172,7 +172,7 @@ Docker resources that are not started/running **will be removed**!
 
 To assess the disk usage situation, run the following command:
 
-```
+```{bash}
 $ docker system df
 TYPE                TOTAL               ACTIVE              SIZE                RECLAIMABLE
 Images              13                  11                  14.03GB             916.9MB (6%)
@@ -186,7 +186,7 @@ Build Cache         0                   0                   0B                  
 
 Use `docker system prune` to remove any Docker items not used for currently running containers:
 
-```
+```{bash}
 $ docker system prune -a --volumes
 ```
 
@@ -197,7 +197,7 @@ Here are solutions for a few specific errors:
 
 When starting `ade` with GPU support enabled for NVIDIA graphics, you may sometimes receive the following error:
 
-```
+```{bash}
 docker: Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "process_linux.go:449: container init caused \"process_linux.go:432: running prestart hook 0 caused \\\"error running hook: exit status 1, stdout: , stderr: nvidia-container-cli: initialization error: cuda error: forward compatibility was attempted on non supported hw\\\\n\\\"\"": unknown.
 ERROR: Command return non-zero exit code (see above): 125
 ```
@@ -216,7 +216,7 @@ For more information you can review the discussion that lead to this decision in
 
 To resolve this issue, simply remove the line `export ADE_DISABLE_NVIDIA_DOCKER=true` from the `.aderc` file that you are using and restart `ade` with:
 
-```
+```{bash}
 ade$ exit
 $ ade stop
 $ ade start --update --enter

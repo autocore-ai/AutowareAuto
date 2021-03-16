@@ -12,19 +12,19 @@ The supported versions of each DDS implementation for a particular version of RO
 
 # Eclipse Cyclone DDS
 [Eclipse Cyclone DDS](https://projects.eclipse.org/projects/iot.cyclonedds) is the default DDS in ADE and required for integration with the @ref lgsvl :
-```
+```{bash}
 ade$ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
 # FastDDS
 [FastDDS](https://www.eprosima.com/index.php/products-all/eprosima-fast-dds), formerly known as FastRTPS, is the default in ROS Dashing:
-```
+```{bash}
 ade$ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
 
 # RTI Connext DDS
 [RTI Connext DDS](pthttps://www.rti.com/products) is not installed in ADE by default, so one more step is needed:
-```
+```{bash}
 ade$ sudo apt update
 ade$ sudo apt-get install rti-connext-dds-5.3.1 ros-${ROS_DISTRO}-rmw-connext-cpp
 ade$ export RMW_IMPLEMENTATION=rmw_connext_cpp
@@ -32,7 +32,7 @@ ade$ export RMW_IMPLEMENTATION=rmw_connext_cpp
 
 # GurumDDS
 GurumDDS is not installed in ADE by default, so one more step is needed:
-```
+```{bash}
 ade$ sudo apt update
 ade$ sudo apt-get install gurumdds-2.6 ros-${ROS_DISTRO}-rmw-gurumdds-cpp
 ade$ export RMW_IMPLEMENTATION=rmw_gurumdds_cpp

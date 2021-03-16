@@ -22,7 +22,7 @@ Package 'autoware_demos' not found: "package 'autoware_demos' not found, searchi
 ```
 
 Many launch configurations rely on a point cloud map, which is managed via `git lfs`. To download it, do
-```
+```{bash}
 git lfs pull --exclude="" --include="*"
 ```
 

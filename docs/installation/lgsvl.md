@@ -41,7 +41,7 @@ Install ADE as described in the [installation section](@ref installation-ade):
 
 Start ADE with the LGSVL volume:
 
-```
+```{bash}
 $ cd ~/adehome/AutowareAuto
 $ ade --rc .aderc-lgsvl start --update --enter
 ```
@@ -50,7 +50,7 @@ Pick a different `.aderc-*-lgsvl` file to manually choose a ROS version.
 
 To start the LGSVL simulator, in the same terminal window:
 
-```
+```{bash}
 ade$ /opt/lgsvl/simulator
 ```
 
@@ -65,7 +65,7 @@ If you have an account, log in. If you do not have an account, create one, then 
 
 In case the simulator window opens up with a black screen and the application immediately terminates, remove conflicting graphics drivers from ADE with
 
-```
+```{bash}
 ade$ sudo apt remove mesa-vulkan-drivers
 ```
 and launch the simulator again.
@@ -218,7 +218,7 @@ ade$ ros2 run lgsvl_interface lgsvl_interface_exe --ros-args --params-file /opt/
 
 Launch scripts are also provided for convenience. For example for a joystick control demo, run the following in a new terminal window:
 
-```
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch joystick_vehicle_interface_nodes lgsvl_joystick.launch.py
@@ -226,7 +226,7 @@ ade$ ros2 launch joystick_vehicle_interface_nodes lgsvl_joystick.launch.py
 
 For an example of using `VehicleControlCommand` with LGSVL, run the following demo in a new terminal window:
 
-```
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch lgsvl_interface lgsvl_vehicle_control_command.launch.py

@@ -76,9 +76,9 @@ Add an anchor for a new document; e.g.
 
     #new-document
 
-after the title and use the anchor to link to other parts of the documentation. A minimal example:
+After the title and use the anchor to link to other parts of the documentation. A minimal example:
 
-```md
+```{md}
 New document {#new-document}
 =================
 
@@ -91,14 +91,14 @@ New document {#new-document}
 
 And within another `foo.md`, refer to the new document with:
 
-```md
+```{md}
 @ref new-document "See the new document"
 ```
 
 Make sure the document is included by an appropriate `index.md` such that it appears at the desired
 location; e.g.,
 
-```md
+```{md}
 - @subpage new-document
 ```
 
@@ -112,25 +112,25 @@ lives.
 
 Inside `document.md`:
 
-```md
+```{md}
 @tableofcontents
 
 # Foo {#document-foo}
 ```
 
-then the URL is https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/document.html#document-foo
+Then the URL is https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/document.html#document-foo
 
 **Discouraged**
 
 Inside `document.md`:
 
-```md
+```{md}
 @tableofcontents
 
 # Foo
 ```
 
-then the URL could be e.g. https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/document.html#autotoc_md21
+Then the URL could be e.g. https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/document.html#autotoc_md21
 
 Notice the `autotoc_md21` at the end of the URL. Doxygen increments a counter to automatically
 create URLs for sections without an anchor. If the section `Foo` is moved or another section added somewhere else, the URL may become invalid.
@@ -151,13 +151,13 @@ Use the imperative to describe each entity. Finish each section with a period `.
 
 For example:
 
-```{c++}
-/// Analyse input for consistency.
-/// @param input The input, assumed `>= 1.2`.
-/// \throws A `std::invalid_argument` if invalid.
+```{cpp}
+// Analyse input for consistency.
+// @param input The input, assumed `>= 1.2`.
+// \throws A `std::invalid_argument` if invalid.
 explicit class Foo(double input);
 
-/// \return `true` if the input is valid.
+// \return `true` if the input is valid.
 bool valid() const;
 ```
 

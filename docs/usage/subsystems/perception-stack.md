@@ -28,7 +28,7 @@ In order to run the perception stack, we need to open a visualizer, publish sens
 
 `rviz2` can be used to visualize perception data as it is published. To start the visualizer, open a new terminal, then:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ rviz2 -d /opt/AutowareAuto/share/autoware_auto_examples/rviz2/autoware_perception_stack.rviz
@@ -43,13 +43,13 @@ In order to bring up the perception stack, point cloud data needs to be publishe
   1. Download the PCAP file [Dual VLP-16 Hi-Res pcap file](https://autoware-auto.s3.us-east-2.amazonaws.com/route_small_loop_rw.pcap).
   2. Move the downloaded file into your `adehome` folder.
   3. Replay the file using `udpreplay`:
-```console
+```{bash}
 $ ade enter
 ade$ udpreplay -r -1 route_small_loop_rw.pcap
 ```
   4. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the front lidar:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
@@ -57,7 +57,7 @@ ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --
 
   5. Launch the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) for the rear lidar:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_rear --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test_rear.param.yaml
@@ -65,7 +65,7 @@ ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --
 2. Running a simulator: To do this, see [Running the LGSVL Simulator along side Autoware.Auto](lgsvl.html)
 3. Connecting to the sensor: To do this, update the IP address and port arguments in the param file for the [velodyne_node](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/tree/master/src/drivers/velodyne_nodes) and then launch the node:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run velodyne_nodes velodyne_cloud_node_exe --model vlp16 --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/velodyne_nodes/param/vlp16_test.param.yaml
@@ -76,13 +76,13 @@ At this point, there exists a convenience launch file that can bring up the robo
 You can either use the below launch file to bring up the stack, or continue on with the tutorial:
 
 - When using PCAP data:
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch autoware_demos lidar_bounding_boxes_pcap.launch.py
 ```
 - When using the LGSVL simulator:
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 launch autoware_demos lidar_bounding_boxes_lgsvl.launch.py
@@ -93,12 +93,12 @@ ade$ ros2 launch autoware_demos lidar_bounding_boxes_lgsvl.launch.py
 This node publishes the transform tree of the vehicle available. To do this:
 
 - When using PCAP data:
-```console
+```{bash}
 $ ade enter
 ade$ ros2 run robot_state_publisher robot_state_publisher /opt/AutowareAuto/share/lexus_rx_450h_description/urdf/lexus_rx_450h_pcap.urdf
 ```
 - When using the LGSVL simulator:
-```console
+```{bash}
 $ ade enter
 ade$ ros2 run robot_state_publisher robot_state_publisher /opt/AutowareAuto/share/lexus_rx_450h_description/urdf/lexus_rx_450h.urdf
 ```
@@ -111,7 +111,7 @@ Now that the prerequisites have been brought up, the perception stack can be lau
 
 This node transforms point clouds from the `velodyne_node` to a common frame. In a new terminal, do:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
@@ -123,7 +123,7 @@ ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_no
 
 This node classifies point cloud points according to whether they are ground or non-ground. In a new terminal, do:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe --ros-args --params-file /opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml --remap points_in:=/lidar_front/points_filtered
@@ -135,7 +135,7 @@ ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe -
 
 This node clusters non-ground points into objects and publishes bounding boxes. In a new terminal, do:
 
-```console
+```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run euclidean_cluster_nodes euclidean_cluster_node_exe --ros-args --params-file /opt/AutowareAuto/share/euclidean_cluster_nodes/param/vlp16_lexus_cluster.param.yaml --remap points_in:=/points_nonground

@@ -12,7 +12,7 @@ To do so, follow the instructions below:
 
 * Start [LGSVL](lgsvl.html)
 * Launch the trajectory test node:
-```console
+```{bash}
 ros2 launch test_trajectory_following simple_trajectory_following.launch.py sim_type:=lgsvl
 ```
 

@@ -132,7 +132,7 @@ add an integration test:
        - The string in the file is the regular expression to test against the `stdout` of the
        executable
 2. Under the `BUILD_TESTING` code block, add a call to `integration_tests` to add the test
-   ```cmake
+   ```{cmake}
    set(MY_COOL_PKG_EXE "my_cool_pkg_exe")
    add_executable(${MY_COOL_PKG_EXE} ${MY_COOL_PKG_EXE_SRC} ${MY_COOL_PKG_EXE_HEADERS})
    ...
@@ -184,7 +184,7 @@ The `stdout` of the tested executable is stored in the file
 `~/workspace/build/my_cool_pkg/test_results/my_cool_pkg/my_cool_pkg_exe_integration_test.xunit.xml`
 using jUnit format:
 
-```xml
+```{xml}
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuite errors="0" failures="0" name="pytest" skips="0" tests="1" time="3.121">
  <testcase classname="my_cool_pkg.build.my_cool_pkg.my_cool_pkg_exe_integration_test_Debug"
@@ -238,7 +238,7 @@ Here are the steps to add multiple-executable integration tests:
    20
 ```
 2. Under the `BUILD_TESTING` code block, call `integration_tests` to add the test
-```cmake
+```{cmake}
 ...
 find_package(integration_tests REQUIRED)
 integration_tests(
@@ -304,7 +304,7 @@ Use the following steps to add an integration test:
 
 2. In `~/workspace/src/demo_nodes_cpp/CMakeLists.txt`, export the executable target before
    calling `ament_package()`
-   ```cmake
+   ```{cmake}
    install(TARGETS talker EXPORT talker
      DESTINATION lib/${PROJECT_NAME})
    install(TARGETS listener EXPORT listener
@@ -319,12 +319,12 @@ Use the following steps to add an integration test:
      with content `20`
 
 4. In `~/workspace/src/my_cool_pkg/package.xml`, add the dependency to `demo_nodes_cpp`
-```cmake
+```{cmake}
 <test_depend>demo_nodes_cpp</test_depend>
 ```
 5. Under the `BUILD_TESTING` code block in `~/workspace/src/my_cool_pkg/CMakeLists.txt`, call
 `integration_tests` to add the test
-```cmake
+```{cmake}
 ...
 find_package(integration_tests REQUIRED)
 find_package(demo_nodes_cpp REQUIRED) # this line imports targets(talker) defined in namespace demo_nodes_cpp
