@@ -3,7 +3,7 @@
 <package format="3">
     <name>point_cloud_mapping</name>
     <version>1.0.0</version>
-    <description>Implementation of point cloud mapping</description>
+    <description>Common classes and functionality for point cloud mapping</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2.0</license>
 

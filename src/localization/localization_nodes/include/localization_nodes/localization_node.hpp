@@ -17,7 +17,7 @@
 #ifndef LOCALIZATION_NODES__LOCALIZATION_NODE_HPP_
 #define LOCALIZATION_NODES__LOCALIZATION_NODE_HPP_
 
-#include <localization_common/localizer_base.hpp>
+#include <localization_common/optimized_registration_summary.hpp>
 #include <localization_common/initialization.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/buffer_core.h>
@@ -27,8 +27,10 @@
 #include <time_utils/time_utils.hpp>
 #include <helper_functions/message_adapters.hpp>
 #include <localization_nodes/visibility_control.hpp>
+#include <localization_nodes/constraints.hpp>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace autoware
@@ -60,18 +62,19 @@ enum class LocalizerPublishMode
 /// \tparam MapMsgT Map type
 /// \tparam LocalizerT Localizer type.
 /// \tparam PoseInitializerT Pose initializer type.
-template<typename ObservationMsgT, typename MapMsgT, typename LocalizerT,
-  typename PoseInitializerT>
+template<typename ObservationMsgT,
+  typename MapMsgT,
+  typename MapT,
+  typename LocalizerT,
+  typename PoseInitializerT,
+  Requires = traits::LocalizerConstraint<LocalizerT, ObservationMsgT, MapT>::value,
+  Requires = traits::MapConstraint<MapT, MapMsgT>::value>
 class LOCALIZATION_NODES_PUBLIC RelativeLocalizerNode : public rclcpp::Node
 {
 public:
-  using LocalizerBase = localization_common::RelativeLocalizerBase<ObservationMsgT, MapMsgT,
-      typename LocalizerT::RegistrationSummary>;
-  using LocalizerBasePtr = std::unique_ptr<LocalizerBase>;
-  using Cloud = sensor_msgs::msg::PointCloud2;
-  using PoseWithCovarianceStamped = typename LocalizerBase::PoseWithCovarianceStamped;
-  using TransformStamped = typename LocalizerBase::Transform;
-  using RegistrationSummary = typename LocalizerT::RegistrationSummary;
+  using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using TransformStamped = geometry_msgs::msg::TransformStamped;
+  using RegistrationSummary = localization_common::OptimizedRegistrationSummary;
 
   /// Constructor
   /// \param node_name Name of node
@@ -205,9 +208,14 @@ public:
 protected:
   /// Set the localizer.
   /// \param localizer_ptr rvalue to the localizer to set.
-  void set_localizer(LocalizerBasePtr && localizer_ptr)
+  void set_localizer(std::unique_ptr<LocalizerT> && localizer_ptr)
   {
-    m_localizer_ptr = std::forward<LocalizerBasePtr>(localizer_ptr);
+    m_localizer_ptr = std::forward<std::unique_ptr<LocalizerT>>(localizer_ptr);
+  }
+
+  void set_map(std::unique_ptr<MapT> && map_ptr)
+  {
+    m_map_ptr = std::forward<std::unique_ptr<MapT>>(map_ptr);
   }
 
   /// Handle the exceptions during registration.
@@ -245,7 +253,7 @@ protected:
 
   /// Default behavior when hte pose output is evaluated to be invalid.
   /// \param pose Pose output.
-  virtual void on_invalid_output(PoseWithCovarianceStamped & pose)
+  virtual void on_invalid_output(const PoseWithCovarianceStamped & pose)
   {
     (void) pose;
     RCLCPP_WARN(
@@ -271,6 +279,16 @@ protected:
   }
 
 private:
+  /// Check the pointer and throw if null.
+  template<typename PtrT>
+  void assert_ptr_not_null(const PtrT & ptr, const std::string & name) const
+  {
+    if (!ptr) {
+      throw std::runtime_error(
+              name + " pointer is null. Make sure it is properly initialized before using.");
+    }
+  }
+
   void init()
   {
     if (declare_parameter("publish_tf").template get<bool>()) {
@@ -309,15 +327,18 @@ private:
   /// \param msg_ptr Pointer to the observation message.
   void observation_callback(typename ObservationMsgT::ConstSharedPtr msg_ptr)
   {
-    check_localizer();
-    if (!m_localizer_ptr->map_valid()) {
+    // Check to ensure the pointers are initialized.
+    assert_ptr_not_null(m_localizer_ptr, "localizer");
+    assert_ptr_not_null(m_map_ptr, "map");
+
+    if (!m_map_ptr->valid()) {
       on_observation_with_invalid_map(msg_ptr);
       return;
     }
 
     const auto observation_time = ::time_utils::from_message(get_stamp(*msg_ptr));
     const auto & observation_frame = get_frame_id(*msg_ptr);
-    const auto & map_frame = m_localizer_ptr->map_frame_id();
+    const auto & map_frame = m_map_ptr->frame_id();
 
     try {
       geometry_msgs::msg::TransformStamped initial_guess;
@@ -338,9 +359,9 @@ private:
           m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
       }
 
-      PoseWithCovarianceStamped pose_out;
-      const auto summary =
-        m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, pose_out);
+      RegistrationSummary summary{};
+      const auto pose_out =
+        m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, *m_map_ptr, &summary);
       if (validate_output(summary, pose_out, initial_guess)) {
         m_pose_publisher->publish(pose_out);
         // This is to be used when no state estimator or alternative source of
@@ -373,9 +394,9 @@ private:
   /// \param msg_ptr Pointer to the map message.
   void map_callback(typename MapMsgT::ConstSharedPtr msg_ptr)
   {
-    check_localizer();
+    assert_ptr_not_null(m_map_ptr, "map");
     try {
-      m_localizer_ptr->set_map(*msg_ptr);
+      m_map_ptr->set(*msg_ptr);
     } catch (...) {
       on_bad_map(std::current_exception());
     }
@@ -385,6 +406,7 @@ private:
   void publish_tf(const PoseWithCovarianceStamped & pose_msg)
   {
     const auto & pose = pose_msg.pose.pose;
+    const auto & map_frame_id = m_map_ptr->frame_id();
     tf2::Quaternion rotation{pose.orientation.x, pose.orientation.y, pose.orientation.z,
       pose.orientation.w};
     tf2::Vector3 translation{pose.position.x, pose.position.y, pose.position.z};
@@ -418,7 +440,7 @@ private:
     tf2_msgs::msg::TFMessage tf_message;
     geometry_msgs::msg::TransformStamped tf_stamped;
     tf_stamped.header.stamp = pose_msg.header.stamp;
-    tf_stamped.header.frame_id = m_localizer_ptr->map_frame_id();
+    tf_stamped.header.frame_id = map_frame_id;
     tf_stamped.child_frame_id = "odom";
     const auto & tf_trans = map_odom_tf.getOrigin();
     const auto & tf_rot = map_odom_tf.getRotation();
@@ -434,8 +456,9 @@ private:
   /// Publish the pose message as a transform.
   void republish_tf(builtin_interfaces::msg::Time stamp)
   {
+    // no need to check the m_map_ptr for null as it is already done in the callbacks.
     auto map_odom_tf = m_tf_buffer.lookupTransform(
-      m_localizer_ptr->map_frame_id(), "odom",
+      m_map_ptr->frame_id(), "odom",
       tf2::TimePointZero);
     map_odom_tf.header.stamp = stamp;
     tf2_msgs::msg::TFMessage tf_message;
@@ -443,21 +466,12 @@ private:
     m_tf_publisher->publish(tf_message);
   }
 
-  /// Check if localizer exist, throw otherwise.
-  void check_localizer() const
-  {
-    if (!m_localizer_ptr) {
-      throw std::runtime_error(
-              "Localizer node needs a valid localizer to be set before it "
-              "can register measurements. Call `set_localizer(...)` first.");
-    }
-  }
-
   void initial_pose_callback(const typename PoseWithCovarianceStamped::ConstSharedPtr msg_ptr)
   {
     // The child frame is implicitly base_link.
     // Ensure the parent frame is the map frame
-    const std::string & map_frame = m_localizer_ptr->map_frame_id();
+    assert_ptr_not_null(m_map_ptr, "map");
+    const std::string & map_frame = m_map_ptr->frame_id();
     if (!m_tf_buffer.canTransform(map_frame, msg_ptr->header.frame_id, tf2::TimePointZero)) {
       RCLCPP_ERROR(
         get_logger(),
@@ -495,7 +509,8 @@ private:
     m_external_pose_available = true;
   }
 
-  LocalizerBasePtr m_localizer_ptr;
+  std::unique_ptr<LocalizerT> m_localizer_ptr;
+  std::unique_ptr<MapT> m_map_ptr;
   PoseInitializerT m_pose_initializer;
   tf2::BufferCore m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;
@@ -511,7 +526,6 @@ private:
   // Stores "/initialpose", the timestamp is not used/valid
   geometry_msgs::msg::TransformStamped m_external_pose;
   bool m_external_pose_available{false};
-
   bool m_use_hack{false};
 };
 }  // namespace localization_nodes

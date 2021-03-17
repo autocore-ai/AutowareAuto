@@ -11,13 +11,13 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <depend>localization_common</depend>
-    <depend>localization_nodes</depend>
     <depend>point_cloud_mapping</depend>
     <depend>ndt</depend>
     <depend>optimization</depend>
     <depend>autoware_auto_common</depend>
     <depend>rclcpp_components</depend>
     <depend>rclcpp</depend>
+    <depend>tf2_msgs</depend>
 
     <exec_depend>ament_index_python</exec_depend>
 

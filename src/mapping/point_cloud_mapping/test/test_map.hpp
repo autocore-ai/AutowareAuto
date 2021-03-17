@@ -22,7 +22,7 @@
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <common/types.hpp>
-#include <point_cloud_mapping/map.hpp>
+#include <point_cloud_mapping/point_cloud_map.hpp>
 #include <vector>
 #include <string>
 
@@ -33,6 +33,14 @@ namespace mapping
 namespace point_cloud_mapping
 {
 using PclCloud = pcl::PointCloud<pcl::PointXYZI>;
+
+class DummyLocalizationMap
+{
+public:
+  template<typename T>
+  void insert(const T &) {}
+  void clear();
+};
 
 /// Initialize a pc, insert points in the vector and return it.
 sensor_msgs::msg::PointCloud2 make_pc(

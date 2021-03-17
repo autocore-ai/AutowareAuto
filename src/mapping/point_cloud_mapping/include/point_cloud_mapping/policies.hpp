@@ -18,9 +18,9 @@
 #define POINT_CLOUD_MAPPING__POLICIES_HPP_
 
 #include <point_cloud_mapping/visibility_control.hpp>
-#include <localization_common/localizer_base.hpp>
+#include <localization_common/optimized_registration_summary.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <point_cloud_mapping/map.hpp>
+#include <point_cloud_mapping/point_cloud_map.hpp>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <memory>

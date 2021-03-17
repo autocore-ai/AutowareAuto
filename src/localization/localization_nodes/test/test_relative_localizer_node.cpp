@@ -61,7 +61,7 @@ protected:
   const std::string m_obs_frame{"obs"};
   std::string m_expected_aggregated_frame;
   TestObservation m_observation_msg;
-  TestMap m_map_msg;
+  MsgWithHeader m_map_msg;
 };
 
 
@@ -78,7 +78,7 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
     };
 
   /////////////////////// initialize
-  constexpr auto initial_ID = -1;
+  constexpr auto initial_ID = INITIAL_ID;
   auto cur_map_id = initial_ID;
   auto cur_obs_id = initial_ID;
   const auto max_poll_iters = 50U;
@@ -86,15 +86,15 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
 
   // Create pointers to inject into the node to track its state.
   auto observation_tracker_ptr = std::make_shared<TestObservation>();
-  auto map_tracker_ptr = std::make_shared<TestMap>();
+  auto map_tracker_ptr = std::make_shared<MsgWithHeader>();
   // Tag the pointers with the initial id
   set_msg_id(*observation_tracker_ptr, initial_ID);
   set_msg_id(*map_tracker_ptr, initial_ID);
 
   // Initialize localizer node
   auto localizer_ptr = std::make_unique<MockRelativeLocalizer>(
-    observation_tracker_ptr,
-    map_tracker_ptr);
+    observation_tracker_ptr);
+  auto map_ptr = std::make_unique<TestMap>(map_tracker_ptr);
 
   auto localizer_node = std::make_shared<TestRelativeLocalizerNode>(
     "TestNode", "",
@@ -105,13 +105,15 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
     MockInitializer{});
 
   localizer_node->set_localizer_(std::move(localizer_ptr));
+  localizer_node->set_map_(std::move(map_ptr));
 
 
   // Create mock observation and map publishers.
   const auto observation_pub = localizer_node->create_publisher<TestObservation>(
     m_observation_topic,
     m_history_depth);
-  const auto map_pub = localizer_node->create_publisher<TestMap>(m_map_topic, m_history_depth);
+  const auto map_pub =
+    localizer_node->create_publisher<MsgWithHeader>(m_map_topic, m_history_depth);
 
   // Create a subscription to get the output from the localizer node. The callback compares the
   // ID of the output to the last published
@@ -188,12 +190,12 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
     };
 
   /////////////////////// initialize
-  constexpr auto initial_id = -1;
+  constexpr auto initial_id = INITIAL_ID;
   constexpr auto valid_map_id = 0;
   const auto max_poll_iters = 50U;
 
   // Create pointers to inject into the node to track its state.
-  auto map_tracker_ptr = std::make_shared<TestMap>();
+  auto map_tracker_ptr = std::make_shared<MsgWithHeader>();
   set_msg_id(*map_tracker_ptr, initial_id);
 
   ASSERT_NE(initial_id, valid_map_id);
@@ -201,7 +203,8 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
   ASSERT_NE(valid_map_id, TEST_ERROR_ID);
 
   // Initialize localizer node
-  auto localizer_ptr = std::make_unique<MockRelativeLocalizer>(nullptr, map_tracker_ptr);
+  auto localizer_ptr = std::make_unique<MockRelativeLocalizer>(nullptr);
+  auto map_ptr = std::make_unique<TestMap>(map_tracker_ptr);
   auto localizer_node = std::make_shared<TestRelativeLocalizerNode>(
     "TestNode", "",
     TopicQoS{m_observation_topic, rclcpp::SystemDefaultsQoS{}},
@@ -211,11 +214,13 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
     MockInitializer{});
 
   localizer_node->set_localizer_(std::move(localizer_ptr));
+  localizer_node->set_map_(std::move(map_ptr));
 
   // Create mock observation and map publishers.
   const auto observation_pub = localizer_node->create_publisher<TestObservation>(
     m_observation_topic, m_history_depth);
-  const auto map_pub = localizer_node->create_publisher<TestMap>(m_map_topic, m_history_depth);
+  const auto map_pub =
+    localizer_node->create_publisher<MsgWithHeader>(m_map_topic, m_history_depth);
 
   // Wait until publishers have a subscription available.
   wait_for_matched(map_pub);
@@ -259,23 +264,57 @@ TEST_F(RelativeLocalizationNodeTest, exception_handling) {
 
 //////////////////////////////////////////////////////////////////////// Implementations
 
+TestMap::TestMap(const std::shared_ptr<MapMsg> & map_ptr)
+: m_msg_ptr(map_ptr) {}
+
+void TestMap::set(const MsgWithHeader & map_msg)
+{
+  if (get_msg_id(map_msg) == TEST_ERROR_ID) {
+    throw TestMapException{};
+  }
+  *m_msg_ptr = map_msg;
+}
+
+const std::string & TestMap::frame_id()
+{
+  return m_msg_ptr->header.frame_id;
+}
+
+bool TestMap::valid()
+{
+  const auto id = get_msg_id(*m_msg_ptr);
+  return (id != INITIAL_ID) && (id != TEST_ERROR_ID);
+}
+
+const std::shared_ptr<MsgWithHeader> & TestMap::get_msg_tracker()
+{
+  return m_msg_ptr;
+}
+
+
 void TestRelativeLocalizerNode::set_localizer_(std::unique_ptr<MockRelativeLocalizer> && localizer)
 {
   set_localizer(std::forward<std::unique_ptr<MockRelativeLocalizer>>(localizer));
 }
 
-MockRelativeLocalizer::MockRelativeLocalizer(
-  std::shared_ptr<TestMap> obs_ptr,
-  std::shared_ptr<TestObservation> map_ptr)
-: m_map_tracking_ptr{map_ptr}, m_observation_tracking_ptr{obs_ptr} {}
+void TestRelativeLocalizerNode::set_map_(std::unique_ptr<TestMap> && map)
+{
+  set_map(std::forward<std::unique_ptr<TestMap>>(map));
+}
 
-MockRelativeLocalizer::RegistrationSummary MockRelativeLocalizer::register_measurement_impl(
+MockRelativeLocalizer::MockRelativeLocalizer(
+  std::shared_ptr<MsgWithHeader> obs_ptr)
+: m_observation_tracking_ptr{obs_ptr} {}
+
+PoseWithCovarianceStamped MockRelativeLocalizer::register_measurement(
   const TestObservation & msg, const Transform & transform_initial,
-  PoseWithCovarianceStamped & pose_out)
+  const TestMap &,
+  Summary *)
 {
   if (get_msg_id(msg) == TEST_ERROR_ID) {
     throw TestRegistrationException{};
   }
+  PoseWithCovarianceStamped pose_out;
   // The resulting frame id should contain observation's frame + initial guess' frame ID
   // So the result should be: obs_frame + obs_frame + map_frame
   pose_out.header.frame_id = msg.header.frame_id + transform_initial.header.frame_id;
@@ -285,31 +324,7 @@ MockRelativeLocalizer::RegistrationSummary MockRelativeLocalizer::register_measu
   if (m_observation_tracking_ptr) {
     *m_observation_tracking_ptr = msg;
   }
-  return RegistrationSummary{};
-}
-
-void MockRelativeLocalizer::set_map_impl(const TestMap & msg)
-{
-  if (get_msg_id(msg) == TEST_ERROR_ID) {
-    throw TestMapException{};
-  }
-  m_map = msg;
-  // Update the tracking pointer for notifying the test.
-  if (m_map_tracking_ptr) {
-    *m_map_tracking_ptr = msg;
-  }
-}
-
-void MockRelativeLocalizer::insert_to_map_impl(const TestMap &) {}
-
-const std::string & MockRelativeLocalizer::map_frame_id() const noexcept
-{
-  return m_map.header.frame_id;
-}
-
-std::chrono::system_clock::time_point MockRelativeLocalizer::map_stamp() const noexcept
-{
-  return ::time_utils::from_message(m_map.header.stamp);
+  return pose_out;
 }
 
 void TestRelativeLocalizerNode::on_bad_registration(std::exception_ptr eptr)

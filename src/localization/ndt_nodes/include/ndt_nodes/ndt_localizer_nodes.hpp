@@ -54,19 +54,17 @@ class NDT_NODES_PUBLIC P2DNDTLocalizerNode
   : public localization_nodes::RelativeLocalizerNode<
     sensor_msgs::msg::PointCloud2,
     sensor_msgs::msg::PointCloud2,
+    ndt::StaticNDTMap,
     ndt::P2DNDTLocalizer<OptimizerT>,
     PoseInitializerT>
 {
 public:
   using Localizer = ndt::P2DNDTLocalizer<OptimizerT>;
-  using RegistrationSummary = typename Localizer::RegistrationSummary;
-  using LocalizerBasePtr = std::unique_ptr<localization_common::RelativeLocalizerBase<
-        sensor_msgs::msg::PointCloud2,
-        sensor_msgs::msg::PointCloud2,
-        RegistrationSummary>>;
+  using RegistrationSummary = localization_common::OptimizedRegistrationSummary;
   using ParentT = localization_nodes::RelativeLocalizerNode<
     sensor_msgs::msg::PointCloud2,
     sensor_msgs::msg::PointCloud2,
+    ndt::StaticNDTMap,
     Localizer,
     PoseInitializerT>;
   using PoseWithCovarianceStamped = typename Localizer::PoseWithCovarianceStamped;
@@ -204,7 +202,6 @@ private:
 
     // Fetch localizer configuration
     ndt::P2DNDTLocalizerConfig localizer_config{
-      map_config,
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
       template get<uint32_t>()),
       std::chrono::milliseconds(
@@ -232,7 +229,7 @@ private:
         "localizer.optimizer.line_search.step_min").
       template get<float64_t>())};
     // TODO(igor): make the line search configurable.
-    LocalizerBasePtr localizer_ptr = std::make_unique<Localizer>(
+    auto localizer_ptr = std::make_unique<Localizer>(
       localizer_config,
       OptimizerT{
             common::optimization::MoreThuenteLineSearch{
@@ -241,7 +238,10 @@ private:
             optimizer_options
           },
       outlier_ratio);
+    auto map_ptr = std::make_unique<ndt::StaticNDTMap>(map_config);
+
     this->set_localizer(std::move(localizer_ptr));
+    this->set_map(std::move(map_ptr));
   }
 
   ndt::Real m_predict_translation_threshold;

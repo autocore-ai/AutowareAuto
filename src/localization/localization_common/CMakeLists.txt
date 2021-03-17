@@ -19,7 +19,7 @@ ament_auto_find_build_dependencies()
 
 set(LOCALIZATION_COMMON_LIB_SRC
     src/initialization.cpp
-    src/localizer_base.cpp
+    src/optimized_registration_summary.cpp
 )
 
 ament_auto_add_library(
@@ -39,9 +39,7 @@ if(BUILD_TESTING)
 
   ament_add_gtest(${LOCALIZATION_COMMON_TEST}
     test/test_initialization.hpp
-    test/test_initialization.cpp
-    test/test_relative_localizer.hpp
-    test/test_relative_localizer.cpp)
+    test/test_initialization.cpp)
 
   target_link_libraries(${LOCALIZATION_COMMON_TEST} ${PROJECT_NAME})
   ament_target_dependencies(${LOCALIZATION_COMMON_TEST} "time_utils")

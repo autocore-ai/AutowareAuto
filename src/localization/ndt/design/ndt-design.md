@@ -77,7 +77,9 @@ Outputs:
 
 ## NDT Localizer
 
-[NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) is a type of [RelativeLocalizerBase](@ref autoware::localization::localization_common::RelativeLocalizerBase).
+[NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) implements the interface 
+enforced by [LocalizerConstraint](@ref 
+autoware::localization::localization_nodes::traits::LocalizerConstraint).
 It is templated on scan, map and optimization problem types, allowing to register measurements using varying ndt methods. An implementation of
 [NDTLocalizerBase](@ref autoware::localization::ndt::NDTLocalizerBase) can choose to override the message and guess validations as well as covariance computation steps.
 

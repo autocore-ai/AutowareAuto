@@ -175,11 +175,26 @@ public:
     return m_stamp;
   }
 
+  /// \brief Set the contents of the pointcloud as the new map.
+  /// \param msg Pointcloud to be inserted.
+  void set(const sensor_msgs::msg::PointCloud2 & msg)
+  {
+    clear();
+    insert(msg);
+  }
+
   /// Get map's frame id.
   /// \return Frame id of the map.
   const std::string & frame_id() const noexcept
   {
     return m_frame_id;
+  }
+
+  /// \brief Check if the map is valid.
+  /// \return True if the map and frame ID are not empty and the stamp is initialized.
+  bool valid()
+  {
+    return (!m_map.empty()) && (!m_frame_id.empty());
   }
 
 protected:

@@ -34,20 +34,21 @@ ament_auto_find_build_dependencies()
 include_directories(include ${PCL_INCLUDE_DIRS})
 
 set(PC_MAPPING_SRC
-    src/map.cpp
-    src/point_cloud_mapper.cpp)
+    src/policies.cpp)
 
 set(PC_MAPPING_HEADERS
     include/point_cloud_mapping/visibility_control.hpp
     include/point_cloud_mapping/policies.hpp
-    include/point_cloud_mapping/map.hpp
-    include/point_cloud_mapping/point_cloud_mapper.hpp)
+    include/point_cloud_mapping/point_cloud_map.hpp)
 
 ament_auto_add_library(
 ${PROJECT_NAME} SHARED
         ${PC_MAPPING_HEADERS}
         ${PC_MAPPING_SRC}
 )
+
+target_link_libraries(${PROJECT_NAME}
+    ${PCL_LIBRARIES})
 
 autoware_set_compile_options(${PROJECT_NAME})
 # turn off warnings to be able to successfully compile upstream ros packages
@@ -72,8 +73,6 @@ if(BUILD_TESTING)
   set(PC_MAPPING_TEST pcm_test)
 
   ament_add_gtest(${PC_MAPPING_TEST}
-          test/test_pc_mapper.hpp
-          test/test_pc_mapper.cpp
           test/test_map.hpp
           test/test_map.cpp
   )

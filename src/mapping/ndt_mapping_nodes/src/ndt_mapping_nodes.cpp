@@ -18,5 +18,4 @@
 #include <ndt_mapping_nodes/ndt_mapping_nodes.hpp>
 
 #include <rclcpp_components/register_node_macro.hpp>
-
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode<>)

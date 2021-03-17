@@ -14,7 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <localization_common/localizer_base.hpp>
+#include <localization_common/optimized_registration_summary.hpp>
+#include <limits>
 
 namespace autoware
 {
@@ -25,6 +26,11 @@ namespace localization_common
 
 OptimizedRegistrationSummary::OptimizedRegistrationSummary(const OptimizationSummary & opt_summary)
 : m_optimization_summary{opt_summary} {}
+
+OptimizedRegistrationSummary::OptimizedRegistrationSummary()
+: m_optimization_summary{OptimizationSummary{std::numeric_limits<float64_t>::max(),
+      common::optimization::TerminationType::NO_CONVERGENCE,
+      0}} {}
 
 OptimizedRegistrationSummary::OptimizationSummary
 OptimizedRegistrationSummary::optimization_summary() const

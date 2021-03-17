@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <localization_common/localizer_base.hpp>
-#include <point_cloud_mapping/point_cloud_mapper.hpp>
+#include <point_cloud_mapping/point_cloud_map.hpp>
+#include <point_cloud_mapping/policies.hpp>
 #include <string>
 
 namespace autoware
@@ -30,6 +30,7 @@ std::string TimeStampPrefixGenerator::get_(const std::string & base_prefix) cons
     std::chrono::system_clock::now().time_since_epoch()).count();
   return base_prefix + "_" + std::to_string(timestamp);
 }
+
 }  // namespace point_cloud_mapping
 }  // namespace mapping
 }  // namespace autoware

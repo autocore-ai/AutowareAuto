@@ -32,36 +32,11 @@ namespace ndt
 class NDTLocalizerConfigBase
 {
 public:
-  using MapConfig = perception::filters::voxel_grid::Config;
-
   /// Constructor
-  /// \param map_config
   /// \param guess_time_tolerance
   NDTLocalizerConfigBase(
-    MapConfig && map_config,
     std::chrono::nanoseconds guess_time_tolerance)
-  : m_map_config{std::forward<MapConfig>(map_config)},
-    m_guess_time_tol{guess_time_tolerance} {}
-
-  /// Constructor
-  /// \param map_config Map configuration
-  /// \param guess_time_tolerance Time difference tolerance between the initial guess timestamp
-  /// and the timestamp of the scan.
-  NDTLocalizerConfigBase(
-    const MapConfig & map_config,
-    std::chrono::nanoseconds guess_time_tolerance)
-  : m_map_config{map_config},
-    m_guess_time_tol{guess_time_tolerance}
-  {}
-
-  // TODO(yunus.caliskan): Consider delegating map config get/set to the implementation
-  // when map types with different configuration needs are added.
-  /// Get map config.
-  /// \return Map config
-  const MapConfig & map_config() const noexcept
-  {
-    return m_map_config;
-  }
+  : m_guess_time_tol{guess_time_tolerance} {}
 
   /// Get optimizer config.
   /// \return optimizer config
@@ -71,7 +46,6 @@ public:
   }
 
 private:
-  MapConfig m_map_config;
   std::chrono::nanoseconds m_guess_time_tol;
 };
 
@@ -99,19 +73,15 @@ private:
 class NDT_PUBLIC P2DNDTLocalizerConfig : public NDTLocalizerConfigBase
 {
 public:
-  using MapConfig = perception::filters::voxel_grid::Config;
-
   /// Constructor
-  /// \param map_config Map configuration
   /// \param scan_capacity Capacity of the ndt scan. This corresponds to the maximum number of
   /// points expected in a single lidar scan.
   /// \param guess_time_tolerance Time difference tolerance between the initial guess timestamp
   /// and the timestamp of the scan.
   P2DNDTLocalizerConfig(
-    const MapConfig & map_config,
     const uint32_t scan_capacity,
     std::chrono::nanoseconds guess_time_tolerance)
-  : NDTLocalizerConfigBase{map_config, guess_time_tolerance},
+  : NDTLocalizerConfigBase{guess_time_tolerance},
     m_scan_capacity(scan_capacity) {}
 
   /// Get scan capacity.

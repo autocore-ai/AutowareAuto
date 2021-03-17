@@ -17,12 +17,14 @@
 #ifndef NDT__NDT_LOCALIZER_HPP_
 #define NDT__NDT_LOCALIZER_HPP_
 
-#include <localization_common/localizer_base.hpp>
+#include <localization_common/optimized_registration_summary.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <ndt/ndt_common.hpp>
 #include <ndt/ndt_optimization_problem.hpp>
 #include <optimization/optimizer_options.hpp>
+#include <experimental/optional>
 #include <utility>
 #include <string>
 
@@ -36,22 +38,20 @@ using CloudT = sensor_msgs::msg::PointCloud2;
 
 /// Base class for NDT based localizers. Implementations must implement the validation logic.
 /// \tparam ScanT Type of ndt scan.
-/// \tparam MapT Type of ndt map.
 /// \tparam NDTOptimizationProblemT Type of ndt optimization problem.
 /// \tparam OptimizerT Type of optimizer.
 /// \tparam ConfigT Type of localization configuration.
 template<
   typename ScanT,
-  typename MapT,
   typename NDTOptimizationProblemT,
   typename OptimizationProblemConfigT,
   typename OptimizerT>
-class NDT_PUBLIC NDTLocalizerBase : public localization_common::RelativeLocalizerBase<CloudT,
-    CloudT, localization_common::OptimizedRegistrationSummary>
+class NDT_PUBLIC NDTLocalizerBase
 {
 public:
   using Transform = geometry_msgs::msg::TransformStamped;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using Summary = localization_common::OptimizedRegistrationSummary;
 
   /// Constructor
   ///
@@ -61,37 +61,40 @@ public:
   /// @param      scan                         Initial value of the ndt scan. This element is
   ///                                          expected to be constructed in the implementation
   ///                                          class and moved to the base class.
-  /// @param      map                          Initial value of the ndt map. This element is
-  ///                                          expected to be constructed in the implementation
-  ///                                          class and moved to the base class.
   ///
   explicit NDTLocalizerBase(
     const NDTLocalizerConfigBase & config,
     const OptimizationProblemConfigT & optimization_problem_config,
     const OptimizerT & optimizer,
-    ScanT && scan,
-    MapT && map)
+    ScanT && scan)
   : m_config{config},
     m_optimization_problem_config{optimization_problem_config},
     m_optimizer{optimizer},
-    m_scan{std::forward<ScanT>(scan)},
-    m_map{std::forward<MapT>(map)} {}
+    m_scan{std::forward<ScanT>(scan)} {}
+
+  // TODO(yunus.caliskan): Add a constraint to `MapT` during/after #860
 
   /// Register a measurement to the current map and return the transformation from map to the
   /// measurement.
-  /// \param[in] msg Point cloud to be registered.
-  /// \param[in] transform_initial Initial transformation guess.
-  /// \param[out] pose_out Transformation from the map frame to the measurement's frame.
-  /// \return Registration summary. T
+  /// \param[in] msg Measurement message to register.
+  /// \param[in] transform_initial Initial guess of the pose to initialize the localizer with
+  /// in iterative processes like solving optimization problems.
+  /// \param[in] map Map to register.
+  /// \param[out] summary (Optional) Reference to the registration summary.
+  /// \return Pose estimate after registration.
   /// \throws std::logic_error on measurements older than the map.
   /// \throws std::domain_error on pose estimates that are not within the configured duration
   /// range from the measurement.
   /// \throws std::runtime_error on numerical errors in the optimizer.
-  RegistrationSummary register_measurement_impl(
+  template<typename MapT>
+  PoseWithCovarianceStamped register_measurement(
     const CloudT & msg,
-    const Transform & transform_initial, PoseWithCovarianceStamped & pose_out) override
+    const Transform & transform_initial,
+    const MapT & map,
+    Summary * const summary = nullptr)
   {
-    validate_msg(msg);
+    PoseWithCovarianceStamped pose_out{};
+    validate_msg(msg, map);
     validate_guess(msg, transform_initial);
     // Initial checks passed, proceed with initialization
     // Eigen representations to be used for internal computations.
@@ -106,7 +109,7 @@ public:
     m_scan.insert(msg);
 
     // Define and solve the problem.
-    NDTOptimizationProblemT problem(m_scan, m_map, m_optimization_problem_config);
+    NDTOptimizationProblemT problem(m_scan, map, m_optimization_problem_config);
     const auto opt_summary = m_optimizer.solve(problem, eig_pose_initial, eig_pose_result);
 
     if (opt_summary.termination_type() == common::optimization::TerminationType::FAILURE) {
@@ -121,37 +124,21 @@ public:
       pose_out.pose.pose);
 
     pose_out.header.stamp = msg.header.stamp;
-    pose_out.header.frame_id = map_frame_id();
+    pose_out.header.frame_id = map.frame_id();
 
     // Populate covariance information. It is implementation defined.
     set_covariance(problem, eig_pose_initial, eig_pose_result, pose_out);
-    return localization_common::OptimizedRegistrationSummary{opt_summary};
+    if (summary != nullptr) {
+      *summary = localization_common::OptimizedRegistrationSummary{opt_summary};
+    }
+    return pose_out;
   }
 
-  /// Replace the map with a given message
-  /// \param msg Message containing the map
-  void set_map_impl(const CloudT & msg) override
-  {
-    m_map.clear();
-    m_map.insert(msg);
-  }
-
-  /// Insert the given message to the existing map.
-  /// \param msg Message containing the map addition.
-  void insert_to_map_impl(const CloudT & msg) override
-  {
-    m_map.insert(msg);
-  }
 
   /// Get the last used scan.
   const ScanT & scan() const noexcept
   {
     return m_scan;
-  }
-  /// Get the current map.
-  const MapT & map() const noexcept
-  {
-    return m_map;
   }
   /// Get the optimizer.
   const OptimizerT & optimizer() const noexcept
@@ -167,17 +154,6 @@ public:
   const OptimizationProblemConfigT & optimization_problem_config() const noexcept
   {
     return m_optimization_problem_config;
-  }
-  /// Get the frame id of the current map.(Required for base interface)
-  const std::string & map_frame_id() const noexcept override
-  {
-    return m_map.frame_id();
-  }
-
-  /// Get the timestamp of the current map. (Required for base interface)
-  std::chrono::system_clock::time_point map_stamp() const noexcept override
-  {
-    return m_map.stamp();
   }
 
 protected:
@@ -203,12 +179,14 @@ protected:
   /// Check if the received message is valid to be registered. Following checks are made:
   /// * Message timestamp is not older than the map timestamp.
   /// \param msg Message to register.
+  /// \param map The map to be registered on.
   /// \throws std::logic_error on old data.
-  virtual void validate_msg(const CloudT & msg) const
+  template<typename MapT>
+  void validate_msg(const CloudT & msg, const MapT & map) const
   {
     const auto message_time = ::time_utils::from_message(msg.header.stamp);
     // Map shouldn't be newer than a measurement.
-    if (message_time < m_map.stamp()) {
+    if (message_time < map.stamp()) {
       throw std::logic_error(
               "Lidar scan should not have a timestamp older than the timestamp of"
               "the current map.");
@@ -245,7 +223,6 @@ private:
   OptimizationProblemConfigT m_optimization_problem_config;
   OptimizerT m_optimizer;
   ScanT m_scan;
-  MapT m_map;
 };
 
 /// P2D localizer implementation.
@@ -255,12 +232,12 @@ private:
 /// \tparam MapT Type of map to be used. By default it is StaticNDTMap.
 template<typename OptimizerT, typename MapT = StaticNDTMap>
 class NDT_PUBLIC P2DNDTLocalizer : public NDTLocalizerBase<
-    P2DNDTScan, MapT, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>
+    P2DNDTScan, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>
 {
 public:
   using CloudT = sensor_msgs::msg::PointCloud2;
   using ParentT = NDTLocalizerBase<
-    P2DNDTScan, MapT, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>;
+    P2DNDTScan, P2DNDTOptimizationProblem<MapT>, P2DNDTOptimizationConfig, OptimizerT>;
   using Transform = typename ParentT::Transform;
   using PoseWithCovarianceStamped = typename ParentT::PoseWithCovarianceStamped;
   using ScanT = P2DNDTScan;
@@ -273,8 +250,7 @@ public:
       config,
       P2DNDTOptimizationConfig{outlier_ratio},
       optimizer,
-      ScanT{config.scan_capacity()},
-      MapT{config.map_config()}} {}
+      ScanT{config.scan_capacity()}} {}
 
 protected:
   void set_covariance(

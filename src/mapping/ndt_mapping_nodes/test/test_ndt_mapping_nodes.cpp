@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 #include <ndt_mapping_nodes/ndt_mapping_nodes.hpp>
 
-TEST(test_trajectory_spoofer, instantiate)
+TEST(test_ndt_mapping_node, instantiate)
 {
   // Basic test to ensure that TrajectorySpooferNode can be instantiated
   rclcpp::init(0, nullptr);
@@ -76,6 +76,6 @@ TEST(test_trajectory_spoofer, instantiate)
   node_options.append_parameter_override("init_hack.quaternion.y", 0.0);
   node_options.append_parameter_override("init_hack.quaternion.z", 0.0);
   node_options.append_parameter_override("init_hack.quaternion.w", 1.0);
-
-  ASSERT_NO_THROW(autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode{node_options});
+  // TODO(yunus.caliskan): Write a proper mapping node test: #927
+  ASSERT_NO_THROW(autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode<>{node_options});
 }

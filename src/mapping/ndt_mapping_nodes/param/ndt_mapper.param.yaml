@@ -25,9 +25,6 @@
     ##### Relative localization node configuration:
     observation_sub:  # Config of the input point cloud subscription
       history_depth: 10
-    # Config of the maps point cloud subscription
-    map_sub:
-      history_depth: 1
     # Config of the maps point clouds to register
     pose_pub:
       history_depth: 10

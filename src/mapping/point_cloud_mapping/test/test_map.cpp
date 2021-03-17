@@ -19,7 +19,7 @@
 
 #include "test_map.hpp"
 
-#include <point_cloud_mapping/map.hpp>
+#include <point_cloud_mapping/point_cloud_map.hpp>
 #include <gtest/gtest.h>
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
@@ -30,65 +30,15 @@
 #include <string>
 #include <vector>
 
-using autoware::mapping::point_cloud_mapping::PlainPointCloudMap;
+using autoware::mapping::point_cloud_mapping::DummyLocalizationMap;
 using autoware::mapping::point_cloud_mapping::MapUpdateType;
 using autoware::mapping::point_cloud_mapping::PclCloud;
 using autoware::mapping::point_cloud_mapping::VoxelMapContext;
-using autoware::mapping::point_cloud_mapping::VoxelMap;
-
-TEST(PointCloudMapTest, basic_io) {
-  constexpr auto capacity = 10U;
-  constexpr auto map_frame = "map";
-  constexpr auto false_frame = ".asdasd..";
-  auto map_size = 0U;
-  ASSERT_NE(false_frame, map_frame);
-
-  PlainPointCloudMap map{capacity, map_frame};
-
-  auto add_update = [&map, &map_size, capacity](auto increment_size,
-      MapUpdateType expected_update_type,
-      const std::string & frame) {
-      geometry_msgs::msg::PoseWithCovarianceStamped dummy;
-      auto capped_increment = std::min(increment_size, (capacity - map_size));
-
-      const auto pc = autoware::mapping::point_cloud_mapping::make_pc(
-        increment_size, map_size,
-        frame);
-      const auto summary = map.try_add_observation(pc, dummy);
-      EXPECT_EQ(summary.update_type, expected_update_type);
-      EXPECT_EQ(summary.num_added_pts, capped_increment);
-
-      map_size += capped_increment;
-      ASSERT_LE(map_size, capacity);
-      EXPECT_EQ(map.size(), map_size);
-
-      // Let's check the content!
-      const std::string fname_prefix{"map_test_fname"};
-      const auto fname = fname_prefix + ".pcd";
-      map.write(fname_prefix);
-      PclCloud pcl_cloud;
-      pcl::io::loadPCDFile(fname, pcl_cloud);
-      autoware::mapping::point_cloud_mapping::check_pc(pcl_cloud, map_size);
-      remove(fname.c_str());
-    };
-
-  // First insert: NEW
-  EXPECT_NO_THROW(add_update(5U, MapUpdateType::NEW, map_frame));
-  // Fully insert into existing map: UPDATE
-  EXPECT_NO_THROW(add_update(3U, MapUpdateType::UPDATE, map_frame));
-  // Capacity reached, partially inserted into existing map: PARTIAL_UPDATE
-  EXPECT_NO_THROW(add_update(3U, MapUpdateType::PARTIAL_UPDATE, map_frame));
-  // Map is already full, nothing is inserted: NO_CHANGE
-  EXPECT_NO_THROW(add_update(3U, MapUpdateType::NO_CHANGE, map_frame));
-  map.clear();
-  map_size = 0U;
-  EXPECT_EQ(map.size(), map_size);
-  EXPECT_NO_THROW(add_update(2U, MapUpdateType::NEW, map_frame));
-  // frame mismatch = exception
-  EXPECT_THROW(add_update(2U, MapUpdateType::NEW, false_frame), std::runtime_error);
-}
+using autoware::mapping::point_cloud_mapping::DualVoxelMap;
 
 class VoxelMapTest : public ::testing::Test, public VoxelMapContext {};
+
+void DummyLocalizationMap::clear() {}
 
 TEST_F(VoxelMapTest, basic_io) {
   constexpr auto capacity = 10U;
@@ -98,19 +48,19 @@ TEST_F(VoxelMapTest, basic_io) {
   ASSERT_NE(false_frame, map_frame);
   const auto grid_config = autoware::perception::filters::voxel_grid::Config(
     m_min_point, m_max_point, m_voxel_size, m_capacity);
-  VoxelMap map{grid_config, map_frame};
+
+  DualVoxelMap<DummyLocalizationMap> map{grid_config, map_frame, DummyLocalizationMap{}};
 
   auto add_update = [&map, &map_size, capacity](auto increment_size,
       MapUpdateType expected_update_type,
       const std::string & frame) {
-      geometry_msgs::msg::PoseWithCovarianceStamped dummy;
       auto capped_increment = std::min(increment_size, (capacity - map_size));
 
       const auto pc = autoware::mapping::point_cloud_mapping::make_pc_deviated(
         increment_size,
         map_size, frame,
         FIXED_DEVIATION);
-      const auto summary = map.try_add_observation(pc, dummy);
+      const auto summary = map.update(pc);
       EXPECT_EQ(summary.update_type, expected_update_type);
 
       EXPECT_EQ(summary.num_added_pts, capped_increment * NUM_PTS_PER_CELL);
@@ -128,7 +78,6 @@ TEST_F(VoxelMapTest, basic_io) {
       autoware::mapping::point_cloud_mapping::check_pc(pcl_cloud, map_size);
       remove(fname.c_str());
     };
-
   // First insert: NEW
   EXPECT_NO_THROW(add_update(5U, MapUpdateType::NEW, map_frame));
   // Fully insert into existing map: UPDATE

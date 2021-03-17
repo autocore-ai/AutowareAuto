@@ -30,7 +30,7 @@ autoware_set_compile_options(${PROJECT_NAME})
 
 set(MAPPER_NODE_EXE ndt_mapper_node_exe)
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode"
+  PLUGIN "autoware::mapping::ndt_mapping_nodes::P2DNDTVoxelMapperNode<>"
   EXECUTABLE ${MAPPER_NODE_EXE}
 )
 
@@ -55,11 +55,13 @@ if(BUILD_TESTING)
     test/ndt_mapping_nodes_launch.test.py
     TIMEOUT "30"
   )
-
   find_package(ament_cmake_gtest REQUIRED)
+  # TODO(yunus.caliskan): figure out why we need this when it gets exported by point_cloud_mapping
+  find_package(PCL 1.8 REQUIRED COMPONENTS io)
+
   ament_add_gtest(test_${PROJECT_NAME} test/test_ndt_mapping_nodes.cpp)
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
-  target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+  target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME} ${PCL_LIBRARIES})
   target_include_directories(test_${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 endif()
 
