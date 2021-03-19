@@ -25,6 +25,29 @@ import lidar_integration
 
 
 def generate_test_description(ready_fn):
+    PORT = lidar_integration.get_open_port()
+
+    # The nodes under test:
+    velodyne_block_node = launch_ros.actions.Node(
+        package="velodyne_nodes",
+        node_executable="velodyne_cloud_node_exe",
+        node_name="vlp16_driver_node",
+        node_namespace="lidar_front",
+        parameters=[
+            os.path.join(
+                get_package_share_directory("velodyne_nodes"),
+                "param",
+                "vlp16_test.param.yaml"
+            ),
+            {
+                "port": PORT,
+                "cloud_size": 10700,
+                "expected_num_subscribers": 1,
+            }
+        ],
+        arguments=["--model", "vlp16"]
+    )
+
     point_cloud_filter_transform_node = launch_ros.actions.Node(
         package="point_cloud_filter_transform_nodes",
         node_executable="point_cloud_filter_transform_node_exe",
@@ -33,55 +56,43 @@ def generate_test_description(ready_fn):
         parameters=[
             os.path.join(
                 get_package_share_directory('point_cloud_filter_transform_nodes'),
-                'param/test.param.yaml'
+                "param",
+                "tf_test.param.yaml"
             ),
             {
                 "expected_num_subscribers": 1,
-                "input_frame_id": "frameid",
-                "output_frame_id": "frameid",
+                "expected_num_publishers":  1,
             }
         ],
         remappings=[("points_in", "points_raw")]
     )
 
-    # Fallback on data from transform publisher if transform not found in test.param.yaml
+    filtered_points_checker = lidar_integration.make_pcl_checker(
+        topic="points_filtered",
+        size=16930,
+        period=100,
+        period_tolerance=1.0,
+        size_tolerance=1.0
+    )
+
     lidar_bl_publisher = launch_ros.actions.Node(
         package='tf2_ros',
         node_executable='static_transform_publisher',
         arguments=["0", "0", "0", "0", "0", "0", "lidar_front", "base_link"]
     )
 
-    filtered_points_checker = lidar_integration.make_pcl_checker(
-        topic="points_filtered",
-        size=30000,
-        size_tolerance=1.0,
-        period=5000,
-        period_tolerance=1.0,
-        runtime=10.0,
-    )
-
-    spoofer_ = launch_ros.actions.Node(
-        package="lidar_integration",
-        node_executable="point_cloud_mutation_spoofer_exe",
-        arguments=[
-            "--topic", "/lidar_front/points_raw",
-            "--freq", "10",
-            "--runtime", "10",
-            "--mean", "30000",
-            "--std", "5000",
-        ],
-    )
-
-    return lidar_integration.get_point_cloud_mutation_launch_description(
-        test_nodes=[point_cloud_filter_transform_node, lidar_bl_publisher],
+    return lidar_integration.get_lidar_launch_description(
+        test_nodes=[velodyne_block_node, point_cloud_filter_transform_node, lidar_bl_publisher],
         checkers=[filtered_points_checker],
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())
         ],
-        spoofer=spoofer_
+        port=PORT
     )
 
 
-active = lidar_integration.make_active_mutation_tests()
+# Test cases are created automatically by the lidar_integration package.  We just need to
+# instantiate them
+active = lidar_integration.make_active_tests()
 
-after_shutdown = lidar_integration.make_post_shutdown_mutation_tests()
+after_shutdown = lidar_integration.make_post_shutdown_tests()

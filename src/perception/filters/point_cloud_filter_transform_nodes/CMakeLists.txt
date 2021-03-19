@@ -61,6 +61,7 @@ if(BUILD_TESTING)
   # # integration test
   add_ros_test(test/cloud_mutation.test.py)
   add_ros_test(test/point_cloud_filter_transform_cloud.test.py)
+  add_ros_test(test/point_cloud_filter_transform_tf_publisher.test.py)
   add_ros_test(
     test/point_cloud_filter_transform_node_launch.test.py
     TIMEOUT "30"
@@ -70,4 +71,5 @@ endif()
 ament_auto_package(
     INSTALL_TO_SHARE
     param
+    test/param
 )

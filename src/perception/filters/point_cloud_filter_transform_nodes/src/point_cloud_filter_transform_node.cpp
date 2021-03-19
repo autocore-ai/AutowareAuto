@@ -19,6 +19,8 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
 #include <string>
+#include <map>
+#include <vector>
 
 namespace autoware
 {
@@ -69,16 +71,6 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
     static_cast<float32_t>(declare_parameter("max_radius").get<float64_t>())},
   m_input_frame_id{declare_parameter("input_frame_id").get<std::string>()},
   m_output_frame_id{declare_parameter("output_frame_id").get<std::string>()},
-  m_static_transformer{
-    get_transform(
-      m_input_frame_id, m_output_frame_id,
-      declare_parameter("static_transformer.quaternion.x").get<float64_t>(),
-      declare_parameter("static_transformer.quaternion.y").get<float64_t>(),
-      declare_parameter("static_transformer.quaternion.z").get<float64_t>(),
-      declare_parameter("static_transformer.quaternion.w").get<float64_t>(),
-      declare_parameter("static_transformer.translation.x").get<float64_t>(),
-      declare_parameter("static_transformer.translation.y").get<float64_t>(),
-      declare_parameter("static_transformer.translation.z").get<float64_t>()).transform},
   m_init_timeout{std::chrono::milliseconds{declare_parameter("init_timeout_ms").get<int32_t>()}},
   m_timeout{std::chrono::milliseconds{declare_parameter("timeout_ms").get<int32_t>()}},
   m_sub_ptr{create_subscription<PointCloud2>(
@@ -91,7 +83,65 @@ PointCloud2FilterTransformNode::PointCloud2FilterTransformNode(
   m_expected_num_subscribers{
     static_cast<size_t>(declare_parameter("expected_num_subscribers").get<int32_t>())},
   m_pcl_size{static_cast<size_t>(declare_parameter("pcl_size").get<int32_t>())}
-{
+{  /// Declare transform parameters with the namespace
+  this->declare_parameter("static_transformer.quaternion.x");
+  this->declare_parameter("static_transformer.quaternion.y");
+  this->declare_parameter("static_transformer.quaternion.z");
+  this->declare_parameter("static_transformer.quaternion.w");
+  this->declare_parameter("static_transformer.translation.x");
+  this->declare_parameter("static_transformer.translation.y");
+  this->declare_parameter("static_transformer.translation.z");
+
+  /// Declare objects to hold transform parameters
+  rclcpp::Parameter quat_x_param;
+  rclcpp::Parameter quat_y_param;
+  rclcpp::Parameter quat_z_param;
+  rclcpp::Parameter quat_w_param;
+  rclcpp::Parameter trans_x_param;
+  rclcpp::Parameter trans_y_param;
+  rclcpp::Parameter trans_z_param;
+
+
+  /// If transform parameters exist in the param file use them
+  if (this->get_parameter("static_transformer.quaternion.x", quat_x_param) &&
+    this->get_parameter("static_transformer.quaternion.y", quat_y_param) &&
+    this->get_parameter("static_transformer.quaternion.z", quat_z_param) &&
+    this->get_parameter("static_transformer.quaternion.w", quat_w_param) &&
+    this->get_parameter("static_transformer.translation.x", trans_x_param) &&
+    this->get_parameter("static_transformer.translation.y", trans_y_param) &&
+    this->get_parameter("static_transformer.translation.z", trans_z_param))
+  {
+    RCLCPP_WARN(get_logger(), "Using transform from file.");
+    m_static_transformer = std::make_unique<StaticTransformer>(
+      get_transform(
+        m_input_frame_id, m_output_frame_id,
+        quat_x_param.as_double(),
+        quat_y_param.as_double(),
+        quat_z_param.as_double(),
+        quat_w_param.as_double(),
+        trans_x_param.as_double(),
+        trans_y_param.as_double(),
+        trans_z_param.as_double()).transform);
+  } else {  /// Else lookup transform being published on /tf or /static_tf topics
+    /// TF buffer
+    tf2_ros::Buffer tf2_buffer(this->get_clock());
+    /// TF listener
+    tf2_ros::TransformListener tf2_listener(tf2_buffer);
+    while (rclcpp::ok()) {
+      try {
+        RCLCPP_INFO(get_logger(), "Looking up the transform.");
+        m_static_transformer = std::make_unique<StaticTransformer>(
+          tf2_buffer.lookupTransform(
+            m_output_frame_id, m_input_frame_id,
+            tf2::TimePointZero).transform);
+        break;
+      } catch (const std::exception & transform_exception) {
+        RCLCPP_INFO(get_logger(), "No transform was available. Retrying after 100 ms.");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        continue;
+      }
+    }
+  }
   common::lidar_utils::init_pcl_msg(
     m_filtered_transformed_msg,
     m_output_frame_id.c_str(), m_pcl_size);

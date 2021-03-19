@@ -1,0 +1,16 @@
+# config/tf_test.param.yaml
+---
+lidar_front:
+  point_cloud_filter_transform_node:
+    ros__parameters:
+      timeout_ms:       110
+      pcl_size:         55000
+      input_frame_id:  "lidar_front"
+      output_frame_id: "base_link"
+      init_timeout_ms:  5000
+      expected_num_subscribers: 1
+      expected_num_publishers:  1
+      start_angle:            3.22886       # radius
+      end_angle:              3.05433
+      min_radius:             1.5           # meters
+      max_radius:             150.0

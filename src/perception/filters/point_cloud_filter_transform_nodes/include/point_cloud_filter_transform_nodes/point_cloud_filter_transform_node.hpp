@@ -17,12 +17,16 @@
 #ifndef POINT_CLOUD_FILTER_TRANSFORM_NODES__POINT_CLOUD_FILTER_TRANSFORM_NODE_HPP_
 #define POINT_CLOUD_FILTER_TRANSFORM_NODES__POINT_CLOUD_FILTER_TRANSFORM_NODE_HPP_
 
+#include <point_cloud_filter_transform_nodes/visibility_control.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <point_cloud_filter_transform_nodes/visibility_control.hpp>
+
 #include <memory>
 #include <string>
+
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 
 namespace autoware
 {
@@ -87,7 +91,7 @@ protected:
   PointType transform_point(const PointType & pt) const
   {
     PointType pt_final;
-    m_static_transformer.transform(pt, pt_final);
+    m_static_transformer->transform(pt, pt_final);
     return pt_final;
   }
 
@@ -99,7 +103,7 @@ private:
   DistanceFilter m_distance_filter;
   const std::string m_input_frame_id;
   const std::string m_output_frame_id;
-  StaticTransformer m_static_transformer;
+  std::unique_ptr<StaticTransformer> m_static_transformer;
   const std::chrono::nanoseconds m_init_timeout;
   const std::chrono::nanoseconds m_timeout;
   const typename rclcpp::Subscription<PointCloud2>::SharedPtr m_sub_ptr;

@@ -74,8 +74,15 @@ def generate_test_description(ready_fn):
         size_tolerance=1.0
     )
 
+    # Fallback on data from transform publisher if transform not found in test.param.yaml
+    lidar_bl_publisher = launch_ros.actions.Node(
+        package='tf2_ros',
+        node_executable='static_transform_publisher',
+        arguments=["0", "0", "0", "0", "0", "0", "lidar_front", "base_link"]
+    )
+
     return lidar_integration.get_lidar_launch_description(
-        test_nodes=[velodyne_block_node, point_cloud_filter_transform_node],
+        test_nodes=[velodyne_block_node, point_cloud_filter_transform_node, lidar_bl_publisher],
         checkers=[filtered_points_checker],
         other_actions=[
             launch.actions.OpaqueFunction(function=lambda context: ready_fn())
