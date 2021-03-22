@@ -27,6 +27,19 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::fusion::hungarian_assigner::hungarian_assigner_c;
 
+template<uint16_t N>
+void set_weights(
+  hungarian_assigner_c<N> & assign,
+  const std::vector<std::vector<float32_t>> & weights)
+{
+  for (uint64_t idx = {}; idx < weights.size(); ++idx) {
+    const std::vector<float32_t> & w = weights[idx];
+    for (uint64_t jdx = {}; jdx < w.size(); ++jdx) {
+      assign.set_weight(w[jdx], static_cast<int64_t>(idx), static_cast<int64_t>(jdx));
+    }
+  }
+}
+
 // test various assumptions such as NAN and memset
 TEST(hungarian_assigner, assumptions)
 {
@@ -105,19 +118,15 @@ TEST(hungarian_assigner, unbalanced1)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 5U);
-  const std::vector<std::vector<int>> weights =
+  const std::vector<std::vector<float32_t>> weights =
   {
     {5, 7, 11, 6, 7},
     {8, 5, 5, 6, 5},
     {6, 7, 10, 7, 3},
     {10, 4, 8, 2, 4}
   };
-  for (uint64_t idx = 0U; idx < weights.size(); ++idx) {
-    const std::vector<int> & w = weights[idx];
-    for (uint64_t jdx = 0U; jdx < w.size(); ++jdx) {
-      assign.set_weight(w[jdx], idx, jdx);
-    }
-  }
+  set_weights(assign, weights);
+
   ASSERT_TRUE(assign.assign());
   ASSERT_EQ(assign.get_assignment(0U), 0U);
   ASSERT_EQ(assign.get_assignment(1U), 1U);
@@ -134,19 +143,15 @@ TEST(hungarian_assigner, unbalanced2)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 5U);
-  const std::vector<std::vector<int>> weights =
+  const std::vector<std::vector<float32_t>> weights =
   {
     {4, 3, 6, 2, 7},
     {10, 12, 11, 14, 16},
     {4, 3, 2, 1, 5},
     {8, 7, 6, 9, 6}
   };
-  for (uint64_t idx = 0U; idx < weights.size(); ++idx) {
-    const std::vector<int> & w = weights[idx];
-    for (uint64_t jdx = 0U; jdx < w.size(); ++jdx) {
-      assign.set_weight(w[jdx], idx, jdx);
-    }
-  }
+  set_weights(assign, weights);
+
   ASSERT_TRUE(assign.assign());
   ASSERT_EQ(assign.get_assignment(0U), 1U);
   ASSERT_EQ(assign.get_assignment(1U), 0U);
@@ -163,7 +168,7 @@ TEST(hungarian_assigner, complicated)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(8U, 10U);
-  const std::vector<std::vector<int>> weights =
+  const std::vector<std::vector<float32_t>> weights =
   {
     {300, 290, 280, 290, 210, 300, 290, 280, 290, 210},
     {250, 310, 290, 300, 200, 250, 310, 290, 300, 200},
@@ -174,12 +179,8 @@ TEST(hungarian_assigner, complicated)
     {220, 300, 230, 180, 160, 220, 300, 230, 180, 160},
     {260, 190, 260, 210, 180, 260, 190, 260, 210, 180}
   };
-  for (uint64_t idx = 0U; idx < weights.size(); ++idx) {
-    const std::vector<int> & w = weights[idx];
-    for (uint64_t jdx = 0U; jdx < w.size(); ++jdx) {
-      assign.set_weight(w[jdx], idx, jdx);
-    }
-  }
+  set_weights(assign, weights);
+
   ASSERT_TRUE(assign.assign());
   // modulo here since the problem is a machine (column) can do at most 2 jobs
   ASSERT_EQ(assign.get_assignment(0U) % 5U, 4U);
@@ -205,7 +206,7 @@ TEST(hungarian_assigner, parallel)
   auto fn = [ =, &assign](const uint64_t row) {
       for (uint64_t idx = 0U; idx < SZ; ++idx) {
         const float32_t val = (idx == row) ? 0.0F : 10.0F;
-        assign.set_weight(val, row, idx);
+        assign.set_weight(val, static_cast<int64_t>(row), static_cast<int64_t>(idx));
       }
     };
   std::vector<std::thread> threads(SZ);
@@ -217,7 +218,7 @@ TEST(hungarian_assigner, parallel)
   }
   ASSERT_TRUE(assign.assign());
   for (uint64_t idx = 0U; idx < SZ; ++idx) {
-    ASSERT_EQ(assign.get_assignment(idx), static_cast<int64_t>(idx));
+    ASSERT_EQ(assign.get_assignment(static_cast<int64_t>(idx)), static_cast<int64_t>(idx));
   }
 }
 

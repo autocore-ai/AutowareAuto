@@ -16,15 +16,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(hungarian_assigner)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -45,6 +36,7 @@ if(BUILD_TESTING)
 
   set(HUNGARIAN_ASSIGN_GTEST hungarian_assigner_gtest)
   ament_add_gtest(${HUNGARIAN_ASSIGN_GTEST} test/src/test_hungarian_assigner.cpp)
+  autoware_set_compile_options(${HUNGARIAN_ASSIGN_GTEST})
   target_include_directories(${HUNGARIAN_ASSIGN_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${HUNGARIAN_ASSIGN_GTEST} ${PROJECT_NAME})
 endif()

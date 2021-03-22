@@ -4,15 +4,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 find_package(yaml-cpp REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 
@@ -86,6 +77,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${NDT_NODES_TEST}
     test/test_map_publisher.cpp
     WORKING_DIRECTORY /tmp)
+  autoware_set_compile_options(${NDT_NODES_TEST})
   target_link_libraries(${NDT_NODES_TEST}
     ${NDT_MAP_PUBLISHER_NODE_LIB}
     ${YAML_CPP_LIBRARIES})

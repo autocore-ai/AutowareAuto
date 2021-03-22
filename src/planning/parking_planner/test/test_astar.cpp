@@ -452,5 +452,5 @@ TEST(astar_path_planner, infeasible_situation_current_walled) {
   }
 
   EXPECT_EQ(num_collisions, 0);
-  EXPECT_EQ(vehicle_states.size(), 1);
+  EXPECT_EQ(vehicle_states.size(), 1U);
 }

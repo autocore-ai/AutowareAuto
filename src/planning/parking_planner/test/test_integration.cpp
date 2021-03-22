@@ -276,4 +276,9 @@ INSTANTIATE_TEST_CASE_P(
       PlanningStatus::OK
     }
     // TODO(feature,s.me) add infeasible cases to ensure those get handled properly
-));
+
+    // add extra comma to silence warning about missing argument to variadic macro
+    // https://github.com/google/googletest/issues/1419#issuecomment-381423292
+    // cppcheck-suppress syntaxError
+  ),
+);

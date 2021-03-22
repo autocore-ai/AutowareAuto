@@ -4,15 +4,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(optimization)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 #dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -59,6 +50,8 @@ if(BUILD_TESTING)
           test/test_cache_states.cpp
           test/test_newton_optimization.cpp
           test/test_more_thuente_line_search.cpp)
+  autoware_set_compile_options(${OPTIMIZATION_TEST})
+  target_compile_options(${OPTIMIZATION_TEST} PRIVATE -Wno-double-promotion -Wno-float-conversion)
   target_link_libraries(${OPTIMIZATION_TEST} ${PROJECT_NAME})
 endif()
 

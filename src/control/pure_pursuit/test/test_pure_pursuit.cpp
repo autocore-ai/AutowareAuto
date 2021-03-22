@@ -142,16 +142,17 @@ TEST_F(PurePursuitTest, simple)
 
   command = controller.compute_command(current_pose);
 
-  EXPECT_FLOAT_EQ(command.long_accel_mps2, -21.0F / (pow(1.25F, 0.5F) * 2.0F));
-  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.6F * dist_front_rear_wheels));  // 1.25/2.0
+  EXPECT_FLOAT_EQ(command.long_accel_mps2, -21.0F / (std::pow(1.25F, 0.5F) * 2.0F));
+  // 1.25/2.0
+  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, std::atan(1.6F * dist_front_rear_wheels));
 
   create_current_pose(current_pose, 0.5F, 2.0F, 0.0F, 5.0F, 0.0F, 0.0F);
 
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
-  EXPECT_FLOAT_EQ(command.long_accel_mps2, -24.0F / (pow(1.25F, 0.5F) * 2.0F));
-  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -atanf(1.6F * dist_front_rear_wheels));
+  EXPECT_FLOAT_EQ(command.long_accel_mps2, -24.0F / (std::pow(1.25F, 0.5F) * 2.0F));
+  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.6F * dist_front_rear_wheels));
 
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }
@@ -176,9 +177,9 @@ TEST_F(PurePursuitTest, reverse)
 
   command = controller.compute_command(current_pose);
 
-  EXPECT_FLOAT_EQ(command.long_accel_mps2, 21.0F / (pow(1.25F, 0.5F) * 2.0F));
+  EXPECT_FLOAT_EQ(command.long_accel_mps2, 21.0F / (std::pow(1.25F, 0.5F) * 2.0F));
   // 2.0/1.25
-  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -atanf(1.6F * dist_front_rear_wheels));
+  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.6F * dist_front_rear_wheels));
 
   // heading error: -(7.0 / 4.0) * PI -> (1.0 / 4.0) * PI
   create_reverse_traj(traj, size);
@@ -186,7 +187,7 @@ TEST_F(PurePursuitTest, reverse)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
-  traj.points[1].heading = from_angle((3.0 * PI) / 4.0F);
+  traj.points[1].heading = from_angle((3.0F * PI) / 4.0F);
   create_current_pose(current_pose, -1.5F, -1.5F, PI, 1.0F, 0.0F, 0.0F);
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
@@ -222,7 +223,7 @@ TEST_F(PurePursuitTest, interpolation)
 
   command = controller.compute_command(current_pose);
 
-  EXPECT_FLOAT_EQ(command.long_accel_mps2, -41.0F / (pow(2.0F, 0.5F) * 2.0F));
-  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -atanf(1.0F * dist_front_rear_wheels));
+  EXPECT_FLOAT_EQ(command.long_accel_mps2, -41.0F / (std::pow(2.0F, 0.5F) * 2.0F));
+  EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.0F * dist_front_rear_wheels));
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }

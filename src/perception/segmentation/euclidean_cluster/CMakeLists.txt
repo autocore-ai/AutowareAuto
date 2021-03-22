@@ -17,15 +17,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(euclidean_cluster)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -37,7 +28,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/euclidean_cluster.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-target_compile_options(${PROJECT_NAME} PUBLIC "-O0" PRIVATE -Wno-sign-conversion -Wno-conversion)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 if(BUILD_TESTING)
   # run linters
@@ -47,6 +38,8 @@ if(BUILD_TESTING)
   # gtest
   set(EUCLIDEAN_CLUSTER_GTEST euclidean_cluster_gtest)
   ament_add_gtest(${EUCLIDEAN_CLUSTER_GTEST} test/src/test_euclidean_cluster.cpp)
+  autoware_set_compile_options(${EUCLIDEAN_CLUSTER_GTEST})
+  target_compile_options(${EUCLIDEAN_CLUSTER_GTEST} PRIVATE -Wno-conversion)
   target_include_directories(${EUCLIDEAN_CLUSTER_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${EUCLIDEAN_CLUSTER_GTEST} ${PROJECT_NAME})
   ament_target_dependencies(${EUCLIDEAN_CLUSTER_GTEST} "autoware_auto_geometry")

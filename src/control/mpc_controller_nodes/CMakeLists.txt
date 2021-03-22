@@ -5,12 +5,12 @@ project(mpc_controller_nodes)
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
-### Compile options
-set(CMAKE_CXX_STANDARD 14)
 
 ### Build
 ament_auto_add_library(mpc_controller_node SHARED
   src/mpc_controller_nodes/mpc_controller_node.cpp)
+
+autoware_set_compile_options(mpc_controller_node)
 
 ament_auto_add_executable(mpc_controller_node_exe
   src/mpc_controller_nodes/mpc_controller_main.cpp)
@@ -29,6 +29,7 @@ if(BUILD_TESTING)
   ament_add_gtest(mpc_controller_nodes_unit_tests
     test/gtest_main.cpp
     test/sanity_check.cpp)
+  autoware_set_compile_options(mpc_controller_nodes_unit_tests)
   target_link_libraries(mpc_controller_nodes_unit_tests mpc_controller_node)
   add_dependencies(mpc_controller_nodes_unit_tests mpc_controller_node)
 endif()

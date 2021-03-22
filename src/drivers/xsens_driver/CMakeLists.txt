@@ -17,15 +17,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(xsens_driver)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -51,12 +42,14 @@ if(BUILD_TESTING)
     set(XSENS_IMU_GTEST xsens_imu_gtest)
     ament_add_gtest(${XSENS_IMU_GTEST}
       "test/src/test_xsens_imu.cpp")
+    autoware_set_compile_options(${XSENS_IMU_GTEST})
     target_include_directories(${XSENS_IMU_GTEST} PRIVATE test/include include)
     target_link_libraries(${XSENS_IMU_GTEST} ${PROJECT_NAME})
 
     set(XSENS_GPS_GTEST xsens_gps_gtest)
     ament_add_gtest(${XSENS_GPS_GTEST}
       "test/src/test_xsens_gps.cpp")
+    autoware_set_compile_options(${XSENS_GPS_GTEST})
     target_include_directories(${XSENS_GPS_GTEST} PRIVATE test/include include)
     target_link_libraries(${XSENS_GPS_GTEST} ${PROJECT_NAME})
 endif()

@@ -5,8 +5,6 @@ project(controller_common)
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
-### Compile options
-set(CMAKE_CXX_STANDARD 14)
 
 # TODO(c.ho) this needs to be fixed
 find_package(Eigen3 REQUIRED)
@@ -15,6 +13,7 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/controller_common/controller_base.cpp
 )
+autoware_set_compile_options(${PROJECT_NAME})
 
 ### Test
 if(BUILD_TESTING)
@@ -27,6 +26,8 @@ if(BUILD_TESTING)
     test/behavior.cpp
     test/misc.cpp
     test/state_tracking.cpp)
+  autoware_set_compile_options(controller_common_unit_tests)
+  target_compile_options(controller_common_unit_tests PRIVATE -Wno-double-promotion)
   target_link_libraries(controller_common_unit_tests ${PROJECT_NAME})
   add_dependencies(controller_common_unit_tests ${PROJECT_NAME})
 endif()

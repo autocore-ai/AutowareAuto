@@ -21,9 +21,6 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(casadi REQUIRED)
 ament_auto_find_build_dependencies()
 
-# Temporarily override build type - See #696
-set(CMAKE_BUILD_TYPE "")
-
 # --- Add a solver generator executable
 # This has to be built first, then run, and only _then_ can the bicycle planner
 # library be built - due to the code generation. This is implemented by making it
@@ -63,7 +60,8 @@ add_custom_target(${PROJECT_NAME}_generator_wrapper
 ament_auto_add_library(${PROJECT_NAME}_callbacks SHARED
     ${GENERATED_PATH}/parking_planner_callbacks.c)
 add_dependencies(${PROJECT_NAME}_callbacks ${PROJECT_NAME}_generator_wrapper)
-
+# Build takes too long with optimization enabled; see #696
+autoware_turn_off_optimization(${PROJECT_NAME}_callbacks)
 
 # Target for the main planner library
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -102,6 +100,8 @@ if(BUILD_TESTING)
       test/test_geometry.cpp
       test/test_integration.cpp
       test/test_nlp.cpp)
+  autoware_set_compile_options(${PROJECT_NAME}_test)
+  target_compile_options(${PROJECT_NAME}_test PRIVATE -Wno-conversion)
   target_include_directories(${PROJECT_NAME}_test PRIVATE "include")
   target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
   if(PARKING_PLANNER_TEST_PLOTS)

@@ -26,6 +26,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/had_map_query.cpp
   src/had_map_visualization.cpp)
 
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 target_link_libraries(${PROJECT_NAME} CGAL CGAL::CGAL CGAL::CGAL_Core)
 autoware_set_compile_options(${PROJECT_NAME})
 

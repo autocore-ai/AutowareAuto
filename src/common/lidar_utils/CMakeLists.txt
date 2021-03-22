@@ -5,15 +5,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(lidar_utils)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
@@ -36,6 +27,7 @@ if(BUILD_TESTING)
   ament_add_gtest(test_fast_atan2
     test/src/test_fast_atan2.cpp
   )
+  autoware_set_compile_options(test_fast_atan2)
   target_include_directories(test_fast_atan2
     PRIVATE "include"
   )

@@ -3,15 +3,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(motion_model)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -48,6 +39,8 @@ if(BUILD_TESTING)
     test/test_constant_velocity.cpp
     test/test_parameter_estimator.cpp
   )
+  autoware_set_compile_options(${MOTION_MODEL_GTEST})
+  target_compile_options(${MOTION_MODEL_GTEST} PRIVATE -Wno-conversion -Wno-double-promotion -Wno-float-conversion)
   target_include_directories(${MOTION_MODEL_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${MOTION_MODEL_GTEST} ${PROJECT_NAME})
   ament_target_dependencies(${MOTION_MODEL_GTEST})

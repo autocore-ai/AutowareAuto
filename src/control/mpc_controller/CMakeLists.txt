@@ -5,8 +5,6 @@ project(mpc_controller)
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
-### Compile options
-set(CMAKE_CXX_STANDARD 14)
 
 # Generate code
 acado_vendor_generate(
@@ -26,6 +24,9 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/mpc_controller/references.cpp
   src/mpc_controller/debug.cpp
 )
+# TODO(#915) Linker error with -fvisibility=hidden
+# autoware_set_compile_options(${PROJECT_NAME})
+# target_compile_options(${PROJECT_NAME} PRIVATE -Wno-useless-cast -Wno-float-conversion -Wno-sign-conversion)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_PATH})
 target_link_libraries(${PROJECT_NAME} single_track_mpc)
 
@@ -38,6 +39,8 @@ if(BUILD_TESTING)
   apex_test_tools_add_gtest(mpc_controller_unit_tests
     test/gtest_main.cpp
     test/sanity_checks.cpp)
+  # TODO(#915) Linker error with -fvisibility=hidden
+  # autoware_set_compile_options(mpc_controller_unit_tests)
   ament_target_dependencies(mpc_controller_unit_tests "controller_common")
   target_link_libraries(mpc_controller_unit_tests ${PROJECT_NAME} single_track_mpc)
   add_dependencies(mpc_controller_unit_tests ${PROJECT_NAME} single_track_mpc)

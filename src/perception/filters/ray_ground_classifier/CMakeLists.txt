@@ -5,11 +5,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(ray_ground_classifier)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
 set(use_OMP FALSE)
 if(use_OMP)
   find_package(OpenMP REQUIRED)
@@ -17,10 +12,6 @@ if(use_OMP)
   set(OpenMP_LIBS gomp)
 else()
   set(OpenMP_FLAGS "-Wno-unknown-pragmas")
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 ## dependencies
@@ -45,6 +36,8 @@ if(BUILD_TESTING)
   ament_add_gtest(test_ray_ground_classifier_gtest
     test/src/test_ray_ground_classifier.cpp
   )
+  autoware_set_compile_options(test_ray_ground_classifier_gtest)
+  target_compile_options(test_ray_ground_classifier_gtest PRIVATE -Wno-conversion -Wno-double-promotion -Wno-float-conversion)
   target_include_directories(test_ray_ground_classifier_gtest
     PRIVATE "test/include" "include"
   )
@@ -56,6 +49,8 @@ if(BUILD_TESTING)
   ament_add_gtest(test_ray_ground_classifier_raytrace_gtest
     test/src/test_ray_ground_classifier_raytrace.cpp
   )
+  autoware_set_compile_options(test_ray_ground_classifier_raytrace_gtest)
+  target_compile_options(test_ray_ground_classifier_raytrace_gtest PRIVATE -Wno-conversion)
   target_include_directories(test_ray_ground_classifier_raytrace_gtest
     PRIVATE "test/include" "include"
   )
@@ -67,6 +62,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_ray_aggregator_gtest
     test/src/test_ray_aggregator.cpp
   )
+  autoware_set_compile_options(test_ray_aggregator_gtest)
+  target_compile_options(test_ray_aggregator_gtest PRIVATE -Wno-float-conversion -Wno-conversion)
+
   target_include_directories(test_ray_aggregator_gtest
     PRIVATE "test/include" "include"
   )

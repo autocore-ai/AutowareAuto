@@ -87,6 +87,7 @@ Mark all the items that are done.
 When starting from scratch, new packages should be created with the [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html) macro and they will automatically satisfy the following criteria.
 
 1. If an existing package is added to `AutowareAuto`, it should match the output of `autoware_auto_create_pkg` regarding
+   1. [ ] calling `autoware_set_compile_options` for each compiled target
    1. [ ] same set of linters
    1. [ ] visibility control
    1. [ ] finding build dependencies in [`cmake`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-minimal-cmake-example) with `ament_auto_find_build_dependencies()`

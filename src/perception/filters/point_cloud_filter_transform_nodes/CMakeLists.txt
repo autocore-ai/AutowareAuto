@@ -18,15 +18,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(point_cloud_filter_transform_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -54,6 +45,8 @@ if(BUILD_TESTING)
   set(FILTER_TRANSFORM_NODE_GTEST filter_transform_node_gtest)
   apex_test_tools_add_gtest(${FILTER_TRANSFORM_NODE_GTEST}
       "test/test_point_cloud_filter_transform.cpp")
+  autoware_set_compile_options(${FILTER_TRANSFORM_NODE_GTEST})
+  target_compile_options(${FILTER_TRANSFORM_NODE_GTEST} PRIVATE -Wno-float-conversion -Wno-conversion)
   target_include_directories(${FILTER_TRANSFORM_NODE_GTEST} PRIVATE include)
   target_link_libraries(${FILTER_TRANSFORM_NODE_GTEST} ${FILTER_NODE_LIB})
   ament_target_dependencies(${FILTER_TRANSFORM_NODE_GTEST} "lidar_integration" "velodyne_nodes" "autoware_auto_common")

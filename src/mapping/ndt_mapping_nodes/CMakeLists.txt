@@ -60,6 +60,9 @@ if(BUILD_TESTING)
   find_package(PCL 1.8 REQUIRED COMPONENTS io)
 
   ament_add_gtest(test_${PROJECT_NAME} test/test_ndt_mapping_nodes.cpp)
+  autoware_set_compile_options(test_${PROJECT_NAME})
+  target_compile_options(test_${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-double-promotion -Wno-useless-cast)
+
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
   target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME} ${PCL_LIBRARIES})
   target_include_directories(test_${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})

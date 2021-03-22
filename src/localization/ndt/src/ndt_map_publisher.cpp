@@ -70,7 +70,7 @@ void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 
 {
   pcl::PCLPointCloud2 pcl_cloud;
   if (pcl::io::loadPCDFile(file_name, pcl_cloud) == -1) {  // load the file
-    throw std::runtime_error("PCD file not found.");
+    throw std::runtime_error(std::string("PCD file ") + file_name + " could not be loaded.");
   }
   if (pcl_cloud.data.size() == 0) {
     throw std::runtime_error("PCD cloud empty\n");

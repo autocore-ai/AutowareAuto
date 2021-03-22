@@ -6,13 +6,6 @@ project(recordreplay_planner)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-### Compile options
-set(CMAKE_CXX_STANDARD 14)
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # Build library
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/recordreplay_planner/recordreplay_planner.cpp
@@ -28,6 +21,8 @@ if(BUILD_TESTING)
   ament_add_gtest(recordreplay_planner_unit_tests
     test/gtest_main.cpp
     test/sanity_checks.cpp)
+  autoware_set_compile_options(recordreplay_planner_unit_tests)
+  target_compile_options(recordreplay_planner_unit_tests PRIVATE -Wno-conversion -Wno-double-promotion)
   target_link_libraries(recordreplay_planner_unit_tests ${PROJECT_NAME})
   target_include_directories(recordreplay_planner_unit_tests PRIVATE "include")
 endif()

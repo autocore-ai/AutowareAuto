@@ -267,15 +267,6 @@ packages. It can be conveniently created by
 cmake_minimum_required(VERSION 3.5)
 project(composition_example)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
@@ -292,6 +283,20 @@ if(BUILD_TESTING)
 endif()
 
 ament_auto_package()
+```
+
+#### Compiler settings
+The C++ standard is set in `autoware_auto_cmake.cmake` and becomes available to a package by
+depending on the `autoware_auto_cmake` package in `package.xml` as shown below. Compiler options and
+warning flags are set per target by calling the function `autoware_set_compile_options(${target})`
+defined in `autoware_auto_cmake.cmake` as well. It should be applied to every C++ target and in
+general Autoware.Auto code shall not generate warnings.
+
+In case the warning flags are too strict for example when including external code, they can be selectively deactivated in special cases as follows:
+
+```{cmake}
+autoware_set_compile_options(${target})
+target_compile_options(${target} PRIVATE -Wno-double-promotion)
 ```
 
 ### Minimal Package.xml Example {#contributors-guidelines-minimal-package-xml-example}

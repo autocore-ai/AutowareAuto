@@ -1,15 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(vehicle_interface)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -39,6 +30,7 @@ if(BUILD_TESTING)
     test/state_machine_headlight.cpp
     test/state_machine_node.cpp
     test/test_vi_node.hpp)
+  autoware_set_compile_options(${PROJECT_NAME}_test)
   target_include_directories(${PROJECT_NAME}_test PRIVATE "include")
   target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
   ament_target_dependencies(vehicle_interface_test

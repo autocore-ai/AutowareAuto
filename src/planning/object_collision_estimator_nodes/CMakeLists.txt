@@ -20,14 +20,6 @@ project(object_collision_estimator_nodes)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-### Compile options
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # List sources
 set(OBJECT_COLLISION_ESTIMATOR_NODE_SRC
   src/object_collision_estimator_node.cpp
@@ -69,6 +61,8 @@ if(BUILD_TESTING)
   # Build unit test
   ament_add_gtest(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests
     test/${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_test.cpp)
+  autoware_set_compile_options(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests)
+  target_compile_options(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests PRIVATE -Wno-conversion)
   target_link_libraries(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests ${OBJECT_COLLISION_ESTIMATOR_NODE_LIB})
   target_include_directories(${OBJECT_COLLISION_ESTIMATOR_NODE_LIB}_unit_tests PRIVATE "include")
 endif()

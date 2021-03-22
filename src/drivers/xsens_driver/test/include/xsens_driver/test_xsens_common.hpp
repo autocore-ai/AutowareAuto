@@ -46,7 +46,7 @@ protected:
     ASSERT_FALSE(driver.convert(pkt, out));
     pkt.data = static_cast<MID_underlying_type>(MID::MT_DATA2);
     ASSERT_FALSE(driver.convert(pkt, out));
-    uint8_t length = data.size() - 1;
+    uint8_t length = static_cast<uint8_t>(data.size() - 1);
     pkt.data = length;
     ASSERT_FALSE(driver.convert(pkt, out));
 

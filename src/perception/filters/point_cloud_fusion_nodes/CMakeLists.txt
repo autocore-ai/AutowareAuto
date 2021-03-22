@@ -19,15 +19,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(point_cloud_fusion_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -59,6 +50,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${PCF_GTEST}
           test/test_point_cloud_fusion_nodes.hpp
           test/test_point_cloud_fusion_nodes.cpp)
+  autoware_set_compile_options(${PCF_GTEST})
   target_link_libraries(${PCF_GTEST} ${PC_FUSION_LIB})
   target_include_directories(${PCF_GTEST} PRIVATE "test/include" "include")
   ament_target_dependencies(${PCF_GTEST} "rclcpp")

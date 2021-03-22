@@ -229,7 +229,8 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
   bool use_auxiliary_function = true;
   // Follows the "Search Algorithm" as presented in the paper.
   for (auto step_iterations = 0; step_iterations < m_max_iterations; ++step_iterations) {
-    if ((psi_t.value <= 0.0F) &&
+    constexpr decltype(psi_t.value) ZERO{};
+    if ((psi_t.value <= ZERO) &&
       (std::abs(phi_t.derivative) <= m_eta * std::abs(phi_0.derivative)))
     {
       // We reached the termination condition as the step satisfies the strong Wolfe conditions (the

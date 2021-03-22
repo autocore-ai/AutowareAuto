@@ -17,15 +17,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(velodyne_driver)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -55,6 +46,7 @@ if(BUILD_TESTING)
             "test/src/test_velodyne.cpp"
             "test/src/test_vlp32c.cpp"
             "test/src/test_vls128.cpp")
+    autoware_set_compile_options(${VELODYNE_GTEST})
     target_include_directories(${VELODYNE_GTEST} PRIVATE test/include include)
     target_link_libraries(${VELODYNE_GTEST} ${PROJECT_NAME})
 endif()

@@ -4,15 +4,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #dependencies
 find_package(Eigen3 REQUIRED)
@@ -46,11 +37,7 @@ set(NDT_NODES_LIB_HEADERS
     include/ndt/ndt_localizer.hpp
     include/ndt/utils.hpp)
 
-ament_auto_add_library(
-${PROJECT_NAME} SHARED
-        ${NDT_NODES_LIB_SRC}
-)
-
+ament_auto_add_library(${PROJECT_NAME} SHARED ${NDT_NODES_LIB_SRC})
 autoware_set_compile_options(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
   ${GeographicLib_LIBRARIES}

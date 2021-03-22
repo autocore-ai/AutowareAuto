@@ -16,15 +16,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(point_cloud_mapping)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 #dependencies
 find_package(ament_cmake_auto REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io)
@@ -76,12 +67,12 @@ if(BUILD_TESTING)
           test/test_map.hpp
           test/test_map.cpp
   )
-
-  target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})
   autoware_set_compile_options(${PC_MAPPING_TEST})
   # turn off warnings to be able to successfully compile upstream ros packages
   target_compile_options(${PC_MAPPING_TEST} PRIVATE ${ROS_NO_WARN_LIST})
+  target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})
 endif()
+
 ament_export_include_directories(${PCL_INCLUDE_DIRS})
 ament_export_libraries(${PCL_LIBRARIES})
 ament_auto_package()

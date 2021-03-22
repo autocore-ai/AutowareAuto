@@ -19,15 +19,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(voxel_grid)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -53,6 +44,8 @@ if(BUILD_TESTING)
   set(VOXEL_GRID_GTEST voxel_grid_gtest)
 
   ament_add_gtest(${VOXEL_GRID_GTEST} test/src/test_voxel_grid.cpp)
+  autoware_set_compile_options(${VOXEL_GRID_GTEST})
+  target_compile_options(${VOXEL_GRID_GTEST} PRIVATE -Wno-sign-conversion -Wno-double-promotion)
   target_link_libraries(${VOXEL_GRID_GTEST} ${PROJECT_NAME})
   target_include_directories(${VOXEL_GRID_GTEST} PRIVATE "test/include" "include")
   ament_target_dependencies(${VOXEL_GRID_GTEST} "geometry_msgs")

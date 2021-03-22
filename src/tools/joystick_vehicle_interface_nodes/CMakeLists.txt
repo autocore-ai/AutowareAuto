@@ -1,15 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(joystick_vehicle_interface_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -32,6 +23,7 @@ if(BUILD_TESTING)
   # Test
   ament_add_gtest(joystick_vehicle_interface_nodes_test
     test/mapping.cpp)
+  autoware_set_compile_options(joystick_vehicle_interface_nodes_test)
   target_include_directories(joystick_vehicle_interface_nodes_test PUBLIC include)
   target_link_libraries(joystick_vehicle_interface_nodes_test
     ${JOYSTICK_VEHICLE_INTERFACE_LIB_NODE})

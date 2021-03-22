@@ -15,22 +15,50 @@ $ vcs import < autoware.auto.$ROS_DISTRO.repos
 
 Optionally, you can choose a DDS implementation other than the default Cyclone DDS: @subpage choosing-a-dds-vendor
 
-# Use colcon defaults inside ADE {#building-colcon-defaults}
-After creating a fresh new ADE home, its `.bashrc` will be populated to set the [`COLCON_DEFAULTS_FILE`](https://colcon.readthedocs.io/en/released/reference/global-arguments.html?highlight=DEFAULTS#environment-variables)
-environment variable.
-
-However, if an ADE home already exists, it is strongly advised to use the provided colcon defaults file to ensure that binaries are consistently built with the same flags.
-
-To use the colcon defaults configuration file with an existing ADE home, type the following from the location of your ADE home:
+If running tests or demos, also pull binary files with
 
 ```{bash}
-$ export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml >> .bashrc
+$ git lfs pull --exclude="" --include="*"
 ```
 
-Test that the environment variable has been properly set by entering ADE and typing the following:
+# Use colcon defaults {#building-colcon-defaults}
+
+It is strongly advised to use the colcon defaults file provided by Autoware.Auto to ensure that
+binaries are consistently built with the same flags.
+
+Test if the required environment variable
+[`COLCON_DEFAULTS_FILE`](https://colcon.readthedocs.io/en/released/reference/global-arguments.html?highlight=DEFAULTS#environment-variables)
+has been properly set by typing the following:
 
 ```{bash}
 $ echo $COLCON_DEFAULTS_FILE
+```
+
+If the output is empty, follow the instruction below to configure it.
+
+## Inside ADE
+
+After creating a fresh new ADE home according to @ref installation-ade, the `.bashrc` will be
+populated to set the `COLCON_DEFAULTS_FILE` environment variable.
+
+To use the colcon defaults configuration file with an existing ADE home, type the following from within ADE
+
+```{bash}
+ade$ export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml >> ~/.bashrc
+```
+
+## Outside ADE
+
+Take the defaults file that comes with the Autoware.Auto source checkout and add it to your shell startup; e.g.
+
+```{bash}
+$ export COLCON_DEFAULTS_FILE=/path/to/AutowareAuto/tools/ade_image/colcon-defaults.yaml >> .bashrc
+```
+
+or manually export the variable in the terminal in which compilation commands are issued; e.g.
+
+```{bash}
+$ export COLCON_DEFAULTS_FILE=/path/to/AutowareAuto/tools/ade_image/colcon-defaults.yaml
 ```
 
 # How to build the code {#installation-and-development-how-to-build}
@@ -42,7 +70,7 @@ ade$ colcon build
 
 It's important that you always run `colcon build` from the repository root. If everything went well, you should _not_ see "failed" on your screen, although "packages had stderr output" is okay.
 
-By default, this produces a maximally optimized build in order to run the stack as efficiently as possible. For debugging symbols and/or reduced compile times, you can add `--cmake-args -DCMAKE_BUILD_TYPE="Debug"` to the command line.
+See @ref building-compilation-optimization-flags for further details to influence how the code is built.
 
 To verify that everything works as expected, see if all tests pass:
 
@@ -77,32 +105,48 @@ colcon build --packages-up-to <package_name>
 
 These options are also accepted by `colcon test`.
 
+#### Compilation Optimization And Debugging Parameters {#building-compilation-optimization-flags}
+
 To add a compiler flag to all packages, e.g. for enabling the undefined behavior sanitizer:
 ```{bash}
 colcon build --cmake-args -DCMAKE_CXX_FLAGS="-fsanitize=undefined"
 ```
 
-#### Compilation Optimization And Debugging Parameters {#building-compilation-optimization-flags}
-
 While building Autoware.Auto, here are some common options for compilation build types:
-- Release (Optimized and fast)
-- Debug (With debug flags but slow because not all compilation optimizations are applied)
-- RelWithDebInfo (Fast and allows debugging to a fair-enough degree)
+- `Release`: Optimized and fast
+- `Debug`: With debug flags but slow because not all compilation optimizations are applied
+- `RelWithDebInfo`: Fast and allows debugging to a fair-enough degree
+
+@note When using the [colcon defaults configuration file](#building-colcon-defaults) that ships with Autoware.Auto, the default build type is `RelWithDebInfo`.
 
 ```{bash}
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 ```
-These flags are then passed into [autoware_set_compile_options](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/tools/autoware_auto_cmake/cmake/autoware_auto_cmake.cmake#L51)
-function for the nodes that use it in their respective `CMakeLists.txt` files.
 
-If the [colcon defaults configuration file](#building-colcon-defaults) file is being used, Autoware.Auto will be built as `RelWithDebInfo` if `CMAKE_BUILD_TYPE` is not set.
+@warning If no optimization flags are set, then the Autoware.Auto stack may be too slow to be useful. This can happen e.g. when the CMake build type is `Debug` or not set at all.
 
-Outside ADE, if there is no `CMAKE_BUILD_TYPE` given, and `autoware_set_compile_options` is used, then the code is built optimized and without debug flags.
+Edit the [colcon defaults configuration file](#building-colcon-defaults) to permanently pass extra `-cmake-args` to `colcon build` or select a different default build type. These settings can be overridden on demand by passing command-line arguments to `colcon`.
 
-Regardless of `CMAKE_BUILD_TYPE`, code may be built with additional flags added by the
-`autoware_set_compile_options` macro.
+C++ targets in Autoware.Auto are built with additional options set centrally by the directives in
+[`autoware_auto_cmake.cmake`](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/tools/autoware_auto_cmake/cmake/autoware_auto_cmake.cmake)
+and the `autoware_set_compile_options()` function defined in that file. The settings are imported to
+a package through depending on the `autoware_auto_cmake` package in a `package.xml`
+
+```{xml}
+<buildtool_depend>autoware_auto_cmake</buildtool_depend>
+```
+
+and importing the build dependencies in `CMakeLists.txt`
+
+```{cmake}
+ament_auto_find_build_dependencies()
+```
+
+See @ref building-seeing-compiler-options to check the compiler flags.
+
+@note [A small number of targets](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/696) deactivate optimization flags regardless of the release type in order to reduce the build time. To override this, call `colcon build --cmake-args -DAUTOWARE_OPTIMIZATION_OF_SLOW_TARGETS=ON`.
 
 #### Compilation Database Generation {#building-compilation-database}
 
@@ -126,7 +170,7 @@ to remove all build artifacts associated with that package. Alternatively, if yo
 colcon build --build-base build_mybranch --install-base install_mybranch
 ```
 
-### Seeing compiler commands
+### Seeing compiler commands {#building-seeing-compiler-options}
 To see the compiler and linker invocations for a package, use
 ```{bash}
 VERBOSE=1 colcon build --packages-up-to <package_name> --event-handlers console_direct+

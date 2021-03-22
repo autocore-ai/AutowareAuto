@@ -53,6 +53,9 @@ if(BUILD_TESTING)
           test/test_kalman_filter_wrapper.cpp
           test/test_state_estimation_node.cpp
   )
+  # do not use strict compiler warnings because of GMOCK errors
+  # autoware_set_compile_options(test_state_estimation_node)
+  # target_compile_options(test_state_estimation_node PRIVATE -Wno-float-conversion -Wno-sign-conversion -Wno-conversion)
   add_dependencies(test_state_estimation_node state_estimation_node)
   target_link_libraries(test_state_estimation_node state_estimation_node)
 

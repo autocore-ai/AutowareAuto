@@ -48,9 +48,9 @@ TEST(fast_atan2, corner_cases) {
 TEST(fast_atan2, max_error) {
   float32_t max_error = 0;
   for (float32_t f = 0; f < autoware::common::types::TAU; f += 0.00001f) {
-    float32_t x = cos(f);
-    float32_t y = sin(f);
-    max_error = ::std::max(
+    float32_t x = std::cos(f);
+    float32_t y = std::sin(f);
+    max_error = std::max(
       max_error,
       fabsf(atan2f(y, x) - autoware::common::lidar_utils::fast_atan2(y, x)));
   }

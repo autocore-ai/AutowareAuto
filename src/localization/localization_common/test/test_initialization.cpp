@@ -69,7 +69,7 @@ TEST_P(BestEffortInitializationTest, basic) {
   const auto dt = param.dt;
   const auto dt_small = param.dt_small;
 
-  const auto ratio = static_cast<float>(dt_small.count()) / dt.count();
+  const auto ratio = static_cast<float32_t>(dt_small.count()) / static_cast<float32_t>(dt.count());
   ASSERT_TRUE(ratio < 1.0);
   constexpr auto target_frame{"base_link"};
   constexpr auto source_frame{"map"};

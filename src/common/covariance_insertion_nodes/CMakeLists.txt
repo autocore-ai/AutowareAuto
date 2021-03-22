@@ -51,6 +51,7 @@ if(BUILD_TESTING)
   set(TEST_SOURCES test/test_covariance_insertion_node.cpp)
   set(TEST_MESSAGE_MODIFYING_NODE_EXE test_covariance_insertion_node)
   ament_add_gtest(${TEST_MESSAGE_MODIFYING_NODE_EXE} ${TEST_SOURCES})
+  autoware_set_compile_options(${TEST_MESSAGE_MODIFYING_NODE_EXE})
   target_link_libraries(${TEST_MESSAGE_MODIFYING_NODE_EXE} covariance_insertion_node)
 endif()
 

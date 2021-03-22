@@ -15,15 +15,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(object_collision_estimator)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -54,6 +45,8 @@ if(BUILD_TESTING)
   set(TEST_SOURCES test/${TEST_NAME}.cpp)
   set(TEST_OBJECT_COLLISION_ESTIMATOR_EXE ${TEST_NAME})
   ament_add_gtest(${TEST_OBJECT_COLLISION_ESTIMATOR_EXE} ${TEST_SOURCES})
+  autoware_set_compile_options(${TEST_OBJECT_COLLISION_ESTIMATOR_EXE})
+  target_compile_options(${TEST_OBJECT_COLLISION_ESTIMATOR_EXE} PRIVATE -Wno-double-promotion -Wno-float-conversion -Wno-conversion)
   target_link_libraries(${TEST_OBJECT_COLLISION_ESTIMATOR_EXE} ${PROJECT_NAME})
 endif()
 set( CMAKE_VERBOSE_MAKEFILE on )

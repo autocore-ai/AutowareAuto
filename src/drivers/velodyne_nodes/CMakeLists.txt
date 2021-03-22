@@ -17,15 +17,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Build the nodes
 project(velodyne_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -50,6 +41,8 @@ if(BUILD_TESTING)
     # Test Node
     set(TEST_NODE_NAME "test_listener_exe")
     add_executable(${TEST_NODE_NAME} test/src/test_listener.cpp)
+    autoware_set_compile_options(${TEST_NODE_NAME})
+    target_compile_options(${TEST_NODE_NAME} PRIVATE -Wno-conversion)
     ament_target_dependencies(${TEST_NODE_NAME} "rclcpp" "sensor_msgs")
 
     # "Unit" test
@@ -60,6 +53,7 @@ if(BUILD_TESTING)
       "test/src/velodyne_node_test.cpp"
     )
 
+    autoware_set_compile_options(${VELODYNE_NODE_GTEST})
     target_include_directories(${VELODYNE_NODE_GTEST} PRIVATE include)
     target_link_libraries(${VELODYNE_NODE_GTEST} ${CLOUD_LIB} ${BLOCK_LIB})
     ament_target_dependencies(${VELODYNE_NODE_GTEST} "lidar_integration")

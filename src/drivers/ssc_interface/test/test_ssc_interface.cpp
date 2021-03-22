@@ -31,7 +31,7 @@ using autoware::common::types::float32_t;
 static constexpr float32_t kFrontAxleToCogM = 1.5f;
 static constexpr float32_t kRearAxleToCogM = 0.5f;
 
-static bool is_close(const float32_t a, const float32_t b, const float32_t tol = 1e-5)
+static bool is_close(const float32_t a, const float32_t b, const float32_t tol = 1e-5F)
 {
   return std::abs(a - b) < tol;
 }
@@ -39,12 +39,12 @@ static bool is_close(const float32_t a, const float32_t b, const float32_t tol =
 TEST(test_ssc_interface, test_drive_straight) {
   VehicleKinematicState vks;
   vks.state.longitudinal_velocity_mps = 2.0;
-  constexpr float32_t kYaw = 1.0471975511965976;  // 60 deg
-  vks.state.heading.real = 0.86602540378;  // cos(30 deg)
-  vks.state.heading.imag = 0.5;  // sin(30 deg)
-  constexpr float32_t dt = 0.1;
+  constexpr float32_t kYaw = 1.0471975511965976F;  // 60 deg
+  vks.state.heading.real = 0.86602540378F;  // cos(30 deg)
+  vks.state.heading.imag = 0.5F;  // sin(30 deg)
+  constexpr float32_t dt = 0.1F;
 
-  for (int i = 0; i < 50; ++i) {
+  for (float32_t i = 0; i < 50.0F; ++i) {
     const float32_t x_nominal = std::cos(kYaw) * i * dt * 2.0;
     EXPECT_TRUE(is_close(x_nominal, vks.state.x)) <<
       "should be " << x_nominal << ", is " << vks.state.x;

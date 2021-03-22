@@ -5,15 +5,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(ray_ground_classifier_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 set(use_OMP FALSE)
 if(use_OMP)
   find_package(OpenMP REQUIRED)
@@ -57,6 +48,8 @@ if(BUILD_TESTING)
   ament_add_gtest(test_ray_ground_classifier_nodes_gtest
     test/src/test_ray_ground_classifier_nodes.cpp
   )
+  autoware_set_compile_options(test_ray_ground_classifier_nodes_gtest)
+  target_compile_options(test_ray_ground_classifier_nodes_gtest PRIVATE -Wno-conversion)
   target_include_directories(test_ray_ground_classifier_nodes_gtest
     PRIVATE "test/include" "include"
   )

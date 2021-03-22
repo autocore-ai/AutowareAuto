@@ -10,6 +10,7 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
   <build_export_depend>controller_common_nodes</build_export_depend>
   <build_export_depend>mpc_controller</build_export_depend>

@@ -47,7 +47,7 @@ TEST(VLP32CDataTest, angle_lookup_test) {
   const float32_t US_TO_DEG = (rpm * 360.0F) / (60.0F * 1.0E6F);
 
   for (auto firing_id = 0U; firing_id < 16U; ++firing_id) {
-    const auto time_passed = firing_id * VLP32CData::FIRE_DURATION_US;
+    const auto time_passed = static_cast<float32_t>(firing_id) * VLP32CData::FIRE_DURATION_US;
     const auto degree_indices_passed = US_TO_DEG * time_passed;
 
     for (auto laser_id_in_pair = 0U; laser_id_in_pair < 2U; ++laser_id_in_pair) {

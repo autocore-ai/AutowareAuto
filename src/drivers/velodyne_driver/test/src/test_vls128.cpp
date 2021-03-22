@@ -62,7 +62,8 @@ TEST(VLS128DataTest, angle_lookup_test) {
       const auto maintaining_offset = firing_id < 8U ? 0U :
         VLS128Data::MAINTENANCE_DURATION1_US;
 
-      const auto current_time_offset = firing_id * VLS128Data::FIRE_DURATION_US;
+      const auto current_time_offset = static_cast<float32_t>(firing_id) *
+        VLS128Data::FIRE_DURATION_US;
       const auto firing_total_azimuth_offset =
         (maintaining_offset + current_time_offset) * US_TO_IDX;
 
@@ -71,20 +72,22 @@ TEST(VLS128DataTest, angle_lookup_test) {
       for (auto pt_id = 0U; pt_id < VLS128Data::GROUP_SIZE; ++pt_id) {
         const auto pt_id_in_block = (group_id_in_block * VLS128Data::GROUP_SIZE) +pt_id;
         const auto raw_azimuth_lookup = vls128_data.azimuth_offset(
-          num_banked_pts, block_id,
+          static_cast<uint16_t>(num_banked_pts), block_id,
           pt_id_in_block);
 
         const auto expected_azimuth =
           static_cast<uint32_t>(std::roundf(
             firing_total_azimuth_offset +
             group_azimuth_offsets[pt_id] * DEG2IDX));
-        const auto altitude = vls128_data.altitude(num_banked_pts, block_id, pt_id_in_block);
+        const auto altitude = vls128_data.altitude(
+          static_cast<uint16_t>(num_banked_pts), block_id,
+          pt_id_in_block);
         EXPECT_EQ(raw_azimuth_lookup, expected_azimuth);
         EXPECT_LE(altitude, AZIMUTH_ROTATION_RESOLUTION);
         EXPECT_GE(altitude, 0U);
         EXPECT_LE(raw_azimuth_lookup, AZIMUTH_ROTATION_RESOLUTION);
         EXPECT_GE(raw_azimuth_lookup, 0U);
-        EXPECT_EQ(vls128_data.seq_id(block_id, pt_id_in_block), 0U);
+        EXPECT_EQ(vls128_data.seq_id(static_cast<uint16_t>(block_id), pt_id_in_block), 0U);
       }
     }
   }

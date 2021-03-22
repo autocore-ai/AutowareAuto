@@ -18,15 +18,6 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(voxel_grid_nodes)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -59,6 +50,7 @@ if(BUILD_TESTING)
   # gtest
   set(VOXEL_GRID_NODE_GTEST voxel_algorithm_gtest)
   ament_add_gtest(${VOXEL_GRID_NODE_GTEST} test/test_voxel_grid_nodes.cpp)
+  autoware_set_compile_options(${VOXEL_GRID_NODE_GTEST})
   target_link_libraries(${VOXEL_GRID_NODE_GTEST} ${VOXEL_GRID_NODE_LIB})
   target_include_directories(${VOXEL_GRID_NODE_GTEST} PRIVATE "test/include" "include")
 

@@ -33,6 +33,7 @@ using autoware::prediction::is_state;
 using autoware::prediction::variable::X;
 using autoware::prediction::variable::Y;
 using autoware::common::types::float32_t;
+using StateXY = GenericState<float32_t, X, Y>;
 
 struct NotAState {};
 
@@ -40,7 +41,6 @@ struct CustomVariable : AngleVariable {};
 
 /// @test Create an empty state.
 TEST(KalmanFilterGenericStateTest, CreateEmpty) {
-  using StateXY = GenericState<float32_t, X, Y>;
   EXPECT_EQ(2, StateXY::size());
   StateXY state{};
   EXPECT_TRUE(state.vector().isApproxToConstant(0.0F));
@@ -51,7 +51,6 @@ TEST(KalmanFilterGenericStateTest, CreateEmpty) {
 
 /// @test Create a non-empty state and access its values.
 TEST(KalmanFilterGenericStateTest, CreateAndAccess) {
-  using StateXY = GenericState<float32_t, X, Y>;
   StateXY state{{42.0F, 23.0F}};
   ASSERT_EQ(2, state.size());
   EXPECT_FLOAT_EQ(state[0], 42.0F);
@@ -69,7 +68,6 @@ TEST(KalmanFilterGenericStateTest, CreateAndAccess) {
 
 /// @test We are able to print the state to string.
 TEST(KalmanFilterGenericStateTest, Print) {
-  using StateXY = GenericState<float32_t, X, Y>;
   StateXY state{{42.0F, 23.0F}};
   std::stringstream str_stream;
   str_stream << state << std::endl;

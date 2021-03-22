@@ -57,7 +57,9 @@ using Command = autoware_auto_msgs::msg::VehicleControlCommand;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 using TestTypes = ::testing::Types<State, Trajectory, Command>;
-TYPED_TEST_CASE(PeriodicPublisherTest, TestTypes);
+
+// cppcheck-suppress syntaxError
+TYPED_TEST_CASE(PeriodicPublisherTest, TestTypes, );
 
 TYPED_TEST(PeriodicPublisherTest, basic)
 {

@@ -38,7 +38,7 @@ void introduce_noise(Trajectory * trajectory, float range)
 
 void dbg_print_traj(const Trajectory & trajectory)
 {
-  ASSERT_GE(trajectory.points.size(), 3);
+  ASSERT_GE(trajectory.points.size(), 3U);
   const float dt = static_cast<float>(DT_MS) / 1000;
   float v0 = (trajectory.points.cbegin() + 1)->longitudinal_velocity_mps;
   float a0 = (v0 - trajectory.points.cbegin()->longitudinal_velocity_mps) / dt;
@@ -61,9 +61,9 @@ void dbg_print_traj(const Trajectory & trajectory)
 /// acceleration, [m/s^3]
 void assert_trajectory(const Trajectory & trajectory, float max_acc, float max_jerk)
 {
-  ASSERT_GE(max_acc, 0);
-  ASSERT_GE(max_jerk, 0);
-  ASSERT_GE(trajectory.points.size(), 3);
+  ASSERT_GE(max_acc, 0.0F);
+  ASSERT_GE(max_jerk, 0.0F);
+  ASSERT_GE(trajectory.points.size(), 3U);
   const float dt = static_cast<float>(DT_MS) / 1000;
   float v0 = (trajectory.points.cbegin() + 1)->longitudinal_velocity_mps;
   float a0 = (v0 - trajectory.points.cbegin()->longitudinal_velocity_mps) / dt;
@@ -91,8 +91,8 @@ void assert_trajectory(const Trajectory & trajectory, float max_acc, float max_j
 /// \param[in] stop_time The time given for the vehicle to come to a stop, [s]
 void assert_trajectory_stop(const Trajectory & trajectory, float velocity, float stop_time)
 {
-  ASSERT_GE(velocity, 0);
-  ASSERT_GT(stop_time, 0);
+  ASSERT_GE(velocity, 0.0F);
+  ASSERT_GT(stop_time, 0.0F);
   // Theoretical lower bound of the maximum acceleration and jerk, based on a step-function jerk
   // with value -max_jerk from 0 to stop_time/2 and max_jerk from stop_time/2 to stop_time. The
   // actual acceleration and jerk will be higher, but should be somewhat proportional to those
@@ -177,7 +177,7 @@ TEST(trajectory_smoother, acceleration_deceleration) {
   constexpr float v0 = 10;  // Initial velocity, [m/s]
   constexpr float a = 3;    // Absolute value of both the acceleration and deceleration, [m/s^2]
   constexpr float ratio = 0.5 - v0 / (2 * T * a);
-  static_assert(ratio > 0 && ratio < 1);
+  static_assert(ratio > 0 && ratio < 1, "ratio outside of (0, 1) range");
   const int points = T * (1000 / DT_MS);
   const int p0 = static_cast<int>(std::round(points * ratio));
   const std::chrono::milliseconds dt(DT_MS);

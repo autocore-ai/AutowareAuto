@@ -103,7 +103,7 @@ T make_single_stage_variable(const std::string & name)
 // templates and use std::vector<float64_t> as another instantiation.
 std::vector<MX> make_named_variable(const std::string & name, const std::size_t dimension)
 {
-  if (dimension > std::numeric_limits<int64_t>::max()) {
+  if (dimension > static_cast<std::size_t>(std::numeric_limits<int64_t>::max())) {
     throw std::domain_error{"Variable dimension too large"};
   }
 

@@ -208,6 +208,10 @@ using FloatState = GenericState<common::types::float32_t, Ts...>;
 template<typename ... Ts>
 using DoubleState = GenericState<common::types::float64_t, Ts...>;
 
+// Definition of constexpr static member required in C++14 at namespace scope but
+// cannot have initializer if member is odr-used
+template<typename ScalarT, typename ... VariableTs>
+constexpr std::int32_t GenericState<ScalarT, VariableTs...>::kSize;
 }  // namespace prediction
 }  // namespace autoware
 

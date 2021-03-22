@@ -16,10 +16,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(off_map_obstacles_filter)
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
 # require that dependencies from package.xml be available
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies(REQUIRED

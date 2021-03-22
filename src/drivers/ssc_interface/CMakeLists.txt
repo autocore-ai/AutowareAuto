@@ -56,6 +56,8 @@ if(BUILD_TESTING)
     test/test_dbw_state_machine.cpp
     test/test_ssc_interface.cpp
   )
+  autoware_set_compile_options(test_${PROJECT_NAME})
+  target_compile_options(test_${PROJECT_NAME} PRIVATE -Wno-double-promotion -Wno-float-conversion)
   target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
   ament_target_dependencies(test_${PROJECT_NAME}

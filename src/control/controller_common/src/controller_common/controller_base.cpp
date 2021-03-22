@@ -234,7 +234,7 @@ Command ControllerBase::compute_stop_command(const State & state) const noexcept
   const auto decel = std::min(
     velocity / dt.count(),
     m_config.safe_deceleration_rate());   // positive
-  ret.long_accel_mps2 = state.state.longitudinal_velocity_mps >= 0.0 ? -decel : decel;
+  ret.long_accel_mps2 = state.state.longitudinal_velocity_mps >= 0.0F ? -decel : decel;
 
   return ret;
 }
