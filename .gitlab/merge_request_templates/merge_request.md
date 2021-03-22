@@ -47,7 +47,7 @@ Mark all the items that are done.
 1. Basic checks
    1. [ ] The MR title describes what is being done on the ticket
    1. [ ] All functional code written in C++14, tooling code may be written in Python 3.5+ or Bash
-   1. [ ] The first commit has a proper [commit message](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-commits) to be used as a basis for the squashed commit created at the very end
+   1. [ ] The first commit has a proper [commit message](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-committing) to be used as a basis for the squashed commit created at the very end; e.g. `[#928] Fix foo in bar`
 1. Code correctness
    1. [ ] The problem/feature is solved (reproducibly)
    1. [ ] The solution is performant enough for the use case in mind

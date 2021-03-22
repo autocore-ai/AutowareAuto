@@ -44,7 +44,7 @@ This may change in the future as new OS or ROS environments are targeted; see @r
 ## Building
 See @ref building.
 
-## Committing
+## Committing {#contributors-guidelines-committing}
 
 Developers should commit and push regularly to GitLab to avoid data loss. Commit messages should follow
 common standards as laid out in this [post](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html). In
@@ -60,7 +60,7 @@ a particular package or aspect, add a reference to that.
 
 Example summary line referring to issue #716:
 
-    [716] Expand contributor guidelines
+    [#716] Expand contributor guidelines
 
 Example summary line without an issue:
 

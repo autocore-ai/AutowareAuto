@@ -1,10 +1,27 @@
+#!/bin/bash
+
+# Copyright 2021 Apex.AI, Inc.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #!/usr/bin/env bash
-# This script prepares the commit messages to include
-# the issued ID at the beginning of the messge.
+
+# Prepare the commit message to include the issue ID at the beginning of the message.
+#
+# Example: branch name = 123-ABC456 => commit message starts with [#123]
 
 branch_name=$(git rev-parse --abbrev-ref HEAD | tr /a-z/ /A-Z/)
 
-# If name of branch is 123-ABC123, we want to use 123
+# If name of branch is 123-ABC456, we want to use 123
 if [[ "$branch_name" =~ ^[0-9]+\-.+$ ]]; then
     branch_name="$(echo "$branch_name" | cut -d"-" -f 1)"
 fi
@@ -16,10 +33,10 @@ if ! [[ "$branch_name" =~ ^[0-9]+$ ]]; then
     exit 0
 fi
 
-# Add branch name tag
+# Add name tag
 
-branch_name="[$branch_name]"
+commit_msg="[#$branch_name]"
 
-if [[ "$(cat $1)" != "$branch_name"* ]]; then
-    echo -e "$branch_name $(cat $1)" > $1
+if [[ "$(cat $1)" != "$commit_msg"* ]]; then
+    echo -e "$commit_msg $(cat $1)" > $1
 fi
