@@ -25,10 +25,10 @@ set(OD_PLUGIN_LIB_SRC
 
 set(OD_PLUGIN_LIB_HEADERS
   include/visibility_control.hpp
-  include/object_detection/bounding_box_array_display.hpp
 )
 set(OD_PLUGIN_LIB_HEADERS_TO_WRAP
   include/planning/trajectory_display.hpp
+  include/object_detection/bounding_box_array_display.hpp
 )
 
 foreach(header "${OD_PLUGIN_LIB_HEADERS_TO_WRAP}")
