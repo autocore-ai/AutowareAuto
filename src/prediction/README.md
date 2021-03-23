@@ -8,4 +8,5 @@ positions of detected objects over some period of time.
 
 # Subpages
 
+- @subpage prediction-architecture
 - @subpage tracking_test_framework-package-design
