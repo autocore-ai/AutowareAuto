@@ -51,7 +51,6 @@ Mark all the items that are done.
 1. Code correctness
    1. [ ] The problem/feature is solved (reproducibly)
    1. [ ] The solution is performant enough for the use case in mind
-   1. [ ] Any disabled lints inside the code or at the package level are justified
 1. Open work
    1. [ ] Any added source-code comment about future work refers to a follow-up GitLab issue explicitly; e.g., `// TODO #551 refactor code below`
 1. Documentation
