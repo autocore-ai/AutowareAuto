@@ -52,9 +52,10 @@ class KALMAN_FILTER_PUBLIC GenericState
     std::is_arithmetic<ScalarT>::value, "\n\nThe provided scalar type is not arithmetic.\n\n");
   static_assert(
     sizeof...(VariableTs) > 0, "\n\nCannot create state without variables.\n\n");
+  // Hide this under private to make sure it is never ODR-used.
+  constexpr static std::int32_t kSize = sizeof...(VariableTs);
 
 public:
-  constexpr static std::int32_t kSize = sizeof...(VariableTs);
   using Variables = std::tuple<VariableTs...>;
   using Vector = Eigen::Matrix<ScalarT, kSize, 1>;
   using Matrix = Eigen::Matrix<ScalarT, kSize, kSize>;
@@ -144,8 +145,14 @@ public:
     return common::type_traits::index<VariableT, Variables>::value;
   }
 
-  /// @brief      Get the size of the state instance.
-  inline Eigen::Index size() const noexcept {return kSize;}
+  ///
+  /// @brief      Get the size of the state.
+  ///
+  /// @note       This can also be called on an instance of the state.
+  ///
+  /// @return     Number of variables in this state.
+  ///
+  inline static Eigen::Index size() noexcept {return kSize;}
 
   /// @brief      An equality operator.
   friend bool operator==(const GenericState & lhs, const GenericState & rhs)

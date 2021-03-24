@@ -41,7 +41,7 @@ struct CustomVariable : AngleVariable {};
 /// @test Create an empty state.
 TEST(KalmanFilterGenericStateTest, CreateEmpty) {
   using StateXY = GenericState<float32_t, X, Y>;
-  EXPECT_EQ(2, StateXY::kSize);
+  EXPECT_EQ(2, StateXY::size());
   StateXY state{};
   EXPECT_TRUE(state.vector().isApproxToConstant(0.0F));
   EXPECT_TRUE(is_state<StateXY>::value);
@@ -53,6 +53,7 @@ TEST(KalmanFilterGenericStateTest, CreateEmpty) {
 TEST(KalmanFilterGenericStateTest, CreateAndAccess) {
   using StateXY = GenericState<float32_t, X, Y>;
   StateXY state{{42.0F, 23.0F}};
+  ASSERT_EQ(2, state.size());
   EXPECT_FLOAT_EQ(state[0], 42.0F);
   EXPECT_FLOAT_EQ(state[StateXY::index_of<X>()], 42.0F);
   EXPECT_FLOAT_EQ(state.at<X>(), 42.0F);
