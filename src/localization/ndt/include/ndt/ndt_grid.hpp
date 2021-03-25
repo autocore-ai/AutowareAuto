@@ -171,14 +171,30 @@ public:
     return m_map.emplace(std::forward<Args>(args)...);
   }
 
+  /// \brief Add a point to its corresponding voxel in the grid.
+  /// \param pt Point to be added
   void add_observation(const Point & pt)
   {
     m_map[index(pt)].add_observation(pt);
   }
 
+  /// \brief Set the configuration
+  /// \param config Config object to be set.
+  void set_config(const Config & config)
+  {
+    m_config = config;
+  }
+
+  /// \brief Get the underlying voxel grid configuration
+  /// \return Voxel grid configuration
+  const Config & config() const
+  {
+    return m_config;
+  }
+
 private:
   mutable VoxelViewVector m_output_vector;
-  const Config m_config;
+  Config m_config;
   Grid m_map;
 };
 
@@ -229,7 +245,6 @@ inline NDT_PUBLIC auto & zr_(Eigen::Vector3d & pt)
 {
   return pt(2);
 }
-
 
 }  // namespace point_adapter
 }  // namespace geometry

@@ -120,7 +120,7 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
     NewtonOptimizer{FixedLineSearch{m_step_size}, m_optimizer_options},
     m_outlier_ratio};
 
-  autoware::localization::ndt::StaticNDTMap map{m_grid_config};
+  autoware::localization::ndt::StaticNDTMap map{};
   map.set(serialized_map);
 
   const auto & ros_pose_out =
@@ -164,7 +164,7 @@ TEST_F(P2DLocalizerParameterTest, delayed_scan) {
   m_dynamic_map.serialize_as<autoware::localization::ndt::StaticNDTMap>(serialized_map);
   serialized_map.header.stamp = ::time_utils::to_message(now + dt);
 
-  autoware::localization::ndt::StaticNDTMap map{m_grid_config};
+  autoware::localization::ndt::StaticNDTMap map{};
   map.set(serialized_map);
 
   P2DTestLocalizer::PoseWithCovarianceStamped dummy_pose;
@@ -205,7 +205,7 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
   m_dynamic_map.serialize_as<autoware::localization::ndt::StaticNDTMap>(serialized_map);
   serialized_map.header.stamp = ::time_utils::to_message(map_time);
 
-  autoware::localization::ndt::StaticNDTMap map{m_grid_config};
+  autoware::localization::ndt::StaticNDTMap map{};
   map.set(serialized_map);
 
   auto set_and_get = [&transform_initial](auto time_point) {

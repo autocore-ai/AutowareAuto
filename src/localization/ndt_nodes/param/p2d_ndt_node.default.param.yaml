@@ -23,21 +23,6 @@
       rotation: 0.1
     # localizer specific configuration
     localizer:
-      #underlying voxel grid configuration of the map
-      map:
-        capacity: 55000
-        min_point:
-          x: -130.0
-          y: -130.0
-          z: -3.0
-        max_point:
-          x: 130.0
-          y: 130.0
-          z: 3.0
-        voxel_size:
-          x: 2.0
-          y: 2.0
-          z: 2.0
       # ndt scan representation config
       scan:
         capacity: 55000

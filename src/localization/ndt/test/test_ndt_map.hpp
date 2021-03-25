@@ -33,6 +33,7 @@ using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
 using autoware::localization::ndt::DynamicNDTMap;
+constexpr auto kNumConfigPoints = DynamicNDTMap::kNumConfigPoints;
 
 sensor_msgs::msg::PointCloud2 make_pcl(
   const std::vector<sensor_msgs::msg::PointField> & fields,
@@ -78,12 +79,11 @@ protected:
   const PointField pf7;
   const PointField pf8;
   const PointField pf9;
-  const PointField pf10;
-  static constexpr uint32_t point_step{static_cast<uint32_t>(9 * sizeof(float64_t)) +
-    2 * sizeof(uint32_t)};
+  static constexpr uint32_t point_step{static_cast<uint32_t>(9U * sizeof(float64_t))};
   static constexpr uint32_t num_points{50U};
-  static constexpr uint32_t data_size{point_step * num_points};
-  static constexpr uint32_t width{num_points};
+  static constexpr uint32_t num_points_with_config{50U + kNumConfigPoints};
+  static constexpr uint32_t data_size{point_step * (num_points_with_config)};
+  static constexpr uint32_t width{num_points_with_config};
   static constexpr uint32_t row_step{data_size};
 };
 

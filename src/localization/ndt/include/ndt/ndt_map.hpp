@@ -59,6 +59,10 @@ public:
   using VoxelGrid = NDTGrid<Voxel>::Grid;
   using ConfigPoint = NDTGrid<Voxel>::ConfigPoint;
 
+  /// \brief First 3 points of a serialized message will contain 3 extra points:
+  /// Min point, max point and the voxel size.
+  static constexpr uint32_t kNumConfigPoints = 3U;
+
   explicit DynamicNDTMap(const Config & voxel_grid_config);
 
   /// \brief Set the contents of the pointcloud as the new map.
@@ -144,8 +148,6 @@ public:
   using VoxelGrid = NDTGrid<Voxel>::Grid;
   using ConfigPoint = NDTGrid<Voxel>::ConfigPoint;
 
-  explicit StaticNDTMap(const Config & voxel_grid_config);
-
   /// Set point cloud message representing the map to the map representation instance.
   /// Map is assumed to have correct format (see `validate_pcl_map(...)`) and was generated
   /// by a dense map representation with identical configuration to this representation.
@@ -184,32 +186,91 @@ public:
 
   /// Get size of the cell.
   /// \return A point representing the dimensions of the cell.
-  const ConfigPoint & cell_size() const noexcept;
+  const ConfigPoint & cell_size() const;
 
   /// Get size of the map
   /// \return Number of voxels in the map. This number includes the voxels that do not have
   /// enough numbers to be used yet.
-  std::size_t size() const noexcept;
+  std::size_t size() const;
 
   /// \brief Returns an const iterator to the first element of the map
   /// \return Iterator
-  typename VoxelGrid::const_iterator begin() const noexcept;
+  typename VoxelGrid::const_iterator begin() const;
 
   /// \brief Returns a const iterator to one past the last element of the map
   /// \return Iterator
-  typename VoxelGrid::const_iterator end() const noexcept;
+  typename VoxelGrid::const_iterator end() const;
 
   /// Clear all voxels in the map
-  void clear() noexcept;
+  void clear();
 
 private:
   /// Deserialize the given serialized point cloud map.
   /// \param msg PointCloud2 message containing the deserialized data.
   void deserialize_from(const sensor_msgs::msg::PointCloud2 & msg);
-  NDTGrid<StaticNDTVoxel> m_grid;
+  std::experimental::optional<NDTGrid<StaticNDTVoxel>> m_grid{};
   TimePoint m_stamp{};
   std::string m_frame_id{};
 };
+
+template<typename PCMessageT>
+using PC2DoubleIterator = typename std::conditional<std::is_const<PCMessageT>::value,
+    sensor_msgs::PointCloud2ConstIterator<ndt::Real>,
+    sensor_msgs::PointCloud2Iterator<ndt::Real>>::type;
+
+/// \brief Get the pointcloud2 iterators for the serialized ndt map
+template<typename PointCloud2T>
+std::array<PC2DoubleIterator<PointCloud2T>, 9U> get_iterators(PointCloud2T & msg)
+{
+  return std::array<PC2DoubleIterator<PointCloud2T>, 9U>{
+    PC2DoubleIterator<PointCloud2T>{msg, "x"},
+    PC2DoubleIterator<PointCloud2T>{msg, "y"},
+    PC2DoubleIterator<PointCloud2T>{msg, "z"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_xx"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_xy"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_xz"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_yy"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_yz"},
+    PC2DoubleIterator<PointCloud2T>{msg, "icov_zz"}
+  };
+}
+
+/// Struct to represent a point in the serialized ndt map. This is a minimal voxel representation.
+struct SerializedNDTMapPoint
+{
+  Real x{0.0};
+  Real y{0.0};
+  Real z{0.0};
+  Real icov_xx{0.0};
+  Real icov_xy{0.0};
+  Real icov_xz{0.0};
+  Real icov_yy{0.0};
+  Real icov_yz{0.0};
+  Real icov_zz{0.0};
+};
+
+/// \brief Push a SerializedNDTMapPoint into a pointcloud2 object containing the serialized map.
+/// \param pc_its PC2 iterators used for inserting the point.
+/// \param point A point representing a voxel in the ndt map.
+void push_back(
+  std::array<sensor_msgs::PointCloud2Iterator<ndt::Real>, 9U> & pc_its,
+  const SerializedNDTMapPoint & point);
+
+/// \brief Get the next voxel representation from the iterators of a serialized ndt map.
+/// \param pc_its Iterators of a pointcloud2 object that stores the serialized ndt map.
+/// \return The serialized ndt map point.
+template<typename T>
+SerializedNDTMapPoint next(std::array<T, 9U> & pc_its)
+{
+  const auto ret = SerializedNDTMapPoint{
+    *pc_its[0U], *pc_its[1U], *pc_its[2U],    // x, y, z
+    *pc_its[3U], *pc_its[4U], *pc_its[5U],    // xx, yy, zz
+    *pc_its[6U], *pc_its[7U],    // yy, yz
+    *pc_its[8U]    // zz
+  };
+  std::for_each(pc_its.begin(), pc_its.end(), [](auto & it) {++it;});
+  return ret;
+}
 
 }  // namespace ndt
 }  // namespace localization

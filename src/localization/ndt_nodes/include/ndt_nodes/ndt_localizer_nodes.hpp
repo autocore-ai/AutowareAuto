@@ -183,23 +183,6 @@ private:
 
   void init()
   {
-    auto get_point_param = [this](const std::string & config_name_prefix) {
-        perception::filters::voxel_grid::PointXYZ point;
-        point.x = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".x").
-          template get<float32_t>());
-        point.y = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".y").
-          template get<float32_t>());
-        point.z = static_cast<float32_t>(this->declare_parameter(config_name_prefix + ".z").
-          template get<float32_t>());
-        return point;
-      };
-    // Fetch map configuration
-    const auto capacity = static_cast<std::size_t>(
-      this->declare_parameter("localizer.map.capacity").template get<std::size_t>());
-    const perception::filters::voxel_grid::Config map_config{get_point_param(
-        "localizer.map.min_point"), get_point_param("localizer.map.max_point"),
-      get_point_param("localizer.map.voxel_size"), capacity};
-
     // Fetch localizer configuration
     ndt::P2DNDTLocalizerConfig localizer_config{
       static_cast<uint32_t>(this->declare_parameter("localizer.scan.capacity").
@@ -238,7 +221,7 @@ private:
             optimizer_options
           },
       outlier_ratio);
-    auto map_ptr = std::make_unique<ndt::StaticNDTMap>(map_config);
+    auto map_ptr = std::make_unique<ndt::StaticNDTMap>();
 
     this->set_localizer(std::move(localizer_ptr));
     this->set_map(std::move(map_ptr));

@@ -38,6 +38,7 @@ using autoware::common::lidar_utils::add_point_to_cloud;
 
 constexpr uint32_t MapValidationContext::point_step;
 constexpr uint32_t MapValidationContext::num_points;
+constexpr uint32_t MapValidationContext::num_points_with_config;
 constexpr uint32_t MapValidationContext::data_size;
 constexpr uint32_t MapValidationContext::width;
 constexpr uint32_t MapValidationContext::row_step;
@@ -66,19 +67,18 @@ TEST_F(MapValidationTest, map_pcl_meta_validation) {
   const auto pf13 = make_pf("xyz", 8U, PointField::FLOAT64, 1U);
   const auto pf14 = make_pf("x", 8U, PointField::FLOAT32, 1U);
 
-  const std::vector<PointField> correct_field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9,
-    pf10};
+  const std::vector<PointField> correct_field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
 
   const std::vector<std::vector<PointField>> incorrect_field_sets{
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10, pf11},  // Extra field
-    {pf2, pf1, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Misordered
-    {pf14, pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Extra field in start
-    {pf1, pf2, pf14, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},  // Extra field in middle
-    {pf14, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
-    {pf11, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
-    {pf12, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10},
+    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf11},  // Extra field
+    {pf2, pf1, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Misordered
+    {pf14, pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in start
+    {pf1, pf2, pf14, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in middle
+    {pf14, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
+    {pf11, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
+    {pf12, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
+    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
+    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
     {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8},  // missing field
     {}
   };
@@ -107,26 +107,31 @@ TEST_F(MapValidationTest, map_pcl_meta_validation) {
 }
 
 TEST_F(MapValidationTest, map_pcl_size_validation) {
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
 
   EXPECT_EQ(
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size, row_step, width,
-        point_step)), num_points);
+        point_step)), num_points_with_config);
 
   // Data larger than expected means that the return value will exclude the excess data
   // data.size(), row_step and width * point_step should be consistent, otherwise the
   // minimum of 3 will determine the returned size
   EXPECT_EQ(
     validate_pcl_map(
-      make_pcl(field_set, 1U, data_size + point_step, row_step, width, point_step)), num_points);
+      make_pcl(
+        field_set, 1U, data_size + point_step, row_step, width,
+        point_step)), num_points_with_config);
   EXPECT_EQ(
     validate_pcl_map(
-      make_pcl(field_set, 1U, data_size, row_step + point_step, width, point_step)), num_points);
+      make_pcl(
+        field_set, 1U, data_size, row_step + point_step, width,
+        point_step)), num_points_with_config);
   EXPECT_EQ(
     validate_pcl_map(
-      make_pcl(field_set, 1U, data_size, row_step, width + 1U, point_step)), num_points);
+      make_pcl(field_set, 1U, data_size, row_step, width + 1U, point_step)),
+    num_points_with_config);
 
   // Data shorter than expected: return the greatest number of points that can be read
   // given the point_step
@@ -134,27 +139,27 @@ TEST_F(MapValidationTest, map_pcl_size_validation) {
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size - 1U, row_step, width,
-        point_step)), num_points - 1U);
+        point_step)), num_points_with_config - 1U);
   EXPECT_EQ(
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size, row_step - 1U, width,
-        point_step)), num_points - 1U);
+        point_step)), num_points_with_config - 1U);
   EXPECT_EQ(
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size, row_step, width - 1U,
-        point_step)), num_points - 1U);
+        point_step)), num_points_with_config - 1U);
   EXPECT_EQ(
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size - 2 * point_step, row_step, width,
-        point_step)), num_points - 2U);
+        point_step)), num_points_with_config - 2U);
   EXPECT_EQ(
     validate_pcl_map(
       make_pcl(
         field_set, 1U, data_size - 2 * point_step - 1U, row_step, width,
-        point_step)), num_points - 3U);
+        point_step)), num_points_with_config - 3U);
 }
 
 ////////////////////////////////////
@@ -350,31 +355,18 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
 }
 
 TEST_F(NDTMapTest, map_representation_bad_input) {
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
 
-  auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
-
-  StaticNDTMap map_grid(grid_config);
+  StaticNDTMap map_grid{};
 
   // Map with invalid field set
   auto invalid_pc1 = make_pcl(
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},
+    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8},
     1U, data_size, row_step, width, point_step);
   // Empty map
   auto invalid_pc2 = make_pcl(field_set, 1U, 0U, 0U, 0U, point_step);
-  // Single point map but with invalid cell ID
-  auto invalid_pc3 = make_pcl(field_set, 1U, point_step, point_step, point_step, point_step);
-  sensor_msgs::PointCloud2Iterator<uint32_t> invalid_cell_it(invalid_pc3, "cell_id");
-  EXPECT_NE(invalid_cell_it, invalid_cell_it.end());
-
-  const Eigen::Vector3d origin = Eigen::Vector3d::Zero();
-  const auto actual_idx = grid_config.index(origin);
-  const auto invalid_id = actual_idx + 1U;
-  std::memcpy(&invalid_cell_it[0], &invalid_id, sizeof(actual_idx));
-
   EXPECT_THROW(map_grid.set(invalid_pc1), std::runtime_error);
   EXPECT_THROW(map_grid.set(invalid_pc2), std::runtime_error);
-  EXPECT_THROW(map_grid.set(invalid_pc3), std::domain_error);
 }
 
 TEST_F(NDTMapTest, map_representation_basics) {
@@ -392,17 +384,18 @@ TEST_F(NDTMapTest, map_representation_basics) {
       }
     };
 
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf10};
+  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
   auto msg = make_pcl(field_set, 1U, data_size, row_step, width, point_step);
+
 
   auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
 
   // This grid will be used to generate
   DynamicNDTMap generator_grid(grid_config);
-  StaticNDTMap map_grid(grid_config);
+  StaticNDTMap map_grid{};
 
-  // No map is added, so a lookup should return an empty vector.
-  EXPECT_TRUE(map_grid.cell(0.0, 0.0, 0.0).empty());
+  // No map is added, so a lookup should result in an exception
+  EXPECT_THROW(map_grid.cell(0.0, 0.0, 0.0), std::runtime_error);
 
   std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_point_its{
     sensor_msgs::PointCloud2Iterator<Real>(msg, "x"),
@@ -415,14 +408,16 @@ TEST_F(NDTMapTest, map_representation_basics) {
     sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_yy"),
     sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_zz")
   };
-  sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(msg, "cell_id");
+
+  add_pt(pc_point_its, pc_cov_its, grid_config.get_min_point().x);
+  add_pt(pc_point_its, pc_cov_its, grid_config.get_max_point().x);
+  add_pt(pc_point_its, pc_cov_its, grid_config.get_voxel_size().x);
 
   auto value = Real{1.0};
   while (std::all_of(
       pc_point_its.begin(), pc_point_its.end(), [](auto & it) {
         return it != it.end();
-      }) &&
-    cell_id_it != cell_id_it.end())
+      }))
   {
     const Eigen::Vector3d added_pt{value, value, value};
     // Turn the point into a pointcloud to insert. The point should be inserted enough to make
@@ -442,11 +437,6 @@ TEST_F(NDTMapTest, map_representation_basics) {
     ASSERT_EQ(generating_voxel.get().count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
     add_pt(pc_point_its, pc_cov_its, value);
-
-    // cell_id_it is of type unsigned int[2], so we need to convert from long.
-    const auto vidx = grid_config.index(added_pt);
-    std::memcpy(&cell_id_it[0U], &vidx, sizeof(vidx));
-    ++cell_id_it;
 
     ++value;
   }
@@ -496,6 +486,7 @@ sensor_msgs::msg::PointCloud2 make_pcl(
   uint32_t point_step)
 {
   sensor_msgs::msg::PointCloud2 msg;
+
   msg.data.resize(data_size, uint8_t{0U});
   msg.fields = fields;
   msg.row_step = row_step;
@@ -510,6 +501,7 @@ sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
   sensor_msgs::msg::PointCloud2 cloud;
   autoware::common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
   auto idx = 0U;
+
   for (const auto & pt : pts) {
     autoware::common::types::PointXYZIF ptF{};
     ptF.x = static_cast<float>(pt(0U));
@@ -583,10 +575,8 @@ MapValidationContext::MapValidationContext()
   pf6{make_pf("icov_xz", 5U * sizeof(float64_t), PointField::FLOAT64, 1U)},
   pf7{make_pf("icov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
   pf8{make_pf("icov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf9{make_pf("icov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  // There is no PointField::UINT64, so we create a field uint32_t and
-  // store a 64 bit value in two 32 bit fields.
-  pf10{make_pf("cell_id", 9U * sizeof(float64_t), PointField::UINT32, 2U)} {}
+  pf9{make_pf("icov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)}
+{}
 
 DenseNDTMapContext::DenseNDTMapContext()
 {

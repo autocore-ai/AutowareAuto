@@ -144,7 +144,7 @@ TEST_F(MapPublisherTest, core_functionality)
   // have a validation map to transform the source cloud. The publisher's output
   // should match the cells in this map.
   DynamicNDTMap dynamic_validation_map(grid_config);
-  StaticNDTMap static_received_map(grid_config);
+  StaticNDTMap static_received_map{};
   const auto map_topic = "ndt_map";
   const auto map_frame = "map";
   auto callback_counter = 0U;
@@ -222,7 +222,9 @@ TEST_F(MapPublisherTest, core_functionality)
 
   EXPECT_EQ(callback_counter, 1U);
   // Check that received pointcloud is a valid ndt map in terms of meta information.
-  EXPECT_EQ(validate_pcl_map(received_cloud_map), dynamic_validation_map.size());
+  EXPECT_EQ(
+    validate_pcl_map(received_cloud_map),
+    dynamic_validation_map.size() + decltype(dynamic_validation_map)::kNumConfigPoints);
   // Insert to static map for easier iteration and access.
   static_received_map.set(received_cloud_map);
   EXPECT_EQ(static_received_map.size(), dynamic_validation_map.size());

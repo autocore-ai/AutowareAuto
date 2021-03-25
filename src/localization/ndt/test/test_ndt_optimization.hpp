@@ -41,7 +41,7 @@ public:
   using Cloud = sensor_msgs::msg::PointCloud2;
   OptimizationTestContext()
   : DenseNDTMapContext(), m_grid_config(m_min_point, m_max_point, m_voxel_size,
-      m_capacity), m_dynamic_map(m_grid_config), m_static_map(m_grid_config)
+      m_capacity), m_dynamic_map(m_grid_config)
   {
     // build a pointcloud map.
     // It contains 5*5*5*7 points where each cell would have a center
