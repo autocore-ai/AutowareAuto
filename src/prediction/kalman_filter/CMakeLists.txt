@@ -30,7 +30,8 @@ if(BUILD_TESTING)
                   test/src/test_kalman_filter.cpp
                   test/test_variables.cpp
                   test/test_generic_state.cpp
-                  test/test_linear_motion_model.cpp)
+                  test/test_linear_motion_model.cpp
+                  test/test_linear_measurement.cpp)
   autoware_set_compile_options(${KALMAN_FILTER_GTEST})
   target_include_directories(${KALMAN_FILTER_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${KALMAN_FILTER_GTEST} ${PROJECT_NAME})

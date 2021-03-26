@@ -37,6 +37,10 @@ namespace autoware
 namespace prediction
 {
 
+/// Forward-declare is_state trait.
+template<typename StateT>
+struct is_state;
+
 ///
 /// @brief      A representation of a generic state vectors with specified variables.
 ///
@@ -125,10 +129,80 @@ public:
   /// @return     A reference to the element representing this variable.
   ///
   template<typename VariableT>
+  inline ScalarT & at(const VariableT) noexcept
+  {
+    static_assert(is_variable<VariableT>::value, "Type is not a Variable.");
+    return m_state[common::type_traits::index<VariableT, Variables>::value];
+  }
+  ///
+  /// @brief      Get vector element at a given variable.
+  ///
+  /// @tparam     VariableT  A variable from the state.
+  ///
+  /// @return     A reference to the element representing this variable.
+  ///
+  template<typename VariableT>
   inline const ScalarT & at() const noexcept
   {
     static_assert(is_variable<VariableT>::value, "Type is not a Variable.");
     return m_state[common::type_traits::index<VariableT, Variables>::value];
+  }
+  ///
+  /// @brief      Get vector element at a given variable.
+  ///
+  /// @tparam     VariableT  A variable from the state.
+  ///
+  /// @return     A reference to the element representing this variable.
+  ///
+  template<typename VariableT>
+  inline const ScalarT & at(const VariableT) const noexcept
+  {
+    static_assert(is_variable<VariableT>::value, "Type is not a Variable.");
+    return m_state[common::type_traits::index<VariableT, Variables>::value];
+  }
+
+
+  ///
+  /// @brief      Copy values of this state into another state.
+  ///
+  ///             This function copies (a subset of) variables from the current state into another
+  ///             state. If `other_state` is provided, it is used as a "donor" state, i.e., the
+  ///             values already in this `other_state` are unchanged unless overwritten by the ones
+  ///             present in the current state. If no `other_state` is given, a new zero-initialized
+  ///             instance of OtherStateT will be created and this state will be used for the
+  ///             further update using the variables from the current state.
+  ///
+  ///             This function can be used in a couple different situations:
+  ///             - when a smaller current state must be copied into a bigger other state,
+  ///               overwriting some of that bigger state's variables;
+  ///             - when a reduction of the current state onto a smaller state is required;
+  ///             - when a rearrangement of the variables is needed.
+  ///
+  ///             Please see tests for examples of usage.
+  ///
+  /// @note       This function only is correctly compiled if either StateT is a subset of
+  ///             OtherStateT, or OtherStateT is a subset of the StateT. Otherwise, a compilation
+  ///             error will be issued.
+  ///
+  /// @param[in]  other_state  Other state.
+  ///
+  /// @tparam     OtherStateT  Type of the other state.
+  ///
+  /// @return     The updated other state.
+  ///
+  template<typename OtherStateT>
+  inline OtherStateT copy_into(OtherStateT other_state = OtherStateT{}) const noexcept
+  {
+    static_assert(
+      is_state<OtherStateT>::value,
+      "\n\nOtherStateT is not a GenericState.\n\n");
+    auto copy_variables = [&other_state, this](auto variable) {
+        other_state.at(variable) = this->at(variable);
+      };
+    const auto & variables_tuple =
+      std::conditional_t<(OtherStateT::size() > kSize), GenericState, OtherStateT>::variables();
+    common::type_traits::visit(variables_tuple, copy_variables);
+    return other_state;
   }
 
   ///
@@ -139,7 +213,7 @@ public:
   /// @return     An index of the given variable in the state vector.
   ///
   template<typename VariableT>
-  constexpr static Eigen::Index index_of() noexcept
+  inline constexpr static Eigen::Index index_of() noexcept
   {
     static_assert(is_variable<VariableT>::value, "Type is not a Variable.");
     return common::type_traits::index<VariableT, Variables>::value;
@@ -152,10 +226,13 @@ public:
   ///
   /// @return     Number of variables in this state.
   ///
-  inline static Eigen::Index size() noexcept {return kSize;}
+  inline constexpr static Eigen::Index size() noexcept {return kSize;}
+
+  /// @brief      Get a variables tuple used for iteration over all variables.
+  inline constexpr static Variables variables() noexcept{return Variables{};}
 
   /// @brief      An equality operator.
-  friend bool operator==(const GenericState & lhs, const GenericState & rhs)
+  friend constexpr bool operator==(const GenericState & lhs, const GenericState & rhs)
   {
     return lhs.m_state.isApprox(rhs.m_state);
   }
@@ -166,14 +243,10 @@ public:
   friend std::ostream & operator<<(std::ostream & out, const GenericState & state)
   {
     out << "State:";
-    int counter = 0;
-    auto print = [&out, &state, &counter](auto element) {
-        using VariableT = std::decay_t<decltype(element)>;
-        out << "\n  " <<
-          helper_functions::get_type_name<VariableT>() << ": " << state[counter++];
+    auto print = [&out, &state](auto element) {
+        out << "\n  " << helper_functions::get_type_name(element) << ": " << state.at(element);
       };
-    Variables dummy_variables_tuple;
-    common::type_traits::visit(dummy_variables_tuple, print);
+    common::type_traits::visit(GenericState::variables(), print);
     return out;
   }
 

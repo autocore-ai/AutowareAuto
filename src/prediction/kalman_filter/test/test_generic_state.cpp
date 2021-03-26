@@ -32,6 +32,7 @@ using autoware::prediction::AngleVariable;
 using autoware::prediction::is_state;
 using autoware::prediction::variable::X;
 using autoware::prediction::variable::Y;
+using autoware::prediction::variable::YAW;
 using autoware::common::types::float32_t;
 using StateXY = GenericState<float32_t, X, Y>;
 
@@ -56,6 +57,7 @@ TEST(KalmanFilterGenericStateTest, CreateAndAccess) {
   EXPECT_FLOAT_EQ(state[0], 42.0F);
   EXPECT_FLOAT_EQ(state[StateXY::index_of<X>()], 42.0F);
   EXPECT_FLOAT_EQ(state.at<X>(), 42.0F);
+  EXPECT_FLOAT_EQ(state.at(X{}), 42.0F);
   EXPECT_FLOAT_EQ(state[1], 23.0F);
   EXPECT_FLOAT_EQ(state[StateXY::index_of<Y>()], 23.0F);
   EXPECT_FLOAT_EQ(state.at<Y>(), 23.0F);
@@ -74,4 +76,18 @@ TEST(KalmanFilterGenericStateTest, Print) {
   EXPECT_EQ(
     str_stream.str(),
     "State:\n  autoware::prediction::variable::X: 42\n  autoware::prediction::variable::Y: 23\n");
+}
+
+/// @test We are able to copy the state into a bigger state.
+TEST(KalmanFilterGenericStateTest, CopyIntoAnotherState) {
+  using StateXY = FloatState<X, Y>;
+  using StateXYYaw = FloatState<X, Y, YAW>;
+  StateXY state{{23.0F, 42.0F}};
+  EXPECT_EQ(state.copy_into<StateXY>(), (StateXY{{23.0F, 42.0F}}));
+  StateXYYaw state_with_yaw{{42.0F, 23.0F, 42.23F}};
+  EXPECT_EQ(state.copy_into(state_with_yaw), (StateXYYaw{{23.0F, 42.0F, 42.23F}}));
+  EXPECT_EQ(state_with_yaw.copy_into<StateXY>(), (StateXY{{42.0F, 23.0F}}));
+  EXPECT_EQ(state_with_yaw.copy_into<StateXYYaw>(), state_with_yaw);
+  using StateYX = FloatState<Y, X>;
+  EXPECT_EQ(state.copy_into<StateYX>(), (StateYX{{42.0F, 23.0F}}));
 }
