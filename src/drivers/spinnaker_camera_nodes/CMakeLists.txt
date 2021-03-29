@@ -36,6 +36,9 @@ if(SPINNAKER_FOUND)
     "src/spinnaker_camera_node.cpp")
   autoware_set_compile_options(spinnaker_camera_node)
 
+  target_compile_options(spinnaker_camera_node PRIVATE -Wno-extra
+    -Wno-ignored-qualifiers -Wno-old-style-cast -Wno-overloaded-virtual)
+
   rclcpp_components_register_node(spinnaker_camera_node
     PLUGIN "autoware::drivers::camera::SpinnakerCameraNode"
     EXECUTABLE spinnaker_camera_node_exe

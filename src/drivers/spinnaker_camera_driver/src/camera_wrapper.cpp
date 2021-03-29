@@ -16,7 +16,7 @@
 #include <spinnaker_camera_driver/camera_wrapper.hpp>
 #include <spinnaker_camera_driver/camera_settings.hpp>
 
-#include <spinnaker/Spinnaker.h>
+#include <Spinnaker.h>
 
 #include <memory>
 #include <string>
@@ -209,6 +209,7 @@ void CameraWrapper::configure_camera(
 
   using Spinnaker::GenApi::IsAvailable;
   using Spinnaker::GenApi::IsWritable;
+  using Spinnaker::GenApi::IsReadable;
 
   m_frame_id = camera_settings.get_frame_id();
 
@@ -219,8 +220,14 @@ void CameraWrapper::configure_camera(
       return IsAvailable(value) && IsWritable(value);
     };
 
-  if (IsAvailable(m_camera->DeviceType)) {
-    if (m_camera->DeviceType.GetCurrentEntry()->GetSymbolic() == "GEV") {
+  using Spinnaker::GenApi::INodeMap;
+  using Spinnaker::GenApi::CBooleanPtr;
+  using Spinnaker::GenApi::CEnumerationPtr;
+  using Spinnaker::GenApi::CFloatPtr;
+
+  CEnumerationPtr device_type = m_camera->GetTLDeviceNodeMap().GetNode("DeviceType");
+  if (IsAvailable(device_type) && IsReadable(device_type)) {
+    if (device_type->GetIntValue() == Spinnaker::DeviceType_GigEVision) {
       if (IsAvailableAndWritable(m_camera->DeviceLinkThroughputLimit)) {
         m_camera->DeviceLinkThroughputLimit.SetValue(
           camera_settings.get_device_link_throughput_limit());
@@ -229,12 +236,15 @@ void CameraWrapper::configure_camera(
       }
     }
   }
-  if (IsAvailableAndWritable(m_camera->AcquisitionFrameRateEnable))
-  {
-    m_camera->AcquisitionFrameRateEnable.SetValue(true);
-    if(IsAvailableAndWritable(m_camera->AcquisitionFrameRate))
-    {
-      m_camera->AcquisitionFrameRate.SetValue(camera_settings.get_fps());
+
+  CBooleanPtr frame_rate_enable = m_camera->GetNodeMap().GetNode("AcquisitionFrameRateEnable");
+  INodeMap& node_map = m_camera->GetNodeMap();
+  CFloatPtr acquisition_frame_rate = node_map.GetNode("AcquisitionFrameRate");
+
+  if (IsAvailable(frame_rate_enable) && IsWritable(frame_rate_enable)) {
+    frame_rate_enable->SetValue(true);
+    if (IsAvailable(acquisition_frame_rate) && IsWritable(acquisition_frame_rate)) {
+      acquisition_frame_rate->SetValue(camera_settings.get_fps());
     }
   }
   if (IsAvailableAndWritable(m_camera->PixelFormat)) {

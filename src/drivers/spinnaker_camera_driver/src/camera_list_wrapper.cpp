@@ -48,13 +48,23 @@ CameraListWrapper::CameraListWrapper(
   const std::vector<CameraSettings> & camera_settings)
 : m_camera_list{camera_list}
 {
-  if (camera_settings.size() != m_camera_list.GetSize()) {
-    throw std::logic_error("Number of settings does not match the number of available cameras.");
+  if (camera_settings.size() > m_camera_list.GetSize()) {
+    throw std::logic_error("The number of settings is greater than the number of available cameras.");
   }
+
+  m_cameras.reserve(m_camera_list.GetSize());
+  std::uint32_t current_index = 0;
   for (std::uint32_t camera_index = 0; camera_index < m_camera_list.GetSize(); ++camera_index) {
-    m_cameras.emplace_back(camera_index,
-      m_camera_list.GetByIndex(camera_index),
-      camera_settings[camera_index]);
+    std::string device_serial_number = get_camera_serial_number(m_camera_list[camera_index]);
+    for (std::uint32_t setting_index = 0; setting_index < camera_settings.size(); ++setting_index) {
+      if (camera_settings[setting_index].get_serial_number().empty() ||
+        (device_serial_number == camera_settings[setting_index].get_serial_number())) {
+          m_cameras.emplace_back(current_index,
+            m_camera_list.GetByIndex(current_index),
+            camera_settings[setting_index]);
+          current_index++;
+       }
+    }
   }
 }
 
@@ -93,7 +103,21 @@ std::unique_ptr<sensor_msgs::msg::Image> CameraListWrapper::retreive_image_from_
   return m_cameras.at(camera_index).retreive_image();
 }
 
-}  //  namespace spinnaker
+std::string CameraListWrapper::get_camera_serial_number(const Spinnaker::CameraPtr camera)
+{
+  std::string serial_number;
+  Spinnaker::GenApi::CStringPtr ptr_serial_number = camera->GetTLDeviceNodeMap().GetNode(
+    "DeviceSerialNumber");
+  if (Spinnaker::GenApi::IsReadable(ptr_serial_number)) {
+    serial_number = std::string(ptr_serial_number->GetValue());
+  } else {
+    serial_number  = "";
+  }
+
+  return serial_number;
+}
+
+}  // namespace spinnaker
 }  // namespace camera
 }  // namespace drivers
 }  // namespace autoware

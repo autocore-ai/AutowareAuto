@@ -51,12 +51,14 @@ public:
     common::types::float64_t fps,
     const std::string & pixel_format,
     const std::string & frame_id = "camera",
+    const std::string & serial_number = "",
     std::int64_t device_link_throughput_limit = 100000000L);
 
   inline std::uint32_t get_window_width() const noexcept {return m_window_width;}
   inline std::uint32_t get_window_height() const noexcept {return m_window_height;}
   inline const std::string & get_pixel_format() const noexcept {return m_pixel_format;}
   inline const std::string & get_frame_id() const noexcept {return m_frame_id;}
+  inline const std::string & get_serial_number() const noexcept {return m_serial_number;}
   inline common::types::float64_t get_fps() const noexcept {return m_fps;}
   inline std::int64_t get_device_link_throughput_limit() const noexcept
   {
@@ -77,6 +79,9 @@ private:
 
   /// Camera frame id.
   std::string m_frame_id;
+
+  /// Camera serial number.
+  std::string m_serial_number;
 
   /// Wanted fps.
   common::types::float64_t m_fps;

@@ -30,6 +30,7 @@
         pixel_format: rgb8
         frame_id: camera_1  # optional
         device_link_throughput_limit: 100000000  # optional
+        serial_number: "12345678"  # optional
       another_camera:
         window_width: 1280
         window_height: 1080

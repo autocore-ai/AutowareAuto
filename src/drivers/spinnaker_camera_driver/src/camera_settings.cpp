@@ -53,11 +53,13 @@ CameraSettings::CameraSettings(
   common::types::float64_t fps,
   const std::string & pixel_format,
   const std::string & frame_id,
+  const std::string & serial_number,
   std::int64_t device_link_throughput_limit)
 : m_window_width{window_width},
   m_window_height{window_height},
   m_pixel_format{pixel_format},
   m_frame_id{frame_id},
+  m_serial_number{serial_number},
   m_fps{fps},
   m_device_link_throughput_limit{device_link_throughput_limit}
 {

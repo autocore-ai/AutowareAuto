@@ -39,6 +39,7 @@ using autoware::common::types::float64_t;
 namespace
 {
 static constexpr const char kDefaultCameraFrame[] = "camera";
+static constexpr const char kCameraSerial[] = "";
 static constexpr std::int64_t kDefaultDeviceThroughputLimit = 100000000L;
 }  // namespace
 
@@ -85,6 +86,8 @@ spinnaker::CameraListWrapper & SpinnakerCameraNode::create_cameras_from_params(
       // Declare and init optional params.
       const auto camera_frame_id_param{
         declare_parameter(prefix_dot + "frame_id", std::string{kDefaultCameraFrame})};
+      const auto camera_serial_number_param{
+        declare_parameter(prefix_dot + "serial_number", std::string{kCameraSerial})};
       const auto device_link_throughput_limit_param{
         declare_parameter(
           prefix_dot + "device_link_throughput_limit", kDefaultDeviceThroughputLimit)};
@@ -96,6 +99,7 @@ spinnaker::CameraListWrapper & SpinnakerCameraNode::create_cameras_from_params(
       declare_parameter(prefix_dot + "fps").template get<float64_t>(),
       declare_parameter(prefix_dot + "pixel_format").template get<std::string>(),
       camera_frame_id_param,
+      camera_serial_number_param,
       device_link_throughput_limit_param};
     };
 

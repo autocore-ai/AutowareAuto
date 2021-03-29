@@ -16,7 +16,7 @@
 #define SPINNAKER_CAMERA_DRIVER__CAMERA_WRAPPER_HPP_
 
 #ifndef DOXYGEN_SKIP
-#include <spinnaker/Spinnaker.h>
+#include <Spinnaker.h>
 #endif
 
 #include <spinnaker_camera_driver/camera_settings.hpp>

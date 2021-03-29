@@ -37,7 +37,7 @@ if(SPINNAKER_FOUND)
     "src/camera_list_wrapper.cpp")
   autoware_set_compile_options(${PROJECT_NAME})
   ## SPINNAKER is not handled by ament, so we need the manual steps below.
-  target_include_directories(${PROJECT_NAME} PUBLIC ${SPINNAKER_INCLUDE_DIRS})
+  target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${SPINNAKER_INCLUDE_DIRS})
   target_link_libraries(${PROJECT_NAME} ${SPINNAKER_LIBRARIES})
   # These are external libraries and include folders that we want to be visible to the packages
   # that depend on this one.
