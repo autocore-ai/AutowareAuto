@@ -41,6 +41,9 @@ Deviations need to be approved by the maintainers.
 The requirements for C++14 and Python 3.7+ align with compiler and tooling support found in ROS Foxy.
 This may change in the future as new OS or ROS environments are targeted; see @ref target-environments for details.
 
+## License and Copyright
+Every file should have a license header; see the *License* section in [CONTRIBUTING.md](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/CONTRIBUTING.md).
+
 ## Building
 See @ref building.
 

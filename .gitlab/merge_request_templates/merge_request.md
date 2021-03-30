@@ -80,6 +80,7 @@ Mark all the items that are done.
 
 1. Structure
    1. [ ] The package name and organization into files is sensible
+   1. [ ] The files have a license header as per [CONTRIBUTING.md](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/CONTRIBUTING.md)
    1. [ ] Core functionality is separated from the ROS2-specific part where reasonable
    1. [ ] There is a design document that explains the package at a high level
    1. [ ] All dependencies are explicitly included in [`package.xml`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-minimal-package-xml-example) with the proper `<*depend>` declaration
