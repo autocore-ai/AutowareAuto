@@ -28,8 +28,7 @@ ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 *terminal 2*
 ```{bash}
 > ade enter
-ade$ cd AutowareAuto && source install/setup.bash
-ade$ colcon build --packages-up-to autoware_auto_avp_demo
+ade$ source /opt/AutowareAuto/setup.bash
 ade$ stdbuf -o L ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
 ```
 
@@ -39,9 +38,13 @@ This command changes that setting to use a "line buffer" which outputs every lin
 *terminal 3*
 ```{bash}
 > ade enter
-ade$ cd AutowareAuto && source install/setup.bash
+ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 topic echo /planning/global_path
 ```
+
+Move the vehicle on LGSVL to the position shown in the image.
+This is the "pick-up/drop-off zone" on the parking lot roadway in front of the three parking spots directly outside of the front door of the AutonomouStuff building.
+![StartPose](images/avp-demo-start-pose.png)
 
 Before selecting a goal, you will need to initialize localization.
 To do this switch to the `rviz` window, click the `2D Pose Estimate` button at the top, and then click at the approximate location where the vehicle currently is in the map and drag in the direction of the vehicle's heading.
@@ -54,8 +57,7 @@ Optionally, to send a goal position/heading programmatically:
 *terminal 4*
 ```{bash}
 > ade enter
-ade$
-ros2 topic pub --once /planning/goal_pose geometry_msgs/msg/PoseStamped "{
+ade$ ros2 topic pub --once /planning/goal_pose geometry_msgs/msg/PoseStamped "{
 header:
   {stamp:
     {sec: 1600775035,
