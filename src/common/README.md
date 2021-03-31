@@ -3,8 +3,8 @@ Common {#autoware-common-design}
 
 # Domain Description
 
-The `common` sub-directory contains nodes and libraries with functions shared by many packages 
-across the Autoware.Auto system. 
+The `common` sub-directory contains nodes and libraries with functions shared by many packages
+across the Autoware.Auto system.
 
 # Subpages
 

@@ -1,0 +1,14 @@
+---
+/**:
+  ros__parameters:
+    # The frame_id to be set for the output messages. Is "earth" if unspecified.
+    output_frame_id: "earth"
+
+    # The child_frame_id to be set for the output messages. Is "base_link" if unspecified.
+    child_frame_id: "base_link"
+
+    # Specify the history size.
+    history_size: 10
+
+    # Set the variances (sigmas) for the ECEF XYZ coordinates that will override the estimated ones.
+    override_variances: [42.0, 42.0, 42.0]
