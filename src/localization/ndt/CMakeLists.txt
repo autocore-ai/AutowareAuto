@@ -55,6 +55,13 @@ set(ROS_NO_WARN_LIST
         -Wuseless-cast)
 target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
 
+# TODO(yunus.caliskan): Remove once #978 is fixed.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Og")
+else()
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize")
+endif()
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

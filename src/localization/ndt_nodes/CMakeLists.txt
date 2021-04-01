@@ -58,6 +58,13 @@ rclcpp_components_register_node(${P2D_NDT_LOCALIZER_NODE_LIB}
   EXECUTABLE ${P2D_NDT_LOCALIZER_NODE_LIB}_exe
 )
 
+# TODO(yunus.caliskan): Remove once #978 is fixed.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set_target_properties(${P2D_NDT_LOCALIZER_NODE_LIB} PROPERTIES COMPILE_FLAGS "-Og")
+else()
+  set_target_properties(${P2D_NDT_LOCALIZER_NODE_LIB} PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize")
+endif()
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
