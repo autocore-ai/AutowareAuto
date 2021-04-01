@@ -13,38 +13,21 @@
 // limitations under the License.
 
 #include <tracking_test_framework/shapes.hpp>
+#include <tracking_test_framework/utils.hpp>
 #include <helper_functions/float_comparisons.hpp>
 
 #include <algorithm>
 #include <vector>
 
 namespace comparison = autoware::common::helper_functions::comparisons;
-using autoware::common::types::PI;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
 
 namespace autoware
 {
-
 namespace tracking_test_framework
 {
-
-namespace
-{
-float32_t to_radians(const float32_t orientation_degrees)
-{
-  /// Converts degrees to radians
-  constexpr auto degrees_in_PI = 180.0F;
-  return orientation_degrees * (PI / degrees_in_PI);
-}
-
-float32_t cross_2d(const Eigen::Vector2f & vec1, const Eigen::Vector2f & vec2)
-{
-  /// Computes cross product of two 2D vectors
-  return (vec1.x() * vec2.y()) - (vec1.y() * vec2.x());
-}
-}  // namespace
 
 Line::Line(const Eigen::Vector2f & start, const Eigen::Vector2f & end)
 : m_start(start), m_end(end)
@@ -63,15 +46,15 @@ EigenStlVector<Eigen::Vector2f> Line::intersect_with_line(
   /// \f$(𝑡_1)\f$  and  \f$(𝑡_2)\f$  are scalar scaling parameters that scale the corresponding
   /// direction unit vectors  \f$(𝑑_1)\f$  and  \f$(𝑑_2)\f$ , thus defining any point on the line.
   const Eigen::Vector2f p_delta = this->m_start - line.m_start;
-  float32_t denominator = cross_2d(this->m_line_direction, line.m_line_direction);
+  float32_t denominator = utils::cross_2d(this->m_line_direction, line.m_line_direction);
 
   // To prevent divide by zero error check if denominator is non-zero
   if (comparison::abs_eq_zero<float32_t>(denominator, 0.0001F)) {
     return EigenStlVector<Eigen::Vector2f>{};
   }
 
-  float32_t t1 = cross_2d(line.m_line_direction, p_delta) / denominator;
-  float32_t t2 = cross_2d(this->m_line_direction, p_delta) / denominator;
+  float32_t t1 = utils::cross_2d(line.m_line_direction, p_delta) / denominator;
+  float32_t t2 = utils::cross_2d(this->m_line_direction, p_delta) / denominator;
 
   const bool8_t t1_out_of_bounds = (t1<0.0F || t1> this->m_line_length);
   const bool8_t t2_out_of_bounds = (t2<0.0F || t2> this->m_line_length);
@@ -90,7 +73,7 @@ Eigen::Vector2f Line::get_point(const float32_t scale) const
 
 Rectangle::Rectangle(
   const Eigen::Vector2f & center, const Eigen::Vector2f & size, const float32_t orientation_degrees)
-: m_center(center), m_size(size), m_orientation_radians(to_radians(orientation_degrees))
+: m_center(center), m_size(size), m_orientation_radians(utils::to_radians(orientation_degrees))
 {
   const Eigen::Rotation2D<float32_t> rotation(m_orientation_radians);
   const Eigen::Matrix2f rotation_matrix = rotation.toRotationMatrix();
@@ -150,7 +133,9 @@ EigenStlVector<Eigen::Vector2f> Circle::intersect_with_line(
   /// can form a single equation from which we look for such values of \f$(𝑡)\f$ that the
   /// resulting point lies both on the point and on the circle.
   const Eigen::Vector2f delta = m_center - line.starting_point();
-  const float32_t root_part = powf32(m_radius, 2) - powf32(cross_2d(delta, line.direction()), 2);
+  const float32_t root_part = powf32(m_radius, 2) - powf32(
+    utils::cross_2d(
+      delta, line.direction()), 2);
   if (root_part < 0.0F) {
     return EigenStlVector<Eigen::Vector2f>();
   }

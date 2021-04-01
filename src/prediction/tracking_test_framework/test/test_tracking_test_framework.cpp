@@ -14,9 +14,11 @@
 
 #include <gtest/gtest.h>
 
-#include <tracking_test_framework/shapes.hpp>
+#include <tracking_test_framework/scene.hpp>
 
+#include <memory>
 #include <vector>
+
 namespace
 {
 // Tolerance value to be used for floating point comparisons
@@ -117,4 +119,74 @@ TEST(test_tracking_test_framework, test_line_intersection_with_circle) {
   EXPECT_NEAR(intersection_4[0].y(), 0.2928932F, epsilon);
   EXPECT_NEAR(intersection_4[1].x(), 1.7071067F, epsilon);
   EXPECT_NEAR(intersection_4[1].y(), 1.7071067F, epsilon);
+}
+
+
+TEST(test_tracking_test_framework, test_scene_with_single_lidar_beam_single_object) {
+  // Lidar with single beam
+  autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 1, 2.0};
+
+  std::vector<std::unique_ptr<autoware::tracking_test_framework::TrackedObject>> objects;
+  // Tracked Pedestrian cluster
+  objects.emplace_back(
+    std::make_unique<autoware::tracking_test_framework::Pedestrian>(
+      Eigen::Vector2f{1.0, 1.0}, 2, 0.0, 0.0));
+
+  // Setup scene
+  autoware::tracking_test_framework::Scene scene{lidar, objects};
+  auto intersection = scene.get_detected_objects_array(true);
+  ASSERT_EQ(intersection.objects.size(), 1UL);
+  EXPECT_NEAR(intersection.objects[0].shape.polygon.points.front().x, 1.0F, epsilon);
+  EXPECT_NEAR(intersection.objects[0].shape.polygon.points.front().y, 0.0F, epsilon);
+
+  // When object is moved ahead in the time dt, it goes out of range of lidar beam
+  scene.move_all_objects(std::chrono::seconds(1));
+  auto new_intersection = scene.get_detected_objects_array(true);
+
+  EXPECT_TRUE(new_intersection.objects.empty());
+}
+
+TEST(test_tracking_test_framework, test_scene_with_multiple_lidar_beams_multiple_object) {
+  // Lidar with multiple beams
+  autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 4, 2.0};
+
+  std::vector<std::unique_ptr<autoware::tracking_test_framework::TrackedObject>> objects;
+  // Tracked Car cluster
+  objects.emplace_back(
+    std::make_unique<autoware::tracking_test_framework::Car>(
+      Eigen::Vector2f{0.0, 0.0}, 3, 0.0, 0.0, Eigen::Vector2f{2.0, 3.0}));
+  // Tracked Pedestrian cluster
+  objects.emplace_back(
+    std::make_unique<autoware::tracking_test_framework::Pedestrian>(
+      Eigen::Vector2f{1.0, 1.0}, 2, 0.0, 0.0));
+
+  // Setup scene
+  autoware::tracking_test_framework::Scene scene{lidar, objects};
+
+  // Even though pedestrian and car are hit by lidar at a common point here we return closest
+  // object to the ray only since the farther object should be occluded by using closest_only flag
+  auto intersections = scene.get_detected_objects_array(true);
+  ASSERT_EQ(intersections.objects.size(), 1UL);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[0].x, 1.0F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[0].y, 0.0F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[1].x, -0.8660F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[1].y, 1.5F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[2].x, -0.8660F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[2].y, -1.5F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[3].x, 1.0F, epsilon);
+  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[3].y, 0.0F, epsilon);
+
+  // Here the API returns all intersection points regardless of occlusion
+  auto intersection_all = scene.get_detected_objects_array(false);
+  ASSERT_EQ(intersection_all.objects.size(), 2UL);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[0].x, 1.0F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[0].y, 0.0F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[1].x, -0.8660F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[1].y, 1.5F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[2].x, -0.8660F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[2].y, -1.5F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[3].x, 1.0F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[3].y, 0.0F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[1].shape.polygon.points[0].x, 1.0F, epsilon);
+  EXPECT_NEAR(intersection_all.objects[1].shape.polygon.points[0].y, 0.0F, epsilon);
 }

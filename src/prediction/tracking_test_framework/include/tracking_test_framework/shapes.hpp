@@ -53,6 +53,7 @@ public:
   virtual EigenStlVector<Eigen::Vector2f> intersect_with_line(
     const Line & line, const autoware::common::types::bool8_t closest_point_only) const = 0;
 
+  virtual std::unique_ptr<Shape> clone() const = 0;
   /// \brief Virtual destructor
   virtual ~Shape() = default;
 };
@@ -113,6 +114,11 @@ public:
     return m_line_length;
   }
 
+  inline std::unique_ptr<Shape> clone() const override
+  {
+    return std::make_unique<Line>(*this);
+  }
+
 private:
   /// starting point of the line \f$(x_s,y_s)\f$
   Eigen::Vector2f m_start{Eigen::Vector2f::Zero()};
@@ -142,6 +148,11 @@ public:
   EigenStlVector<Eigen::Vector2f> intersect_with_line(
     const Line & line, const autoware::common::types::bool8_t closest_point_only) const override;
 
+  inline std::unique_ptr<Shape> clone() const override
+  {
+    return std::make_unique<Rectangle>(*this);
+  }
+
 private:
   /// center of the rectangle \f$(x_r,y_r)\f$
   Eigen::Vector2f m_center{Eigen::Vector2f::Zero()};
@@ -170,6 +181,11 @@ public:
   /// \return returns the intersection points
   EigenStlVector<Eigen::Vector2f> intersect_with_line(
     const Line & line, const autoware::common::types::bool8_t closest_point_only) const override;
+
+  inline std::unique_ptr<Shape> clone() const override
+  {
+    return std::make_unique<Circle>(*this);
+  }
 
 private:
   /// center of the circle \f$(x_c,y_c)\f$

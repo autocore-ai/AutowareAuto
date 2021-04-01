@@ -19,12 +19,33 @@ to be represented as simple 2D shapes.
 The framework will provide APIs for generating data for the tracked objects to be fed into 
 the unit tests for tracking algorithms. The following can be considered an initial draft to be 
 refined upon : 
-1. get_pedestrian(Circle(x,y,radius))
-2. get_cars(Rectangle(x,y,width,height,orientation))
-3. lidar_ray(Line(start_point,end_point))   
-4. setup_scene(lidar_ray,pedestrians/cars)
-5. get_tracked_points(scene)
-6. verify_tracker_results()
+
+```{cpp}
+/// \brief Pedestrian and Car can be created using the following APIs:
+1. Pedestrian(const Eigen::Vector2f & starting_position,
+   const autoware::common::types::float32_t starting_speed,
+   const autoware::common::types::float32_t orientation_deg,
+   const autoware::common::types::float32_t turn_rate_deg_per_sec)
+2. Car(const Eigen::Vector2f & starting_position,
+   const autoware::common::types::float32_t starting_speed,
+   const autoware::common::types::float32_t orientation_deg,
+   const autoware::common::types::float32_t turn_rate_deg_per_sec,
+   const Eigen::Vector2f & size);
+
+/// \brief Lidar can be created using the following APIs:
+3. Lidar(const Eigen::Vector2f & position, const uint32_t number_of_beams,
+   const autoware::common::types::float32_t max_range);
+/// \brief Scene can be setup with Lidar and the Pedestrian and Car. The Pedestrian and Car are 
+/// passed as unique_ptrs to TrackedObject class and appended to a 
+/// std::vector<std::unique_ptr<TrackedObject>> :
+4. Scene(const Lidar & lidar, const std::vector<std::unique_ptr<TrackedObject>> & objects);
+/// \brief Intersections between the Lidar and TrackedObjects are returned in a 
+/// DetectedDynamicObjectArray form :
+5. autoware_auto_msgs::msg::DetectedDynamicObjectArray Scene::get_detected_objects_array(
+  const bool closest_only) const
+/// \brief Objects can be moved in the scene using:
+6. void Scene::move_all_objects(const std::chrono::milliseconds dt_in_secs)
+```
 
 ## Inner-workings / Algorithms
 1. The framework provides a 2D shape generator interface called the `Shape` class which is used to 

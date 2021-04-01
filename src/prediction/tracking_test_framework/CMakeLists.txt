@@ -30,11 +30,18 @@ ament_auto_find_build_dependencies(REQUIRED
 
 set(TRACKING_TEST_FRAMEWORK_LIB_SRC
     src/shapes.cpp
+    src/tracked_object.cpp
+    src/scene.cpp
+    src/lidar.cpp
 )
 
 set(TRACKING_TEST_FRAMEWORK_LIB_HEADERS
+    include/tracking_test_framework/utils.hpp
     include/tracking_test_framework/shapes.hpp
-  include/tracking_test_framework/visibility_control.hpp
+    include/tracking_test_framework/tracked_object.hpp
+    include/tracking_test_framework/lidar.hpp
+    include/tracking_test_framework/scene.hpp
+    include/tracking_test_framework/visibility_control.hpp
 )
 
 # generate library
