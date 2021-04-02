@@ -8,6 +8,7 @@ vehicle sensors and systems crucial to autonomous driving or to external simulat
 
 # Subpages
 
+- @subpage ne_raptor_interface-package-design
 - @subpage spinnaker-camera-driver
 - @subpage spinnaker-camera-node
 - @subpage ssc_interface-package-design
