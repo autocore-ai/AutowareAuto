@@ -232,7 +232,8 @@ def generate_launch_description():
             cmd=['ros2',
                 'bag',
                 'play',
-                LaunchConfiguration('rosbag_file_path')
+                LaunchConfiguration('rosbag_file_path'),
+                '--loop',
             ],
             prefix=[
                 'bash -c \'sleep 5; $0 $@\' '
