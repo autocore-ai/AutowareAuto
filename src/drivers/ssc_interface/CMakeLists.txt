@@ -53,7 +53,6 @@ if(BUILD_TESTING)
 
   # Unit tests
   ament_add_gtest(test_${PROJECT_NAME}
-    test/test_dbw_state_machine.cpp
     test/test_ssc_interface.cpp
   )
   autoware_set_compile_options(test_${PROJECT_NAME})

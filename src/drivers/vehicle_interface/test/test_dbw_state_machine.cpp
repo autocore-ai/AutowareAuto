@@ -15,13 +15,12 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "ssc_interface/ssc_interface.hpp"
+#include "vehicle_interface/dbw_state_machine.hpp"
 
-using ssc_interface::DbwState;
-using ssc_interface::DbwStateMachine;
-using ssc_interface::SscInterface;
+using autoware::drivers::vehicle_interface::DbwState;
+using autoware::drivers::vehicle_interface::DbwStateMachine;
 
-TEST(test_ssc_interface, state_machine_disable_from_enable_requested) {
+TEST(test_dbw_state_machine, state_machine_disable_from_enable_requested) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   // Should start in DISABLED
@@ -33,7 +32,7 @@ TEST(test_ssc_interface, state_machine_disable_from_enable_requested) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
   ASSERT_FALSE(dbw_state->enabled());
 
-  // Affirmitive request hould transition to ENABLE_REQUESTED but enabled() should still be false
+  // Affirmitive request should transition to ENABLE_REQUESTED but enabled() should still be false
   dbw_state->user_request(true);
   ASSERT_EQ(dbw_state->get_state(), DbwState::ENABLE_REQUESTED);
   ASSERT_FALSE(dbw_state->enabled());
@@ -51,7 +50,7 @@ TEST(test_ssc_interface, state_machine_disable_from_enable_requested) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_ssc_interface, state_machine_disable_from_enable_sent) {
+TEST(test_dbw_state_machine, state_machine_disable_from_enable_sent) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   // Request has been made, should be in ENABLE_REQUESTED
@@ -91,7 +90,7 @@ TEST(test_ssc_interface, state_machine_disable_from_enable_sent) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_ssc_interface, state_machine_disable_from_enabled_user) {
+TEST(test_dbw_state_machine, state_machine_disable_from_enabled_user) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);
@@ -113,7 +112,7 @@ TEST(test_ssc_interface, state_machine_disable_from_enabled_user) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_ssc_interface, state_machine_disable_from_enabled_dbw) {
+TEST(test_dbw_state_machine, state_machine_disable_from_enabled_dbw) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);
@@ -135,7 +134,7 @@ TEST(test_ssc_interface, state_machine_disable_from_enabled_dbw) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_ssc_interface, state_machine_stay_enabled) {
+TEST(test_dbw_state_machine, state_machine_stay_enabled) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);

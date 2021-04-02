@@ -7,6 +7,7 @@ ament_auto_find_build_dependencies()
 
 # Library
 ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/dbw_state_machine.cpp
   src/platform_interface.cpp
   src/safety_state_machine.cpp
   src/vehicle_interface_node.cpp)
@@ -29,6 +30,7 @@ if(BUILD_TESTING)
     test/state_machine_gear.cpp
     test/state_machine_headlight.cpp
     test/state_machine_node.cpp
+    test/test_dbw_state_machine.cpp
     test/test_vi_node.hpp)
   autoware_set_compile_options(${PROJECT_NAME}_test)
   target_include_directories(${PROJECT_NAME}_test PRIVATE "include")
