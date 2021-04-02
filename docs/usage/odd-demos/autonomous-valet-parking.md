@@ -84,6 +84,7 @@ ade$ colcon build --packages-up-to autoware_auto_avp_demo
 ade$ source install/setup.bash
 ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
 ```
+
 To interrupt the launched processes, hit `Ctrl c`. Turning the simulation off while building can save compute resources to accelerate the build.
 
 When following the steps above, the RViz window should show what the Autoware.Auto stack
@@ -119,6 +120,9 @@ NDT should follow along when the car moves.
 
 Detailed instructions are given at @ref ndt-initialization.
 
+Once the initialization of NDT is completed, navigate back to the LGSVL window and press the play
+button in the bottom left corner of the window.
+
 ## Driving to the drop-off zone
 
 Now that NDT is initialized, [run the simulation](@ref lgsvl-start-simulation) if it is not already running.
@@ -126,6 +130,12 @@ Now that NDT is initialized, [run the simulation](@ref lgsvl-start-simulation) i
 In order to reproduce the demo as in [real life](@ref avpdemo-impressions), manually drive the
 vehicle from the spawning point to the drop-off zone as shown on the image below. It may be
 worthwhile to spend a minute or two to drive a few laps around the map to see what is where.
+
+Use the up and down arrow keys to accelerate or brake, respectively. The right and left arrow keys
+are used for steering the vehicle. Upon initialization the vehicle should be place in Drive mode.
+To change this to Reverse, use the PageDown key. The PageUp key can be used to put the vehicle back
+into Drive. For more information about the control in LGSVL, press the controller button in the
+bottom left corner.
 
 In the image below, orange boxes indicate lidar objects, red points indicate lidar points that are
 generated as artificial input from simulation, and white dots indicate the point-cloud map used by the
