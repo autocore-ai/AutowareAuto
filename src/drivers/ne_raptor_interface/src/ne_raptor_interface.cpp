@@ -608,6 +608,22 @@ void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::Sh
 {
   std::lock_guard<std::mutex> guard_vsr(m_vehicle_state_report_mutex);
 
+  switch (msg->horn_state.status) {
+    case HornState::OFF:
+      m_vehicle_state_report.horn = false;
+      break;
+    case HornState::ON:
+      m_vehicle_state_report.horn = true;
+      break;
+    case HornState::SNA:
+    default:
+      m_vehicle_state_report.horn = false;
+      RCLCPP_WARN_THROTTLE(
+        m_logger, m_clock, CLOCK_1_SEC,
+        "Received invalid horn value from NE Raptor DBW.");
+      break;
+  }
+
   switch (msg->turn_signal_state.value) {
     case TurnSignal::NONE:
       m_vehicle_state_report.blinker = VehicleStateReport::BLINKER_OFF;

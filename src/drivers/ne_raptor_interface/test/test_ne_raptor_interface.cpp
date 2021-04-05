@@ -2377,6 +2377,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_rpt_vehicle_state)
     myTests[i].in_oar.turn_signal_state.value = TurnSignal::HAZARDS;
     myTests[i].in_oar.high_beam_state.value = HighBeamState::ON;
     myTests[i].in_oar.front_wiper_state.status = WiperFront::WASH_BRIEF;
+    myTests[i].in_oar.horn_state.status = HornState::ON;
     myTests[i].exp_vsr.fuel = 10;
     myTests[i].exp_vsr.blinker = VehicleStateReport::BLINKER_HAZARD;
     myTests[i].exp_vsr.headlight = VehicleStateReport::HEADLIGHT_HIGH;
@@ -2384,6 +2385,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_rpt_vehicle_state)
     myTests[i].exp_vsr.gear = VehicleStateReport::GEAR_DRIVE;
     myTests[i].exp_vsr.mode = VehicleStateReport::MODE_AUTONOMOUS;
     myTests[i].exp_vsr.hand_brake = true;
+    myTests[i].exp_vsr.horn = true;
   }
 
   /* Valid inputs:
@@ -2397,6 +2399,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_rpt_vehicle_state)
   myTests[0].in_oar.turn_signal_state.value = TurnSignal::NONE;
   myTests[0].in_oar.high_beam_state.value = HighBeamState::OFF;
   myTests[0].in_oar.front_wiper_state.status = WiperFront::OFF;
+  myTests[0].in_oar.horn_state.status = HornState::OFF;
   myTests[0].exp_vsr.fuel = 0;
   myTests[0].exp_vsr.blinker = VehicleStateReport::BLINKER_OFF;
   myTests[0].exp_vsr.headlight = VehicleStateReport::HEADLIGHT_OFF;
@@ -2404,6 +2407,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_rpt_vehicle_state)
   myTests[0].exp_vsr.gear = VehicleStateReport::GEAR_PARK;
   myTests[0].exp_vsr.mode = VehicleStateReport::MODE_AUTONOMOUS;
   myTests[0].exp_vsr.hand_brake = false;
+  myTests[0].exp_vsr.horn = false;
 
   /* Valid inputs:
    * DBW state machine --> enabled;
@@ -2426,17 +2430,19 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_rpt_vehicle_state)
   myTests[3].exp_vsr.wiper = VehicleStateReport::WIPER_HIGH;
 
   /* Invalid input: faults
-   * for parking brake, gear, turn signal, high beam, wiper */
+   * for parking brake, gear, turn signal, high beam, wiper, horn */
   myTests[kTestValid_VSR + 0].in_br.parking_brake.status = ParkingBrake::FAULT;
   myTests[kTestValid_VSR + 0].in_gr.state.gear = Gear::NONE;
   myTests[kTestValid_VSR + 0].in_oar.turn_signal_state.value = TurnSignal::SNA;
   myTests[kTestValid_VSR + 0].in_oar.high_beam_state.value = HighBeamState::RESERVED;
   myTests[kTestValid_VSR + 0].in_oar.front_wiper_state.status = WiperFront::SNA;
+  myTests[kTestValid_VSR + 0].in_oar.horn_state.status = HornState::SNA;
   myTests[kTestValid_VSR + 0].exp_vsr.hand_brake = false;
   myTests[kTestValid_VSR + 0].exp_vsr.gear = 0;
   myTests[kTestValid_VSR + 0].exp_vsr.blinker = 0;
   myTests[kTestValid_VSR + 0].exp_vsr.headlight = 0;
   myTests[kTestValid_VSR + 0].exp_vsr.wiper = 0;
+  myTests[kTestValid_VSR + 0].exp_vsr.horn = false;
 
   // Run all tests in a loop
   for (i = 0; i < kNumTests_VSR; i++) {
