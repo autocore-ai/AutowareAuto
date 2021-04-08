@@ -28,8 +28,7 @@ ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 *terminal 2*
 ```{bash}
 > ade enter
-ade$ cd AutowareAuto && source install/setup.bash
-ade$ colcon build --packages-up-to autoware_auto_avp_demo
+ade$ source /opt/AutowareAuto/setup.bash
 ade$ stdbuf -o L ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
 ```
 
@@ -39,6 +38,7 @@ This command changes that setting to use a "line buffer" which outputs every lin
 *terminal 3*
 ```{bash}
 > ade enter
+ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 topic echo /planning/trajectory
 ```
 
@@ -83,3 +83,45 @@ On Terminal 2, you should see the following message output:
 
 ## Verify that Behavior Planner outputs a Trajectory for MPC to follow
 On Terminal 3, you should see a trajectory message coming out from the behavior planner.
+
+See the example below
+
+```{bash}
+ade$ ros2 topic echo /planning/trajectory
+1617078146.280549 [0]       ros2: using network interface enp3s0 (udp/192.168.0.113) selected arbitrarily from: enp3s0, docker0
+---
+header:
+  stamp:
+    sec: 1617077481
+    nanosec: 563900928
+  frame_id: map
+points:
+- time_from_start:
+    sec: 0
+    nanosec: 0
+  x: -60.46516418457031
+  y: 82.08631896972656
+  heading:
+    real: -0.338379830121994
+    imag: 0.9410096406936646
+  longitudinal_velocity_mps: 2.777777910232544
+  lateral_velocity_mps: 0.0
+  acceleration_mps2: 0.0
+  heading_rate_rps: 0.0019613588228821754
+  front_wheel_angle_rad: -0.009999978356063366
+  rear_wheel_angle_rad: 0.0
+- time_from_start:
+    sec: 0
+    nanosec: 228084512
+  x: -60.946189880371094
+  y: 81.67398071289062
+  heading:
+    real: 0.3368988037109375
+    imag: -0.9415408372879028
+  longitudinal_velocity_mps: 2.777777910232544
+  lateral_velocity_mps: 0.0
+  acceleration_mps2: 0.0
+  heading_rate_rps: 0.0
+  front_wheel_angle_rad: 9.720058005768806e-05
+  rear_wheel_angle_rad: 0.0
+```
