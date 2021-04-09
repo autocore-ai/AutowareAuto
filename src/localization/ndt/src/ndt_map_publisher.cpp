@@ -122,23 +122,13 @@ void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 
   *msg = std::move(adjusted_cloud);
 }
 
-NDTMapPublisher::NDTMapPublisher(
-  const MapConfig & map_config,
-  sensor_msgs::msg::PointCloud2 & map_pc,
-  sensor_msgs::msg::PointCloud2 & source_pc
-)
-: m_map_config(map_config),
-  m_map_pc(map_pc),
-  m_source_pc(source_pc)
-{
-}
-
-geocentric_pose_t NDTMapPublisher::load_map(
+geocentric_pose_t load_map(
   const std::string & yaml_file_name,
-  const std::string & pcl_file_name)
+  const std::string & pcl_file_name,
+  sensor_msgs::msg::PointCloud2 & pc_out)
 {
-  reset_pc_msg(m_map_pc);  // TODO(yunus.caliskan): Change in #102
-  reset_pc_msg(m_source_pc);  // TODO(yunus.caliskan): Change in #102
+  auto dummy_idx = 0U;  // TODO(yunus.caliskan): Change in #102
+  common::lidar_utils::reset_pcl_msg(pc_out, 0U, dummy_idx);
 
   geodetic_pose_t geodetic_pose{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
@@ -149,7 +139,7 @@ geocentric_pose_t NDTMapPublisher::load_map(
   }
 
   if (!pcl_file_name.empty()) {
-    read_from_pcd(pcl_file_name, &m_source_pc);
+    read_from_pcd(pcl_file_name, &pc_out);
   } else {
     throw std::runtime_error("PCD file name empty\n");
   }
@@ -168,92 +158,6 @@ geocentric_pose_t NDTMapPublisher::load_map(
 
   return {x, y, z, geodetic_pose.roll, geodetic_pose.pitch, geodetic_pose.yaw};
 }
-
-void NDTMapPublisher::map_to_pc(const ndt::DynamicNDTMap & ndt_map)
-{
-  reset_pc_msg(m_map_pc);
-  common::lidar_utils::resize_pcl_msg(m_map_pc, ndt_map.size());
-
-  // TODO(yunus.caliskan): Make prettier -> #102
-  sensor_msgs::PointCloud2Iterator<ndt::Real> x_it(m_map_pc, "x");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> y_it(m_map_pc, "y");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> z_it(m_map_pc, "z");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xx_it(m_map_pc, "icov_xx");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xy_it(m_map_pc, "icov_xy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_xz_it(m_map_pc, "icov_xz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_yy_it(m_map_pc, "icov_yy");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_yz_it(m_map_pc, "icov_yz");
-  sensor_msgs::PointCloud2Iterator<ndt::Real> icov_zz_it(m_map_pc, "icov_zz");
-  sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(m_map_pc, "cell_id");
-
-  auto num_used_cells = 0U;
-  for (const auto & vx_it : ndt_map) {
-    if (!  // No `==` operator defined for PointCloud2Iterators
-      (y_it != y_it.end() &&
-      z_it != z_it.end() &&
-      icov_xx_it != icov_xx_it.end() &&
-      icov_xy_it != icov_xy_it.end() &&
-      icov_xz_it != icov_xz_it.end() &&
-      icov_yy_it != icov_yy_it.end() &&
-      icov_yz_it != icov_yz_it.end() &&
-      icov_zz_it != icov_zz_it.end() &&
-      cell_id_it != cell_id_it.end()))
-    {
-      // This should not occur as the cloud is resized to the map's size.
-      throw std::length_error("NDTMapPublisherNode: NDT map is larger than the map point cloud.");
-    }
-    const auto & vx = vx_it.second;
-    if (!vx.usable()) {
-      // Voxel doesn't have enough points to be used in NDT
-      continue;
-    }
-
-    const auto inv_covariance_opt = vx.inverse_covariance();
-    if (!inv_covariance_opt) {
-      // Voxel covariance is not invertible
-      continue;
-    }
-
-    const auto & centroid = vx.centroid();
-    const auto & inv_covariance = inv_covariance_opt.value();
-    *(x_it) = centroid(0U);
-    *(y_it) = centroid(1U);
-    *(z_it) = centroid(2U);
-    *(icov_xx_it) = inv_covariance(0U, 0U);
-    *(icov_xy_it) = inv_covariance(0U, 1U);
-    *(icov_xz_it) = inv_covariance(0U, 2U);
-    *(icov_yy_it) = inv_covariance(1U, 1U);
-    *(icov_yz_it) = inv_covariance(1U, 2U);
-    *(icov_zz_it) = inv_covariance(2U, 2U);
-
-    // There are cases where the centroid of a voxel does get indexed to another voxel. To prevent
-    // ID mismatches while transferring the map. The index from the voxel grid config is used.
-    const auto correct_idx = m_map_config.index(centroid);
-
-    std::memcpy(&cell_id_it[0U], &(correct_idx), sizeof(correct_idx));
-    ++x_it;
-    ++y_it;
-    ++z_it;
-    ++icov_xx_it;
-    ++icov_xy_it;
-    ++icov_xz_it;
-    ++icov_yy_it;
-    ++icov_yz_it;
-    ++icov_zz_it;
-    ++cell_id_it;
-    ++num_used_cells;
-  }
-
-  // Resize to throw out unused cells.
-  common::lidar_utils::resize_pcl_msg(m_map_pc, num_used_cells);
-}
-
-void NDTMapPublisher::reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg)
-{
-  auto dummy_idx = 0U;  // TODO(yunus.caliskan): Change in #102
-  common::lidar_utils::reset_pcl_msg(msg, 0U, dummy_idx);
-}
-
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware

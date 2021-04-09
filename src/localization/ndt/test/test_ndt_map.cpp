@@ -236,7 +236,7 @@ TEST_F(DenseNDTMapTest, map_lookup) {
   DynamicNDTMap ndt_map(grid_config);
 
   // No map is added, so a lookup should return an empty vector.
-  EXPECT_TRUE(ndt_map.cell(0.0, 0.0, 0.0).empty());
+  EXPECT_TRUE(ndt_map.cell(0.0F, 0.0F, 0.0F).empty());
 
   // build a pointcloud map.
   // It contains 5*5*5*7 points where each cell would have a center
@@ -282,7 +282,10 @@ TEST_F(DenseNDTMapTest, map_lookup) {
         // Query the idx of the expected centroid via the config object:
         auto expected_idx = grid_config.index(Eigen::Vector3d(x, y, z));
         // Get the cell index ndt map estimated:
-        auto cell = ndt_map.cell(x, y, z);
+        auto cell = ndt_map.cell(
+          static_cast<float32_t>(x),
+          static_cast<float32_t>(y),
+          static_cast<float32_t>(z));
         auto map_idx = grid_config.index(cell[0].centroid());
         EXPECT_EQ(expected_idx, map_idx);
       }
@@ -369,9 +372,9 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
   const auto invalid_id = actual_idx + 1U;
   std::memcpy(&invalid_cell_it[0], &invalid_id, sizeof(actual_idx));
 
-  EXPECT_THROW(map_grid.insert(invalid_pc1), std::runtime_error);
-  EXPECT_THROW(map_grid.insert(invalid_pc2), std::runtime_error);
-  EXPECT_THROW(map_grid.insert(invalid_pc3), std::domain_error);
+  EXPECT_THROW(map_grid.set(invalid_pc1), std::runtime_error);
+  EXPECT_THROW(map_grid.set(invalid_pc2), std::runtime_error);
+  EXPECT_THROW(map_grid.set(invalid_pc3), std::domain_error);
 }
 
 TEST_F(NDTMapTest, map_representation_basics) {
@@ -452,7 +455,7 @@ TEST_F(NDTMapTest, map_representation_basics) {
   ASSERT_EQ(generator_grid.size(), num_points);
 
   // All points should be able to be inserted since
-  EXPECT_NO_THROW(map_grid.insert(msg));
+  EXPECT_NO_THROW(map_grid.set(msg));
   EXPECT_EQ(map_grid.size(), generator_grid.size());
 
   // dif to be used for grid lookup.
@@ -616,84 +619,4 @@ void DenseNDTMapContext::build_pc(const Config & cfg)
       }
     }
   }
-}
-sensor_msgs::msg::PointCloud2 dynamic_map_to_cloud(const DynamicNDTMap & dynamic_map)
-{
-  sensor_msgs::msg::PointCloud2 static_msg;
-  autoware::common::lidar_utils::init_pcl_msg(
-    static_msg, "map", dynamic_map.size(), 10U,
-    "x", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "y", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "z", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_xx", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_xy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_xz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_yy", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_yz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "icov_zz", 1U, sensor_msgs::msg::PointField::FLOAT64,
-    "cell_id", 2U, sensor_msgs::msg::PointField::UINT32);
-
-  sensor_msgs::PointCloud2Iterator<Real> x_it(static_msg, "x");
-  sensor_msgs::PointCloud2Iterator<Real> y_it(static_msg, "y");
-  sensor_msgs::PointCloud2Iterator<Real> z_it(static_msg, "z");
-  sensor_msgs::PointCloud2Iterator<Real> icov_xx_it(static_msg, "icov_xx");
-  sensor_msgs::PointCloud2Iterator<Real> icov_xy_it(static_msg, "icov_xy");
-  sensor_msgs::PointCloud2Iterator<Real> icov_xz_it(static_msg, "icov_xz");
-  sensor_msgs::PointCloud2Iterator<Real> icov_yy_it(static_msg, "icov_yy");
-  sensor_msgs::PointCloud2Iterator<Real> icov_yz_it(static_msg, "icov_yz");
-  sensor_msgs::PointCloud2Iterator<Real> icov_zz_it(static_msg, "icov_zz");
-  sensor_msgs::PointCloud2Iterator<uint32_t> cell_id_it(static_msg, "cell_id");
-  for (const auto & vx_it : dynamic_map) {
-    if (!  // No `==` operator defined for PointCloud2Iterators
-      (y_it != y_it.end() &&
-      z_it != z_it.end() &&
-      icov_xx_it != icov_xx_it.end() &&
-      icov_xy_it != icov_xy_it.end() &&
-      icov_xz_it != icov_xz_it.end() &&
-      icov_yy_it != icov_yy_it.end() &&
-      icov_yz_it != icov_yz_it.end() &&
-      icov_zz_it != icov_zz_it.end() &&
-      cell_id_it != cell_id_it.end()))
-    {
-      // This should not occur as the cloud is resized to the map's size.
-      EXPECT_FALSE(true);
-      return sensor_msgs::msg::PointCloud2{};
-    }
-
-    const auto & vx = vx_it.second;
-    if (!vx.usable()) {
-      // Voxel doesn't have enough points to be used in NDT
-      continue;
-    }
-
-    const auto inv_covariance_opt = vx.inverse_covariance();
-    if (!inv_covariance_opt) {
-      // Voxel covariance is not invertible
-      continue;
-    }
-
-    const auto & centroid = vx.centroid();
-    const auto & inv_covariance = inv_covariance_opt.value();
-    *(x_it) = centroid(0U);
-    *(y_it) = centroid(1U);
-    *(z_it) = centroid(2U);
-    *(icov_xx_it) = inv_covariance(0U, 0U);
-    *(icov_xy_it) = inv_covariance(0U, 1U);
-    *(icov_xz_it) = inv_covariance(0U, 2U);
-    *(icov_yy_it) = inv_covariance(1U, 1U);
-    *(icov_yz_it) = inv_covariance(1U, 2U);
-    *(icov_zz_it) = inv_covariance(2U, 2U);
-    std::memcpy(&cell_id_it[0U], &(vx_it.first), sizeof(vx_it.first));
-    ++x_it;
-    ++y_it;
-    ++z_it;
-    ++icov_xx_it;
-    ++icov_xy_it;
-    ++icov_xz_it;
-    ++icov_yy_it;
-    ++icov_yz_it;
-    ++icov_zz_it;
-    ++cell_id_it;
-  }
-  return static_msg;
 }

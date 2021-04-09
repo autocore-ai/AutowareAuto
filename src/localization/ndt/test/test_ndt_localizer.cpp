@@ -111,8 +111,9 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
   translated_cloud.header.stamp = ::time_utils::to_message(scan_time);
 
   // Prepare the map cloud.
-  auto map_cloud = dynamic_map_to_cloud(m_dynamic_map);
-  map_cloud.header.stamp = ::time_utils::to_message(map_time);
+  sensor_msgs::msg::PointCloud2 serialized_map;
+  m_dynamic_map.serialize_as<autoware::localization::ndt::StaticNDTMap>(serialized_map);
+  serialized_map.header.stamp = ::time_utils::to_message(map_time);
 
   P2DTestLocalizer localizer{
     m_localizer_config,
@@ -120,7 +121,7 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
     m_outlier_ratio};
 
   autoware::localization::ndt::StaticNDTMap map{m_grid_config};
-  map.insert(dynamic_map_to_cloud(m_dynamic_map));
+  map.set(serialized_map);
 
   const auto & ros_pose_out =
     localizer.register_measurement(translated_cloud, transform_initial, map);
@@ -159,11 +160,12 @@ TEST_F(P2DLocalizerParameterTest, delayed_scan) {
   m_downsampled_cloud.header.stamp = ::time_utils::to_message(now - dt);
   transform_initial.header.stamp = ::time_utils::to_message(now - dt);
   // set map time:
-  auto map_cloud = dynamic_map_to_cloud(m_dynamic_map);
-  map_cloud.header.stamp = ::time_utils::to_message(now + dt);
+  sensor_msgs::msg::PointCloud2 serialized_map;
+  m_dynamic_map.serialize_as<autoware::localization::ndt::StaticNDTMap>(serialized_map);
+  serialized_map.header.stamp = ::time_utils::to_message(now + dt);
 
   autoware::localization::ndt::StaticNDTMap map{m_grid_config};
-  map.insert(map_cloud);
+  map.set(serialized_map);
 
   P2DTestLocalizer::PoseWithCovarianceStamped dummy_pose;
   EXPECT_THROW(
@@ -199,11 +201,12 @@ TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
   // Set scan time.
   m_downsampled_cloud.header.stamp = ::time_utils::to_message(scan_time);
   // set map time:
-  auto map_cloud = dynamic_map_to_cloud(m_dynamic_map);
-  map_cloud.header.stamp = ::time_utils::to_message(map_time);
+  sensor_msgs::msg::PointCloud2 serialized_map;
+  m_dynamic_map.serialize_as<autoware::localization::ndt::StaticNDTMap>(serialized_map);
+  serialized_map.header.stamp = ::time_utils::to_message(map_time);
 
   autoware::localization::ndt::StaticNDTMap map{m_grid_config};
-  map.insert(map_cloud);
+  map.set(serialized_map);
 
   auto set_and_get = [&transform_initial](auto time_point) {
       transform_initial.header.stamp = ::time_utils::to_message(time_point);

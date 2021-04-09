@@ -66,7 +66,9 @@ public:
     m_dynamic_map.insert(m_pc);
 
     // Pass the dynamic map to a static one:
-    m_static_map.insert(dynamic_map_to_cloud(m_dynamic_map));
+    sensor_msgs::msg::PointCloud2 serialized_map;
+    m_dynamic_map.serialize_as<decltype(m_static_map)>(serialized_map);
+    m_static_map.set(serialized_map);
   }
   autoware::perception::filters::voxel_grid::Config m_grid_config;
   sensor_msgs::msg::PointCloud2 m_downsampled_cloud;

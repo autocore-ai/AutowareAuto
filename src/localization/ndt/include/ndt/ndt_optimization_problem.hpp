@@ -62,6 +62,7 @@
 #include <optimization/optimization_problem.hpp>
 #include <optimization/utils.hpp>
 #include <ndt/utils.hpp>
+#include <ndt/constraints.hpp>
 #include <experimental/optional>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -90,8 +91,10 @@ bool8_t is_valid_probability(ScalarT p)
 
 /// P2D ndt objective. This class implements the P2D ndt score function, its analytical
 /// jacobian and hessian values.
-/// \tparam MapT Type of map to be used.
-template<typename MapT>
+/// \tparam MapT Type of map to be used. This type should conform the interface specified in
+/// `P2DNDTOptimizationMapConstraint`
+template<typename MapT,
+  Requires = traits::P2DNDTOptimizationMapConstraint<MapT>::value>
 class P2DNDTObjective : public common::optimization::CachedExpression<P2DNDTObjective<MapT>,
     EigenPose<Real>, 1U, 6U, common::optimization::EigenComparator>
 {
@@ -105,7 +108,7 @@ public:
   using Hessian = typename ExpressionT::Hessian;
   using Map = MapT;
   using Scan = P2DNDTScan;
-  using Point = typename Map::Point;
+  using Point = Eigen::Vector3d;
   using Comparator = common::optimization::EigenComparator;
   using ComputeMode = common::optimization::ComputeMode;
   using PointGrad = Eigen::Matrix<float64_t, 3, 6>;

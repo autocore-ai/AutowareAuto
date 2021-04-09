@@ -17,12 +17,14 @@
 #ifndef NDT__NDT_LOCALIZER_HPP_
 #define NDT__NDT_LOCALIZER_HPP_
 
+#include <helper_functions/template_utils.hpp>
 #include <localization_common/optimized_registration_summary.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <ndt/ndt_common.hpp>
 #include <ndt/ndt_optimization_problem.hpp>
+#include <ndt/constraints.hpp>
 #include <optimization/optimizer_options.hpp>
 #include <experimental/optional>
 #include <utility>
@@ -72,10 +74,10 @@ public:
     m_optimizer{optimizer},
     m_scan{std::forward<ScanT>(scan)} {}
 
-  // TODO(yunus.caliskan): Add a constraint to `MapT` during/after #860
-
   /// Register a measurement to the current map and return the transformation from map to the
   /// measurement.
+  /// \tparam MapT Map type to be used. This map should conform the interface specied in
+  /// `LocalizationMapConstraint`
   /// \param[in] msg Measurement message to register.
   /// \param[in] transform_initial Initial guess of the pose to initialize the localizer with
   /// in iterative processes like solving optimization problems.
@@ -86,7 +88,8 @@ public:
   /// \throws std::domain_error on pose estimates that are not within the configured duration
   /// range from the measurement.
   /// \throws std::runtime_error on numerical errors in the optimizer.
-  template<typename MapT>
+  template<typename MapT,
+    Requires = traits::LocalizationMapConstraint<MapT>::value>
   PoseWithCovarianceStamped register_measurement(
     const CloudT & msg,
     const Transform & transform_initial,

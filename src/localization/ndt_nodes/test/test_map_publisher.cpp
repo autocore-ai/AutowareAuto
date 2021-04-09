@@ -224,7 +224,7 @@ TEST_F(MapPublisherTest, core_functionality)
   // Check that received pointcloud is a valid ndt map in terms of meta information.
   EXPECT_EQ(validate_pcl_map(received_cloud_map), dynamic_validation_map.size());
   // Insert to static map for easier iteration and access.
-  static_received_map.insert(received_cloud_map);
+  static_received_map.set(received_cloud_map);
   EXPECT_EQ(static_received_map.size(), dynamic_validation_map.size());
 
   // m_voxel_centers contain the centroid locations in the dynamic map.

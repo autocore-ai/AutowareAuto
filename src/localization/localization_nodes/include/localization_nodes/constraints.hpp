@@ -1,4 +1,4 @@
-// Copyright 2021 the Autoware Foundation
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -116,6 +116,11 @@ struct LocalizerConstraint
     "The localizer should provide a valid  `register_measurement(...)` method.");
   static constexpr Requires value{};
 };
+// External definition of static members:
+template<typename MapT, typename MapMsgT>
+constexpr Requires MapConstraint<MapT, MapMsgT>::value;
+template<typename LocalizerT, typename InputT, typename MapT, typename SummaryT>
+constexpr Requires LocalizerConstraint<LocalizerT, InputT, MapT, SummaryT>::value;
 }  // namespace traits
 }  // namespace localization_nodes
 }  // namespace localization

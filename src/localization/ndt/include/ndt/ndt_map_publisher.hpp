@@ -75,38 +75,18 @@ void NDT_PUBLIC read_from_pcd(
   const std::string & file_name,
   sensor_msgs::msg::PointCloud2 * msg);
 
-class NDT_PUBLIC NDTMapPublisher
-{
-public:
-  using MapConfig = perception::filters::voxel_grid::Config;
-  NDTMapPublisher(
-    const MapConfig & map_config,
-    sensor_msgs::msg::PointCloud2 & map_pc,
-    sensor_msgs::msg::PointCloud2 & source_pc);
-
-  /// Read the pcd file with filename into a PointCloud2 message, transform it into an NDT
-  /// representation and then serialize the ndt representation back into a PointCloud2 message
-  /// that can be published.
-  /// \param yaml_file_name File name of the yaml file.
-  /// \param pcl_file_name File name of the pcd file.
-  /// \return The geocentric position.
-  geocentric_pose_t load_map(const std::string & yaml_file_name, const std::string & pcl_file_name);
-
-  /// Iterate over the map representation and convert it into a PointCloud2 message where each voxel
-  /// in the map corresponds to a single point in the PointCloud2 field. See the documentation for
-  /// the specs and the format of the point cloud message.
-  void map_to_pc(const ndt::DynamicNDTMap & ndt_map);
-
-  /// Convenience function to clear the contents of a pointcloud message.
-  /// Can be removed when #102 is merged in.
-  void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg);
-
-private:
-  const MapConfig & m_map_config;
-  sensor_msgs::msg::PointCloud2 & m_map_pc;
-  sensor_msgs::msg::PointCloud2 & m_source_pc;
-};
-
+/// \brief  Read the pcd file with filename into a PointCloud2 message, transform it into an NDT
+/// representation and then serialize the ndt representation back into a PointCloud2 message
+/// that can be published.
+/// \param yaml_file_name File name of the yaml file.
+/// \param pcl_file_name File name of the pcd file.
+/// \param pc_out Reference to the pointcloud message that will be populated from the data on
+/// the disk.
+/// \return The geocentric position.
+geocentric_pose_t NDT_PUBLIC load_map(
+  const std::string & yaml_file_name,
+  const std::string & pcl_file_name,
+  sensor_msgs::msg::PointCloud2 & pc_out);
 }  // namespace ndt
 }  // namespace localization
 }  // namespace autoware
