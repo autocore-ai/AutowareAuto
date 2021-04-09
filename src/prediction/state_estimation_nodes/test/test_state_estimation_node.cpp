@@ -40,6 +40,18 @@ tf2::TimePoint to_tf_time_point(nav_msgs::msg::Odometry::_header_type::_stamp_ty
   using std::chrono::nanoseconds;
   return tf2::TimePoint{seconds{stamp.sec} + nanoseconds{stamp.nanosec}};
 }
+
+geometry_msgs::msg::TransformStamped get_dummy_transform(const nav_msgs::msg::Odometry & donor_msg)
+{
+  geometry_msgs::msg::TransformStamped dummy_transform{};
+  dummy_transform.child_frame_id = donor_msg.child_frame_id;
+  dummy_transform.header.frame_id = donor_msg.header.frame_id;
+  dummy_transform.header.stamp = donor_msg.header.stamp;
+  dummy_transform.transform.translation.set__x(0.0).set__y(0.0).set__z(0.0);
+  dummy_transform.transform.rotation.set__x(0.0).set__y(0.0).set__z(0.0).set__w(1.0);
+  return dummy_transform;
+}
+
 }  // namespace
 
 // TODO(niosus): Re-enable tests when #488 is solved.
@@ -122,12 +134,15 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   const bool publish_tf = GetParam();
   nav_msgs::msg::Odometry msg{};
   msg.header.frame_id = "map";
+  msg.child_frame_id = "base_link";
   msg.header.stamp.sec = 5;
   msg.header.stamp.nanosec = 12345U;
   msg.pose.covariance[0] = 1.0;
   msg.pose.covariance[7] = 1.0;
   msg.twist.covariance[0] = 1.0;
   msg.twist.covariance[7] = 1.0;
+
+  auto dummy_transform = get_dummy_transform(msg);
 
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override(
@@ -161,6 +176,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
   auto time_passed{std::chrono::milliseconds{0LL}};
   while (count_received_msgs < 1) {
     msg.header.stamp = to_ros_time(std::chrono::system_clock::now());
+    dummy_transform.header.stamp = msg.header.stamp;
+    node->buffer().setTransform(dummy_transform, "test");
     get_fake_odometry_publisher().publish(msg);
     rclcpp::spin_some(node);
     rclcpp::spin_some(get_fake_odometry_node());
@@ -193,11 +210,14 @@ TEST_P(DISABLED_StateEstimationNodeTest, publish_and_receive_odom_message) {
 TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
   const bool publish_tf = GetParam();
   nav_msgs::msg::Odometry msg{};
+  msg.child_frame_id = "base_link";
   msg.header.frame_id = "map";
   msg.pose.covariance[0] = 1.0;
   msg.pose.covariance[7] = 1.0;
   msg.twist.covariance[0] = 1.0;
   msg.twist.covariance[7] = 1.0;
+
+  auto dummy_transform = get_dummy_transform(msg);
 
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override(
@@ -237,6 +257,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
     time_passed += dt)
   {
     msg.header.stamp = to_ros_time(starting_time_point + time_passed);
+    dummy_transform.header.stamp = msg.header.stamp;
+    node->buffer().setTransform(dummy_transform, "test");
     std::chrono::duration<double> seconds_passed{time_passed};
     msg.pose.pose.position.x = seconds_passed.count() * speed;
     msg.pose.pose.position.y = seconds_passed.count() * speed;
@@ -288,6 +310,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, track_object_straight_line) {
 /// @test Test for the case when we publish on a timer.
 TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   nav_msgs::msg::Odometry msg{};
+  msg.child_frame_id = "base_link";
   msg.header.frame_id = "map";
   msg.header.stamp.sec = 5;
   msg.header.stamp.nanosec = 12345U;
@@ -295,6 +318,8 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   msg.pose.covariance[7] = 1.0;
   msg.twist.covariance[0] = 1.0;
   msg.twist.covariance[7] = 1.0;
+
+  auto dummy_transform = get_dummy_transform(msg);
 
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override(
@@ -345,6 +370,8 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
       // We want to stop publishing after receiving the first message as publishing is only needed
       // here to enable timer-based publishing of the node under test.
       msg.header.stamp = to_ros_time(std::chrono::system_clock::now());
+      dummy_transform.header.stamp = msg.header.stamp;
+      node->buffer().setTransform(dummy_transform, "test");
       get_fake_odometry_publisher().publish(msg);
     }
     rclcpp::spin_some(node);

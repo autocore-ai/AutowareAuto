@@ -43,15 +43,18 @@ namespace prediction
 template<>
 MeasurementPoseAndSpeed message_to_measurement(
   const nav_msgs::msg::Odometry & msg,
-  const Eigen::Isometry3f & tf_world_message)
+  const Eigen::Isometry3f & tf__world__frame_id,
+  const Eigen::Isometry3f & tf__world__child_frame_id)
 {
   using FloatT = common::types::float32_t;
-  const auto converted_tf_world_message = downscale_isometry<2>(tf_world_message);
-  const Eigen::Vector2f pos_state = converted_tf_world_message * Eigen::Vector2f{
+  const auto converted_tf__world__frame_id = downscale_isometry<2>(tf__world__frame_id);
+  const auto converted_tf__world__child_frame_id = downscale_isometry<2>(tf__world__child_frame_id);
+  const Eigen::Vector2f pos_state = converted_tf__world__frame_id * Eigen::Vector2f{
     static_cast<FloatT>(msg.pose.pose.position.x),
     static_cast<FloatT>(msg.pose.pose.position.y),
   };
-  const Eigen::Vector2f speed_state = converted_tf_world_message.rotation() * Eigen::Vector2f{
+  const Eigen::Vector2f speed_state =
+    converted_tf__world__child_frame_id.rotation() * Eigen::Vector2f{
     static_cast<FloatT>(msg.twist.twist.linear.x),
     static_cast<FloatT>(msg.twist.twist.linear.y),
   };
@@ -69,13 +72,13 @@ MeasurementPoseAndSpeed message_to_measurement(
 template<>
 MeasurementSpeed message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf_world_message)
+  const Eigen::Isometry3f & tf__world__frame_id)
 {
   using FloatT = common::types::float32_t;
-  const auto converted_tf_world_message = downscale_isometry<2>(tf_world_message);
+  const auto converted_tf__world__frame_id = downscale_isometry<2>(tf__world__frame_id);
   return MeasurementSpeed{
     to_time_point(msg.header.stamp),
-    converted_tf_world_message.rotation() * Eigen::Vector2f{
+    converted_tf__world__frame_id.rotation() * Eigen::Vector2f{
       msg.twist.twist.linear.x, msg.twist.twist.linear.y},
     {static_cast<FloatT>(msg.twist.covariance[kIndexX]),
       static_cast<FloatT>(msg.twist.covariance[kIndexY])}
@@ -85,12 +88,12 @@ MeasurementSpeed message_to_measurement(
 template<>
 MeasurementPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf_world_message)
+  const Eigen::Isometry3f & tf__world__frame_id)
 {
-  const auto converted_tf_world_message = downscale_isometry<2>(tf_world_message);
+  const auto converted_tf__world__frame_id = downscale_isometry<2>(tf__world__frame_id);
   return MeasurementPose{
     to_time_point(msg.header.stamp),
-    converted_tf_world_message * Eigen::Vector2f{
+    converted_tf__world__frame_id * Eigen::Vector2f{
       msg.pose.pose.position.x, msg.pose.pose.position.y},
     {static_cast<common::types::float32_t>(msg.pose.covariance[kIndexX]),
       static_cast<common::types::float32_t>(msg.pose.covariance[kIndexY])}

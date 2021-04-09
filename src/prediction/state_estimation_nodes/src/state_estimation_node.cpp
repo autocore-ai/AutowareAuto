@@ -143,14 +143,6 @@ Eigen::Matrix<float32_t, kStateDim, kStateDim> create_state_variances(
   return diagonal.asDiagonal();
 }
 
-autoware::common::types::float64_t get_speed(const geometry_msgs::msg::Twist & twist)
-{
-  const auto x = twist.linear.x;
-  const auto y = twist.linear.y;
-  return std::sqrt(x * x + y * y);
-}
-
-
 }  // namespace
 
 namespace autoware
@@ -224,27 +216,28 @@ StateEstimationNode::StateEstimationNode(
 
 void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 {
-  const auto transform = get_transform(msg->header);
+  const auto tf__m_frame_id__msg_frame_id =
+    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
+  const auto tf__m_frame_id__msg_child_frame_id =
+    get_transform(m_frame_id, msg->child_frame_id, msg->header.stamp);
 
+  const auto measurement = message_to_measurement<MeasurementPoseAndSpeed>(
+    *msg,
+    tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>(),
+    tf2::transformToEigen(tf__m_frame_id__msg_child_frame_id).cast<float32_t>());
   if (m_ekf->is_initialized()) {
-    if (!m_ekf->add_observation_to_history(
-        message_to_measurement<MeasurementPoseAndSpeed>(
-          *msg,
-          tf2::transformToEigen(transform).cast<float32_t>())))
-    {
+    if (!m_ekf->add_observation_to_history(measurement)) {
       throw std::runtime_error("Cannot add an odometry observation to history.");
     }
   } else {
-    m_ekf->add_reset_event_to_history(
-      message_to_measurement<MeasurementPoseAndSpeed>(
-        *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+    m_ekf->add_reset_event_to_history(measurement);
   }
   geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
   tf2::doTransform(
     geometry_msgs::msg::QuaternionStamped{}.
     set__quaternion(msg->pose.pose.orientation).
     set__header(msg->header),
-    orientation_in_expected_frame, transform);
+    orientation_in_expected_frame, tf__m_frame_id__msg_frame_id);
   update_latest_orientation_if_needed(orientation_in_expected_frame);
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
@@ -253,25 +246,23 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 
 void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 {
-  const auto transform = get_transform(msg->header);
+  const auto tf__m_frame_id__msg_frame_id =
+    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
+  const auto measurement = message_to_measurement<MeasurementPose>(
+    *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>());
   if (m_ekf->is_initialized()) {
-    if (!m_ekf->add_observation_to_history(
-        message_to_measurement<MeasurementPose>(
-          *msg, tf2::transformToEigen(transform).cast<float32_t>())))
-    {
+    if (!m_ekf->add_observation_to_history(measurement)) {
       throw std::runtime_error("Cannot add an odometry observation to history.");
     }
   } else {
-    m_ekf->add_reset_event_to_history(
-      message_to_measurement<MeasurementPose>(
-        *msg, tf2::transformToEigen(transform).cast<float32_t>()));
+    m_ekf->add_reset_event_to_history(measurement);
   }
   geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
   tf2::doTransform(
     geometry_msgs::msg::QuaternionStamped{}.
     set__quaternion(msg->pose.pose.orientation).
     set__header(msg->header),
-    orientation_in_expected_frame, transform);
+    orientation_in_expected_frame, tf__m_frame_id__msg_frame_id);
   update_latest_orientation_if_needed(orientation_in_expected_frame);
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
@@ -286,10 +277,11 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
       "Received twist update, but ekf has not been initialized with any state yet. Skipping.");
     return;
   }
-  const auto transform = get_transform(msg->header);
+  const auto tf__m_frame_id__msg_frame_id =
+    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
   if (!m_ekf->add_observation_to_history(
       message_to_measurement<MeasurementSpeed>(
-        *msg, tf2::transformToEigen(transform).cast<float32_t>())))
+        *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>())))
   {
     throw std::runtime_error("Cannot add a twist observation to history.");
   }
@@ -299,11 +291,14 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
 }
 
 geometry_msgs::msg::TransformStamped StateEstimationNode::get_transform(
-  const std_msgs::msg::Header & header)
+  const std_msgs::msg::Header::_frame_id_type & target_frame_id,
+  const std_msgs::msg::Header::_frame_id_type & source_frame_id,
+  const std_msgs::msg::Header::_stamp_type & timestamp)
 {
   // Get the transform between the msg and the output frame. We treat the
   // possible exceptions as unrecoverable and let them bubble up.
-  return m_tf_buffer.lookupTransform(m_frame_id, header.frame_id, to_time_point(header.stamp));
+  return m_tf_buffer.lookupTransform(
+    target_frame_id, source_frame_id, to_time_point(timestamp));
 }
 
 void StateEstimationNode::predict_and_publish_current_state()
@@ -319,9 +314,10 @@ void StateEstimationNode::publish_current_state()
 {
   if (m_ekf->is_initialized() && m_publisher) {
     auto state = m_ekf->get_state();
-    if (get_speed(state.twist.twist) < m_min_speed_to_use_speed_orientation) {
+    if (state.twist.twist.linear.x < m_min_speed_to_use_speed_orientation) {
       state.pose.pose.orientation = m_latest_orientation.quaternion;
     }
+    state.child_frame_id = m_child_frame_id;
     m_publisher->publish(state);
     if (m_tf_publisher) {
       TfMsgT tf_msg{};

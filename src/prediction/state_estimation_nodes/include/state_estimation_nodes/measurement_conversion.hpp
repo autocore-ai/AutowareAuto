@@ -55,22 +55,40 @@ using MeasurementSpeed = Measurement<common::types::float32_t,
 /// @return     The measurement created from a message.
 ///
 template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_measurement(
-  const MessageT &, const Eigen::Isometry3f &)
+MeasurementT message_to_measurement(const MessageT &, const Eigen::Isometry3f &)
 {
   static_assert(
-    sizeof(MessageT) == -1,
-    "You have to have a specialization for message_to_measurement() function!");
-  // We only have this throw here to make linter happy as this is a non-void function.
-  throw std::runtime_error("You have to have a specialization for message_to_measurement()!");
+    sizeof(MessageT) == 0,
+    "Only specializations for message_to_measurement() function are allowed!");
 }
 
 ///
-/// @brief      Downscale the isometry to a lower dimention if needed.
+/// @brief      Interface for converting a message into a measurement that accepts an additional
+///             transformation.
+///
+/// @details    This function is needed to transform messages like Odometry, where different parts
+///             of the measurement must be transformed with different transformation matrices.
+///
+/// @tparam     MeasurementT  Type of measurement.
+/// @tparam     MessageT      Type of ROS 2 message.
+///
+/// @return     The measurement created from a message.
+///
+template<typename MeasurementT, typename MessageT>
+MeasurementT message_to_measurement(
+  const MessageT &, const Eigen::Isometry3f &, const Eigen::Isometry3f &)
+{
+  static_assert(
+    sizeof(MessageT) == 0,
+    "Only specializations for message_to_measurement() function are allowed!");
+}
+
+///
+/// @brief      Downscale the isometry to a lower dimension if needed.
 ///
 /// @param[in]  isometry              The isometry transform
 ///
-/// @tparam     kStateDimentionality  Dimentionality of the space.
+/// @tparam     kStateDimentionality  Dimensionality of the space.
 /// @tparam     FloatT                Type of scalar.
 ///
 /// @return     Downscaled isometry.
@@ -93,41 +111,43 @@ static constexpr Eigen::Transform<
 ///
 /// @brief      Specialization of message_to_measurement for odometry message.
 ///
-/// @param[in]  msg               The odometry message.
-/// @param[in]  tf_world_message  A transform from message frame to world frame.
+/// @param[in]  msg                        The odometry message.
+/// @param[in]  tf__world__frame_id        A transform from message frame_id to world frame.
+/// @param[in]  tf__world__child_frame_id  A transform from message frame_id to child_frame_id.
 ///
 /// @return     The measurement containing pose and speed.
 ///
 template<>
 STATE_ESTIMATION_NODES_PUBLIC MeasurementPoseAndSpeed message_to_measurement(
   const nav_msgs::msg::Odometry & msg,
-  const Eigen::Isometry3f & tf_world_message);
+  const Eigen::Isometry3f & tf__world__frame_id,
+  const Eigen::Isometry3f & tf__world__child_frame_id);
 
 ///
 /// @brief      Specialization of message_to_measurement for twist message.
 ///
-/// @param[in]  msg               The twist message.
-/// @param[in]  tf_world_message  A transform from message frame to world frame.
+/// @param[in]  msg                  The twist message.
+/// @param[in]  tf__world__frame_id  A transform from message frame_id to world frame.
 ///
 /// @return     The measurement containing speed.
 ///
 template<>
 STATE_ESTIMATION_NODES_PUBLIC MeasurementSpeed message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf_world_message);
+  const Eigen::Isometry3f & tf__world__frame_id);
 
 ///
 /// @brief      Specialization of message_to_measurement for pose message.
 ///
-/// @param[in]  msg               The pose message.
-/// @param[in]  tf_world_message  A transform from message frame to world frame.
+/// @param[in]  msg                  The pose message.
+/// @param[in]  tf__world__frame_id  A transform from message frame_id to world frame.
 ///
 /// @return     The measurement containing pose.
 ///
 template<>
 STATE_ESTIMATION_NODES_PUBLIC MeasurementPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf_world_message);
+  const Eigen::Isometry3f & tf__world__frame_id);
 
 }  // namespace prediction
 }  // namespace autoware

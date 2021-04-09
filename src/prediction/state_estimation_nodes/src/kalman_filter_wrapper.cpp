@@ -54,6 +54,15 @@ rclcpp::Time to_ros_time(const std::chrono::system_clock::time_point & time_poin
   return rclcpp::Time{duration_cast<nanoseconds>(time_point.time_since_epoch()).count()};
 }
 
+/// Get the speed magnitude.
+autoware::common::types::float64_t get_speed(
+  const autoware::common::types::float32_t x_speed,
+  const autoware::common::types::float32_t y_speed) noexcept
+{
+  return static_cast<autoware::common::types::float64_t>(
+    std::sqrt(x_speed * x_speed + y_speed * y_speed));
+}
+
 }  // namespace
 
 namespace autoware
@@ -140,12 +149,19 @@ nav_msgs::msg::Odometry ConstantAccelerationFilter::get_state() const
     static_cast<float64_t>(state[ConstantAcceleration::States::POSE_X]);
   msg.pose.pose.position.y =
     static_cast<float64_t>(state[ConstantAcceleration::States::POSE_Y]);
-  msg.twist.twist.linear.x =
-    static_cast<float64_t>(state[ConstantAcceleration::States::VELOCITY_X]);
-  msg.twist.twist.linear.y =
-    static_cast<float64_t>(state[ConstantAcceleration::States::VELOCITY_Y]);
+  // Odometry message has velocity stored in the local frame of the message. In this case, the car
+  // always moves along its orientation vector with the speed along it's "forward" direction being
+  // the magnitude of the velocity vector estimated by the filter.
+  msg.twist.twist.linear.x = get_speed(
+    state[ConstantAcceleration::States::VELOCITY_X],
+    state[ConstantAcceleration::States::VELOCITY_Y]);
+  msg.twist.twist.linear.y = 0.0;
+  msg.twist.twist.linear.z = 0.0;
+  msg.twist.twist.angular.set__x(0.0).set__y(0.0).set__z(0.0);
 
-  const auto rotation_around_z = std::atan2(msg.twist.twist.linear.y, msg.twist.twist.linear.x);
+  const auto rotation_around_z = std::atan2(
+    static_cast<float64_t>(state[ConstantAcceleration::States::VELOCITY_Y]),
+    static_cast<float64_t>(state[ConstantAcceleration::States::VELOCITY_X]));
   tf2::Quaternion rotation;
   rotation.setRPY(0.0, 0.0, rotation_around_z);
   msg.pose.pose.orientation = tf2::toMsg(rotation);
@@ -165,7 +181,7 @@ nav_msgs::msg::Odometry ConstantAccelerationFilter::get_state() const
   return msg;
 }
 
-/// Excplicit class instantiation.
+/// Explicit class instantiation.
 template class KalmanFilterWrapper<ConstantAcceleration, 6, 2>;
 
 template bool8_t KalmanFilterWrapper<ConstantAcceleration, 6, 2>::add_observation_to_history<>(

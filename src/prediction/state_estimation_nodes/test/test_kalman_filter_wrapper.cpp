@@ -55,7 +55,7 @@ void assert_matrices_eq(const Matrix<T, kRows, kCols> & m1, const Matrix<T, kRow
   }
 }
 
-constexpr float64_t kEpsilon = std::numeric_limits<float64_t>::epsilon();
+constexpr float64_t kEpsilon = 1.0e-5;
 const auto kCovarianceIdentity = Eigen::Matrix<float32_t, 6, 6>::Identity();
 const auto kNoiseIdentity{(Eigen::Matrix<float32_t, 6, 2>{} <<
     1.0F, 0.0F,
@@ -100,8 +100,9 @@ TEST(KalmanFilterWrapperTest, initialize) {
   const auto odom_msg = filter.get_state();
   EXPECT_NEAR(odom_msg.pose.pose.position.x, 42.0, kEpsilon);
   EXPECT_NEAR(odom_msg.pose.pose.position.y, 42.0, kEpsilon);
-  EXPECT_NEAR(odom_msg.twist.twist.linear.x, 42.0, kEpsilon);
-  EXPECT_NEAR(odom_msg.twist.twist.linear.y, 42.0, kEpsilon);
+  EXPECT_NEAR(odom_msg.twist.twist.linear.x, std::sqrt(2.0 * 42.0 * 42.0), kEpsilon);
+  EXPECT_NEAR(odom_msg.twist.twist.linear.y, 0.0, kEpsilon);
+  EXPECT_NEAR(odom_msg.twist.twist.linear.z, 0.0, kEpsilon);
   EXPECT_NEAR(odom_msg.pose.covariance[0], 1.0, kEpsilon);
   EXPECT_NEAR(odom_msg.pose.covariance[7], 1.0, kEpsilon);
   EXPECT_NEAR(odom_msg.twist.covariance[0], 1.0, kEpsilon);
@@ -289,12 +290,9 @@ TEST(KalmanFilterWrapperTest, track_thrown_ball) {
   const auto odom_msg = filter.get_state();
   EXPECT_NEAR(odom_msg.pose.pose.position.x, state(0U), kRelaxedEpsilon);
   EXPECT_NEAR(odom_msg.pose.pose.position.y, state(1U), kRelaxedEpsilon);
-  EXPECT_NEAR(
-    odom_msg.twist.twist.linear.x,
-    state[ConstantAcceleration::States::VELOCITY_X],
-    kRelaxedEpsilon);
-  EXPECT_NEAR(
-    odom_msg.twist.twist.linear.y,
-    state[ConstantAcceleration::States::VELOCITY_Y],
-    kRelaxedEpsilon);
+  const auto speed_x = state[ConstantAcceleration::States::VELOCITY_X];
+  const auto speed_y = state[ConstantAcceleration::States::VELOCITY_Y];
+  const auto speed_magnitude = std::sqrt(speed_x * speed_x + speed_y * speed_y);
+  EXPECT_NEAR(odom_msg.twist.twist.linear.x, speed_magnitude, kRelaxedEpsilon);
+  EXPECT_NEAR(odom_msg.twist.twist.linear.y, 0.0, kRelaxedEpsilon);
 }

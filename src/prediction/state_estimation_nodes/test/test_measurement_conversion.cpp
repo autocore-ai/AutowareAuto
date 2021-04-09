@@ -41,7 +41,7 @@ TEST(MeasurementConversionTest, odom) {
   msg.twist.covariance[0] = 3.0;
   msg.twist.covariance[7] = 4.0;
   const auto measurement = message_to_measurement<MeasurementPoseAndSpeed>(
-    msg, Eigen::Isometry3f::Identity());
+    msg, Eigen::Isometry3f::Identity(), Eigen::Isometry3f::Identity());
   EXPECT_FLOAT_EQ(measurement.get_values().x(), 42.0F);
   EXPECT_FLOAT_EQ(measurement.get_values().y(), 23.0F);
   EXPECT_FLOAT_EQ(measurement.get_variances().x(), 1.0F);

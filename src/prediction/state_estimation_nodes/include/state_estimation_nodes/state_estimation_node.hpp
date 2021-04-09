@@ -60,12 +60,15 @@ class STATE_ESTIMATION_NODES_PUBLIC StateEstimationNode : public rclcpp::Node
 {
 public:
   ///
-  /// ROS 2 parameter contructor for node composition.
+  /// ROS 2 parameter constructor for node composition.
   ///
   /// @param[in]  node_options    Node options for this node.
   ///
   explicit StateEstimationNode(
     const rclcpp::NodeOptions & node_options);
+
+  /// @brief      Get the tf2::buffer used by the node.
+  tf2::BufferCore & buffer() {return m_tf_buffer;}
 
 private:
   using OdomMsgT = nav_msgs::msg::Odometry;
@@ -106,7 +109,9 @@ private:
 
   /// Get the transformation from a frame in a provided header to the current frame.
   geometry_msgs::msg::TransformStamped STATE_ESTIMATION_NODES_LOCAL get_transform(
-    const std_msgs::msg::Header & header);
+    const std_msgs::msg::Header::_frame_id_type & target_frame_id,
+    const std_msgs::msg::Header::_frame_id_type & source_frame_id,
+    const std_msgs::msg::Header::_stamp_type & timestamp);
 
   template<typename MessageT>
   using CallbackFnT = void (StateEstimationNode::*)(const typename MessageT::SharedPtr);
