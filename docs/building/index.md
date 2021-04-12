@@ -44,7 +44,7 @@ populated to set the `COLCON_DEFAULTS_FILE` environment variable.
 To use the colcon defaults configuration file with an existing ADE home, type the following from within ADE
 
 ```{bash}
-ade$ export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml >> ~/.bashrc
+ade$ echo "export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml" >> ~/.bashrc
 ```
 
 ## Outside ADE
@@ -52,7 +52,7 @@ ade$ export COLCON_DEFAULTS_FILE=/usr/local/etc/colcon-defaults.yaml >> ~/.bashr
 Take the defaults file that comes with the Autoware.Auto source checkout and add it to your shell startup; e.g.
 
 ```{bash}
-$ export COLCON_DEFAULTS_FILE=/path/to/AutowareAuto/tools/ade_image/colcon-defaults.yaml >> .bashrc
+$ echo "export COLCON_DEFAULTS_FILE=/path/to/AutowareAuto/tools/ade_image/colcon-defaults.yaml" >> .bashrc
 ```
 
 or manually export the variable in the terminal in which compilation commands are issued; e.g.
