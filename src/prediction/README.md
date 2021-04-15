@@ -8,6 +8,7 @@ positions of detected objects over some period of time.
 
 # Subpages
 
+- @subpage filter-design
 - @subpage kalman-filter-design
 - @subpage state-and-variables-design
 - @subpage state-estimation-nodes-design
