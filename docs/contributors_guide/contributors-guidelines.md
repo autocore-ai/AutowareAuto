@@ -164,9 +164,7 @@ tests.
 The coverage report for the latest successful CI run on the `master` branch is available
 [here](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/coverage/index.html).
 
-Check @ref how-to-write-tests-and-measure-coverage-coverage for details to create that report manually.
-
-The articles on @ref how-to-write-tests-and-measure-coverage and @ref integration-testing have further details on writing tests.
+Check @ref unit-testing-coverage for details to create that report manually or @ref testing-overview for more information.
 
 ## C++ Resources
 

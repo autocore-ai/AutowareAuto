@@ -71,7 +71,7 @@ Mark all the items that are done.
 
 1. [ ] Every node is [registered as a component](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-components)
 1. [ ] The [naming conventions](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware-common-naming-guidelines.html) are followed
-1. [ ] At least the basic launch integration test is included
+1. [ ] At least the basic [launch component test](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/integration-testing.html#integration-testing-component-test) is included
 
 </details>
 
