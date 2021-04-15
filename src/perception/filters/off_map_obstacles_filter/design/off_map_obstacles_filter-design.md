@@ -31,7 +31,12 @@ Error detection isn't really done.
 
 
 # References / External links
-See the [Lanelet2 geometry primer](https://github.com/fzi-forschungszentrum-informatik/Lanelet2/blob/master/lanelet2_core/doc/GeometryPrimer.md).
+
+See the @htmlonly
+
+<a href="https://github.com/fzi-forschungszentrum-informatik/Lanelet2/blob/master/lanelet2_core/doc/GeometryPrimer.md">Lanelet2 geometry primer</a>
+
+@endhtmlonly
 
 
 # Future extensions / Unimplemented parts

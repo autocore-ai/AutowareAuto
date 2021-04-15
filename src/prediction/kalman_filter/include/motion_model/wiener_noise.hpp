@@ -38,7 +38,7 @@ namespace prediction
 ///
 ///             For more details see notebook here:
 ///             https://nbviewer.jupyter.org/github/rlabbe/Kalman-and-Bayesian-Filters-in-Python/
-///             blob/master/07-Kalman-Filter-Math.ipynb#Piecewise-White-Noise-Model (combine into
+///             blob/master/07-Kalman-Filter-Math.ipynb%23Piecewise-White-Noise-Model (combine into
 ///             one line)
 ///
 /// @tparam     StateT  A given state type.
