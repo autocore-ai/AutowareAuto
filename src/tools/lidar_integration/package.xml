@@ -12,7 +12,6 @@
     <buildtool_depend>ament_cmake_pytest</buildtool_depend>
 
     <depend>autoware_auto_common</depend>
-    <depend>autoware_auto_integration_tests</depend>
     <depend>autoware_auto_msgs</depend>
     <depend>launch_ros</depend>
     <depend>launch_testing</depend>

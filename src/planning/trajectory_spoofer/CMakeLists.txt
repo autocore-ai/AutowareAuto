@@ -72,12 +72,6 @@ if(BUILD_TESTING)
   target_include_directories(${TEST_TRAJECTORY_SPOOFER_EXE} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-  #find_package(autoware_integration_tests)
-  #autoware_integration_tests(
-  #  EXPECTED_OUTPUT_DIR "test/"
-  #  COMMANDS
-  #  "${TRAJECTORY_SPOOFER_EXE}"
-  #)
 endif()
 
 # Ament Exporting

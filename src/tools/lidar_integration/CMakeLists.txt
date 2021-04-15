@@ -81,10 +81,4 @@ ament_python_install_package(lidar_integration
     PACKAGE_DIR lidar_integration
 )
 
-## install stuff
-list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS
-  "lidar_integration-extras.cmake"
-)
-ament_auto_package(INSTALL_TO_SHARE
-  cmake
-)
+ament_auto_package()
