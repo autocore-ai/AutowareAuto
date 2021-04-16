@@ -19,3 +19,7 @@ repositories:
     type: git
     url: https://github.com/RobotWebTools/rosbridge_suite.git
     version: ros2
+  src/external/point_cloud_msg_wrapper:
+    type: git
+    url: https://gitlab.com/ApexAI/point_cloud_msg_wrapper
+    version: 1.0.2
