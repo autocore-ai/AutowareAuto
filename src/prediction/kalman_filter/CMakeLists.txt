@@ -16,6 +16,7 @@ ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/kalman_filter.cpp
   src/linear_motion_model.cpp
+  src/differential_drive_motion_model.cpp
   src/wiener_noise.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
@@ -32,9 +33,10 @@ if(BUILD_TESTING)
                   test/test_variables.cpp
                   test/test_kalman_filter.cpp
                   test/test_generic_state.cpp
-                  test/test_wiener_noise.cpp
                   test/test_linear_motion_model.cpp
-                  test/test_linear_measurement.cpp)
+                  test/test_differential_motion_model.cpp
+                  test/test_linear_measurement.cpp
+                  test/test_wiener_noise.cpp)
   autoware_set_compile_options(${KALMAN_FILTER_GTEST})
   target_include_directories(${KALMAN_FILTER_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${KALMAN_FILTER_GTEST} ${PROJECT_NAME})

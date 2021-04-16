@@ -69,3 +69,6 @@ target_fs/
 *.swo
 *.gch
 *.patch
+
+## python notebook checkpoints
+*.ipynb_checkpoints/
