@@ -1,20 +1,8 @@
 repositories:
-  src/external/acado_vendor:
-    type: git
-    url: https://gitlab.com/autowarefoundation/autoware.auto/acado_vendor.git
-    version: 1.0.0
   src/external/autoware_auto_msgs:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs.git
     version: bd2717ff8ff2d615eff166559ff769dfe6353267
-  src/external/new_eagle_raptor:
-    type: git
-    url: https://github.com/NewEagleRaptor/raptor-dbw-ros2.git
-    version: foxy
-  src/external/socketcan:
-    type: git
-    url: https://github.com/autowarefoundation/ros2_socketcan.git
-    version: main
   src/external/rosbridge_suite:
     type: git
     url: https://github.com/RobotWebTools/rosbridge_suite.git
