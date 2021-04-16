@@ -146,11 +146,12 @@ TEST_P(CovarianceStabilityTest, basic) {
     e_vals.begin(), e_vals.end(), std::back_inserter(filtered_evals),
     [min_e_val](Real & e) {return e < min_e_val ? min_e_val : e;});
 
-  const auto valid = GetParam().valid;
+  const auto expected_valid = GetParam().valid;
 
-  EXPECT_EQ(try_stabilize_covariance(covariance, scale), valid);
+  EXPECT_EQ(try_stabilize_covariance(covariance, scale), expected_valid);
 
-  if (valid) {
+  if (expected_valid) {
+    EXPECT_TRUE(covariance.diagonal().minCoeff() >= scale * covariance.diagonal().maxCoeff());
     Eigen::SelfAdjointEigenSolver<Cov3x3Param::CovMatrix> solver;
     solver.compute(covariance);
     Eigen::Vector3d stable_e_vals = solver.eigenvalues();
@@ -164,14 +165,15 @@ TEST_P(CovarianceStabilityTest, basic) {
   }
 }
 
+// 3 eigen values and the expected validity of the covariance matrix.
 INSTANTIATE_TEST_CASE_P(
   basic, CovarianceStabilityTest,
   ::testing::Values(
     Cov3x3Param(1e-2, 65.0, 24, true),
-    Cov3x3Param(-12., 24., 65., false),
+    Cov3x3Param(-12., 24., 65., true),
     Cov3x3Param(-12., -24., -65., false),
     Cov3x3Param(0.0, 0.0, 0.0, false),
-    Cov3x3Param(1.0, 1.0, 0.0, false),
+    Cov3x3Param(1.0, 1.0, 0.0, true),
     Cov3x3Param(1e-2, 1e-3, 65, true),
     Cov3x3Param(1e-2, 1e-3, 1e-15, true)
     // cppcheck-suppress syntaxError

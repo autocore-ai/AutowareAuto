@@ -56,6 +56,7 @@
 #ifndef NDT__NDT_OPTIMIZATION_PROBLEM_HPP_
 #define NDT__NDT_OPTIMIZATION_PROBLEM_HPP_
 
+#include <helper_functions/float_comparisons.hpp>
 #include <ndt/ndt_map.hpp>
 #include <ndt/ndt_scan.hpp>
 #include <ndt/ndt_config.hpp>
@@ -66,6 +67,7 @@
 #include <experimental/optional>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <limits>
 #include <tuple>
 #include "common/types.hpp"
 
@@ -82,11 +84,10 @@ namespace ndt
 template<typename ScalarT>
 bool8_t is_valid_probability(ScalarT p)
 {
-  bool8_t ret = true;
-  if (std::isnan(p) || p > ScalarT{1.0} || p < ScalarT{0.0}) {
-    ret = false;
-  }
-  return ret;
+  using common::helper_functions::comparisons::abs_lte;
+  using common::helper_functions::comparisons::abs_gte;
+  constexpr auto eps = std::numeric_limits<ScalarT>::epsilon();
+  return std::isfinite(p) && abs_lte(p, 1.0, eps) && abs_gte(p, 0.0, eps);
 }
 
 /// P2D ndt objective. This class implements the P2D ndt score function, its analytical
@@ -181,43 +182,43 @@ public:
       for (const auto & cell : cells) {
         const Point pt_trans_norm = pt_trans - cell.centroid();
         // Cell iteration used for compatibility with maps with multi-cell lookup
-        if (cell.usable()) {
-          const auto & inv_cov = cell.inverse_covariance();
-          // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
-          Real e_x_cov_x = std::exp(
-            -m_gauss_d2 * pt_trans_norm.dot(
-              inv_cov * pt_trans_norm) / 2.0);
+        if (!cell.usable()) {
+          continue;
+        }
+        const auto & inv_cov = cell.inverse_covariance();
+        // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
+        Real e_minus_half_d2_x_cov_x =
+          std::exp(-m_gauss_d2 * pt_trans_norm.dot(inv_cov * pt_trans_norm) / 2.0);
 
-          if (mode.score()) {
-            score += -m_gauss_d1 * e_x_cov_x;
+        if (mode.score()) {
+          score += -m_gauss_d1 * e_minus_half_d2_x_cov_x;
+        }
+
+        if (!mode.jacobian() && !mode.hessian()) {
+          continue;
+        }
+        const auto d2_e_minus_half_d2_x_cov_x = m_gauss_d2 * e_minus_half_d2_x_cov_x;
+
+        // Error checking for invalid values.
+        if (!is_valid_probability(d2_e_minus_half_d2_x_cov_x)) {
+          continue;
+        }
+
+        // Reusable portion of Equation 6.12 and 6.13 [Magnusson 2009]
+        const auto d1_d2_e_minus_half_d2_x_cov_x = m_gauss_d1 * d2_e_minus_half_d2_x_cov_x;
+
+        for (auto i = 0U; i < jacobian.rows(); ++i) {
+          const Point cov_dxd_pi = inv_cov * point_gradient.col(i);
+          if (mode.jacobian()) {
+            jacobian(i) += pt_trans_norm.dot(cov_dxd_pi) * d1_d2_e_minus_half_d2_x_cov_x;
           }
-
-          if (mode.jacobian() || mode.hessian()) {
-            const auto d2_e_x_cov_x = m_gauss_d2 * e_x_cov_x;
-
-            // Error checking for invalid values.
-            // TODO(yunus.caliskan): Can be removed after covariance is checked
-            //  for definiteness #216
-            if (!is_valid_probability(d2_e_x_cov_x)) {
-              continue;
-            }
-
-            // Reusable portion of Equation 6.12 and 6.13 [Magnusson 2009]
-            const auto d1_d2_e_x_cov_x = m_gauss_d1 * d2_e_x_cov_x;
-
-            for (auto i = 0U; i < jacobian.rows(); ++i) {
-              const Point cov_dxd_pi = inv_cov * point_gradient.col(i);
-              if (mode.jacobian()) {
-                jacobian(i) += pt_trans_norm.dot(cov_dxd_pi) * d1_d2_e_x_cov_x;
-              }
-              if (mode.hessian()) {
-                for (auto j = 0U; j < hessian.cols(); ++j) {
-                  hessian(i, j) += d1_d2_e_x_cov_x * (-m_gauss_d2 * pt_trans_norm.dot(cov_dxd_pi) *
-                    pt_trans_norm.dot(inv_cov * point_gradient.col(j)) +
-                    pt_trans_norm.dot(inv_cov * point_hessian.block<3, 1>(3 * i, j)) +
-                    point_gradient.col(j).dot(cov_dxd_pi));
-                }
-              }
+          if (mode.hessian()) {
+            for (auto j = 0U; j < hessian.cols(); ++j) {
+              hessian(i, j) += d1_d2_e_minus_half_d2_x_cov_x *
+                (-m_gauss_d2 * pt_trans_norm.dot(cov_dxd_pi) *
+                pt_trans_norm.dot(inv_cov * point_gradient.col(j)) +
+                pt_trans_norm.dot(inv_cov * point_hessian.block<3, 1>(3 * i, j)) +
+                point_gradient.col(j).dot(cov_dxd_pi));
             }
           }
         }

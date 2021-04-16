@@ -22,6 +22,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <Eigen/Eigenvalues>
+#include <algorithm>
 #include <limits>
 
 namespace autoware
@@ -44,38 +45,28 @@ namespace ndt
 template<typename Derived>
 bool try_stabilize_covariance(
   Eigen::MatrixBase<Derived> & covariance,
-  typename Derived::PlainMatrix::Scalar scaling_factor = 0.01)
+  typename Derived::PlainMatrix::Scalar scaling_factor = 0.1)
 {
   using CovMatrixT = typename Derived::PlainMatrix;
   using ScalarT = typename CovMatrixT::Scalar;
   using IndexT = typename CovMatrixT::Index;
-  constexpr auto TOL = std::numeric_limits<ScalarT>::epsilon();
-  Eigen::SelfAdjointEigenSolver<CovMatrixT> solver;
-  solver.compute(covariance);
+  using SolverT = Eigen::SelfAdjointEigenSolver<CovMatrixT>;
+  using VectorT = typename SolverT::RealVectorType;
 
-  CovMatrixT evecs = solver.eigenvectors();
-  typename decltype(solver)::RealVectorType evals = solver.eigenvalues();
-  // Cap the minimum eigen values to scale times the largest eigen value.
-  const ScalarT max_e_val = *std::max_element(evals.data(), evals.data() + evals.size());
-  const ScalarT min_e_val = max_e_val * scaling_factor;
-  if (min_e_val < TOL) {
-    return false;
+  Eigen::SelfAdjointEigenSolver<CovMatrixT> solver(covariance);
+  if (solver.info() != Eigen::Success) {return false;}
+
+  VectorT eigen_values = solver.eigenvalues();  // Sorted in increasing order.
+  const auto min_eigen_value = eigen_values[0];
+  const auto max_eigen_value = eigen_values[eigen_values.size() - IndexT{1U}];
+  const auto stabilized_min_eigen_value = scaling_factor * max_eigen_value;
+  if (stabilized_min_eigen_value < std::numeric_limits<ScalarT>::epsilon()) {return false;}
+  if (min_eigen_value > scaling_factor * max_eigen_value) {return true;}  // Already stable.
+  for (auto i = IndexT{0U}; i < eigen_values.size(); ++i) {
+    eigen_values[i] = std::max(eigen_values[i], stabilized_min_eigen_value);
   }
-  auto stabilized = false;
-  for (auto i = IndexT{0}; i < evals.size(); ++i) {
-    ScalarT & e_val = evals(i);
-    if (e_val < TOL) {
-      // Covariance is not full rank.
-      return false;
-    }
-    if (e_val < min_e_val) {
-      e_val = min_e_val;
-      stabilized = true;
-    }
-  }
-  if (stabilized) {
-    covariance = evecs * evals.asDiagonal() * evecs.inverse();
-  }
+  covariance =
+    solver.eigenvectors() * eigen_values.asDiagonal() * solver.eigenvectors().transpose();
   return true;
 }
 
