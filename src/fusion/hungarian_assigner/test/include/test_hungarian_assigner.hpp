@@ -270,11 +270,11 @@ TEST(hungarian_assigner, degenerate1)
   assign.set_weight(0.0, 1U, 0U);
   assign.set_weight(0.0, 2U, 0U);
   assign.set_weight(0.0, 3U, 0U);
-  EXPECT_FALSE(assign.assign());
-  EXPECT_EQ(assign.get_assignment(0), 1);
-  EXPECT_EQ(assign.get_assignment(1), 0);
+  EXPECT_TRUE(assign.assign());
+  EXPECT_EQ(assign.get_assignment(0), 3);
+  EXPECT_EQ(assign.get_assignment(1), assign.UNASSIGNED);
   EXPECT_EQ(assign.get_assignment(2), assign.UNASSIGNED);
-  EXPECT_EQ(assign.get_assignment(3), assign.UNASSIGNED);
+  EXPECT_EQ(assign.get_assignment(3), 0);
 }
 
 TEST(hungarian_assigner, degenerate2)
@@ -288,7 +288,7 @@ TEST(hungarian_assigner, degenerate2)
   X X X X
   */
   assign.set_weight(0, 0, 0);
-  EXPECT_FALSE(assign.assign());
+  EXPECT_TRUE(assign.assign());
   EXPECT_EQ(assign.get_assignment(0), 0);
   EXPECT_EQ(assign.get_assignment(1), assign.UNASSIGNED);
   EXPECT_EQ(assign.get_assignment(2), assign.UNASSIGNED);
@@ -302,16 +302,16 @@ TEST(hungarian_assigner, degenerate2)
   assign.set_weight(1.0, 0, 2);
   assign.set_weight(1.0, 1, 2);
   assign.set_weight(1.0, 2, 0);
-  EXPECT_FALSE(assign.assign());
-  EXPECT_EQ(assign.get_assignment(0), 2);
-  EXPECT_EQ(assign.get_assignment(1), assign.UNASSIGNED);
+  EXPECT_TRUE(assign.assign());
+  EXPECT_EQ(assign.get_assignment(0), assign.UNASSIGNED);
+  EXPECT_EQ(assign.get_assignment(1), 2);
   EXPECT_EQ(assign.get_assignment(2), 0);
   assign.reset(2, 2);
   /*
   X X
   X X
   */
-  EXPECT_FALSE(assign.assign());
+  EXPECT_TRUE(assign.assign());
   EXPECT_EQ(assign.get_assignment(0), assign.UNASSIGNED);
   EXPECT_EQ(assign.get_assignment(1), assign.UNASSIGNED);
   assign.reset(1, 1);
@@ -338,11 +338,43 @@ TEST(hungarian_assigner, partial)
   assign.set_weight(1, 3U, 1U);
   assign.set_weight(2, 1U, 1U);
   assign.set_weight(1, 1U, 2U);
-  ASSERT_FALSE(assign.assign());
+  ASSERT_TRUE(assign.assign());
   ASSERT_EQ(assign.get_assignment(0), 0);
   ASSERT_EQ(assign.get_assignment(1), 2);
   ASSERT_EQ(assign.get_assignment(2), assign.UNASSIGNED);
   ASSERT_EQ(assign.get_assignment(3), 1);
+}
+
+/*
+   x  4 x 12 x
+   x  0 x  8 x
+   x  4 x  4 x
+   x  8 x  0 x
+   x 12 x  4 x
+*/
+TEST(hungarian_assigner, degenerate3)
+{
+  hungarian_assigner_c<32U> assign;
+//  assign.reset();
+  assign.set_size(5U, 5U);
+  assign.set_weight(4, 0U, 1U);
+  assign.set_weight(0, 1U, 1U);
+  assign.set_weight(4, 2U, 1U);
+  assign.set_weight(8, 3U, 1U);
+  assign.set_weight(12, 4U, 1U);
+  assign.set_weight(12, 0U, 3U);
+  assign.set_weight(8, 1U, 3U);
+  assign.set_weight(4, 2U, 3U);
+  assign.set_weight(0, 3U, 3U);
+  assign.set_weight(4, 4U, 3U);
+
+  EXPECT_EQ(assign.assign(), true);
+  std::cout << "Running test " << std::endl;
+  EXPECT_EQ(assign.get_assignment(0), assign.UNASSIGNED);
+  EXPECT_EQ(assign.get_assignment(1), 1);
+  EXPECT_EQ(assign.get_assignment(2), assign.UNASSIGNED);
+  EXPECT_EQ(assign.get_assignment(3), 3);
+  EXPECT_EQ(assign.get_assignment(4), assign.UNASSIGNED);
 }
 
 #endif  // TEST_HUNGARIAN_ASSIGNER_HPP_

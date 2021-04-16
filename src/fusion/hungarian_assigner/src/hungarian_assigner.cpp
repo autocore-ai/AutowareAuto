@@ -45,6 +45,9 @@ hungarian_assigner_c<Capacity>::no_uncovered_values_c::no_uncovered_values_c()
 template<uint16_t Capacity>
 constexpr index_t hungarian_assigner_c<Capacity>::UNASSIGNED;
 
+template<uint16_t Capacity>
+constexpr float hungarian_assigner_c<Capacity>::MAX_WEIGHT;
+
 ///
 template<uint16_t Capacity>
 hungarian_assigner_c<Capacity>::hungarian_assigner_c(
@@ -71,6 +74,7 @@ hungarian_assigner_c<Capacity>::hungarian_assigner_c(
   m_num_uncovered_cols(),  // zero initialization
   m_num_primed_zeros()  // zero initialization
 {
+  reset(m_num_rows, m_num_cols);
   // all other arrays should be zero initialized
   // m_row_min_idx.fill(UNASSIGNED);
 }
@@ -111,14 +115,13 @@ void hungarian_assigner_c<Capacity>::set_weight(
   if ((idx >= m_num_rows) || (jdx >= m_num_cols)) {
     throw std::out_of_range("Cannot set weight outside of range");
   }
+  if (weight >= MAX_WEIGHT) {
+    throw std::out_of_range("Cannot set weight greater than or equal to MAX_WEIGHT");
+  }
   // rely on eigen's matrix to throw an error
   m_weight_matrix(idx, jdx) = weight;
   m_mark_matrix(idx, jdx) = static_cast<int8_t>(UNMARKED);
-  // update min column weight, threadsafe if access different rows async
-  if (weight < m_row_min_weights(idx)) {
-    m_row_min_weights(idx) = weight;
-    m_row_min_idx[idx] = jdx;
-  }
+  m_is_max_matrix(idx, jdx) = false;
 }
 
 ///
@@ -126,16 +129,11 @@ template<uint16_t Capacity>
 void hungarian_assigner_c<Capacity>::reset()
 {
   // set all weights to infinity
-  m_weight_matrix.block(index_t(), index_t(), m_num_cols, m_num_cols) =
-    Eigen::MatrixXf::Constant(m_num_cols, m_num_cols, std::numeric_limits<float32_t>::max());
-  m_row_min_weights.segment(0, m_num_cols) =
-    Eigen::ArrayXf::Constant(m_num_cols, std::numeric_limits<float32_t>::max());
+  m_weight_matrix.fill(MAX_WEIGHT);
+  m_row_min_weights.fill(MAX_WEIGHT);
   // reset assignment
-  m_mark_matrix.block(index_t(), index_t(), m_num_cols, m_num_cols) =
-    Eigen::Matrix<int8_t, Eigen::Dynamic, Eigen::Dynamic>::Constant(
-    m_num_cols,
-    m_num_cols,
-    static_cast<int8_t>(NO_LINK));
+  // TODO(gowtham.ranganathan): workaround. Should be NO_LINK after #979 is fixed
+  m_mark_matrix.fill(static_cast<int8_t>(UNMARKED));
   // reset size
   m_num_cols = index_t();
   m_num_rows = index_t();
@@ -143,6 +141,7 @@ void hungarian_assigner_c<Capacity>::reset()
   m_is_col_covered.fill(false);
   m_is_row_covered.fill(false);
   m_row_min_idx.fill(UNASSIGNED);
+  m_is_max_matrix.fill(true);
 }
 
 ///
@@ -153,12 +152,21 @@ void hungarian_assigner_c<Capacity>::reset(const index_t num_rows, const index_t
   set_size(num_rows, num_cols);
 }
 
+template<uint16_t Capacity>
+void hungarian_assigner_c<Capacity>::find_minimums()
+{
+  for (auto i = index_t(); i < m_weight_matrix.rows(); ++i) {
+    m_row_min_weights[i] = m_weight_matrix.row(i).minCoeff(&m_row_min_idx[i]);
+  }
+}
+
 ///
 template<uint16_t Capacity>
 bool8_t hungarian_assigner_c<Capacity>::assign()
 {
   bool8_t ret = false;
   if (m_num_rows <= m_num_cols) {
+    find_minimums();
     // pad 0's in unbalanced case
     if (m_num_rows < m_num_cols) {
       const index_t num_pad = m_num_cols - m_num_rows;
@@ -201,7 +209,12 @@ index_t hungarian_assigner_c<Capacity>::get_assignment(const index_t idx) const
   if ((idx >= m_num_rows) || (idx >= Capacity)) {
     throw std::range_error("Querying out of bounds assignment index");
   }
-  return m_assignments[idx];
+  const auto ret = m_assignments[idx];
+  // TODO(gowtham.ranganathan): Workaround. There should be no need to check this after #979.
+  if (ret != UNASSIGNED && m_is_max_matrix(idx, ret)) {
+    return UNASSIGNED;
+  }
+  return ret;
 }
 
 ///

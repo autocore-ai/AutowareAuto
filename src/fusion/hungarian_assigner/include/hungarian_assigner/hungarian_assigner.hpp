@@ -79,6 +79,7 @@ public:
 public:
   /// \brief This index denotes a worker for which no job assignment was possible
   static constexpr index_t UNASSIGNED = std::numeric_limits<index_t>::max();
+  static constexpr float MAX_WEIGHT = 10000.F;
 
   /// \brief constructor
   hungarian_assigner_c();
@@ -141,6 +142,10 @@ public:
   index_t get_unassigned(const index_t idx) const;
 
 private:
+  // TODO(gowtham.ranganathan): Workaround. Should calculate minimum while the weight is being
+  //  set. Fix after #979.
+  /// \brief find the minimum value and its index in each row of the weight matrix
+  HUNGARIAN_ASSIGNER_LOCAL void find_minimums();
   /// \brief do steps 1-3, return true if perfect assignment found
   HUNGARIAN_ASSIGNER_LOCAL bool8_t reduce_rows_and_init_zeros_and_check_result();
 
@@ -167,6 +172,9 @@ private:
   /// \brief update internal bookkeeping for which rows and columns are uncovered
   HUNGARIAN_ASSIGNER_LOCAL void update_uncovered_rows_and_cols();
 
+  // TODO(gowtham.ranganathan): Workaround. There should be no need for m_is_max_matrix after #979
+  // Matrix to track if a weight is unset (set to max means unset)
+  Eigen::Matrix<bool8_t, Capacity, Capacity> m_is_max_matrix;
   Eigen::Matrix<float32_t, Capacity, Capacity> m_weight_matrix;
   Eigen::Matrix<int8_t, Capacity, Capacity> m_mark_matrix;
   Eigen::Matrix<index_t, Capacity, 1> m_row_min_idx;
