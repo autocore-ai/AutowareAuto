@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,7 +26,7 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     map_osm_file = os.path.join(
         get_package_share_directory('lanelet2_map_provider'),
@@ -35,8 +35,8 @@ def generate_test_description(ready_fn):
 
     lanelet2_map_provider = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_provider_exe',
-        node_namespace='had_maps',
+        executable='lanelet2_map_provider_exe',
+        namespace='had_maps',
         parameters=[
             os.path.join(
                 get_package_share_directory('lanelet2_map_provider'),
@@ -52,7 +52,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         lanelet2_map_provider,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

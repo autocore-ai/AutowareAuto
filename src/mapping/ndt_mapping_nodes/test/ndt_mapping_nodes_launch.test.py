@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,13 +26,13 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     ndt_mapper = Node(
         package='ndt_mapping_nodes',
-        node_executable='ndt_mapper_node_exe',
-        node_name='ndt_mapper_node',
-        node_namespace='mapper',
+        executable='ndt_mapper_node_exe',
+        name='ndt_mapper_node',
+        namespace='mapper',
         output='screen',
         parameters=[
             os.path.join(get_package_share_directory('ndt_mapping_nodes'), 'param/test.param.yaml')
@@ -44,7 +44,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         ndt_mapper,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

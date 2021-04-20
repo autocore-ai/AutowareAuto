@@ -16,7 +16,6 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,12 +25,12 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     state_estimation_node = Node(
         package='state_estimation_nodes',
-        node_executable='state_estimation_node_exe',
-        node_namespace='test',
+        executable='state_estimation_node_exe',
+        namespace='test',
         parameters=[os.path.join(
             get_package_share_directory('state_estimation_nodes'),
             'param/test.param.yaml'
@@ -43,7 +42,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         state_estimation_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

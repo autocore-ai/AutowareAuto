@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,7 +26,7 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     # map provide map file arguments
     map_param_file = \
@@ -41,8 +41,8 @@ def generate_test_description(ready_fn):
     # map_provide node execution definition
     map_provider_node_runner = Node(
         package="ndt_nodes",
-        node_executable="ndt_map_publisher_exe",
-        node_namespace="localization",
+        executable="ndt_map_publisher_exe",
+        namespace="localization",
         parameters=[
             map_param_file,
             {'map_yaml_file': map_yaml_file_param},
@@ -55,7 +55,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         map_provider_node_runner,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

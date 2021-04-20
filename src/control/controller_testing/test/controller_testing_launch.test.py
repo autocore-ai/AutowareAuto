@@ -16,7 +16,6 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,13 +25,13 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     controller_testing_node = Node(
         package="controller_testing",
-        node_executable="controller_testing_main.py",
-        node_namespace="control",
-        node_name="controller_testing_node",
+        executable="controller_testing_main.py",
+        namespace="control",
+        name="controller_testing_node",
         output="screen",
         parameters=[
             os.path.join(
@@ -47,7 +46,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         controller_testing_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

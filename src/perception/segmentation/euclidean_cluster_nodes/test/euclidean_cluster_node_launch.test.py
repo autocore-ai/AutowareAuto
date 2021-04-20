@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,12 +26,12 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     euclidean_cluster_node = Node(
         package='euclidean_cluster_nodes',
-        node_executable='euclidean_cluster_node_exe',
-        node_namespace='test',
+        executable='euclidean_cluster_node_exe',
+        namespace='test',
         parameters=[os.path.join(
             get_package_share_directory('euclidean_cluster_nodes'),
             'param/test.param.yaml'
@@ -43,7 +43,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         euclidean_cluster_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

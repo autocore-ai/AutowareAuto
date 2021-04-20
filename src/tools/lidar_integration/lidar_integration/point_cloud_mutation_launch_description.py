@@ -34,7 +34,7 @@ def get_point_cloud_mutation_launch_description(*,
     if spoofer is None:
         spoofer = launch_ros.actions.Node(
             package="lidar_integration",
-            node_executable="point_cloud_mutation_spoofer_exe",
+            executable="point_cloud_mutation_spoofer_exe",
             arguments=[
                 "--topic", topic,
                 "--freq", "10",

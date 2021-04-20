@@ -17,19 +17,17 @@
 import os
 
 from ament_index_python import get_package_share_directory
-import launch
-import launch.actions
 import launch_ros.actions
-
+import launch_testing
 import lidar_integration
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     point_cloud_filter_transform_node = launch_ros.actions.Node(
         package="point_cloud_filter_transform_nodes",
-        node_executable="point_cloud_filter_transform_node_exe",
-        node_name="point_cloud_filter_transform_node",
-        node_namespace="lidar_front",
+        executable="point_cloud_filter_transform_node_exe",
+        name="point_cloud_filter_transform_node",
+        namespace="lidar_front",
         parameters=[
             os.path.join(
                 get_package_share_directory('point_cloud_filter_transform_nodes'),
@@ -47,7 +45,7 @@ def generate_test_description(ready_fn):
     # Fallback on data from transform publisher if transform not found in test.param.yaml
     lidar_bl_publisher = launch_ros.actions.Node(
         package='tf2_ros',
-        node_executable='static_transform_publisher',
+        executable='static_transform_publisher',
         arguments=["0", "0", "0", "0", "0", "0", "lidar_front", "base_link"]
     )
 
@@ -62,7 +60,7 @@ def generate_test_description(ready_fn):
 
     spoofer_ = launch_ros.actions.Node(
         package="lidar_integration",
-        node_executable="point_cloud_mutation_spoofer_exe",
+        executable="point_cloud_mutation_spoofer_exe",
         arguments=[
             "--topic", "/lidar_front/points_raw",
             "--freq", "10",
@@ -76,7 +74,7 @@ def generate_test_description(ready_fn):
         test_nodes=[point_cloud_filter_transform_node, lidar_bl_publisher],
         checkers=[filtered_points_checker],
         other_actions=[
-            launch.actions.OpaqueFunction(function=lambda context: ready_fn())
+            launch_testing.actions.ReadyToTest()
         ],
         spoofer=spoofer_
     )

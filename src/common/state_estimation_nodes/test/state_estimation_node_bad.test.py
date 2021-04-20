@@ -24,13 +24,13 @@ import launch_testing
 import launch_testing.util
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     # The node under test and the checker node that will pass/fail our tests:
     state_estimation_node = launch_ros.actions.Node(
         package="state_estimation_nodes",
-        node_executable="state_estimation_node_exe",
-        node_name="state_estimation_node",
-        node_namespace="state_estimation_namespace",
+        executable="state_estimation_node_exe",
+        name="state_estimation_node",
+        namespace="state_estimation_namespace",
         parameters=[
             "{}/param/state_estimation_node_test.param.yaml".format(
                 ament_index_python.get_package_share_directory(
@@ -47,7 +47,7 @@ def generate_test_description(ready_fn):
         # Need to keep the launch alive by having an alive process
         launch_testing.util.KeepAliveProc(),
         # Start tests right away - no need to wait for anything
-        launch.actions.OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

@@ -60,7 +60,7 @@ def get_lidar_launch_description(*,
     if spoofer is None:
         spoofer = launch_ros.actions.Node(
             package="lidar_integration",
-            node_executable="vlp16_integration_spoofer_exe",
+            executable="vlp16_integration_spoofer_exe",
             arguments=[
                 "--rpm", "600",
                 "--ip1", "127.0.0.1",

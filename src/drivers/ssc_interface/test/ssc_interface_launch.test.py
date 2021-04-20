@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,14 +26,14 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     # Prepare node
     ssc_interface = Node(
         package='ssc_interface',
-        node_name='ssc_interface_node',
-        node_executable='ssc_interface_node_exe',
-        node_namespace='vehicle',
+        name='ssc_interface_node',
+        executable='ssc_interface_node_exe',
+        namespace='vehicle',
         output='screen',
         parameters=[
             os.path.join(get_package_share_directory('ssc_interface'), 'param/test.param.yaml')
@@ -45,7 +45,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         ssc_interface,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

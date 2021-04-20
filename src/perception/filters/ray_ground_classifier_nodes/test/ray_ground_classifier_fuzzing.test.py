@@ -16,20 +16,19 @@ import os
 
 from ament_index_python import get_package_share_directory
 
-import launch
-import launch.actions
 import launch_ros.actions
+import launch_testing
 
 import lidar_integration
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     # The node under test and the checker node that will pass/fail our tests:
     test_topic = 'veloyne_cloud_node_test_topic'
     node = launch_ros.actions.Node(
         package='ray_ground_classifier_nodes',
-        node_executable='ray_ground_classifier_cloud_node_exe',
-        node_name='ray_ground_classifier',
+        executable='ray_ground_classifier_cloud_node_exe',
+        name='ray_ground_classifier',
         parameters=[os.path.join(
             get_package_share_directory('ray_ground_classifier_nodes'),
             'param/test.param.yaml'
@@ -40,7 +39,7 @@ def generate_test_description(ready_fn):
 
     ray_ground_spoofer = launch_ros.actions.Node(
         package='lidar_integration',
-        node_executable='point_cloud_mutation_spoofer_exe',
+        executable='point_cloud_mutation_spoofer_exe',
         arguments=[
             '--topic', test_topic,
             '--freq', '10',
@@ -55,7 +54,7 @@ def generate_test_description(ready_fn):
         checkers=[],  # TODO we only check that node does not crash for now
         topic=test_topic,
         other_actions=[
-            launch.actions.OpaqueFunction(function=lambda context: ready_fn())
+            launch_testing.actions.ReadyToTest()
         ],
         spoofer=ray_ground_spoofer)
 

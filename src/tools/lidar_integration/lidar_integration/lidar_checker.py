@@ -40,8 +40,8 @@ def make_lidar_checker(*,
     """
     checker = launch_ros.actions.Node(
         package="lidar_integration",
-        node_executable="lidar_integration_listener_exe",
-        node_namespace="lidar_front",
+        executable="lidar_integration_listener_exe",
+        namespace="lidar_front",
         arguments=[
             "--type", "{}".format(input_type),
             "--topic", "{}".format(topic),

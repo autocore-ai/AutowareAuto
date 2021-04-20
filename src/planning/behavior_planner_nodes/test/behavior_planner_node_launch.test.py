@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,12 +26,12 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     behavior_planner_node = Node(
         package='behavior_planner_nodes',
-        node_executable='behavior_planner_node_exe',
-        node_namespace='test',
+        executable='behavior_planner_node_exe',
+        namespace='test',
         parameters=[os.path.join(
             get_package_share_directory('behavior_planner_nodes'),
             'param/test.param.yaml'
@@ -43,7 +43,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         behavior_planner_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

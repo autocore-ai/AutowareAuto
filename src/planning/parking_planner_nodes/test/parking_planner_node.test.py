@@ -21,6 +21,7 @@ import ament_index_python
 import launch
 import launch.actions
 import launch_ros.actions
+import launch_testing
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
@@ -78,11 +79,11 @@ class MockActionCaller(Node):
         return send_goal_future
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     test_nodes = launch_ros.actions.Node(
         package="parking_planner_nodes",
-        node_executable="parking_planner_node_exe",
-        node_name="parking_planner",
+        executable="parking_planner_node_exe",
+        name="parking_planner",
         parameters=[
             "{}/defaults.param.yaml".format(
                 ament_index_python.get_package_share_directory(
@@ -96,7 +97,7 @@ def generate_test_description(ready_fn):
     ld = launch.LaunchDescription(
         [
             test_nodes,
-            launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
+            launch_testing.actions.ReadyToTest(),
         ]
     )
 

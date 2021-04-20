@@ -15,7 +15,7 @@
 # Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -24,19 +24,19 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     lanelet2_map_visualizer = Node(
         package='lanelet2_map_provider',
-        node_executable='lanelet2_map_visualizer_exe',
-        node_namespace='had_maps')
+        executable='lanelet2_map_visualizer_exe',
+        namespace='had_maps')
 
     context = {'lanelet2_map_visualizer': lanelet2_map_visualizer}
 
     return LaunchDescription([
         lanelet2_map_visualizer,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

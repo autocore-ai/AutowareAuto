@@ -24,11 +24,11 @@ import launch_ros.actions
 import launch_testing.event_handlers
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     test_nodes = launch_ros.actions.Node(
         package="pure_pursuit_nodes",
-        node_executable="pure_pursuit_node_exe",
-        node_name="pure_pursuit_node",
+        executable="pure_pursuit_node_exe",
+        name="pure_pursuit_node",
         parameters=[
             "{}/param/pure_pursuit_test.param.yaml".format(
                 ament_index_python.get_package_share_directory("pure_pursuit_nodes")
@@ -39,12 +39,12 @@ def generate_test_description(ready_fn):
     # integration test
     checker = launch_ros.actions.Node(
         package="pure_pursuit_nodes",
-        node_executable="pure_pursuit_integration_test_exe")
+        executable="pure_pursuit_integration_test_exe")
 
     ld = launch.LaunchDescription([
         test_nodes,
         checker,
-        launch.actions.OpaqueFunction(function=lambda context: ready_fn())
+        launch_testing.actions.ReadyToTest()
     ])
 
     # An array of all the checkers to be enumerated by the tests

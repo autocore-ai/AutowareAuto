@@ -16,7 +16,7 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
+
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,7 +26,7 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     mpc_controller_param_file = os.path.join(
         get_package_share_directory('mpc_controller_nodes'),
@@ -36,8 +36,8 @@ def generate_test_description(ready_fn):
     # mpc_controller
     mpc_controller_node = Node(
         package="mpc_controller_nodes",
-        node_executable="mpc_controller_node_exe",
-        node_name="mpc_controller",
+        executable="mpc_controller_node_exe",
+        name="mpc_controller",
         output="screen",
         parameters=[mpc_controller_param_file],
     )
@@ -47,7 +47,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         mpc_controller_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 

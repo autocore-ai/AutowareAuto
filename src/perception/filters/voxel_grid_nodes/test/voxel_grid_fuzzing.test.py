@@ -13,19 +13,18 @@
 # limitations under the License.
 
 import ament_index_python
-import launch
-import launch.actions
 import launch_ros.actions
+import launch_testing
 import lidar_integration
 
 
-def generate_test_description(ready_fn):
+def generate_test_description():
     # The node under test and the checker node that will pass/fail our tests:
     test_topic = "veloyne_cloud_node_test_topic"
     node = launch_ros.actions.Node(
         package="voxel_grid_nodes",
-        node_executable="voxel_grid_node_exe",
-        node_name="voxel_grid_cloud_node",
+        executable="voxel_grid_node_exe",
+        name="voxel_grid_cloud_node",
         parameters=[
             "{}/param/vlp16_lexus_centroid.param.yaml".format(
                 ament_index_python.get_package_share_directory(
@@ -40,7 +39,7 @@ def generate_test_description(ready_fn):
         checkers=[],  # TODO we only check that node does not crash for now
         topic=test_topic,
         other_actions=[
-            launch.actions.OpaqueFunction(function=lambda context: ready_fn())
+            launch_testing.actions.ReadyToTest()
         ])
 
     return ld, context

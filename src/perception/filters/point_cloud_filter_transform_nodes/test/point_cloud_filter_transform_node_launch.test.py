@@ -16,7 +16,6 @@
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import OpaqueFunction
 from launch_ros.actions import Node
 import launch_testing
 
@@ -26,13 +25,13 @@ import unittest
 
 
 @pytest.mark.launch_test
-def generate_test_description(ready_fn):
+def generate_test_description():
 
     point_cloud_filter_transform_node = Node(
         package="point_cloud_filter_transform_nodes",
-        node_executable="point_cloud_filter_transform_node_exe",
-        node_name="point_cloud_filter_transform_node",
-        node_namespace="lidar_front",
+        executable="point_cloud_filter_transform_node_exe",
+        name="point_cloud_filter_transform_node",
+        namespace="lidar_front",
         parameters=[
             os.path.join(
                 get_package_share_directory('point_cloud_filter_transform_nodes'),
@@ -46,7 +45,7 @@ def generate_test_description(ready_fn):
     return LaunchDescription([
         point_cloud_filter_transform_node,
         # Start tests right away - no need to wait for anything
-        OpaqueFunction(function=lambda context: ready_fn())]
+        launch_testing.actions.ReadyToTest()]
     ), context
 
 
