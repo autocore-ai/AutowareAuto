@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <fstream>
 #include <memory>
+#include <thread>
 
 using autoware::ne_raptor_interface::NERaptorInterface;
 using autoware::ne_raptor_interface::NERaptorInterfaceListener;

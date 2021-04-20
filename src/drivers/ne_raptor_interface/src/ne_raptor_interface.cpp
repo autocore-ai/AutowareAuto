@@ -263,6 +263,7 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
   m_misc_cmd_pub->publish(mc);
 
   m_seen_vehicle_state_cmd = true;
+  m_dbw_state_machine->state_cmd_sent();
 
   return ret;
 }
@@ -451,13 +452,11 @@ bool8_t NERaptorInterface::handle_mode_change_request(ModeChangeRequest::SharedP
   if (request->mode == ModeChangeRequest::MODE_MANUAL) {
     if (is_dbw_enabled) {  // Only send on change
       m_dbw_state_machine->user_request(false);
-      m_dbw_state_machine->state_cmd_sent();
       m_dbw_disable_cmd_pub->publish(send_req);
     }
   } else if (request->mode == ModeChangeRequest::MODE_AUTONOMOUS) {
     if (!is_dbw_enabled) {  // Only send on change
       m_dbw_state_machine->user_request(true);
-      m_dbw_state_machine->state_cmd_sent();
       m_dbw_enable_cmd_pub->publish(send_req);
     }
   } else {
