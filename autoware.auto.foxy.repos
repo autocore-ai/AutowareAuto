@@ -10,4 +10,4 @@ repositories:
   src/external/point_cloud_msg_wrapper:
     type: git
     url: https://gitlab.com/ApexAI/point_cloud_msg_wrapper
-    version: 1.0.2
+    version: 1.0.4
