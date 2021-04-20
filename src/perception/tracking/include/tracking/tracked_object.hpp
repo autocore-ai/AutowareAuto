@@ -1,0 +1,87 @@
+// Copyright 2021 The Autoware Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/// \copyright Copyright 2021 The Autoware Foundation
+/// \file
+/// \brief This file defines the multi_object_tracking class.
+
+#ifndef TRACKING__TRACKED_OBJECT_HPP_
+#define TRACKING__TRACKED_OBJECT_HPP_
+
+#include <chrono>
+
+#include "autoware_auto_msgs/msg/detected_dynamic_object_array.hpp"
+#include "autoware_auto_msgs/msg/tracked_dynamic_object.hpp"
+#include "autoware_auto_msgs/msg/tracked_dynamic_object_array.hpp"
+#include "kalman_filter/common_states.hpp"
+#include "kalman_filter/kalman_filter.hpp"
+#include "motion_model/linear_motion_model.hpp"
+#include "motion_model/wiener_noise.hpp"
+#include "tracking/visibility_control.hpp"
+
+
+namespace autoware
+{
+namespace perception
+{
+namespace tracking
+{
+
+/// \brief Internal class containing the object state and other information.
+class TRACKING_PUBLIC TrackedObject
+{
+public:
+  // Aliases for convenience
+  using CA = autoware::prediction::state::ConstAccelerationXY;
+  using MotionModel = autoware::prediction::LinearMotionModel<CA>;
+  using NoiseModel = autoware::prediction::WienerNoise<CA>;
+  using EKF = autoware::prediction::KalmanFilter<MotionModel, NoiseModel>;
+  using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedDynamicObject;
+  using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedDynamicObject;
+
+  /// Constructor
+  /// \param detection A detection from which to initialize this object. Must have a pose.
+  /// \param default_variance All variables will initially have this variance
+  /// \param noise_variance The sigma for the acceleration noise
+  /// \throws std::runtime_error if the detection does not have a pose.
+  TrackedObject(const DetectedObjectMsg & detection, float default_variance, float noise_variance);
+  /// Extrapolate the track forward.
+  // TODO(nikolai.morin): Change signature to use absolute time after #1002
+  void predict(std::chrono::nanoseconds dt);
+
+  /// Adjust the track to the detection.
+  void update(const DetectedObjectMsg & detection);
+
+  /// Call when no correspondence for this track was found.
+  void no_update();
+
+  /// Getter for the message.
+  const TrackedObjectMsg & msg();
+
+private:
+  /// The final to-be-published object.
+  TrackedObjectMsg m_msg;
+  /// The state estimator.
+  EKF m_ekf;
+  /// The number of updates where this object has not been seen
+  size_t m_ticks_since_last_seen = 0;
+  /// The number of updates (seen or not) since this object has been created
+  size_t m_ticks_alive = 0;
+};
+
+}  // namespace tracking
+}  // namespace perception
+}  // namespace autoware
+
+#endif  // TRACKING__TRACKED_OBJECT_HPP_

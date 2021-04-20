@@ -30,23 +30,25 @@ ament_auto_find_build_dependencies(REQUIRED
 
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
-set(ASSOCIATION_LIB_SRC
+set(TRACKING_LIB_SRC
   src/data_association.cpp
+  src/tracked_object.cpp
 )
 
-set(ASSOCIATION_LIB_HEADERS
+set(TRACKING_LIB_HEADERS
   include/tracking/data_association.hpp
+  include/tracking/tracker_types.hpp
+  include/tracking/tracked_object.hpp
   include/tracking/visibility_control.hpp
 )
 
 # generate library
-set(ASSOCIATION_LIB data_association)
-ament_auto_add_library(${ASSOCIATION_LIB} SHARED
-  ${ASSOCIATION_LIB_SRC}
-  ${ASSOCIATION_LIB_HEADERS}
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  ${TRACKING_LIB_SRC}
+  ${TRACKING_LIB_HEADERS}
 )
-autoware_set_compile_options(${ASSOCIATION_LIB})
-ament_target_dependencies(${ASSOCIATION_LIB} Eigen3)
+autoware_set_compile_options(${PROJECT_NAME})
+ament_target_dependencies(${PROJECT_NAME} Eigen3)
 
 # Testing
 if(BUILD_TESTING)
@@ -54,12 +56,14 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   # Unit tests
-  set(TEST_SOURCES test/test_data_association.cpp)
-  set(TEST_ASSOCIATION_EXE data_association_gtest)
-  ament_add_gtest(${TEST_ASSOCIATION_EXE} ${TEST_SOURCES})
-  target_include_directories(${TEST_ASSOCIATION_EXE} PRIVATE include)
-  autoware_set_compile_options(${TEST_ASSOCIATION_EXE})
-  target_link_libraries(${TEST_ASSOCIATION_EXE} ${ASSOCIATION_LIB})
+  set(TEST_SOURCES
+    test/test_data_association.cpp
+    test/test_tracked_object.cpp
+  )
+  set(TEST_TRACKING_EXE test_multi_object_tracker)
+  ament_add_gtest(${TEST_TRACKING_EXE} ${TEST_SOURCES})
+  autoware_set_compile_options(${TEST_TRACKING_EXE})
+  target_link_libraries(${TEST_TRACKING_EXE} ${PROJECT_NAME})
 endif()
 
 # ament package generation and installing
