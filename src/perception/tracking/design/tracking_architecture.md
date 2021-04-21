@@ -5,7 +5,7 @@ Object tracking architecture {#Tracking-architecture}
 This document defines the high level architecture that the object tracker follows.
 
 # Architecture  
-![tracking architecture](images/tracking_architecture.png)
+![](images/tracking_architecture.png)
 
 # Workflow  
 The fundamental operation of a tracker is as follows (**bold** represents implementation-specific
@@ -37,3 +37,17 @@ items):
 8. Aggregate and transform the remaining tracks into the appropriate representation (unambiguous
 given the message type, i.e. transform internal track type to the track message type)
 
+# Description of submodules
+This section will give a high level overview of each submodule mentioned in the workflow above. For a more detailed description refer to the design document specific to the submodule. The features described for each submodules may not be implemented yet. This serves as the guiding light.
+
+## Association
+The association module receives detections from lidar, radar and camera and uses the position information from those detections to find correspondences with tracks.  
+Mahalanobis distance is used to compute a correspondence score between each track and detection.  
+Gating based on area, classification and euclidean distance is done to reduce the number of possible track-detection pairs for which the score has to be calculated.   
+Once the scores are calculated assignment is carried out by Hungarian algorithm. The algorithm is modified so that it can handle cases where every detection-track pair may not have a valid score.  
+
+## Motion model  
+Multiple motion models are used for each track and the estimates from them are combined by weighting them using classification information and covariance of the states.  
+
+## Observation update  
+Observations from each sensor modality are used according to the information that they are capable of providing. For example, most radar sensors can only provide a position of the target and not the shape. So, a radar measurement is used only to update the kinematics and position information and not the shape of the track.
