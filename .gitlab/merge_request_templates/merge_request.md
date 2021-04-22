@@ -15,7 +15,7 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
    1. [ ] If the source branch is on a fork, MR is configured to *allow commits from developers with access to push to the target branch*
    1. [ ] Sensible notes for the reviewer added to the section above to facilitate review
    1. [ ] Target branch set correctly. Default: `master`
-   1. [ ] MR assigned to a capable reviewer. Default: @JWhitleyWork
+   1. [ ] MR assigned to a capable reviewer. Default: JWhitleyWork
    1. [ ] Splitting the MR into smaller, easier-to-review merge requests was considered
 1. Code and tests
    1. [ ] Code is properly [formatted](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-formatting)
@@ -102,4 +102,4 @@ After receiving approval:
 1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-rendering) looks as expected
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
 1. [ ] Developers were informed about breaking changes on slack in the _committers-autoware-auto_ channel
-1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: @JWhitleyWork
+1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: JWhitleyWork

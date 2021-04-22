@@ -15,7 +15,7 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
 1. [ ] MR has a link to the original issue in the description, if it exists
 1. [ ] If the source branch is on a fork, MR is configured to *allow commits from developers with access to push to the target branch*
 1. [ ] Target branch set correctly. Default: `master`
-1. [ ] MR assigned to a capable reviewer. Default: @JWhitleyWork
+1. [ ] MR assigned to a capable reviewer. Default: JWhitleyWork
 
 <details>
 <summary markdown="span"><a name="general">What is meant by a "small change"?</a></summary>
@@ -49,4 +49,4 @@ If the MR provides an improvement, don't hesitate to add a :thumbsup: emoji for 
 After receiving approval:
 
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
-1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: @JWhitleyWork
+1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: JWhitleyWork
