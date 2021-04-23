@@ -18,8 +18,6 @@
 #ifndef STATE_ESTIMATION_NODES__STEADY_TIME_GRID_HPP_
 #define STATE_ESTIMATION_NODES__STEADY_TIME_GRID_HPP_
 
-#include <state_estimation_nodes/measurement.hpp>
-
 #include <algorithm>
 #include <chrono>
 #include <utility>

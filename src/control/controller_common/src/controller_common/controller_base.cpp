@@ -14,7 +14,6 @@
 
 #include "controller_common/controller_base.hpp"
 
-#include <motion_model/catr_model.hpp>
 #include <time_utils/time_utils.hpp>
 
 #include <algorithm>
@@ -93,7 +92,7 @@ void ControllerBase::set_trajectory(const Trajectory & trajectory)
   if (trajectory.points.empty()) {
     throw std::domain_error{"ControllerBase: Zero length trajectory is not expected"};
   }
-  // Return value ellision should hit for at most a single copy (a warning told me not to move)
+  // Return value elision should hit for at most a single copy (a warning told me not to move)
   m_reference_trajectory = handle_new_trajectory(trajectory);
   // This happens _after_ because of dependence on state; handle_new_trajectory might mutate
   // trajectory
@@ -215,7 +214,7 @@ bool ControllerBase::is_past_trajectory(const State & state) const noexcept
   }
   // Otherwise, check if I'm past the last point
   const auto & last_pt = m_reference_trajectory.points.back();
-  // ^ back() ishouldn't throw because the empty check happens before this function
+  // ^ back() shouldn't throw because the empty check happens before this function
   return motion_common::is_past_point(state.state, last_pt);
 }
 
@@ -242,35 +241,32 @@ Command ControllerBase::compute_stop_command(const State & state) const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 Point ControllerBase::predict(const Point & point, std::chrono::nanoseconds dt) noexcept
 {
+  using autoware::prediction::variable::X;
+  using autoware::prediction::variable::Y;
+  using autoware::prediction::variable::XY_VELOCITY;
+  using autoware::prediction::variable::XY_ACCELERATION;
+  using autoware::prediction::variable::YAW;
+  using autoware::prediction::variable::YAW_CHANGE_RATE;
   // Set up state
-  Eigen::Matrix<float, 6U, 1U> s;
-  using autoware::motion::motion_model::CatrState;
-  {
-    s[CatrState::POSE_X] = point.x;
-    s[CatrState::POSE_Y] = point.y;
-    s[CatrState::VELOCITY] = point.longitudinal_velocity_mps;
-    s[CatrState::ACCELERATION] = point.acceleration_mps2;
-    s[CatrState::HEADING] = motion_common::to_angle(point.heading);
-    s[CatrState::TURN_RATE] = point.heading_rate_rps;
-  }
-  // Predict; model declared locally to avoid annoying eigen dependency in header
-  decltype(s) res;
-  {
-    autoware::motion::motion_model::CatrModel model{};
-    model.reset(s);
-    model.predict(res, dt);
-  }
+  autoware::prediction::CatrMotionModel::State state{};
+  state.at<X>() = point.x;
+  state.at<Y>() = point.y;
+  state.at<XY_VELOCITY>() = point.longitudinal_velocity_mps;
+  state.at<XY_ACCELERATION>() = point.acceleration_mps2;
+  state.at<YAW>() = motion_common::to_angle(point.heading);
+  state.at<YAW_CHANGE_RATE>() = point.heading_rate_rps;
+  state = m_model.predict(state, dt);
   // Get result
   auto ret = point;  // to fill the gaps of the model
   {
     ret.time_from_start =
       time_utils::to_message(time_utils::from_message(point.time_from_start) + dt);
-    ret.x = res[CatrState::POSE_X];
-    ret.y = res[CatrState::POSE_Y];
-    ret.longitudinal_velocity_mps = res[CatrState::VELOCITY];
-    ret.acceleration_mps2 = res[CatrState::ACCELERATION];
-    ret.heading = motion_common::from_angle(res[CatrState::HEADING]);
-    ret.heading_rate_rps = res[CatrState::TURN_RATE];
+    ret.x = state.at<X>();
+    ret.y = state.at<Y>();
+    ret.longitudinal_velocity_mps = state.at<XY_VELOCITY>();
+    ret.acceleration_mps2 = state.at<XY_ACCELERATION>();
+    ret.heading = motion_common::from_angle(state.at<YAW>());
+    ret.heading_rate_rps = state.at<YAW_CHANGE_RATE>();
   }
   return ret;
 }

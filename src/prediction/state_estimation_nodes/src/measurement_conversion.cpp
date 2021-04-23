@@ -17,6 +17,8 @@
 
 #include <state_estimation_nodes/measurement_conversion.hpp>
 
+#include <common/types.hpp>
+
 namespace
 {
 constexpr auto kCovarianceMatrixRows = 6U;
@@ -41,7 +43,7 @@ namespace prediction
 {
 
 template<>
-MeasurementPoseAndSpeed message_to_measurement(
+StampedMeasurementPoseAndSpeed message_to_measurement(
   const nav_msgs::msg::Odometry & msg,
   const Eigen::Isometry3f & tf__world__frame_id,
   const Eigen::Isometry3f & tf__world__child_frame_id)
@@ -63,40 +65,42 @@ MeasurementPoseAndSpeed message_to_measurement(
   const auto x_speed_variance{static_cast<FloatT>(msg.twist.covariance[kIndexX])};
   const auto y_speed_variance{static_cast<FloatT>(msg.twist.covariance[kIndexY])};
 
-  return MeasurementPoseAndSpeed{
+  return StampedMeasurementPoseAndSpeed{
     to_time_point(msg.header.stamp),
-    (Eigen::Vector4f{} << pos_state, speed_state).finished(),
-    {x_variance, y_variance, x_speed_variance, y_speed_variance}};
+    MeasurementPoseAndSpeed{
+      (Eigen::Vector4f{} << pos_state, speed_state).finished(),
+      {x_variance, y_variance, x_speed_variance, y_speed_variance}}};
 }
 
 template<>
-MeasurementSpeed message_to_measurement(
+StampedMeasurementSpeed message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id)
 {
   using FloatT = common::types::float32_t;
   const auto converted_tf__world__frame_id = downscale_isometry<2>(tf__world__frame_id);
-  return MeasurementSpeed{
+  return StampedMeasurementSpeed{
     to_time_point(msg.header.stamp),
-    converted_tf__world__frame_id.rotation() * Eigen::Vector2f{
-      msg.twist.twist.linear.x, msg.twist.twist.linear.y},
-    {static_cast<FloatT>(msg.twist.covariance[kIndexX]),
-      static_cast<FloatT>(msg.twist.covariance[kIndexY])}
+    MeasurementSpeed{
+      converted_tf__world__frame_id.rotation() * Eigen::Vector2f{
+        msg.twist.twist.linear.x, msg.twist.twist.linear.y},
+      {static_cast<FloatT>(msg.twist.covariance[kIndexX]),
+        static_cast<FloatT>(msg.twist.covariance[kIndexY])}}
   };
 }
 
 template<>
-MeasurementPose message_to_measurement(
+StampedMeasurementPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id)
 {
   const auto converted_tf__world__frame_id = downscale_isometry<2>(tf__world__frame_id);
-  return MeasurementPose{
+  return StampedMeasurementPose{
     to_time_point(msg.header.stamp),
-    converted_tf__world__frame_id * Eigen::Vector2f{
-      msg.pose.pose.position.x, msg.pose.pose.position.y},
-    {static_cast<common::types::float32_t>(msg.pose.covariance[kIndexX]),
-      static_cast<common::types::float32_t>(msg.pose.covariance[kIndexY])}
+    MeasurementPose{converted_tf__world__frame_id * Eigen::Vector2f{
+        msg.pose.pose.position.x, msg.pose.pose.position.y},
+      {static_cast<common::types::float32_t>(msg.pose.covariance[kIndexX]),
+        static_cast<common::types::float32_t>(msg.pose.covariance[kIndexY])}}
   };
 }
 

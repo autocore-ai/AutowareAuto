@@ -23,6 +23,8 @@
 #include <mpark_variant_vendor/variant.hpp>
 #include <state_estimation_nodes/steady_time_grid.hpp>
 
+#include <Eigen/Cholesky>
+
 #include <chrono>
 #include <map>
 #include <memory>
@@ -36,14 +38,15 @@ namespace prediction
 namespace detail
 {
 
+///
 /// Check if the sample passes the Mahalanobis gate.
 ///
-/// @param[in]  sample                 The input sample
-/// @param[in]  mean                   The mean to be compared against
-/// @param[in]  covariance_factor      Covariance around the given mean
-/// @param[in]  mahalanobis_threshold  The mahalanobis threshold factor
+/// @param[in]  sample                     The input sample
+/// @param[in]  mean                       The mean to be compared against
+/// @param[in]  covariance                 Covariance around the given mean
+/// @param[in]  mahalanobis_threshold      The mahalanobis threshold factor
 ///
-/// @tparam     kNumOfStates           Number of states in the state vector.
+/// @tparam     kNumOfStates               Number of states in the state vector.
 ///
 /// @return     True if the sample passes the gate and false otherwise.
 ///
@@ -51,11 +54,15 @@ template<std::int32_t kNumOfStates>
 bool passes_mahalanobis_gate(
   const Eigen::Matrix<common::types::float32_t, kNumOfStates, 1> & sample,
   const Eigen::Matrix<common::types::float32_t, kNumOfStates, 1> & mean,
-  const Eigen::Matrix<common::types::float32_t, kNumOfStates, kNumOfStates> & covariance_factor,
+  const Eigen::Matrix<common::types::float32_t, kNumOfStates, kNumOfStates> & covariance,
   const common::types::float32_t mahalanobis_threshold)
 {
-  return common::helper_functions::calculate_squared_mahalanobis_distance(
-    sample, mean, covariance_factor) < mahalanobis_threshold * mahalanobis_threshold;
+  using Matrix = Eigen::Matrix<common::types::float32_t, kNumOfStates, kNumOfStates>;
+  const Matrix L = covariance.llt().matrixL();
+  const auto squared_mahalanobis_distance =
+    autoware::common::helper_functions::calculate_squared_mahalanobis_distance(sample, mean, L);
+  const auto squared_threshold = mahalanobis_threshold * mahalanobis_threshold;
+  return squared_mahalanobis_distance < squared_threshold;
 }
 
 }  // namespace detail
@@ -71,8 +78,8 @@ struct PredictionEvent {};
 template<typename FilterT>
 struct ResetEvent
 {
-  typename FilterT::state_vec_t state;
-  typename FilterT::square_mat_t covariance_factor;
+  typename FilterT::State state;
+  typename FilterT::State::Matrix covariance;
 };
 
 ///
@@ -88,10 +95,7 @@ struct ResetEvent
 /// @tparam     kNumOfStates  Dimensionality of the state in the filter.
 /// @tparam     EventT        A variadic template of all possible events.
 ///
-template<
-  typename FilterT,
-  std::int32_t kNumOfStates,
-  typename ... EventT>
+template<typename FilterT, typename ... EventT>
 class History
 {
   ///
@@ -170,8 +174,8 @@ private:
   common::types::float32_t m_mahalanobis_threshold{};  ///< Mahalanobis distance threshold.
 };
 
-template<typename FilterT, std::int32_t kNumOfStates, typename ... EventT>
-class History<FilterT, kNumOfStates, EventT...>::HistoryEntry
+template<typename FilterT, typename ... EventT>
+class History<FilterT, EventT...>::HistoryEntry
 {
 public:
   template<typename SingleEventT>
@@ -179,19 +183,19 @@ public:
   HistoryEntry(const SingleEventT & event) : m_event {event} {}
 
   /// @brief      Update the stored state.
-  void update_stored_state(const typename FilterT::state_vec_t & state) noexcept
+  void update_stored_state(const typename FilterT::State & state) noexcept
   {
     m_stored_state = state;
   }
   /// @brief      Get the stored state.
-  const typename FilterT::state_vec_t & stored_state() const noexcept {return m_stored_state;}
+  const typename FilterT::State & stored_state() const noexcept {return m_stored_state;}
   /// @brief      Set the covariance left factor to be stored there.
-  void update_stored_covariance_factor(const typename FilterT::square_mat_t & factor) noexcept
+  void update_stored_covariance_factor(const typename FilterT::State::Matrix & factor) noexcept
   {
     m_stored_covariance_factor = factor;
   }
   /// @brief      Get the stored covariance in the form of its left factor.
-  const typename FilterT::square_mat_t & stored_covariance_factor() const noexcept
+  const typename FilterT::State::Matrix & stored_covariance_factor() const noexcept
   {
     return m_stored_covariance_factor;
   }
@@ -200,15 +204,15 @@ public:
 
 private:
   /// State stored in this entry.
-  typename FilterT::state_vec_t m_stored_state{FilterT::state_vec_t::Zero()};
+  typename FilterT::State m_stored_state{};
   /// Left covariance factor stored in this entry.
-  typename FilterT::square_mat_t m_stored_covariance_factor{FilterT::square_mat_t::Zero()};
+  typename FilterT::State::Matrix m_stored_covariance_factor{FilterT::State::Matrix::Zero()};
   /// Event stored in this history entry.
   mpark::variant<EventT...> m_event;
 };
 
-template<typename FilterT, std::int32_t kNumOfStates, typename ... EventT>
-class History<FilterT, kNumOfStates, EventT...>::EkfStateUpdater
+template<typename FilterT, typename ... EventT>
+class History<FilterT, EventT...>::EkfStateUpdater
 {
 public:
   explicit EkfStateUpdater(
@@ -228,33 +232,31 @@ public:
   template<typename MeasurementT>
   void operator()(const MeasurementT & event)
   {
-    m_filter.temporal_update(m_dt);
+    m_filter.predict(m_dt);
     // TODO(#887): I see a couple of ways to check mahalanobis distance in case the measurement does
     // not cover the full state. Here I upscale it to the full state, copying the values of the
     // current state for ones missing in the observation. We can alternatively apply the H matrix
     // and only compute the distance in the measurement world. Don't really know which one is best
     // here.
+    const auto measurement_as_state = event.map_into(m_filter.state());
     if (!detail::passes_mahalanobis_gate(
-        event.get_values_in_full_state(m_filter.get_state()),
-        m_filter.get_state(),
-        m_filter.get_covariance(),
+        measurement_as_state.vector(),
+        m_filter.state().vector(),
+        m_filter.covariance(),
         m_mahalanobis_threshold)) {return;}
-    (void) m_filter.observation_update(
-      event.get_values(),
-      MeasurementT::template get_observation_to_state_mapping<kNumOfStates>(),
-      event.get_variances());
+    m_filter.correct(event);
   }
 
   /// @brief      An operator that resets the state of the filter implementation.
   void operator()(const ResetEvent<FilterT> & event)
   {
-    m_filter.reset(event.state, event.covariance_factor);
+    m_filter.reset(event.state, event.covariance);
   }
 
   /// @brief      An operator that applies the prediction event to the filter implementation.
   void operator()(const PredictionEvent &)
   {
-    m_filter.temporal_update(m_dt);
+    m_filter.predict(m_dt);
   }
 
 private:
@@ -263,8 +265,8 @@ private:
   std::chrono::system_clock::duration m_dt{};  ///< Current time step.
 };
 
-template<typename FilterT, std::int32_t kNumOfStates, typename ... EventT>
-void History<FilterT, kNumOfStates, EventT...>::emplace_event(
+template<typename FilterT, typename ... EventT>
+void History<FilterT, EventT...>::emplace_event(
   const Timestamp & timestamp, const HistoryEntry & entry)
 {
   drop_oldest_event_if_needed();
@@ -272,8 +274,8 @@ void History<FilterT, kNumOfStates, EventT...>::emplace_event(
   update_impacted_events(iterator_to_inserted_position);
 }
 
-template<typename FilterT, std::int32_t kNumOfStates, typename ... EventT>
-void History<FilterT, kNumOfStates, EventT...>::update_impacted_events(
+template<typename FilterT, typename ... EventT>
+void History<FilterT, EventT...>::update_impacted_events(
   const typename HistoryMap::iterator & start_iter)
 {
   Timestamp previous_timestamp{};
@@ -289,7 +291,9 @@ void History<FilterT, kNumOfStates, EventT...>::update_impacted_events(
     const auto prev_iter = std::prev(start_iter);
     previous_timestamp = prev_iter->first;
     const auto & prev_entry = prev_iter->second;
-    m_filter.reset(prev_entry.stored_state(), prev_entry.stored_covariance_factor());
+    m_filter.reset(
+      typename FilterT::State{prev_entry.stored_state()},
+      prev_entry.stored_covariance_factor());
   }
   for (auto iter = start_iter; iter != m_history.end(); ++iter) {
     const auto current_timestamp = iter->first;
@@ -297,8 +301,8 @@ void History<FilterT, kNumOfStates, EventT...>::update_impacted_events(
     mpark::visit(
       EkfStateUpdater{m_filter, m_mahalanobis_threshold, current_timestamp - previous_timestamp},
       entry.event());
-    entry.update_stored_state(m_filter.get_state());
-    entry.update_stored_covariance_factor(m_filter.get_covariance());
+    entry.update_stored_state(m_filter.state());
+    entry.update_stored_covariance_factor(m_filter.covariance());
     previous_timestamp = iter->first;
   }
 }

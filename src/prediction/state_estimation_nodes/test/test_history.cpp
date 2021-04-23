@@ -20,6 +20,10 @@
 
 #include <common/types.hpp>
 
+#include <kalman_filter/common_variables.hpp>
+#include <kalman_filter/generic_state.hpp>
+#include <measurement/linear_measurement.hpp>
+
 namespace autoware
 {
 namespace prediction
@@ -45,48 +49,21 @@ bool passes_mahalanobis_gate(
 namespace
 {
 
-struct FakeMeasurement
-{
-  std::int32_t get_values() const noexcept {return values;}
-  std::int32_t get_variances() const noexcept {return variances;}
+using MeasurementState = autoware::prediction::FloatState<autoware::prediction::variable::X>;
+using FilterState = MeasurementState;
 
-  template<std::size_t kNumStates>
-  static std::int32_t get_observation_to_state_mapping()
-  {
-    return kNumStates;
-  }
-
-  std::int32_t get_values_in_full_state(std::int32_t state) const noexcept {return state;}
-
-  std::int32_t values;
-  std::int32_t variances;
-};
-
-class FakeState
-{
-public:
-  FakeState() = default;
-  // cppcheck-suppress noExplicitConstructor
-  FakeState(std::int32_t n)  // NOLINT(runtime/explicit) we allow conversion to ease notation.
-  : m_state{n} {}
-  operator std::int32_t() const {return m_state;}
-  static constexpr std::int32_t Zero() {return 0;}
-
-private:
-  std::int32_t m_state{};
-};
+using Measurement = autoware::prediction::LinearMeasurement<MeasurementState>;
 
 class MockFilter
 {
 public:
-  using state_vec_t = FakeState;
-  using square_mat_t = FakeState;
+  using State = FilterState;
 
-  MOCK_METHOD(state_vec_t, get_state, (), (const));
-  MOCK_METHOD(square_mat_t, get_covariance, (), (const));
-  MOCK_METHOD(void, reset, (std::int32_t, std::int32_t), (const));
-  MOCK_METHOD(void, temporal_update, (std::chrono::system_clock::duration));
-  MOCK_METHOD(void, observation_update, (std::int32_t, std::int32_t, std::int32_t));
+  MOCK_METHOD(State, state, (), (const));
+  MOCK_METHOD(State::Matrix, covariance, (), (const));
+  MOCK_METHOD(void, reset, (State, State::Matrix), (const));
+  MOCK_METHOD(void, predict, (std::chrono::system_clock::duration));
+  MOCK_METHOD(void, correct, (Measurement));
 };
 
 using ::testing::_;
@@ -101,7 +78,7 @@ using autoware::prediction::ResetEvent;
 
 /// @test Test that empty history can be created.
 TEST(HistoryTest, create_empty) {
-  using HistoryT = History<MockFilter, 1, PredictionEvent, ResetEvent<MockFilter>, FakeMeasurement>;
+  using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, 10, 100};
   ASSERT_TRUE(history.empty());
@@ -109,22 +86,22 @@ TEST(HistoryTest, create_empty) {
 
 /// @test A basic test that history can be initialized with a ResetEvent.
 TEST(HistoryTest, add_reset_event) {
-  using HistoryT = History<MockFilter, 1, PredictionEvent, ResetEvent<MockFilter>, FakeMeasurement>;
+  using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, 10, 100};
   ASSERT_TRUE(history.empty());
 
   const std::chrono::system_clock::time_point timestamp{std::chrono::system_clock::now()};
   EXPECT_THROW(history.emplace_event(timestamp, PredictionEvent{}), std::runtime_error);
-  EXPECT_THROW(history.emplace_event(timestamp, FakeMeasurement{}), std::runtime_error);
+  EXPECT_THROW(history.emplace_event(timestamp, Measurement{}), std::runtime_error);
   ASSERT_TRUE(history.empty());
 
-  const std::int32_t expected_state = 23;
-  const std::int32_t expected_covariance = 42;
+  const FilterState expected_state{FilterState::Vector{23.0F}};
+  const FilterState::Matrix expected_covariance{FilterState::Matrix::Identity()};
 
   EXPECT_CALL(history.get_filter(), reset(expected_state, expected_covariance));
-  EXPECT_CALL(history.get_filter(), get_state()).WillOnce(Return(expected_state));
-  EXPECT_CALL(history.get_filter(), get_covariance()).WillOnce(Return(expected_covariance));
+  EXPECT_CALL(history.get_filter(), state()).WillOnce(Return(expected_state));
+  EXPECT_CALL(history.get_filter(), covariance()).WillOnce(Return(expected_covariance));
 
   EXPECT_NO_THROW(
     history.emplace_event(timestamp, ResetEvent<MockFilter>{expected_state, expected_covariance}));
@@ -134,69 +111,70 @@ TEST(HistoryTest, add_reset_event) {
 
 /// @test Test that measurements can be added to the history correctly.
 TEST(HistoryTest, add_measurement_events) {
-  using HistoryT = History<MockFilter, 1, PredictionEvent, ResetEvent<MockFilter>, FakeMeasurement>;
+  using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
 
-  const std::int32_t reset_state = 23;
-  const std::int32_t reset_covariance = 42;
+  const FilterState reset_state{FilterState::Vector{23.0F}};
+  const FilterState::Matrix reset_covariance{23.0F * FilterState::Matrix::Identity()};
 
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, 10, 100};
   ASSERT_TRUE(history.empty());
 
   EXPECT_CALL(history.get_filter(), reset(reset_state, reset_covariance));
-  EXPECT_CALL(history.get_filter(), get_state()).WillOnce(Return(reset_state));
-  EXPECT_CALL(history.get_filter(), get_covariance()).WillOnce(Return(reset_covariance));
-  const std::chrono::system_clock::time_point timestamp{std::chrono::system_clock::now()};
+  EXPECT_CALL(history.get_filter(), state()).WillOnce(Return(reset_state));
+  EXPECT_CALL(history.get_filter(), covariance()).WillOnce(Return(reset_covariance));
+  const std::chrono::system_clock::time_point timestamp{};
   history.emplace_event(timestamp, ResetEvent<MockFilter>{reset_state, reset_covariance});
   EXPECT_EQ(history.get_last_event().stored_state(), reset_state);
   EXPECT_EQ(history.get_last_event().stored_covariance_factor(), reset_covariance);
 
-  const std::int32_t latest_observed_state = 2323;
-  const std::int32_t latest_observed_covariance = 4242;
+  const MeasurementState latest_observed_state{MeasurementState::Vector{42.0F}};
+  const auto latest_observed_covariance = 42.0F * MeasurementState::Matrix::Identity();
 
   const std::chrono::system_clock::duration dt{std::chrono::milliseconds{10}};
 
   EXPECT_CALL(history.get_filter(), reset(reset_state, reset_covariance));
-  EXPECT_CALL(history.get_filter(), temporal_update(dt));
+  EXPECT_CALL(history.get_filter(), predict(dt));
+  EXPECT_CALL(
+    history.get_filter(), correct(
+      Measurement{latest_observed_state.vector(), latest_observed_covariance}));
+  EXPECT_CALL(history.get_filter(), state()).WillRepeatedly(Return(latest_observed_state));
   EXPECT_CALL(
     history.get_filter(),
-    observation_update(latest_observed_state, 1, latest_observed_covariance));
-  EXPECT_CALL(history.get_filter(), get_state()).WillRepeatedly(Return(latest_observed_state));
-  EXPECT_CALL(
-    history.get_filter(),
-    get_covariance()).WillRepeatedly(Return(latest_observed_covariance));
+    covariance()).WillRepeatedly(Return(latest_observed_covariance));
 
   // Add a measurement later than the initial reset message. This must succeed.
   EXPECT_NO_THROW(
     history.emplace_event(
-      timestamp + dt, FakeMeasurement{latest_observed_state, latest_observed_covariance}));
+      timestamp + dt,
+      Measurement{latest_observed_state.vector(), latest_observed_covariance}));
   EXPECT_EQ(history.get_last_event().stored_state(), latest_observed_state);
   EXPECT_EQ(history.get_last_event().stored_covariance_factor(), latest_observed_covariance);
 
   // Check that we cannot insert a non-reset event to the beginning of history.
   EXPECT_THROW(history.emplace_event(timestamp - dt, PredictionEvent{}), std::runtime_error);
-  EXPECT_THROW(history.emplace_event(timestamp - dt, FakeMeasurement{}), std::runtime_error);
+  EXPECT_THROW(history.emplace_event(timestamp - dt, Measurement{}), std::runtime_error);
 
   // Add a measurement in the past with respect to the latest one in history. This must succeed and
   // the final state must be updated.
-  const std::int32_t older_observed_state = 232323;
-  const std::int32_t older_observed_covariance = 424242;
+  const MeasurementState older_observed_state{MeasurementState::Vector{42.42F}};
+  const auto older_observed_covariance = 42.42F * MeasurementState::Matrix::Identity();
   EXPECT_CALL(history.get_filter(), reset(reset_state, reset_covariance));
-  EXPECT_CALL(history.get_filter(), temporal_update(dt / 2)).Times(2);
+  EXPECT_CALL(history.get_filter(), predict(dt / 2)).Times(2);
   EXPECT_CALL(
     history.get_filter(),
-    observation_update(older_observed_state, 1, older_observed_covariance));
+    correct(Measurement{older_observed_state.vector(), older_observed_covariance}));
   EXPECT_CALL(
     history.get_filter(),
-    observation_update(latest_observed_state, 1, latest_observed_covariance));
-  EXPECT_CALL(history.get_filter(), get_state())
+    correct(Measurement{latest_observed_state.vector(), latest_observed_covariance}));
+  EXPECT_CALL(history.get_filter(), state())
   .WillOnce(Return(reset_state))                  // mahalanobis distance
   .WillOnce(Return(reset_state))                  // mahalanobis distance
   .WillOnce(Return(older_observed_state))         // remember updated inserted state
   .WillOnce(Return(older_observed_state))         // mahalanobis distance
   .WillOnce(Return(older_observed_state))         // mahalanobis distance
-  .WillOnce(Return(latest_observed_covariance));  // remember latest inserted state
-  EXPECT_CALL(history.get_filter(), get_covariance())
+  .WillOnce(Return(latest_observed_state));       // remember latest inserted state
+  EXPECT_CALL(history.get_filter(), covariance())
   .WillOnce(Return(reset_covariance))             // mahalanobis distance
   .WillOnce(Return(older_observed_covariance))    // remember updated inserted covariance
   .WillOnce(Return(older_observed_covariance))    // mahalanobis distance
@@ -204,32 +182,32 @@ TEST(HistoryTest, add_measurement_events) {
 
   EXPECT_NO_THROW(
     history.emplace_event(
-      timestamp + dt / 2,
-      FakeMeasurement{older_observed_state, older_observed_covariance}));
+      timestamp + dt / 2, Measurement{older_observed_state.vector(), older_observed_covariance}));
 }
 
 /// @test Test that history can be overwritten when more events come than it can hold.
 TEST(HistoryTest, exhaust_history) {
-  using HistoryT = History<MockFilter, 1, PredictionEvent, ResetEvent<MockFilter>, FakeMeasurement>;
+  using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
 
   const auto history_size = 3U;
   const std::int32_t number_of_measurements = 10;
   const std::chrono::system_clock::time_point timestamp{std::chrono::system_clock::now()};
   const std::chrono::system_clock::duration dt{std::chrono::milliseconds{10}};
-  const std::int32_t state = 23;
-  const std::int32_t covariance = 42;
+  const FilterState state{FilterState::Vector{23.0F}};
+  const FilterState::Matrix covariance{23.0F * FilterState::Matrix::Identity()};
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, history_size, 100};
   // A reset is called for every measurement + once for the initial reset.
   EXPECT_CALL(history.get_filter(), reset(state, covariance)).Times(number_of_measurements + 1);
-  EXPECT_CALL(history.get_filter(), get_state()).WillRepeatedly(Return(state));
-  EXPECT_CALL(history.get_filter(), get_covariance()).WillRepeatedly(Return(covariance));
-  EXPECT_CALL(history.get_filter(), temporal_update(dt)).Times(number_of_measurements);
-  EXPECT_CALL(history.get_filter(), observation_update(_, _, _)).Times(number_of_measurements);
+  EXPECT_CALL(history.get_filter(), state()).WillRepeatedly(Return(state));
+  EXPECT_CALL(history.get_filter(), covariance()).WillRepeatedly(Return(covariance));
+  EXPECT_CALL(history.get_filter(), predict(dt)).Times(number_of_measurements);
+  EXPECT_CALL(history.get_filter(), correct(_)).Times(number_of_measurements);
 
   history.emplace_event(timestamp - dt, ResetEvent<MockFilter>{state, covariance});
   for (std::int32_t i = 0; i < number_of_measurements; ++i) {
-    EXPECT_NO_THROW(history.emplace_event(timestamp + i * dt, FakeMeasurement{state, covariance}));
+    EXPECT_NO_THROW(
+      history.emplace_event(timestamp + i * dt, Measurement{state.vector(), covariance}));
   }
   ASSERT_EQ(history_size, history.size());
 }

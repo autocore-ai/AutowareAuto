@@ -4,12 +4,15 @@ project(controller_common_nodes)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
 
 ### Build
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/controller_common_nodes/controller_base_node.cpp)
 autoware_set_compile_options(${PROJECT_NAME})
+# Setting a system include is needed to avoid having an explicit Eigen dependency.
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 
 ### Test
 if(BUILD_TESTING)

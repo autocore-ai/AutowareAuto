@@ -19,10 +19,9 @@
 
 #include <state_estimation_nodes/measurement_conversion.hpp>
 
-using autoware::prediction::Measurement;
-using autoware::prediction::MeasurementPose;
-using autoware::prediction::MeasurementSpeed;
-using autoware::prediction::MeasurementPoseAndSpeed;
+using autoware::prediction::StampedMeasurementPose;
+using autoware::prediction::StampedMeasurementSpeed;
+using autoware::prediction::StampedMeasurementPoseAndSpeed;
 using autoware::prediction::message_to_measurement;
 using autoware::prediction::downscale_isometry;
 
@@ -40,20 +39,20 @@ TEST(MeasurementConversionTest, odom) {
   msg.twist.twist.linear.y = 42.0;
   msg.twist.covariance[0] = 3.0;
   msg.twist.covariance[7] = 4.0;
-  const auto measurement = message_to_measurement<MeasurementPoseAndSpeed>(
+  const auto measurement = message_to_measurement<StampedMeasurementPoseAndSpeed>(
     msg, Eigen::Isometry3f::Identity(), Eigen::Isometry3f::Identity());
-  EXPECT_FLOAT_EQ(measurement.get_values().x(), 42.0F);
-  EXPECT_FLOAT_EQ(measurement.get_values().y(), 23.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances().x(), 1.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances().y(), 2.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector().x(), 42.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector().y(), 23.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances().x(), 1.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances().y(), 2.0F);
 
-  EXPECT_FLOAT_EQ(measurement.get_values()[2], 23.0F);
-  EXPECT_FLOAT_EQ(measurement.get_values()[3], 42.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances()[2], 3.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances()[3], 4.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector()[2], 23.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector()[3], 42.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances()[2], 3.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances()[3], 4.0F);
 
   EXPECT_EQ(
-    measurement.get_acquisition_time().time_since_epoch(),
+    measurement.timestamp.time_since_epoch(),
     std::chrono::seconds{42LL});
 }
 
@@ -67,14 +66,14 @@ TEST(MeasurementConversionTest, pose) {
   msg.pose.pose.position.y = 23.0;
   msg.pose.covariance[0] = 1.0;
   msg.pose.covariance[7] = 2.0;
-  const auto measurement = message_to_measurement<MeasurementPose>(
+  const auto measurement = message_to_measurement<StampedMeasurementPose>(
     msg, Eigen::Isometry3f::Identity());
-  EXPECT_FLOAT_EQ(measurement.get_values().x(), 42.0F);
-  EXPECT_FLOAT_EQ(measurement.get_values().y(), 23.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances().x(), 1.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances().y(), 2.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector().x(), 42.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector().y(), 23.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances().x(), 1.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances().y(), 2.0F);
   EXPECT_EQ(
-    measurement.get_acquisition_time().time_since_epoch(),
+    measurement.timestamp.time_since_epoch(),
     std::chrono::seconds{42LL});
 }
 
@@ -88,15 +87,15 @@ TEST(MeasurementConversionTest, twist) {
   msg.twist.twist.linear.y = 42.0;
   msg.twist.covariance[0] = 3.0;
   msg.twist.covariance[7] = 4.0;
-  const auto measurement = message_to_measurement<MeasurementSpeed>(
+  const auto measurement = message_to_measurement<StampedMeasurementSpeed>(
     msg, Eigen::Isometry3f::Identity());
-  EXPECT_FLOAT_EQ(measurement.get_values()[0], 23.0F);
-  EXPECT_FLOAT_EQ(measurement.get_values()[1], 42.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances()[0], 3.0F);
-  EXPECT_FLOAT_EQ(measurement.get_variances()[1], 4.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector()[0], 23.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.state().vector()[1], 42.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances()[0], 3.0F);
+  EXPECT_FLOAT_EQ(measurement.measurement.variances()[1], 4.0F);
 
   EXPECT_EQ(
-    measurement.get_acquisition_time().time_since_epoch(),
+    measurement.timestamp.time_since_epoch(),
     std::chrono::seconds{42LL});
 }
 

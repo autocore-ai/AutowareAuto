@@ -18,28 +18,30 @@
 #ifndef STATE_ESTIMATION_NODES__MEASUREMENT_TYPEDEFS_HPP_
 #define STATE_ESTIMATION_NODES__MEASUREMENT_TYPEDEFS_HPP_
 
-#include <common/types.hpp>
-#include <motion_model/constant_acceleration.hpp>
-#include <state_estimation_nodes/measurement.hpp>
+#include <measurement/linear_measurement.hpp>
 
 namespace autoware
 {
 namespace prediction
 {
 
-using MeasurementPose = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::POSE_X,
-    motion::motion_model::ConstantAcceleration::States::POSE_Y>;
+template<typename MeasurementT>
+struct Stamped
+{
+  std::chrono::system_clock::time_point timestamp;
+  MeasurementT measurement;
+};
 
-using MeasurementPoseAndSpeed = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::POSE_X,
-    motion::motion_model::ConstantAcceleration::States::POSE_Y,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_X,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_Y>;
+using MeasurementPose = LinearMeasurement<
+  FloatState<variable::X, variable::Y>>;
+using MeasurementSpeed = LinearMeasurement<
+  FloatState<variable::X_VELOCITY, variable::Y_VELOCITY>>;
+using MeasurementPoseAndSpeed = LinearMeasurement<
+  FloatState<variable::X, variable::Y, variable::X_VELOCITY, variable::Y_VELOCITY>>;
 
-using MeasurementSpeed = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_X,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_Y>;
+using StampedMeasurementPose = Stamped<MeasurementPose>;
+using StampedMeasurementSpeed = Stamped<MeasurementSpeed>;
+using StampedMeasurementPoseAndSpeed = Stamped<MeasurementPoseAndSpeed>;
 
 }  // namespace prediction
 }  // namespace autoware

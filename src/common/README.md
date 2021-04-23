@@ -15,7 +15,6 @@ across the Autoware.Auto system.
 - @subpage geometry-spatial-hash
 - @subpage helper-comparisons
 - @subpage more-thuente-line-search-design
-- @subpage motion-model
 - @subpage mpark_variant_vendor-package-design
 - @subpage reference-tracking-controller-design
 - @subpage signal-filters-design

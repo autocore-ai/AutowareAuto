@@ -20,10 +20,10 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
-#include <motion_model/constant_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/time.hpp>
-#include <state_estimation_nodes/measurement.hpp>
+#include <state_estimation_nodes/measurement_typedefs.hpp>
+#include <state_estimation_nodes/visibility_control.hpp>
 
 #include <Eigen/Geometry>
 
@@ -31,20 +31,6 @@ namespace autoware
 {
 namespace prediction
 {
-
-using MeasurementPose = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::POSE_X,
-    motion::motion_model::ConstantAcceleration::States::POSE_Y>;
-
-using MeasurementPoseAndSpeed = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::POSE_X,
-    motion::motion_model::ConstantAcceleration::States::POSE_Y,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_X,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_Y>;
-
-using MeasurementSpeed = Measurement<common::types::float32_t,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_X,
-    motion::motion_model::ConstantAcceleration::States::VELOCITY_Y>;
 
 ///
 /// @brief      Interface for converting a message into a measurement.
@@ -118,7 +104,7 @@ static constexpr Eigen::Transform<
 /// @return     The measurement containing pose and speed.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC MeasurementPoseAndSpeed message_to_measurement(
+STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPoseAndSpeed message_to_measurement(
   const nav_msgs::msg::Odometry & msg,
   const Eigen::Isometry3f & tf__world__frame_id,
   const Eigen::Isometry3f & tf__world__child_frame_id);
@@ -132,7 +118,7 @@ STATE_ESTIMATION_NODES_PUBLIC MeasurementPoseAndSpeed message_to_measurement(
 /// @return     The measurement containing speed.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC MeasurementSpeed message_to_measurement(
+STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementSpeed message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id);
 
@@ -145,7 +131,7 @@ STATE_ESTIMATION_NODES_PUBLIC MeasurementSpeed message_to_measurement(
 /// @return     The measurement containing pose.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC MeasurementPose message_to_measurement(
+STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id);
 

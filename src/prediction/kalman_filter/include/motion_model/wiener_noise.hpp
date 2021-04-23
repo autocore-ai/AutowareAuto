@@ -26,12 +26,22 @@
 #include <kalman_filter/visibility_control.hpp>
 #include <motion_model/noise_interface.hpp>
 
+#include <algorithm>
 #include <array>
+#include <vector>
 
 namespace autoware
 {
 namespace prediction
 {
+
+///
+/// @brief      A trait that defines the number of acceleration components.
+///
+/// @tparam     StateT  A state vector type.
+///
+template<typename StateT>
+struct number_of_acceleration_components : public std::integral_constant<std::size_t, 0UL> {};
 
 ///
 /// @brief      A class that describes the Wiener process noise.
@@ -46,6 +56,9 @@ namespace prediction
 template<typename StateT>
 class KALMAN_FILTER_PUBLIC WienerNoise : public NoiseInterface<WienerNoise<StateT>>
 {
+  using AccelerationArray = std::array<
+    typename StateT::Scalar, number_of_acceleration_components<StateT>::value>;
+
 public:
   using State = StateT;
 
@@ -53,10 +66,14 @@ public:
   /// @brief      Constructor from acceleration variances.
   ///
   /// @param[in]  acceleration_variances  The acceleration variances, note that these are sigmas,
-  ///                                     not sigmas squared.
+  ///                                     not sigmas squared. Note that while this array has place
+  ///                                     for all the variables, it should only hold those
+  ///                                     representing acceleration values. The positions of these
+  ///                                     variables in the array do not represent their position in
+  ///                                     the actual state vector and should start from the start of
+  ///                                     this array.
   ///
-  explicit WienerNoise(
-    const std::array<typename State::Scalar, State::size()> & acceleration_variances)
+  explicit WienerNoise(const AccelerationArray & acceleration_variances)
   : m_acceleration_variances{acceleration_variances} {}
 
 protected:
@@ -76,8 +93,28 @@ protected:
   }
 
 private:
-  std::array<typename State::Scalar, State::size()> m_acceleration_variances{};
+  AccelerationArray m_acceleration_variances{};
 };
+
+template<typename StateT, typename OtherScalarT>
+auto make_wiener_noise(const std::vector<OtherScalarT> & acceleration_variances)
+{
+  std::array<typename StateT::Scalar, number_of_acceleration_components<StateT>::value> variances;
+  if (acceleration_variances.size() != variances.size()) {
+    throw std::runtime_error(
+            "There must be " + std::to_string(variances.size()) + " acceleration variances");
+  }
+  std::copy(acceleration_variances.begin(), acceleration_variances.end(), variances.begin());
+  return WienerNoise<StateT>{variances};
+}
+
+///
+/// @brief      A specialization of the number_of_acceleration_components trait for
+///             state::ConstAccelerationXY.
+///
+template<>
+struct number_of_acceleration_components<state::ConstAccelerationXY>
+  : public std::integral_constant<std::size_t, 2UL> {};
 
 ///
 /// @brief      A specialization of covariance matrix computation for ConstAccelerationXY state.
@@ -90,6 +127,15 @@ template<>
 KALMAN_FILTER_PUBLIC state::ConstAccelerationXY::Matrix
 WienerNoise<state::ConstAccelerationXY>::crtp_covariance(
   const std::chrono::nanoseconds & dt) const;
+
+
+///
+/// @brief      A specialization of the number_of_acceleration_components trait for
+///             state::ConstAccelerationXYYaw.
+///
+template<>
+struct number_of_acceleration_components<state::ConstAccelerationXYYaw>
+  : public std::integral_constant<std::size_t, 3UL> {};
 
 ///
 /// @brief      A specialization of covariance matrix computation for ConstAccelerationXYYaw state.

@@ -1,4 +1,4 @@
-// Copyright 2018 the Autoware Foundation
+// Copyright 2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+// Developed by Apex.AI, Inc.
 
-/// \copyright Copyright 2018 the Autoware Foundation
+/// \copyright Copyright 2021 the Autoware Foundation
 /// All rights reserved.
+/// \file
 
-#include "kalman_filter/esrcf.hpp"
+#ifndef STATE_ESTIMATION_NODES__FILTER_TYPEDEFS_HPP_
+#define STATE_ESTIMATION_NODES__FILTER_TYPEDEFS_HPP_
+
+#include <kalman_filter/common_states.hpp>
+#include <kalman_filter/kalman_filter.hpp>
+#include <motion_model/linear_motion_model.hpp>
+#include <motion_model/wiener_noise.hpp>
 
 namespace autoware
 {
 namespace prediction
 {
-namespace kalman_filter
-{
-// This is just to get some static analysis
-template class Esrcf<4, 4>;
-template class SrcfCore<2, 2>;
-template class SrcfCore<1, 1>;
-template class SrcfCore<2, 1>;
-template class SrcfCore<3, 1>;
-}  // namespace kalman_filter
+using ConstAccelerationKalmanFilterXY = KalmanFilter<
+  LinearMotionModel<state::ConstAccelerationXY>,
+  WienerNoise<state::ConstAccelerationXY>>;
 }  // namespace prediction
 }  // namespace autoware
+
+
+#endif  // STATE_ESTIMATION_NODES__FILTER_TYPEDEFS_HPP_

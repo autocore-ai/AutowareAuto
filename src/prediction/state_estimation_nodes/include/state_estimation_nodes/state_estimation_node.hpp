@@ -24,14 +24,11 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
-#include <kalman_filter/esrcf.hpp>
-#include <motion_model/constant_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/subscription.hpp>
 #include <state_estimation_nodes/kalman_filter_wrapper.hpp>
-#include <state_estimation_nodes/measurement.hpp>
 #include <state_estimation_nodes/measurement_conversion.hpp>
 #include <state_estimation_nodes/visibility_control.hpp>
 
@@ -77,7 +74,7 @@ private:
   using TfMsgT = tf2_msgs::msg::TFMessage;
 
   template<std::int32_t kDim>
-  using VectorT = Eigen::Matrix<float32_t, kDim, 1>;
+  using VectorT = Eigen::Matrix<autoware::common::types::float32_t, kDim, 1>;
 
   /// Gets called when a new odometry message arrives.
   ///
@@ -123,7 +120,8 @@ private:
     CallbackFnT<MessageT> callback);
 
   template<std::int32_t kNumOfStates, std::int32_t kProcessNoiseDim>
-  static Eigen::Matrix<float32_t, kNumOfStates, kProcessNoiseDim> create_GQ_factor(
+  static Eigen::Matrix<autoware::common::types::float32_t, kNumOfStates, kProcessNoiseDim>
+  create_GQ_factor(
     const std::chrono::nanoseconds & expected_delta_t,
     const VectorT<kProcessNoiseDim> & process_noise_variances);
 
@@ -150,7 +148,7 @@ private:
 
   // TODO(igor): we can replace the unique_ptr here with std::variant or alike at a later time to
   // allow configuring which filter to use at runtime.
-  std::unique_ptr<ConstantAccelerationFilter> m_ekf{};
+  std::unique_ptr<ConstantAccelerationFilterWrapper> m_ekf{};
 
   tf2::BufferCore m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;

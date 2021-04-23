@@ -16,6 +16,7 @@
 
 #include <controller_common/visibility_control.hpp>
 #include <motion_common/motion_common.hpp>
+#include <motion_model/differential_drive_motion_model.hpp>
 
 #include <chrono>
 #include <string>
@@ -101,12 +102,12 @@ public:
   /// Returns the index of the current reference point in the trajectory, i.e.
   /// the first point on the trajectory just after the current point spatially.
   /// If a point exactly matches, return that index.
-  /// \throw std::runtime_error if an empty tajectory or no trajectory is provided
+  /// \throw std::runtime_error if an empty trajectory or no trajectory is provided
   Index get_current_state_spatial_index() const;
   /// Returns the index of the current reference point in the trajectory, i.e.
   /// the first point on the trajectory just after the current point in time.
   /// If a point exactly matches, return that index.
-  /// \throw std::runtime_error if an empty tajectory or no trajectory is provided
+  /// \throw std::runtime_error if an empty trajectory or no trajectory is provided
   Index get_current_state_temporal_index() const;
 
   /// Get name of algorithm, for debugging or diagnostic purposes
@@ -146,6 +147,7 @@ private:
   std::chrono::system_clock::time_point m_latest_reference;
   Index m_reference_spatial_index;
   Index m_reference_temporal_index;
+  autoware::prediction::CatrMotionModel m_model{};
 };  // class ControllerBase
 
 /// Fill out a controller diagnostic message

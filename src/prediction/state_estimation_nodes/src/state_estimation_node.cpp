@@ -17,6 +17,9 @@
 
 #include <state_estimation_nodes/state_estimation_node.hpp>
 
+#include <kalman_filter/kalman_filter.hpp>
+#include <motion_model/linear_motion_model.hpp>
+#include <motion_model/wiener_noise.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <state_estimation_nodes/measurement_conversion.hpp>
 
@@ -87,43 +90,6 @@ std::chrono::nanoseconds validate_publish_frequency(
   return time_between_publish_requests;
 }
 
-template<std::int32_t kStateDim, std::int32_t kNoiseDim>
-Eigen::Matrix<float32_t, kStateDim, kNoiseDim> create_process_noise_variances(
-  const std::vector<float64_t> & position_variance,
-  const std::vector<float64_t> & velocity_variance,
-  const std::vector<float64_t> & acceleration_variance)
-{
-  // TODO(igor): this is a placeholder for a more generic implementation that would allow
-  // configuring the process noise covariances with more flexibility.
-  using autoware::motion::motion_model::ConstantAcceleration;
-
-  if (acceleration_variance.size() != static_cast<size_t>(kNoiseDim)) {
-    throw std::logic_error("For now we require a 2D acceleration variance.");
-  }
-  Eigen::Matrix<float32_t, kStateDim, kNoiseDim> process_noise_variances{
-    Eigen::Matrix<float32_t, kStateDim, kNoiseDim>::Zero()};
-  if (position_variance.size() == static_cast<size_t>(kNoiseDim)) {
-    assert_all_entries_positive(position_variance, "position_variance");
-    process_noise_variances(ConstantAcceleration::States::POSE_X, 0) =
-      static_cast<float32_t>(position_variance[0]);
-    process_noise_variances(ConstantAcceleration::States::POSE_Y, 1) =
-      static_cast<float32_t>(position_variance[1]);
-  }
-  if (velocity_variance.size() == static_cast<size_t>(kNoiseDim)) {
-    assert_all_entries_positive(velocity_variance, "velocity_variance");
-    process_noise_variances(ConstantAcceleration::States::VELOCITY_X, 0) =
-      static_cast<float32_t>(velocity_variance[0]);
-    process_noise_variances(ConstantAcceleration::States::VELOCITY_Y, 1) =
-      static_cast<float32_t>(velocity_variance[1]);
-  }
-  assert_all_entries_positive(acceleration_variance, "acceleration_variance");
-  process_noise_variances(ConstantAcceleration::States::ACCELERATION_X, 0) =
-    static_cast<float32_t>(acceleration_variance[0]);
-  process_noise_variances(ConstantAcceleration::States::ACCELERATION_Y, 1) =
-    static_cast<float32_t>(acceleration_variance[1]);
-  return process_noise_variances;
-}
-
 template<std::int32_t kStateDim>
 Eigen::Matrix<float32_t, kStateDim, kStateDim> create_state_variances(
   const std::vector<float64_t> & state_variances)
@@ -173,21 +139,23 @@ StateEstimationNode::StateEstimationNode(
     declare_parameter("process_noise_variances.position", std::vector<float64_t>{})};
   const auto velocity_variance{
     declare_parameter("process_noise_variances.velocity", std::vector<float64_t>{})};
-  const auto acceleration_variance{
+  const auto acceleration_variances{
     declare_parameter("process_noise_variances.acceleration", std::vector<float64_t>{})};
   const auto state_variances{
     declare_parameter("state_variances", std::vector<float64_t>{})};
   const auto mahalanobis_threshold{
     declare_parameter("mahalanobis_threshold", std::numeric_limits<float32_t>::max())};
 
-  m_ekf = std::make_unique<ConstantAccelerationFilter>(
+  using State = ConstantAccelerationFilterWrapper::State;
+  m_ekf = std::make_unique<ConstantAccelerationFilterWrapper>(
+    LinearMotionModel<State>{},
+    make_wiener_noise<State>(acceleration_variances),
     create_state_variances<6>(state_variances),
-    create_process_noise_variances<6, 2>(
-      position_variance, velocity_variance, acceleration_variance),
     time_between_publish_requests,
     m_frame_id,
     kDefaultHistoryLength,
     mahalanobis_threshold);
+
 
   const std::vector<std::string> empty_vector{};
   const auto input_odom_topics{declare_parameter("topics.input_odom", empty_vector)};
@@ -221,7 +189,7 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
   const auto tf__m_frame_id__msg_child_frame_id =
     get_transform(m_frame_id, msg->child_frame_id, msg->header.stamp);
 
-  const auto measurement = message_to_measurement<MeasurementPoseAndSpeed>(
+  const auto measurement = message_to_measurement<StampedMeasurementPoseAndSpeed>(
     *msg,
     tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>(),
     tf2::transformToEigen(tf__m_frame_id__msg_child_frame_id).cast<float32_t>());
@@ -248,7 +216,7 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 {
   const auto tf__m_frame_id__msg_frame_id =
     get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
-  const auto measurement = message_to_measurement<MeasurementPose>(
+  const auto measurement = message_to_measurement<StampedMeasurementPose>(
     *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>());
   if (m_ekf->is_initialized()) {
     if (!m_ekf->add_observation_to_history(measurement)) {
@@ -280,7 +248,7 @@ void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
   const auto tf__m_frame_id__msg_frame_id =
     get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
   if (!m_ekf->add_observation_to_history(
-      message_to_measurement<MeasurementSpeed>(
+      message_to_measurement<StampedMeasurementSpeed>(
         *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>())))
   {
     throw std::runtime_error("Cannot add a twist observation to history.");

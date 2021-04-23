@@ -4,6 +4,7 @@ project(mpc_controller_nodes)
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(Eigen3 REQUIRED)
 ament_auto_find_build_dependencies()
 
 ### Build
@@ -11,6 +12,7 @@ ament_auto_add_library(mpc_controller_node SHARED
   src/mpc_controller_nodes/mpc_controller_node.cpp)
 
 autoware_set_compile_options(mpc_controller_node)
+target_include_directories(mpc_controller_node SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 
 ament_auto_add_executable(mpc_controller_node_exe
   src/mpc_controller_nodes/mpc_controller_main.cpp)
