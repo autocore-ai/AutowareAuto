@@ -19,7 +19,26 @@ def build():
     if not os.path.exists(builddir):
         os.makedirs(builddir)
     try:
-        subprocess.run(['doxygen', 'docs/.doxygen/Doxyfile'], cwd=ws, check=True)
+        on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+        if on_rtd:
+            docs_path = '{}/docs/.doxygen'.format(ws)
+            doxygen_base = 'doxygen-1.8.17-bundle'
+            doxygen_tarball = '{}.tar.gz'.format(doxygen_base)
+            doxygen_binary_path = '{}/doxygen-1.8.17'.format(doxygen_base)
+            url = 'https://autoware-auto.s3.us-east-2.amazonaws.com/{}'.format(doxygen_tarball)
+            download_cmd = 'wget {}'.format(url)
+            file_cmd = 'file {}'.format(doxygen_tarball)
+            tar_cmd = 'tar xvf {}'.format(doxygen_tarball)
+            chmod_cmd = 'chmod -v a+x {}'.format(doxygen_base)
+            doxygen_cmd = 'LD_LIBRARY_PATH={} {} docs/.doxygen/Doxyfile'.format(
+                doxygen_base, doxygen_binary_path)
+            subprocess.run(download_cmd, shell=True, cwd=ws, check=True)
+            subprocess.run(file_cmd, shell=True, cwd=ws, check=True)
+            subprocess.run(tar_cmd, shell=True, cwd=ws, check=True)
+            subprocess.run(chmod_cmd, shell=True, cwd=ws, check=True)
+            subprocess.run(doxygen_cmd, shell=True, cwd=ws, check=True)
+        else:
+            subprocess.run(['doxygen', 'docs/.doxygen/Doxyfile'], cwd=ws, check=True)
     except subprocess.CalledProcessError as err:
         print('\nDoxygen failed to generate documentation: {}\n'.format(err))
         return 1
