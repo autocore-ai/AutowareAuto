@@ -13,7 +13,9 @@
   <depend>autoware_auto_msgs</depend>
   <depend>autoware_auto_common</depend>
   <depend>autoware_auto_geometry</depend>
-  <build_depend>kalman_filter</build_depend>
+  <build_depend>motion_model</build_depend>
+  <build_depend>state_vector</build_depend>
+  <build_depend>state_estimation</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>hungarian_assigner</build_depend>
 

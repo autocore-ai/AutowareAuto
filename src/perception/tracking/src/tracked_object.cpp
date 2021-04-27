@@ -15,6 +15,7 @@
 #include "tracking/tracked_object.hpp"
 
 #include <Eigen/Core>
+
 #include <algorithm>
 
 namespace autoware
@@ -27,17 +28,17 @@ namespace tracking
 namespace
 {
 
-using autoware::prediction::variable::X;
-using autoware::prediction::variable::Y;
-using autoware::prediction::variable::X_VELOCITY;
-using autoware::prediction::variable::Y_VELOCITY;
-using autoware::prediction::variable::X_ACCELERATION;
-using autoware::prediction::variable::Y_ACCELERATION;
+using autoware::common::state_vector::variable::X;
+using autoware::common::state_vector::variable::Y;
+using autoware::common::state_vector::variable::X_VELOCITY;
+using autoware::common::state_vector::variable::Y_VELOCITY;
+using autoware::common::state_vector::variable::X_ACCELERATION;
+using autoware::common::state_vector::variable::Y_ACCELERATION;
 
-using CA = autoware::prediction::state::ConstAccelerationXY;
-using MotionModel = autoware::prediction::LinearMotionModel<CA>;
-using NoiseModel = autoware::prediction::WienerNoise<CA>;
-using EKF = autoware::prediction::KalmanFilter<MotionModel, NoiseModel>;
+using CA = autoware::common::state_vector::ConstAccelerationXY;
+using MotionModel = autoware::common::motion_model::LinearMotionModel<CA>;
+using NoiseModel = autoware::common::state_estimation::WienerNoise<CA>;
+using EKF = autoware::common::state_estimation::KalmanFilter<MotionModel, NoiseModel>;
 using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedDynamicObject;
 using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedDynamicObject;
 

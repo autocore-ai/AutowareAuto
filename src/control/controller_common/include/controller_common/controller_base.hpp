@@ -147,7 +147,7 @@ private:
   std::chrono::system_clock::time_point m_latest_reference;
   Index m_reference_spatial_index;
   Index m_reference_temporal_index;
-  autoware::prediction::CatrMotionModel m_model{};
+  autoware::common::motion_model::CatrMotionModel m_model{};
 };  // class ControllerBase
 
 /// Fill out a controller diagnostic message

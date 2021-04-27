@@ -8,8 +8,4 @@ positions of detected objects over some period of time.
 
 # Subpages
 
-- @subpage filter-design
-- @subpage state-and-variables-design
-- @subpage state-estimation-nodes-design
-- @subpage motion-model-design
 - @subpage tracking_test_framework-package-design

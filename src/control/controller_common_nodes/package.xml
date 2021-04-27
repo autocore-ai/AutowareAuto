@@ -18,7 +18,8 @@
   <depend>rclcpp</depend>
   <depend>tf2</depend>
   <depend>tf2_msgs</depend>
-  <depend>kalman_filter</depend>
+  <depend>motion_model</depend>
+  <depend>state_vector</depend>
 
   <build_depend>motion_common</build_depend>
   <build_depend>time_utils</build_depend>

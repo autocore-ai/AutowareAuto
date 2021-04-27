@@ -241,14 +241,14 @@ Command ControllerBase::compute_stop_command(const State & state) const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 Point ControllerBase::predict(const Point & point, std::chrono::nanoseconds dt) noexcept
 {
-  using autoware::prediction::variable::X;
-  using autoware::prediction::variable::Y;
-  using autoware::prediction::variable::XY_VELOCITY;
-  using autoware::prediction::variable::XY_ACCELERATION;
-  using autoware::prediction::variable::YAW;
-  using autoware::prediction::variable::YAW_CHANGE_RATE;
+  using autoware::common::state_vector::variable::X;
+  using autoware::common::state_vector::variable::Y;
+  using autoware::common::state_vector::variable::XY_VELOCITY;
+  using autoware::common::state_vector::variable::XY_ACCELERATION;
+  using autoware::common::state_vector::variable::YAW;
+  using autoware::common::state_vector::variable::YAW_CHANGE_RATE;
   // Set up state
-  autoware::prediction::CatrMotionModel::State state{};
+  autoware::common::motion_model::CatrMotionModel::State state{};
   state.at<X>() = point.x;
   state.at<Y>() = point.y;
   state.at<XY_VELOCITY>() = point.longitudinal_velocity_mps;

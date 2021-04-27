@@ -17,7 +17,8 @@
   <depend>autoware_auto_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>motion_common</depend>
-  <depend>kalman_filter</depend>
+  <depend>motion_model</depend>
+  <depend>state_vector</depend>
   <depend>time_utils</depend>
 
   <build_depend>eigen</build_depend>
