@@ -162,7 +162,7 @@ ade$ source install/setup.bash
 then either execute the component test manually
 
 ```{bash}
-ade$ ros2 test test/ndt_mapping_nodes_launch.test.py
+ade$ ros2 test src/mapping/ndt_mapping_nodes/test/ndt_mapping_nodes_launch.test.py
 ```
 
 or as part of testing the entire package:
