@@ -1,4 +1,4 @@
-Object tracking architecture {#Tracking-architecture}
+Object tracking architecture {#tracking-architecture}
 ==============================
 
 # Purpose / Use cases
