@@ -33,6 +33,10 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(test_fast_atan2
     "autoware_auto_common")
+
+  ament_add_google_benchmark(bench_point_cloud test/bench/bench_point_cloud.cpp)
+  target_link_libraries(bench_point_cloud ${PROJECT_NAME})
+
 endif()
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
