@@ -80,14 +80,14 @@ struct TRACKING_PUBLIC TrackerUpdateResult
 struct TRACKING_PUBLIC MultiObjectTrackerOptions
 {
   /// Data association parameters.
-  DataAssociationConfig assoc_config = {2.0f, 2.5f};
-  /// The frame in which to do tracking.
-  std::string frame = "map";
+  DataAssociationConfig association_config;
   /// When initializing a new track, this value is used for the variance when none is provided by
   /// the detection.
-  float default_variance = 1.0F;
+  float default_variance = -1.0F;  // Invalid, to make sure it is set.
   /// The magnitude of the noise in the Kalman filter.
-  float noise_variance = 3.0F;
+  float noise_variance = -1.0F;  // Invalid, to make sure it is set.
+  /// The frame in which to do tracking.
+  std::string frame = "map";  // This default probably does not need to be changed.
 };
 
 

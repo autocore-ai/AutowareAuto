@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    # Default variance for position and velocity variables in the filters
+    ekf_default_variance: 1.0
+    # Variance for the noise model in the filters
+    ekf_noise_variance: 3.0
+    # Gate parameter: Objects farther apart than this distance are not matched.
+    association_max_distance: 2.0
+    # Gate parameter: Objects whose size differs by more than this factor are not matched.
+    association_max_area_ratio: 2.5

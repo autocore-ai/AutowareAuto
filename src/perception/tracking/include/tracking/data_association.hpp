@@ -46,6 +46,8 @@ public:
   ///                       considered for association with each other
   DataAssociationConfig(const float max_distance, const float max_area_ratio);
 
+  inline float get_max_distance() const {return m_max_distance;}
+
   inline float get_max_distance_squared() const {return m_max_distance_squared;}
 
   inline float get_max_area_ratio() const {return m_max_area_ratio;}

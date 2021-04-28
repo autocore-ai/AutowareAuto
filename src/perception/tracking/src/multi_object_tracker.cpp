@@ -70,7 +70,7 @@ geometry_msgs::msg::TransformStamped to_transform(const nav_msgs::msg::Odometry 
 
 
 MultiObjectTracker::MultiObjectTracker(MultiObjectTrackerOptions options)
-: m_options(options), m_associator(options.assoc_config) {}
+: m_options(options), m_associator(options.association_config) {}
 
 TrackerUpdateResult MultiObjectTracker::update(
   DetectedObjectsMsg detections,
