@@ -23,10 +23,6 @@
 #include <limits>
 #include <string>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 namespace autoware
 {
 namespace perception
@@ -49,26 +45,6 @@ using autoware::common::lidar_utils::add_point_to_cloud_raw;
 RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   const rclcpp::NodeOptions & node_options)
 : Node("ray_ground_classifier", node_options),
-#ifdef _OPENMP
-  m_classifiers(omp_get_max_threads(), ray_ground_classifier::RayGroundClassifier(
-      ray_ground_classifier::Config {
-          static_cast<float32_t>(declare_parameter("classifier.sensor_height_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.max_local_slope_deg").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.max_global_slope_deg").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.nonground_retro_thresh_deg").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.min_height_thresh_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.max_global_height_thresh_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.max_last_local_ground_thresh_m").get<float32_t>()),
-          static_cast<float32_t>(declare_parameter(
-            "classifier.max_provisional_ground_distance_m").get<float32_t>())
-        })),
-#else
   m_classifier(ray_ground_classifier::Config{
           static_cast<float32_t>(declare_parameter("classifier.sensor_height_m").get<float32_t>()),
           static_cast<float32_t>(declare_parameter(
@@ -86,7 +62,6 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
           static_cast<float32_t>(declare_parameter(
             "classifier.max_provisional_ground_distance_m").get<float32_t>())
         }),
-#endif
   m_aggregator(ray_ground_classifier::RayAggregator::Config{
           static_cast<float32_t>(declare_parameter(
             "aggregator.min_ray_angle_rad").get<float32_t>()),
@@ -156,138 +131,108 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     size_t num_ready = 0;
     bool8_t has_encountered_unknown_exception = false;
     bool8_t abort = false;
-    #pragma omp parallel shared(m_aggregator, num_ready, has_encountered_unknown_exception, abort)
-    {
-      std::size_t point_step = msg->point_step;
-      #pragma omp for schedule(dynamic, 50)
-      for (std::size_t idx = 0U; idx < msg->data.size(); idx += point_step) {
-        #pragma omp flush (abort)
+
+    std::size_t point_step = msg->point_step;
+    for (std::size_t idx = 0U; idx < msg->data.size(); idx += point_step) {
+      if (abort) {
+        continue;
+      }
+      try {
+        PointXYZIF * pt;
+        // TODO(c.ho) Fix below deviation after #2131 is in
+        //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
+        pt = reinterpret_cast<PointXYZIF *>(&msg->data[idx]);
+        // don't bother inserting the points almost (0,0).
+        // Too many of those makes the bin 0 overflow
+        if ((fabsf(pt->x) > std::numeric_limits<decltype(pt->x)>::epsilon()) ||
+          (fabsf(pt->y) > std::numeric_limits<decltype(pt->y)>::epsilon()))
+        {
+          if (!m_aggregator.insert(pt)) {
+            m_aggregator.end_of_scan();
+          }
+        } else {
+          uint32_t local_nonground_pc_idx;
+          local_nonground_pc_idx = m_nonground_pc_idx++;
+          if (!add_point_to_cloud_raw(m_nonground_msg, *pt, local_nonground_pc_idx)) {
+            throw std::runtime_error(
+                    "RayGroundClassifierNode: Overran nonground msg point capacity");
+          }
+        }
+      } catch (const std::runtime_error & e) {
+        m_has_failed = true;
+        RCLCPP_INFO(this->get_logger(), e.what());
+        abort = true;
+      } catch (const std::exception & e) {
+        m_has_failed = true;
+        RCLCPP_INFO(this->get_logger(), e.what());
+        abort = true;
+      } catch (...) {
+        RCLCPP_INFO(
+          this->get_logger(),
+          "RayGroundClassifierCloudNode has encountered an unknown failure");
+        abort = true;
+        has_encountered_unknown_exception = true;
+      }
+    }
+
+    // if abort, we skip all remaining the parallel work to be able to return/throw
+    if (!abort) {
+      m_aggregator.end_of_scan();
+      num_ready = m_aggregator.get_ready_ray_count();
+
+      // Partition each ray
+      for (size_t i = 0; i < num_ready; i++) {
         if (abort) {
           continue;
         }
+        // Note: if an exception occurs in this loop, the aggregator can get into a bad state
+        // (e.g. overrun capacity)
+        PointPtrBlock ground_blk;
+        PointPtrBlock nonground_blk;
         try {
-          PointXYZIF * pt;
-          // TODO(c.ho) Fix below deviation after #2131 is in
-          //lint -e{925, 9110} Need to convert pointers and use bit for external API NOLINT
-          pt = reinterpret_cast<PointXYZIF *>(&msg->data[idx]);
-          // don't bother inserting the points almost (0,0).
-          // Too many of those makes the bin 0 overflow
-          if ((fabsf(pt->x) > std::numeric_limits<decltype(pt->x)>::epsilon()) ||
-            (fabsf(pt->y) > std::numeric_limits<decltype(pt->y)>::epsilon()))
-          {
-            if (!m_aggregator.insert(pt)) {
-              #ifdef _OPENMP
-              RCLCPP_WARN_ONCE(
-                this->get_logger(),
-                "early end of scan are ignored in parallel mode");
-              #else
-              m_aggregator.end_of_scan();
-              #endif
+          auto ray = m_aggregator.get_next_ray();
+          // partition: should never fail, guaranteed to have capacity via other checks
+          m_classifier.partition(ray, ground_blk, nonground_blk);
+
+          // Add ray to point clouds
+          for (auto & ground_point : ground_blk) {
+            uint32_t local_ground_pc_idx;
+
+            local_ground_pc_idx = m_ground_pc_idx++;
+            if (!add_point_to_cloud_raw(
+                m_ground_msg, *ground_point,
+                local_ground_pc_idx))
+            {
+              throw std::runtime_error(
+                      "RayGroundClassifierNode: Overran ground msg point capacity");
             }
-          } else {
+          }
+          for (auto & nonground_point : nonground_blk) {
             uint32_t local_nonground_pc_idx;
-            #pragma omp atomic capture
             local_nonground_pc_idx = m_nonground_pc_idx++;
-            if (!add_point_to_cloud_raw(m_nonground_msg, *pt, local_nonground_pc_idx)) {
+            if (!add_point_to_cloud_raw(
+                m_nonground_msg, *nonground_point,
+                local_nonground_pc_idx))
+            {
               throw std::runtime_error(
                       "RayGroundClassifierNode: Overran nonground msg point capacity");
             }
           }
         } catch (const std::runtime_error & e) {
           m_has_failed = true;
-          #pragma omp critical (get_logger)
           RCLCPP_INFO(this->get_logger(), e.what());
           abort = true;
         } catch (const std::exception & e) {
           m_has_failed = true;
-          #pragma omp critical (get_logger)
           RCLCPP_INFO(this->get_logger(), e.what());
           abort = true;
         } catch (...) {
-          #pragma omp critical (get_logger)
           RCLCPP_INFO(
             this->get_logger(),
             "RayGroundClassifierCloudNode has encountered an unknown failure");
           abort = true;
           has_encountered_unknown_exception = true;
         }
-      }
-      // Implicit omp barrier here
-
-      // if abort, we skip all remaining the parallel work to be able to return/throw
-      #pragma omp flush (abort)
-      if (!abort) {
-        #pragma omp single
-        {
-          m_aggregator.end_of_scan();
-          num_ready = m_aggregator.get_ready_ray_count();
-        }
-        // Implicit omp barrier and flush(num_ready) here
-
-        // Partition each ray
-        #pragma omp for
-        for (size_t i = 0; i < num_ready; i++) {
-          #pragma omp flush (abort)
-          if (abort) {
-            continue;
-          }
-          // Note: if an exception occurs in this loop, the aggregator can get into a bad state
-          // (e.g. overrun capacity)
-          PointPtrBlock ground_blk;
-          PointPtrBlock nonground_blk;
-          try {
-            auto ray = m_aggregator.get_next_ray();
-            #ifdef _OPENMP
-            m_classifiers[omp_get_thread_num()].partition(ray, ground_blk, nonground_blk);
-            #else
-            // partition: should never fail, guaranteed to have capacity via other checks
-            m_classifier.partition(ray, ground_blk, nonground_blk);
-            #endif
-            // Add ray to point clouds
-            for (auto & ground_point : ground_blk) {
-              uint32_t local_ground_pc_idx;
-              #pragma omp atomic capture
-              local_ground_pc_idx = m_ground_pc_idx++;
-              if (!add_point_to_cloud_raw(
-                  m_ground_msg, *ground_point,
-                  local_ground_pc_idx))
-              {
-                throw std::runtime_error(
-                        "RayGroundClassifierNode: Overran ground msg point capacity");
-              }
-            }
-            for (auto & nonground_point : nonground_blk) {
-              uint32_t local_nonground_pc_idx;
-              #pragma omp atomic capture
-              local_nonground_pc_idx = m_nonground_pc_idx++;
-              if (!add_point_to_cloud_raw(
-                  m_nonground_msg, *nonground_point,
-                  local_nonground_pc_idx))
-              {
-                throw std::runtime_error(
-                        "RayGroundClassifierNode: Overran nonground msg point capacity");
-              }
-            }
-          } catch (const std::runtime_error & e) {
-            m_has_failed = true;
-            #pragma omp critical (get_logger)
-            RCLCPP_INFO(this->get_logger(), e.what());
-            abort = true;
-          } catch (const std::exception & e) {
-            m_has_failed = true;
-            #pragma omp critical (get_logger)
-            RCLCPP_INFO(this->get_logger(), e.what());
-            abort = true;
-          } catch (...) {
-            #pragma omp critical (get_logger)
-            RCLCPP_INFO(
-              this->get_logger(),
-              "RayGroundClassifierCloudNode has encountered an unknown failure");
-            abort = true;
-            has_encountered_unknown_exception = true;
-          }
-        }
-        // Implicit omp barrier here
       }
     }
 
@@ -302,7 +247,6 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
     if (abort) {
       return;
     }
-
 
     // Resize the clouds down to their actual sizes.
     autoware::common::lidar_utils::resize_pcl_msg(m_ground_msg, m_ground_pc_idx);

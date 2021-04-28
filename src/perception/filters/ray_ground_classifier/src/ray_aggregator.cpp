@@ -98,13 +98,9 @@ RayAggregator::RayAggregator(const Config & cfg)
 : m_cfg(cfg),
   m_rays(m_cfg.get_num_rays()),
   m_ready_indices(m_cfg.get_num_rays()),
-  m_ready_start_idx{},  // zero initialization
-  m_num_ready{},  // zero initialization
+  m_ready_start_idx{},      // zero initialization
+  m_num_ready{},      // zero initialization
   m_ray_state(m_cfg.get_num_rays())
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  , m_ray_locks(m_cfg.get_num_rays()),
-  m_get_next_ray_lock(ATOMIC_FLAG_INIT)
-  #endif
 {
   m_rays.clear();  // capacity unchanged
   const std::size_t ray_size =
@@ -115,12 +111,6 @@ RayAggregator::RayAggregator(const Config & cfg)
     m_ray_state.push_back(RayState::NOT_READY);
   }
   m_ready_indices.resize(m_ready_indices.capacity());
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  m_num_ready = {0};
-  for (std::size_t idx = 0U; idx < m_cfg.get_num_rays(); ++idx) {
-    m_ray_locks[idx].clear();
-  }
-  #endif
 }
 ////////////////////////////////////////////////////////////////////////////////
 void RayAggregator::end_of_scan()
@@ -145,18 +135,13 @@ bool8_t RayAggregator::insert(const PointXYZIFR & pt)
     return false;
   } else {
     const std::size_t idx = bin(pt);
-    #ifdef RAY_AGGREGATOR_PARALLEL
-    while (m_ray_locks[idx].test_and_set()) {}  // busy wait
-    #endif
+
     Ray & ray = m_rays[idx];
     if (RayState::RESET == m_ray_state[idx]) {
       ray.clear();  // capacity unchanged
       m_ray_state[idx] = RayState::NOT_READY;
     }
     if (ray.size() >= ray.capacity()) {
-      #ifdef RAY_AGGREGATOR_PARALLEL
-      m_ray_locks[idx].clear();
-      #endif
       throw std::runtime_error("RayAggregator: Ray capacity overrun! Use smaller bins");
     }
     // insert point to ray, do some presorting
@@ -169,18 +154,12 @@ bool8_t RayAggregator::insert(const PointXYZIFR & pt)
       // so long we don't fill the buffer, change m_ready_start_idx or pop, reserving m_num_ready
       // is enough to make the push thread safe
       std::size_t used_num;
-      #ifdef RAY_AGGREGATOR_PARALLEL
-      used_num = m_num_ready.fetch_add(1, std::memory_order_relaxed);
-      #else
+
       used_num = m_num_ready++;
-      #endif
       const std::size_t jdx = (m_ready_start_idx + used_num) % m_ready_indices.size();
       m_ready_indices[jdx] = idx;
       // TODO(c.ho) bounds check?
     }
-    #ifdef RAY_AGGREGATOR_PARALLEL
-    m_ray_locks[idx].clear();
-    #endif
   }
   return true;
 }
@@ -214,26 +193,17 @@ std::size_t RayAggregator::get_ready_ray_count() const
 ////////////////////////////////////////////////////////////////////////////////
 const Ray & RayAggregator::get_next_ray()
 {
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  while (m_get_next_ray_lock.test_and_set()) {}  // busy wait
-  #endif
   // move the if out from the sequential section by nullifying the operations if false
   bool8_t is_ready = is_ray_ready();
   const std::size_t local_start_idx = m_ready_start_idx;
   m_ready_start_idx = (local_start_idx + is_ready) % m_ready_indices.size();
   m_num_ready -= is_ready;
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  m_get_next_ray_lock.clear();
-  #endif
 
   if (!is_ready) {
     throw std::runtime_error("RayAggregator: no rays ready");
   }
 
   const std::size_t idx = m_ready_indices[local_start_idx];
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  while (m_ray_locks[idx].test_and_set()) {}  // busy wait
-  #endif
 
   Ray & ret = m_rays[idx];
   // Sort ray
@@ -241,9 +211,6 @@ const Ray & RayAggregator::get_next_ray()
   // ready to be reset on next insertion to this item
   m_ray_state[idx] = RayState::RESET;
 
-  #ifdef RAY_AGGREGATOR_PARALLEL
-  m_ray_locks[idx].clear();
-  #endif
   return ret;
 }
 ////////////////////////////////////////////////////////////////////////////////

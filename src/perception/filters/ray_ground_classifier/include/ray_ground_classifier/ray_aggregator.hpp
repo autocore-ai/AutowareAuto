@@ -20,18 +20,12 @@
 #ifndef RAY_GROUND_CLASSIFIER__RAY_AGGREGATOR_HPP_
 #define RAY_GROUND_CLASSIFIER__RAY_AGGREGATOR_HPP_
 
-#ifdef _OPENMP
-#define RAY_AGGREGATOR_PARALLEL
-#endif
 
 #include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstdint>
 #include <vector>
-#ifdef RAY_AGGREGATOR_PARALLEL
-#include <atomic>
-#endif
 
 #include "autoware_auto_algorithm/algorithm.hpp"
 #include "common/types.hpp"
@@ -188,17 +182,10 @@ private:
   // simple index ring buffer
   std::vector<std::size_t> m_ready_indices;
   std::size_t m_ready_start_idx;
-#ifdef RAY_AGGREGATOR_PARALLEL
-  std::atomic<std::size_t> m_num_ready;
-#else
   std::size_t m_num_ready;
-#endif
+
   // which rays are ready to be reset etc. TODO(c.ho) fold this into an internal ray class
   std::vector<RayState> m_ray_state;
-#ifdef RAY_AGGREGATOR_PARALLEL
-  std::vector<std::atomic_flag> m_ray_locks;
-  std::atomic_flag m_get_next_ray_lock;
-#endif
 };  // class RayAggregator
 }  // namespace ray_ground_classifier
 }  // namespace filters

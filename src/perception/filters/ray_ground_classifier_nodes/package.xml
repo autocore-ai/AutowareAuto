@@ -16,7 +16,6 @@
     <depend>rclcpp</depend>
     <depend>rclcpp_components</depend>
     <depend>sensor_msgs</depend>
-    <build_depend>libomp-dev</build_depend>
 
     <exec_depend>ament_index_python</exec_depend>
     

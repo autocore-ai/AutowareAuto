@@ -61,11 +61,7 @@ private:
   /// \brief Resets state of ray aggregator and messages
   RAY_GROUND_CLASSIFIER_NODES_LOCAL void reset();
   // Algorithmic core
-#ifdef _OPENMP
-  std::vector<ray_ground_classifier::RayGroundClassifier> m_classifiers;
-#else
   ray_ground_classifier::RayGroundClassifier m_classifier;
-#endif
   ray_ground_classifier::RayAggregator m_aggregator;
   // preallocated message
   PointCloud2 m_ground_msg;
