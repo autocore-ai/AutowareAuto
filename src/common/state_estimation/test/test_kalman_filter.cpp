@@ -26,16 +26,20 @@
 
 using autoware::common::state_vector::variable::X;
 using autoware::common::state_vector::variable::Y;
+using autoware::common::state_vector::variable::YAW;
 using autoware::common::state_vector::variable::X_VELOCITY;
 using autoware::common::state_vector::variable::Y_VELOCITY;
+using autoware::common::state_vector::variable::YAW_CHANGE_RATE;
 using autoware::common::state_vector::variable::X_ACCELERATION;
 using autoware::common::state_vector::variable::Y_ACCELERATION;
+using autoware::common::state_vector::variable::YAW_CHANGE_ACCELERATION;
 using autoware::common::state_vector::FloatState;
 using autoware::common::state_estimation::LinearMeasurement;
 using autoware::common::state_estimation::KalmanFilter;
 using autoware::common::state_estimation::WienerNoise;
 using autoware::common::motion_model::LinearMotionModel;
 using autoware::common::state_vector::ConstAccelerationXY;
+using autoware::common::state_vector::ConstAccelerationXYYaw;
 using autoware::common::types::float32_t;
 
 /// @test Test that a filter can be created and reset and is in a valid state throughout this.
@@ -128,12 +132,15 @@ TEST(TestKalmanFilter, TrackStaticObjectHiddenState) {
 
 
 /// @test Test that we can track a moving object measuring part of its state.
+///
+/// @details The object is assumed to move at a straight line, changing its orientation with
+///     constant angular velocity. All the variables, X, Y, YAW are changing independently.
 TEST(TestKalmanFilter, TrackMovingObject) {
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXYYaw>::State;
   using Matrix = State::Matrix;
-  using MeasurementState = FloatState<X, Y>;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  using MeasurementState = FloatState<X, Y, YAW>;
+  LinearMotionModel<ConstAccelerationXYYaw> motion_model{};
+  WienerNoise<ConstAccelerationXYYaw> noise_model{{1.0F, 1.0F, 1.0F}};
   const auto initial_covariance = Matrix::Identity();
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, initial_covariance);
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
@@ -153,10 +160,15 @@ TEST(TestKalmanFilter, TrackMovingObject) {
   const float32_t eps = 0.001F;
   EXPECT_NEAR(kf.state().at<X>(), total_float_seconds * speed, eps);
   EXPECT_NEAR(kf.state().at<Y>(), total_float_seconds * speed, eps);
+  EXPECT_NEAR(
+    kf.state().at<YAW>(),
+    autoware::common::helper_functions::wrap_angle(total_float_seconds * speed), eps);
   EXPECT_NEAR(kf.state().at<X_VELOCITY>(), speed, eps);
   EXPECT_NEAR(kf.state().at<Y_VELOCITY>(), speed, eps);
+  EXPECT_NEAR(kf.state().at<YAW_CHANGE_RATE>(), speed, eps);
   EXPECT_NEAR(kf.state().at<X_ACCELERATION>(), 0.0F, eps);
   EXPECT_NEAR(kf.state().at<Y_ACCELERATION>(), 0.0F, eps);
+  EXPECT_NEAR(kf.state().at<YAW_CHANGE_ACCELERATION>(), 0.0F, eps);
 }
 
 /// \test Track a ball thrown at 45 deg angle. We perfectly observe positions of the ball.

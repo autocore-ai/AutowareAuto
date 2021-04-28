@@ -107,15 +107,14 @@ public:
   State crtp_correct(const MeasurementT & measurement)
   {
     const auto expected_measurement = measurement.create_new_instance_from(m_state);
-    // TODO(#994): wrap the angles of the innovation vector. Probably as part of the state?
-    const auto innovation = measurement.state().vector() - expected_measurement.vector();
+    const auto innovation = wrap_all_angles(measurement.state() - expected_measurement);
     const auto mapping_matrix = measurement.mapping_matrix_from(m_state);
     const auto innovation_covariance =
       mapping_matrix * m_covariance * mapping_matrix.transpose() + measurement.covariance();
     const auto kalman_gain =
       m_covariance * mapping_matrix.transpose() * innovation_covariance.inverse();
-    // TODO(#944): wrap the angles of the resulting vector.
-    m_state.vector() += kalman_gain * innovation;
+    m_state += kalman_gain * innovation.vector();
+    m_state.wrap_all_angles();
     m_covariance = (State::Matrix::Identity() - kalman_gain * mapping_matrix) * m_covariance;
     return m_state;
   }

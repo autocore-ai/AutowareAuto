@@ -35,6 +35,7 @@ using autoware::common::state_vector::variable::Y;
 using autoware::common::state_vector::variable::YAW;
 using autoware::common::types::float32_t;
 using StateXY = GenericState<float32_t, X, Y>;
+using StateXYaw = GenericState<float32_t, X, YAW>;
 
 struct NotAState {};
 
@@ -91,4 +92,60 @@ TEST(KalmanFilterGenericStateTest, CopyIntoAnotherState) {
   EXPECT_EQ(state_with_yaw.copy_into<StateXYYaw>(), state_with_yaw);
   using StateYX = FloatState<Y, X>;
   EXPECT_EQ(state.copy_into<StateYX>(), (StateYX{{42.0F, 23.0F}}));
+}
+
+/// @test The states can be used with operators.
+TEST(KalmanFilterGenericStateTest, Operators) {
+  StateXYaw state{{0.0F, 0.0F}};
+  state += StateXYaw{{42.0F, 42.0F}};
+  EXPECT_EQ((StateXYaw{{42.0F, 42.0F}}), state);
+  EXPECT_EQ(state, (StateXYaw{{22.0F, 22.0F}} + StateXYaw{{20.0F, 20.0F}}));
+  state -= StateXYaw{{42.0F, 42.0F}};
+  EXPECT_EQ((StateXYaw{{0.0F, 0.0F}}), state);
+  EXPECT_EQ(state, (StateXYaw{{42.0F, 42.0F}} - StateXYaw{{42.0F, 42.0F}}));
+
+  state += Eigen::Vector2f{42.0F, 42.0F};
+  EXPECT_EQ((StateXYaw{{42.0F, 42.0F}}), state);
+  state -= Eigen::Vector2f{42.0F, 42.0F};
+  EXPECT_EQ((StateXYaw{{0.0F, 0.0F}}), state);
+}
+
+/// @test The angles are wrapped correctly if needed.
+TEST(KalmanFilterGenericStateTest, WrapAngle) {
+  StateXYaw state{{42.0F, 0.0F}};
+  state.wrap_all_angles();
+  EXPECT_EQ((StateXYaw{{42.0F, 0.0F}}), state);
+  state.at<YAW>() = 2.0F * M_PIf32;
+  state.wrap_all_angles();
+  EXPECT_EQ((StateXYaw{{42.0F, 0.0F}}), state);
+  state.at<YAW>() = M_PIf32 + 0.42F;
+  EXPECT_EQ((StateXYaw{{42.0F, -M_PIf32 + 0.42F}}), wrap_all_angles(state));
+  state.at<YAW>() = -M_PIf32 - 0.42F;
+  state.wrap_all_angles();
+  EXPECT_EQ((StateXYaw{{42.0F, M_PIf32 - 0.42F}}), state);
+
+  // Check that wrapping works over the typical angle wrapping points: 0, pi, -pi, 2 * pi.
+  const auto eps = 0.42F;
+  StateXYaw angle_epsilon_plus{{0.0F, eps}};
+  StateXYaw angle_epsilon_minus{{0.0F, -eps}};
+  EXPECT_EQ(
+    (StateXYaw{{0.0F, 2.0F * eps}}), wrap_all_angles(angle_epsilon_plus - angle_epsilon_minus));
+  angle_epsilon_plus.at<YAW>() = M_PIf32 + eps;
+  angle_epsilon_plus.wrap_all_angles();
+  angle_epsilon_minus.at<YAW>() = M_PIf32 - eps;
+  angle_epsilon_minus.wrap_all_angles();
+  EXPECT_EQ(
+    (StateXYaw{{0.0F, 2.0F * eps}}), wrap_all_angles(angle_epsilon_plus - angle_epsilon_minus));
+  angle_epsilon_plus.at<YAW>() = -M_PIf32 + eps;
+  angle_epsilon_plus.wrap_all_angles();
+  angle_epsilon_minus.at<YAW>() = -M_PIf32 - eps;
+  angle_epsilon_minus.wrap_all_angles();
+  EXPECT_EQ(
+    (StateXYaw{{0.0F, 2.0F * eps}}), wrap_all_angles(angle_epsilon_plus - angle_epsilon_minus));
+  angle_epsilon_plus.at<YAW>() = -2.0F * M_PIf32 + eps;
+  angle_epsilon_plus.wrap_all_angles();
+  angle_epsilon_minus.at<YAW>() = 2.0F * M_PIf32 - eps;
+  angle_epsilon_minus.wrap_all_angles();
+  EXPECT_EQ(
+    (StateXYaw{{0.0F, 2.0F * eps}}), wrap_all_angles(angle_epsilon_plus - angle_epsilon_minus));
 }

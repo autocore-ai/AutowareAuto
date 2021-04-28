@@ -24,6 +24,7 @@
 
 #include <common/type_traits.hpp>
 #include <common/types.hpp>
+#include <helper_functions/angle_utils.hpp>
 #include <helper_functions/type_name.hpp>
 #include <state_vector/common_variables.hpp>
 #include <state_vector/visibility_control.hpp>
@@ -251,6 +252,122 @@ public:
       };
     common::type_traits::visit(GenericState::variables(), print);
     return out;
+  }
+
+  ///
+  /// @brief      Addition assignment operator.
+  ///
+  /// @param[in]  rhs   Other state vector
+  ///
+  /// @return     A reference to this state.
+  ///
+  inline GenericState & operator+=(const GenericState & rhs) noexcept
+  {
+    return this->operator+=(rhs.vector());
+  }
+
+  ///
+  /// @brief      Addition assignment operator.
+  ///
+  /// @param[in]  rhs   Other state vector as an Eigen vector.
+  ///
+  /// @warning    This can be unsafe if the order of the variables in the Eigen vector is different
+  ///             from the one used within this state class.
+  ///
+  /// @return     A reference to this state.
+  ///
+  inline GenericState & operator+=(const Vector & rhs) noexcept
+  {
+    this->vector() += rhs;
+    return *this;
+  }
+
+  ///
+  /// @brief      Subtraction assignment operator.
+  ///
+  /// @param[in]  rhs   Other state vector as an Eigen vector.
+  ///
+  /// @return     A reference to this state.
+  ///
+  inline GenericState & operator-=(const GenericState & rhs) noexcept
+  {
+    return this->operator-=(rhs.vector());
+  }
+
+  ///
+  /// @brief      Subtraction assignment operator.
+  ///
+  /// @param[in]  rhs   Other state vector as an Eigen vector.
+  ///
+  /// @warning    This can be unsafe if the order of the variables in the Eigen vector is different
+  ///             from the one used within this state class.
+  ///
+  /// @return     A reference to this state.
+  ///
+  inline GenericState & operator-=(const Vector & rhs) noexcept
+  {
+    this->vector() -= rhs;
+    return *this;
+  }
+
+
+  ///
+  /// @brief      Subtraction operator.
+  ///
+  /// @param[in]  lhs   Left hand side of the subtraction.
+  /// @param[in]  rhs   Right hand side of the subtraction.
+  ///
+  /// @tparam     T  Either a state vector type or an underlying Eigen vector type.
+  ///
+  /// @return     A state that results from this operation.
+  ///
+  template<typename T>
+  inline friend GenericState operator-(GenericState lhs, const T & rhs) noexcept
+  {
+    lhs -= rhs;
+    return lhs;
+  }
+
+  ///
+  /// @brief      Addition operator.
+  ///
+  /// @param[in]  lhs   Left hand side of the addition.
+  /// @param[in]  rhs   Right hand side of the addition.
+  ///
+  /// @tparam     T  Either a state vector type or an underlying Eigen vector type.
+  ///
+  /// @return     A state that results from this operation.
+  ///
+  template<typename T>
+  inline friend GenericState operator+(GenericState lhs, const T & rhs) noexcept
+  {
+    lhs += rhs;
+    return lhs;
+  }
+
+  ///
+  /// @brief      Wrap all variables that represent angles using the
+  ///             common::helper_functions::wrap_angle.
+  ///
+  constexpr void wrap_all_angles() noexcept
+  {
+    const auto wrap_angles = [this](auto variable) {
+        using VariableT = decltype(variable);
+        if (is_angle<VariableT>::value) {
+          this->at(variable) = common::helper_functions::wrap_angle(this->at(variable));
+        }
+      };
+    common::type_traits::visit(GenericState::variables(), wrap_angles);
+  }
+
+  ///
+  /// @brief      Wrap all variables that represent angles using the
+  ///             common::helper_functions::wrap_angle.
+  ///
+  constexpr friend GenericState wrap_all_angles(GenericState state) noexcept
+  {
+    state.wrap_all_angles();
+    return state;
   }
 
 private:
