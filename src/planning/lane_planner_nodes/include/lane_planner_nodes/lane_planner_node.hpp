@@ -39,7 +39,7 @@ using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
 using autoware_auto_msgs::srv::HADMapService;
-using autoware_auto_msgs::msg::Route;
+using autoware_auto_msgs::msg::HADMapRoute;
 using autoware_auto_msgs::msg::Trajectory;
 
 /// \class LanePlannerNode
@@ -57,12 +57,12 @@ private:
 
   /// \brief creates map request from given route.
   //         Implementer should request for relevent map objects for their planner
-  HADMapService::Request create_map_request(const Route & route) override;
+  HADMapService::Request create_map_request(const HADMapRoute & had_map_route) override;
 
   /// \brief do trajectory plannig for given route.
   //         It should return the trajectory and status (SUCCESS, FAIL)
   Trajectory plan_trajectory(
-    const Route & route,
+    const HADMapRoute & had_map_route,
     const lanelet::LaneletMapPtr & lanelet_map_ptr) override;
 };
 

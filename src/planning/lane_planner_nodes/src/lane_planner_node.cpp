@@ -52,9 +52,9 @@ LanePlannerNode::LanePlannerNode(const rclcpp::NodeOptions & node_options)
   m_planner = std::make_unique<lane_planner::LanePlanner>(vehicle_param, config, planner_config);
 }
 
-HADMapService::Request LanePlannerNode::create_map_request(const Route & route)
+HADMapService::Request LanePlannerNode::create_map_request(const HADMapRoute & had_map_route)
 {
-  (void) route;
+  (void) had_map_route;
 
   // TODO(mitsudome-r): replace it with bounded request
   HADMapService::Request request;
@@ -70,10 +70,10 @@ HADMapService::Request LanePlannerNode::create_map_request(const Route & route)
 }
 
 Trajectory LanePlannerNode::plan_trajectory(
-  const Route & route,
+  const HADMapRoute & had_map_route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
-  return m_planner->plan_trajectory(route, lanelet_map_ptr);
+  return m_planner->plan_trajectory(had_map_route, lanelet_map_ptr);
 }
 
 

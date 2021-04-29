@@ -15,7 +15,7 @@
 #ifndef HAD_MAP_UTILS__HAD_MAP_COMPUTATION_HPP_
 #define HAD_MAP_UTILS__HAD_MAP_COMPUTATION_HPP_
 
-#include <autoware_auto_msgs/msg/route.hpp>
+#include <autoware_auto_msgs/msg/had_map_route.hpp>
 #include <lanelet2_core/LaneletMap.h>
 
 #include "visibility_control.hpp"
@@ -28,7 +28,7 @@ namespace had_map_utils
 {
 
 lanelet::Polygon3d HAD_MAP_UTILS_PUBLIC coalesce_drivable_areas(
-  const autoware_auto_msgs::msg::Route & route,
+  const autoware_auto_msgs::msg::HADMapRoute & had_map_route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr);
 
 }  // namespace had_map_utils

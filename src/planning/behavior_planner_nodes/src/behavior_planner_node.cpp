@@ -125,9 +125,9 @@ void BehaviorPlannerNode::init()
   m_ego_state_sub = this->create_subscription<State>(
     "vehicle_state", QoS{10},
     [this](const State::SharedPtr msg) {on_ego_state(msg);});
-  m_route_sub = this->create_subscription<Route>(
+  m_route_sub = this->create_subscription<HADMapRoute>(
     "route", QoS{10},
-    [this](const Route::SharedPtr msg) {on_route(msg);});
+    [this](const HADMapRoute::SharedPtr msg) {on_route(msg);});
   m_vehicle_state_report_sub = this->create_subscription<VehicleStateReport>(
     "vehicle_state_report", QoS{10},
     [this](const VehicleStateReport::SharedPtr msg) {on_vehicle_state_report(msg);});
@@ -140,7 +140,7 @@ void BehaviorPlannerNode::init()
   m_debug_checkpoints_pub =
     this->create_publisher<Trajectory>("debug/checkpoints", QoS{10});
   m_debug_subroute_pub =
-    this->create_publisher<Route>("debug/current_subroute", QoS{10});
+    this->create_publisher<HADMapRoute>("debug/current_subroute", QoS{10});
   m_vehicle_state_command_pub =
     this->create_publisher<VehicleStateCommand>("vehicle_state_command", QoS{10});
 }
@@ -338,7 +338,7 @@ void BehaviorPlannerNode::on_vehicle_state_report(const VehicleStateReport::Shar
   m_current_gear = msg->gear;
 }
 
-void BehaviorPlannerNode::on_route(const Route::SharedPtr & msg)
+void BehaviorPlannerNode::on_route(const HADMapRoute::SharedPtr & msg)
 {
   if (m_requesting_trajectory) {
     RCLCPP_ERROR(
@@ -398,8 +398,18 @@ void BehaviorPlannerNode::map_response(rclcpp::Client<HADMapService>::SharedFutu
   Trajectory checkpoints;
   checkpoints.header.frame_id = "map";
   for (const auto subroute : subroutes) {
-    checkpoints.points.push_back(subroute.route.start_point);
-    checkpoints.points.push_back(subroute.route.goal_point);
+    TrajectoryPoint trajectory_start_point;
+    trajectory_start_point.x = static_cast<float32_t>(subroute.route.start_point.position.x);
+    trajectory_start_point.y = static_cast<float32_t>(subroute.route.start_point.position.y);
+    trajectory_start_point.heading = subroute.route.start_point.heading;
+
+    TrajectoryPoint trajectory_goal_point;
+    trajectory_goal_point.x = static_cast<float32_t>(subroute.route.goal_point.position.x);
+    trajectory_goal_point.y = static_cast<float32_t>(subroute.route.goal_point.position.y);
+    trajectory_goal_point.heading = subroute.route.goal_point.heading;
+
+    checkpoints.points.push_back(trajectory_start_point);
+    checkpoints.points.push_back(trajectory_goal_point);
   }
   m_debug_checkpoints_pub->publish(checkpoints);
 }

@@ -28,7 +28,7 @@
 // Autoware Package
 #include <autoware_auto_msgs/srv/had_map_service.hpp>
 #include <autoware_auto_msgs/action/plan_trajectory.hpp>
-#include <autoware_auto_msgs/msg/route.hpp>
+#include <autoware_auto_msgs/msg/had_map_route.hpp>
 #include <common/types.hpp>
 
 // external libraries
@@ -44,7 +44,7 @@ namespace trajectory_planner_node_base
 using autoware::common::types::bool8_t;
 
 using HADMapService = autoware_auto_msgs::srv::HADMapService;
-using Route = autoware_auto_msgs::msg::Route;
+using HADMapRoute = autoware_auto_msgs::msg::HADMapRoute;
 using Trajectory = autoware_auto_msgs::msg::Trajectory;
 
 enum class PlannerState
@@ -70,12 +70,12 @@ public:
 protected:
   /// \brief creates map request from given route. Implementer should request
   //         for relevent map objects for their planner
-  virtual HADMapService::Request create_map_request(const Route & route) = 0;
+  virtual HADMapService::Request create_map_request(const HADMapRoute & route) = 0;
 
   /// \brief do trajectory plannig for given route. It should return the trajectory
   //         and status (SUCCESS, FAIL)
   virtual Trajectory plan_trajectory(
-    const Route & route,
+    const HADMapRoute & route,
     const lanelet::LaneletMapPtr & lanelet_map_ptr) = 0;
 
 private:

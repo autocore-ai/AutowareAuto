@@ -52,20 +52,20 @@ PlannerType get_planner_type_from_primitive(
   }
 }
 
-autoware_auto_msgs::msg::TrajectoryPoint convert_to_trajectory_point(
+autoware_auto_msgs::msg::RoutePoint convert_to_route_point(
   const lanelet::ConstPoint2d & pt)
 {
-  autoware_auto_msgs::msg::TrajectoryPoint trajectory_point;
-  trajectory_point.x = static_cast<float32_t>(pt.x());
-  trajectory_point.y = static_cast<float32_t>(pt.y());
-  return trajectory_point;
+  autoware_auto_msgs::msg::RoutePoint route_point;
+  route_point.position.x = pt.x();
+  route_point.position.y = pt.y();
+  return route_point;
 }
 
-TrajectoryPoint get_closest_point_on_lane(
-  const TrajectoryPoint & point, const int64_t lane_id,
+RoutePoint get_closest_point_on_lane(
+  const RoutePoint & point, const int64_t lane_id,
   const lanelet::LaneletMapPtr & lanelet_map_ptr, const float32_t offset)
 {
-  TrajectoryPoint closest_point_on_lane;
+  RoutePoint closest_point_on_lane;
 
   const auto lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);
 
@@ -82,16 +82,18 @@ TrajectoryPoint get_closest_point_on_lane(
   float32_t min_distance = std::numeric_limits<float32_t>::max();
   float32_t length_along_line = 0.0f, accumulated_length = 0.0f;
   for (size_t i = 1; i < centerline.size(); i++) {
-    const auto prev_pt = convert_to_trajectory_point(centerline[i - 1]);
-    const auto current_pt = convert_to_trajectory_point(centerline[i]);
+    const auto prev_pt = convert_to_route_point(centerline[i - 1]);
+    const auto current_pt = convert_to_route_point(centerline[i]);
 
-    const auto distance = point_line_segment_distance_2d(prev_pt, current_pt, point);
+    const auto distance = point_line_segment_distance_2d(
+      prev_pt.position, current_pt.position, point.position);
     if (distance < min_distance) {
       min_distance = distance;
-      const auto point_on_lane = closest_segment_point_2d(prev_pt, current_pt, point);
-      length_along_line = accumulated_length + norm_2d(minus_2d(prev_pt, point_on_lane));
+      const auto point_on_lane = closest_segment_point_2d(
+        prev_pt.position, current_pt.position, point.position);
+      length_along_line = accumulated_length + norm_2d(minus_2d(prev_pt.position, point_on_lane));
     }
-    accumulated_length += norm_2d(minus_2d(prev_pt, current_pt));
+    accumulated_length += norm_2d(minus_2d(prev_pt.position, current_pt.position));
   }
 
   // we find a point from line length with offset
@@ -101,14 +103,15 @@ TrajectoryPoint get_closest_point_on_lane(
 
   accumulated_length = 0.0f;
   for (size_t i = 1; i < centerline.size(); i++) {
-    const auto prev_pt = convert_to_trajectory_point(centerline[i - 1]);
-    const auto current_pt = convert_to_trajectory_point(centerline[i]);
-    const auto distance = norm_2d(minus_2d(prev_pt, current_pt));
+    const auto prev_pt = convert_to_route_point(centerline[i - 1]);
+    const auto current_pt = convert_to_route_point(centerline[i]);
+    const auto distance = norm_2d(minus_2d(prev_pt.position, current_pt.position));
     if (accumulated_length + distance >= length_with_offset) {
-      const auto direction_vector = minus_2d(current_pt, prev_pt);
+      const auto direction_vector = minus_2d(current_pt.position, prev_pt.position);
       const auto ratio = (length_with_offset - accumulated_length) / distance;
-      closest_point_on_lane = plus_2d(prev_pt, times_2d(direction_vector, ratio));
-      const float32_t angle = std::atan2(direction_vector.y, direction_vector.x);
+      closest_point_on_lane.position = plus_2d(prev_pt.position, times_2d(direction_vector, ratio));
+      const float32_t angle = std::atan2(
+        static_cast<float32_t>(direction_vector.y), static_cast<float32_t>(direction_vector.x));
       closest_point_on_lane.heading = motion::motion_common::from_angle(angle);
     }
     accumulated_length += distance;
@@ -133,7 +136,9 @@ void BehaviorPlanner::clear_route()
   m_trajectory_manager.clear_trajectory();
 }
 
-void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPtr & lanelet_map_ptr)
+void BehaviorPlanner::set_route(
+  const HADMapRoute & route,
+  const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   // create subroutes from given global route
   clear_route();
@@ -142,17 +147,22 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
   RouteWithType subroute;
   subroute.route.start_point = route.start_point;
   auto prev_type = PlannerType::UNKNOWN;
-  MapPrimitive prev_primitive;
-  if (!route.primitives.empty()) {
-    const auto & first_primitive = route.primitives.front();
-    prev_type = get_planner_type_from_primitive(first_primitive);
+  autoware_auto_msgs::msg::HADMapSegment prev_segment;
+  if (!route.segments.empty()) {
+    const auto & first_segment = route.segments.front();
+    prev_type = get_planner_type_from_primitive(first_segment.primitives.front());
     subroute.planner_type = prev_type;
-    prev_primitive = first_primitive;
+    prev_segment = first_segment;
   }
 
-  for (const auto & primitive : route.primitives) {
+  size_t i = 0;
+  for (const auto & segment : route.segments) {
+    const auto & primitive = segment.primitives.front();
     const auto & type = get_planner_type_from_primitive(primitive);
-    subroute.route.primitives.push_back(primitive);
+    auto new_segment = decltype(segment) {};
+    new_segment.preferred_primitive_id = primitive.id;
+    new_segment.primitives.push_back(primitive);
+    subroute.route.segments.push_back(new_segment);
 
     //  create subroute when Planner Type changes
     if (type != prev_type) {
@@ -179,15 +189,15 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
 
         // reinitialize for next subroute
         subroute.planner_type = type;
-        subroute.route.primitives.clear();
-        subroute.route.primitives.push_back(primitive);
+        subroute.route.segments.clear();
+        subroute.route.segments.push_back(segment);
         subroute.route.start_point = subroute.route.goal_point;
       }
       if (prev_type == PlannerType::LANE && type == PlannerType::PARKING) {
         // Determine parking direction and set offset direction accordingly
         float32_t route_offset = m_config.subroute_goal_offset_lane2parking;
         const auto closest_lane_point = get_closest_point_on_lane(
-          route.goal_point, prev_primitive.id,
+          route.goal_point, prev_segment.primitives.front().id,
           lanelet_map_ptr, 0.0f);
         const auto parking_dir = get_parking_direction(
           route.goal_point, closest_lane_point);
@@ -199,20 +209,21 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
 
         // Currently, we assume that final goal is close to lane.
         subroute.route.goal_point = get_closest_point_on_lane(
-          route.goal_point, prev_primitive.id,
+          route.goal_point, prev_segment.primitives.front().id,
           lanelet_map_ptr, route_offset);
         m_subroutes.push_back(subroute);
 
         // reinitialize for next subroute
         subroute.planner_type = type;
-        subroute.route.primitives.clear();
-        subroute.route.primitives.push_back(prev_primitive);
-        subroute.route.primitives.push_back(primitive);
+        subroute.route.segments.clear();
+        subroute.route.segments.push_back(prev_segment);
+        subroute.route.segments.push_back(segment);
         subroute.route.start_point = subroute.route.goal_point;
       }
     }
     prev_type = type;
-    prev_primitive = primitive;
+    prev_segment = segment;
+    ++i;
   }
 
   // add final subroute
@@ -220,7 +231,7 @@ void BehaviorPlanner::set_route(const Route & route, const lanelet::LaneletMapPt
   if (prev_type == PlannerType::LANE) {
     subroute.route.goal_point = get_closest_point_on_lane(
       route.goal_point,
-      prev_primitive.id, lanelet_map_ptr, 0.0f);
+      prev_segment.primitives.front().id, lanelet_map_ptr, 0.0f);
   } else {
     subroute.route.goal_point = route.goal_point;
   }
@@ -245,7 +256,11 @@ RouteWithType BehaviorPlanner::get_current_subroute(const State & ego_state)
   auto updated_subroute = m_subroutes.at(m_current_subroute);
   updated_subroute.route.header = ego_state.header;
   if (updated_subroute.planner_type == PlannerType::LANE) {
-    updated_subroute.route.start_point = ego_state.state;
+    RoutePoint start_point;
+    start_point.heading = ego_state.state.heading;
+    start_point.position.x = ego_state.state.x;
+    start_point.position.y = ego_state.state.y;
+    updated_subroute.route.start_point = start_point;
   }
   return updated_subroute;
 }
@@ -259,12 +274,13 @@ RouteWithType BehaviorPlanner::get_current_subroute()
 }
 
 ParkingDirection BehaviorPlanner::get_parking_direction(
-  const TrajectoryPoint & parking_point,
-  const TrajectoryPoint & closest_lane_point)
+  const RoutePoint & parking_point,
+  const RoutePoint & closest_lane_point)
 {
   // Calculate angle from parking point to closest lane point
-  const auto direction_vector = minus_2d(closest_lane_point, parking_point);
-  const float32_t diff_angle = std::atan2(direction_vector.y, direction_vector.x);
+  const auto direction_vector = minus_2d(closest_lane_point.position, parking_point.position);
+  const float32_t diff_angle = std::atan2(
+    static_cast<float32_t>(direction_vector.y), static_cast<float32_t>(direction_vector.x));
 
   // Get heading angle of parking point
   const auto heading_angle = motion::motion_common::to_angle(parking_point.heading);
@@ -277,7 +293,7 @@ ParkingDirection BehaviorPlanner::get_parking_direction(
   }
 }
 
-TrajectoryPoint BehaviorPlanner::get_sub_goal()
+RoutePoint BehaviorPlanner::get_sub_goal()
 {
   return m_subroutes.at(m_current_subroute).route.goal_point;
 }
@@ -305,7 +321,11 @@ bool8_t BehaviorPlanner::has_arrived_goal(const State & state)
   const auto satisfy_velocity_condition = is_vehicle_stopped(state);
 
   const auto & route = m_subroutes.back().route;
-  const auto distance = norm_2d(minus_2d(route.goal_point, state.state));
+  RoutePoint state_route_point;
+  state_route_point.heading = state.state.heading;
+  state_route_point.position.x = state.state.x;
+  state_route_point.position.y = state.state.y;
+  const auto distance = norm_2d(minus_2d(route.goal_point.position, state_route_point.position));
   const auto satsify_distance_condition = distance < m_config.goal_distance_thresh;
 
   return satisfy_velocity_condition && satsify_distance_condition;
@@ -316,7 +336,11 @@ bool8_t BehaviorPlanner::has_arrived_subroute_goal(const State & state)
   const auto satisfy_velocity_condition = is_vehicle_stopped(state);
 
   const auto & route = get_current_subroute().route;
-  const auto distance = norm_2d(minus_2d(route.goal_point, state.state));
+  RoutePoint state_route_point;
+  state_route_point.heading = state.state.heading;
+  state_route_point.position.x = state.state.x;
+  state_route_point.position.y = state.state.y;
+  const auto distance = norm_2d(minus_2d(route.goal_point.position, state_route_point.position));
   const auto satsify_distance_condition = distance < m_config.goal_distance_thresh;
 
   return satisfy_velocity_condition && satsify_distance_condition;
@@ -350,7 +374,11 @@ void BehaviorPlanner::set_trajectory(const Trajectory & trajectory)
 
   const auto & last_point = trajectory.points.back();
   const auto & route = get_current_subroute().route;
-  const auto distance = norm_2d(minus_2d(route.goal_point, last_point));
+  RoutePoint last_route_point;
+  last_route_point.heading = last_point.heading;
+  last_route_point.position.x = last_point.x;
+  last_route_point.position.y = last_point.y;
+  const auto distance = norm_2d(minus_2d(route.goal_point.position, last_route_point.position));
   m_is_trajectory_complete = distance < m_config.goal_distance_thresh;
 }
 

@@ -63,7 +63,7 @@ using ParkerModelParameters =
 using ParkingPolytope = autoware::motion::planning::parking_planner::Polytope2D<float64_t>;
 using ParkingStatus = autoware::motion::planning::parking_planner::PlanningStatus;
 
-using autoware_auto_msgs::msg::TrajectoryPoint;
+using autoware_auto_msgs::msg::RoutePoint;
 using autoware_auto_msgs::msg::BoundingBoxArray;
 using autoware_auto_msgs::msg::BoundingBox;
 
@@ -174,13 +174,16 @@ void ParkingPlannerNode::init(
     rclcpp::QoS(rclcpp::KeepLast(5U)).transient_local());
 }
 
-static ParkerVehicleState convert_trajectorypoint_to_vehiclestate(const TrajectoryPoint & point)
+static ParkerVehicleState convert_routepoint_to_vehiclestate(const RoutePoint & point)
 {
-  return ParkerVehicleState{point.x, point.y, point.longitudinal_velocity_mps,
-    to_angle(point.heading), point.front_wheel_angle_rad};
+  return ParkerVehicleState{point.position.x, point.position.y, 0,
+    to_angle(point.heading), 0};
+  // NOTE(esteve): what to do with longitudinal_velocity_mps and front_wheel_angle_rad?
+  // return ParkerVehicleState{point.x, point.y, point.longitudinal_velocity_mps,
+  //   to_angle(point.heading), point.front_wheel_angle_rad};
 }
 
-HADMapService::Request ParkingPlannerNode::create_map_request(const Route & route)
+HADMapService::Request ParkingPlannerNode::create_map_request(const HADMapRoute & had_map_route)
 {
   HADMapService::Request request{};
   request.requested_primitives.push_back(
@@ -189,21 +192,21 @@ HADMapService::Request ParkingPlannerNode::create_map_request(const Route & rout
   const auto BOX_PADDING = 10.0f;
   request.geom_upper_bound.push_back(
     std::fmax(
-      route.start_point.x,
-      route.goal_point.x) + BOX_PADDING);
+      static_cast<float32_t>(had_map_route.start_point.position.x),
+      static_cast<float32_t>(had_map_route.goal_point.position.x)) + BOX_PADDING);
   request.geom_upper_bound.push_back(
     std::fmax(
-      route.start_point.y,
-      route.goal_point.y) + BOX_PADDING);
+      static_cast<float32_t>(had_map_route.start_point.position.y),
+      static_cast<float32_t>(had_map_route.goal_point.position.y)) + BOX_PADDING);
   request.geom_upper_bound.push_back(0.0);
   request.geom_lower_bound.push_back(
     std::fmin(
-      route.start_point.x,
-      route.goal_point.x) - BOX_PADDING);
+      static_cast<float32_t>(had_map_route.start_point.position.x),
+      static_cast<float32_t>(had_map_route.goal_point.position.x)) - BOX_PADDING);
   request.geom_lower_bound.push_back(
     std::fmin(
-      route.start_point.y,
-      route.goal_point.y) - BOX_PADDING);
+      static_cast<float32_t>(had_map_route.start_point.position.y),
+      static_cast<float32_t>(had_map_route.goal_point.position.y)) - BOX_PADDING);
   request.geom_lower_bound.push_back(0.0);
   return request;
 }
@@ -297,14 +300,14 @@ void ParkingPlannerNode::debug_publish_start_and_end(
 }
 
 AutowareTrajectory ParkingPlannerNode::plan_trajectory(
-  const Route & route,
+  const HADMapRoute & had_map_route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   // ---- Merge the drivable areas into one lanelet::Polygon3d --------------------------
   // TODO(s.me) For experiments, we take dummy data here.
   const Polygon3d drivable_area =
     autoware::common::had_map_utils::coalesce_drivable_areas(
-    route,
+    had_map_route,
     lanelet_map_ptr);
 
   // ---- Obtain "list of bounding obstacles" of drivable surface -----------------------
@@ -314,10 +317,10 @@ AutowareTrajectory ParkingPlannerNode::plan_trajectory(
   this->debug_publish_obstacles(obstacles);
 
   // ---- Call the actual planner with the inputs we've assembled -----------------------
-  const auto start_trajectory_point = route.start_point;
-  const auto goal_trajectory_point = route.goal_point;
-  const auto starting_state = convert_trajectorypoint_to_vehiclestate(start_trajectory_point);
-  const auto goal_state = convert_trajectorypoint_to_vehiclestate(goal_trajectory_point);
+  const auto start_trajectory_point = had_map_route.start_point;
+  const auto goal_trajectory_point = had_map_route.goal_point;
+  const auto starting_state = convert_routepoint_to_vehiclestate(start_trajectory_point);
+  const auto goal_state = convert_routepoint_to_vehiclestate(goal_trajectory_point);
 
   this->debug_publish_start_and_end(starting_state, goal_state);
 

@@ -85,7 +85,7 @@ Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
 
   // Global path publisher
   global_path_pub_ptr =
-    this->create_publisher<autoware_auto_msgs::msg::Route>(
+    this->create_publisher<autoware_auto_msgs::msg::HADMapRoute>(
     "global_path", rclcpp::QoS(10));
 
   // Create map client
@@ -174,8 +174,8 @@ void Lanelet2GlobalPlannerNode::current_pose_cb(
   start_pose.pose.position.y = msg->state.y;
   start_pose.pose.position.z = 0.0;
   start_pose.pose.orientation =
-      motion::motion_common::to_quat<geometry_msgs::msg::Quaternion>(
-          msg->state.heading);
+    motion::motion_common::to_quat<geometry_msgs::msg::Quaternion>(
+    msg->state.heading);
   start_pose.header = msg->header;
 
   // transform to "map" frame if needed
@@ -211,17 +211,32 @@ void Lanelet2GlobalPlannerNode::send_global_path(
   // parking id = first/first to last
   // drivable area = second/second to last
   // main route = other
-  autoware_auto_msgs::msg::Route global_route;
+  autoware_auto_msgs::msg::HADMapRoute global_route;
   global_route.header = header;
-  global_route.start_point = start_point;
-  global_route.goal_point = end_point;
+
+  autoware_auto_msgs::msg::RoutePoint start_route_point;
+  start_route_point.position.x = start_point.x;
+  start_route_point.position.y = start_point.y;
+  start_route_point.heading = start_point.heading;
+
+  autoware_auto_msgs::msg::RoutePoint end_route_point;
+  end_route_point.position.x = end_point.x;
+  end_route_point.position.y = end_point.y;
+  end_route_point.heading = end_point.heading;
+
+  global_route.start_point = start_route_point;
+  global_route.goal_point = end_route_point;
 
   for (const auto & route_id : route) {
     // add data to the global path
     autoware_auto_msgs::msg::MapPrimitive primitive;
     primitive.id = route_id;
     primitive.primitive_type = lanelet2_global_planner->get_primitive_type(route_id);
-    global_route.primitives.push_back(primitive);
+
+    autoware_auto_msgs::msg::HADMapSegment new_segment;
+    new_segment.preferred_primitive_id = primitive.id;
+    new_segment.primitives.push_back(primitive);
+    global_route.segments.push_back(new_segment);
   }
   // publish the global path
   global_path_pub_ptr->publish(global_route);
@@ -241,8 +256,9 @@ bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
   // transform pose into map frame
   geometry_msgs::msg::TransformStamped tf_map;
   try {
-    tf_map = tf_buffer.lookupTransform("map", source_frame,
-        time_utils::from_message(pose_in.header.stamp));
+    tf_map = tf_buffer.lookupTransform(
+      "map", source_frame,
+      time_utils::from_message(pose_in.header.stamp));
   } catch (const tf2::ExtrapolationException &) {
     // currently falls back to retrive newest transform available for availability,
     // Do validation of time stamp in the future

@@ -19,7 +19,7 @@
 #ifndef PARKING_PLANNER__PARKING_PLANNER_HPP_
 #define PARKING_PLANNER__PARKING_PLANNER_HPP_
 
-#include <autoware_auto_msgs/msg/route.hpp>
+#include <autoware_auto_msgs/msg/had_map_route.hpp>
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <common/types.hpp>
 #include <lanelet2_core/LaneletMap.h>

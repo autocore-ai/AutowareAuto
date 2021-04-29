@@ -95,11 +95,11 @@ lanelet::Point3d convertToLaneletPoint(
 }
 
 Trajectory LanePlanner::plan_trajectory(
-  const autoware_auto_msgs::msg::Route & route,
+  const autoware_auto_msgs::msg::HADMapRoute & had_map_route,
   const lanelet::LaneletMapConstPtr & map)
 {
   // generate trajectory. Only x, y, and velocity is filled in at this point
-  auto trajectory_points = generate_base_trajectory(route, map);
+  auto trajectory_points = generate_base_trajectory(had_map_route, map);
 
   // calculate missing fields in trajectory
   set_angle(&trajectory_points);
@@ -108,7 +108,7 @@ Trajectory LanePlanner::plan_trajectory(
 
   set_time_from_start(&trajectory_points);
 
-  auto trajectory = create_trajectory_message(route.header, trajectory_points);
+  auto trajectory = create_trajectory_message(had_map_route.header, trajectory_points);
 
   modify_velocity(&trajectory);
 
@@ -131,13 +131,14 @@ void LanePlanner::modify_velocity(Trajectory * trajectory)
 }
 
 TrajectoryPoints LanePlanner::generate_base_trajectory(
-  const Route & route,
+  const HADMapRoute & had_map_route,
   const LaneletMapConstPtr & map)
 {
   using lanelet::utils::to2D;
 
   lanelet::ConstLanelets lanelets;
-  for (const auto & primitive : route.primitives) {
+  for (const auto & segment : had_map_route.segments) {
+    const auto & primitive = segment.primitives.front();
     try {
       const auto lane = map->laneletLayer.get(primitive.id);
       lanelets.push_back(lane);
@@ -152,7 +153,17 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
     return TrajectoryPoints();
   }
 
-  const auto start_index = get_closest_lanelet(lanelets, route.start_point);
+  TrajectoryPoint trajectory_start_point;
+  trajectory_start_point.x = static_cast<float32_t>(had_map_route.start_point.position.x);
+  trajectory_start_point.y = static_cast<float32_t>(had_map_route.start_point.position.y);
+  trajectory_start_point.heading = had_map_route.start_point.heading;
+
+  TrajectoryPoint trajectory_goal_point;
+  trajectory_goal_point.x = static_cast<float32_t>(had_map_route.goal_point.position.x);
+  trajectory_goal_point.y = static_cast<float32_t>(had_map_route.goal_point.position.y);
+  trajectory_goal_point.heading = had_map_route.goal_point.heading;
+
+  const auto start_index = get_closest_lanelet(lanelets, trajectory_start_point);
 
   TrajectoryPoints trajectory_points;
 
@@ -164,7 +175,7 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
     lanelet::Participants::Vehicle);
 
   // set position and velocity
-  trajectory_points.push_back(route.start_point);
+  trajectory_points.push_back(trajectory_start_point);
   for (size_t i = start_index; i < lanelets.size(); i++) {
     const auto & lanelet = lanelets.at(i);
     const auto & centerline = autoware::common::had_map_utils::generateFineCenterline(
@@ -175,14 +186,14 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
 
     float64_t start_length = 0;
     if (i == start_index) {
-      const auto start_point = convertToLaneletPoint(route.start_point);
+      const auto start_point = convertToLaneletPoint(trajectory_start_point);
       start_length =
         lanelet::geometry::toArcCoordinates(to2D(centerline), to2D(start_point)).length;
     }
 
     float64_t end_length = std::numeric_limits<float32_t>::max();
     if (i == lanelets.size() - 1) {
-      const auto goal_point = convertToLaneletPoint(route.goal_point);
+      const auto goal_point = convertToLaneletPoint(trajectory_goal_point);
       end_length = lanelet::geometry::toArcCoordinates(to2D(centerline), to2D(goal_point)).length;
     }
 
@@ -197,7 +208,7 @@ TrajectoryPoints LanePlanner::generate_base_trajectory(
       trajectory_points.push_back(convertToTrajectoryPoint(llt_pt, speed_limit));
     }
   }
-  trajectory_points.push_back(route.goal_point);
+  trajectory_points.push_back(trajectory_goal_point);
   return trajectory_points;
 }
 

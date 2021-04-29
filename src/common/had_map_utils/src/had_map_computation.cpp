@@ -35,28 +35,30 @@ using CGAL_Polygon_with_holes = CGAL::Polygon_with_holes_2<Kernel>;
 
 // TODO(s.me) this is getting a bit long, break up
 lanelet::Polygon3d coalesce_drivable_areas(
-  const autoware_auto_msgs::msg::Route & route,
+  const autoware_auto_msgs::msg::HADMapRoute & had_map_route,
   const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   CGAL_Polygon_with_holes drivable_area;
 
-  for (const auto & map_primitive : route.primitives) {
+  for (const auto & map_segment : had_map_route.segments) {
     // Attempt to obtain a polygon from the primitive ID
     geometry_msgs::msg::Polygon current_area_polygon{};
     const auto & lanelet_layer = lanelet_map_ptr->laneletLayer;
-    const auto & current_lanelet_candidate = lanelet_layer.find(map_primitive.id);
+    const auto & current_lanelet_candidate = lanelet_layer.find(map_segment.preferred_primitive_id);
     if (current_lanelet_candidate != lanelet_layer.end()) {
       current_area_polygon = lanelet2Polygon(*current_lanelet_candidate);
     } else {
       const auto & area_layer = lanelet_map_ptr->areaLayer;
-      const auto & current_area_candidate = area_layer.find(map_primitive.id);
+      const auto & current_area_candidate = area_layer.find(map_segment.preferred_primitive_id);
       if (current_area_candidate != area_layer.end()) {
         current_area_polygon = area2Polygon(*current_area_candidate);
       } else {
         // This might happen if a primitive is on the route, but outside of the bounding box that we
         // query the map for. Not sure how to deal with this at this point though.
-        std::cerr << "Error: primitive ID " << map_primitive.id << " not found, skipping" <<
+        std::cerr << "Error: primitive ID " << map_segment.preferred_primitive_id <<
+          " not found, skipping" <<
           std::endl;
+        continue;
       }
     }
 

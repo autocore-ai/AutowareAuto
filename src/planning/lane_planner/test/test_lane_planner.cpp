@@ -19,7 +19,8 @@
 #include "gtest/gtest.h"
 
 using autoware_auto_msgs::msg::MapPrimitive;
-using autoware_auto_msgs::msg::Route;
+using autoware_auto_msgs::msg::HADMapRoute;
+using autoware_auto_msgs::msg::HADMapSegment;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 
 using motion::motion_common::VehicleConfig;
@@ -54,19 +55,22 @@ lanelet::LaneletMapPtr getALaneletMapWithLaneId(
   return lanelet::utils::createMap({ll});
 }
 
-Route getARoute(const int64_t lane_id, const float32_t length)
+HADMapRoute getARoute(const int64_t lane_id, const float32_t length)
 {
-  Route route;
-  route.start_point.x = 0;
-  route.start_point.y = 0;
-  route.goal_point.x = 0;
-  route.goal_point.y = length;
+  HADMapRoute had_map_route;
+  had_map_route.start_point.position.x = 0;
+  had_map_route.start_point.position.y = 0;
+  had_map_route.goal_point.position.x = 0;
+  had_map_route.goal_point.position.y = length;
 
   MapPrimitive primitive;
   primitive.id = lane_id;
-  route.primitives.push_back(primitive);
+  HADMapSegment segment;
+  segment.preferred_primitive_id = primitive.id;
+  had_map_route.segments.push_back(segment);
+  had_map_route.segments.front().primitives.push_back(primitive);
 
-  return route;
+  return had_map_route;
 }
 
 class LanePlannerTest : public ::testing::Test
@@ -149,16 +153,21 @@ TEST_F(LanePlannerTest, plan_simple_trajectory)
   const auto lanelet_map_ptr = getALaneletMapWithLaneId(lane_id, velocity_mps, n_points);
 
   // create route message
-  const auto route = getARoute(lane_id, 5.0F);
+  const auto had_map_route = getARoute(lane_id, 5.0F);
 
-  const auto trajectory = m_planner_ptr->plan_trajectory(route, lanelet_map_ptr);
+  const auto trajectory = m_planner_ptr->plan_trajectory(had_map_route, lanelet_map_ptr);
 
   // return trajectory should not be empty
   ASSERT_FALSE(trajectory.points.empty());
 
+  TrajectoryPoint trajectory_start_point;
+  trajectory_start_point.x = static_cast<float32_t>(had_map_route.start_point.position.x);
+  trajectory_start_point.y = static_cast<float32_t>(had_map_route.start_point.position.y);
+  trajectory_start_point.heading = had_map_route.start_point.heading;
+
   // start point of trajectory should be same as start point
   const auto distance = autoware::lane_planner::distance2d(
-    route.start_point,
+    trajectory_start_point,
     trajectory.points.front());
   ASSERT_DOUBLE_EQ(distance, 0.0);
 }

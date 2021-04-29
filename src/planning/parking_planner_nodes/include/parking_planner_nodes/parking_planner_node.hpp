@@ -57,7 +57,7 @@ namespace parking_planner_nodes
 {
 using PlannerPtr = std::unique_ptr<autoware::motion::planning::parking_planner::ParkingPlanner>;
 using HADMapService = autoware_auto_msgs::srv::HADMapService;
-using Route = autoware_auto_msgs::msg::Route;
+using HADMapRoute = autoware_auto_msgs::msg::HADMapRoute;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using ParkerNLPCostWeights = autoware::motion::planning::parking_planner::NLPCostWeights<float64_t>;
 using ParkerVehicleState = autoware::motion::planning::parking_planner::VehicleState<float64_t>;
@@ -74,10 +74,10 @@ public:
   explicit ParkingPlannerNode(const rclcpp::NodeOptions & options);
 
 protected:
-  HADMapService::Request create_map_request(const Route & route);
+  HADMapService::Request create_map_request(const HADMapRoute & had_map_route);
 
   AutowareTrajectory plan_trajectory(
-    const Route & route,
+    const HADMapRoute & had_map_route,
     const lanelet::LaneletMapPtr & lanelet_map_ptr);
 
   PlannerPtr m_planner{nullptr};

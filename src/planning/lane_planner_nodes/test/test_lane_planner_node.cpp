@@ -27,7 +27,8 @@ using motion::motion_common::VehicleConfig;
 
 using autoware_auto_msgs::srv::HADMapService;
 using autoware_auto_msgs::action::PlanTrajectory;
-using autoware_auto_msgs::msg::Route;
+using autoware_auto_msgs::msg::HADMapRoute;
+using autoware_auto_msgs::msg::HADMapSegment;
 using autoware_auto_msgs::msg::MapPrimitive;
 
 // returns a map with a lane has given number of points(n_points)
@@ -55,19 +56,22 @@ lanelet::LaneletMapPtr get_lanelet_map(
   return lanelet::utils::createMap({ll});
 }
 
-Route get_route(const int64_t lane_id, const float32_t length)
+HADMapRoute get_route(const int64_t lane_id, const float32_t length)
 {
-  Route route;
-  route.start_point.x = 0;
-  route.start_point.y = 0;
-  route.goal_point.x = 0;
-  route.goal_point.y = length;
+  HADMapRoute had_map_route;
+  had_map_route.start_point.position.x = 0;
+  had_map_route.start_point.position.y = 0;
+  had_map_route.goal_point.position.x = 0;
+  had_map_route.goal_point.position.y = length;
 
   MapPrimitive primitive;
   primitive.id = lane_id;
-  route.primitives.push_back(primitive);
+  HADMapSegment segment;
+  segment.preferred_primitive_id = primitive.id;
+  had_map_route.segments.push_back(segment);
+  had_map_route.segments.front().primitives.push_back(primitive);
 
-  return route;
+  return had_map_route;
 }
 
 class LanePlannerNodeTest : public ::testing::Test

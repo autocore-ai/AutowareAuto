@@ -55,9 +55,10 @@ using PlanTrajectoryAction = autoware_auto_msgs::action::PlanTrajectory;
 using PlanTrajectoryGoalHandle = rclcpp_action::ClientGoalHandle<PlanTrajectoryAction>;
 using HADMapService = autoware_auto_msgs::srv::HADMapService;
 using autoware_auto_msgs::srv::ModifyTrajectory;
-using autoware_auto_msgs::msg::TrajectoryPoint;
+using autoware_auto_msgs::msg::RoutePoint;
 using autoware_auto_msgs::msg::Trajectory;
-using autoware_auto_msgs::msg::Route;
+using autoware_auto_msgs::msg::TrajectoryPoint;
+using autoware_auto_msgs::msg::HADMapRoute;
 using autoware_auto_msgs::msg::VehicleStateCommand;
 using autoware_auto_msgs::msg::VehicleStateReport;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
@@ -86,14 +87,14 @@ private:
   // May be nullptr if disabled
   rclcpp::Client<ModifyTrajectory>::SharedPtr m_modify_trajectory_client;
   rclcpp::Subscription<State>::SharedPtr m_ego_state_sub{};
-  rclcpp::Subscription<Route>::SharedPtr m_route_sub{};
+  rclcpp::Subscription<HADMapRoute>::SharedPtr m_route_sub{};
   rclcpp::Subscription<Trajectory>::SharedPtr m_lane_trajectory_sub{};
   rclcpp::Subscription<Trajectory>::SharedPtr m_parking_trajectory_sub{};
   rclcpp::Subscription<VehicleStateReport>::SharedPtr m_vehicle_state_report_sub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_debug_trajectory_pub{};
   rclcpp::Publisher<Trajectory>::SharedPtr m_debug_checkpoints_pub{};
-  rclcpp::Publisher<Route>::SharedPtr m_debug_subroute_pub{};
+  rclcpp::Publisher<HADMapRoute>::SharedPtr m_debug_subroute_pub{};
   rclcpp::Publisher<VehicleStateCommand>::SharedPtr m_vehicle_state_command_pub{};
 
   //  planner
@@ -101,7 +102,7 @@ private:
 
   // msg cache
   lanelet::LaneletMapPtr m_lanelet_map_ptr;
-  Route::SharedPtr m_route;
+  HADMapRoute::SharedPtr m_route;
   State m_ego_state;
   uchar8_t m_current_gear;
 
@@ -114,7 +115,7 @@ private:
 
   // callbacks
   void on_ego_state(const State::SharedPtr & msg);
-  void on_route(const Route::SharedPtr & msg);
+  void on_route(const HADMapRoute::SharedPtr & msg);
   void on_lane_trajectory(const Trajectory::SharedPtr & msg);
   void on_parking_trajectory(const Trajectory::SharedPtr & msg);
   void on_vehicle_state_report(const VehicleStateReport::SharedPtr & msg);
