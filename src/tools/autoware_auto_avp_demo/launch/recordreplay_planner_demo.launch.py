@@ -51,6 +51,9 @@ def generate_launch_description():
     pc_filter_transform_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/pc_filter_transform.param.yaml')
 
+    vehicle_characteristics_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/vehicle_characteristics.param.yaml')
+
     point_cloud_fusion_node_pkg_prefix = get_package_share_directory(
         'point_cloud_fusion_nodes')
 
@@ -120,6 +123,11 @@ def generate_launch_description():
         'recordreplay_planner_param_file',
         default_value=recordreplay_planner_param_file,
         description='Path to config file for record/replay planner'
+    )
+    vehicle_characteristics_param = DeclareLaunchArgument(
+        'vehicle_characteristics_param_file',
+        default_value=vehicle_characteristics_param_file,
+        description='Path to config file for vehicle characteristics'
     )
 
     # Nodes
@@ -223,7 +231,10 @@ def generate_launch_description():
         executable='mpc_controller_node_exe',
         name='mpc_controller',
         namespace='control',
-        parameters=[LaunchConfiguration('mpc_param_file')]
+        parameters=[
+            LaunchConfiguration('mpc_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
     )
     recordreplay_planner = Node(
         package='recordreplay_planner_nodes',
@@ -244,7 +255,10 @@ def generate_launch_description():
         name='object_collision_estimator_node',
         namespace='planning',
         executable='object_collision_estimator_node_exe',
-        parameters=[LaunchConfiguration('object_collision_estimator_param_file')],
+        parameters=[
+            LaunchConfiguration('object_collision_estimator_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
         remappings=[
             ('obstacle_topic', '/perception/lidar_bounding_boxes'),
         ],
@@ -264,6 +278,7 @@ def generate_launch_description():
         with_obstacle_detection_param,
         mpc_param,
         recordreplay_planner_param,
+        vehicle_characteristics_param,
         urdf_publisher,
         euclidean_clustering,
         filter_transform_vlp16_front,

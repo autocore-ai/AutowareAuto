@@ -52,6 +52,9 @@ def generate_launch_description():
     recordreplay_planner_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/recordreplay_planner.param.yaml')
 
+    vehicle_characteristics_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/vehicle_characteristics.param.yaml')
+
     pc_filter_transform_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/pc_filter_transform.param.yaml')
 
@@ -116,6 +119,11 @@ def generate_launch_description():
         'recordreplay_planner_param_file',
         default_value=recordreplay_planner_param_file,
         description='Path to config file for record/replay planner'
+    )
+    vehicle_characteristics_param = DeclareLaunchArgument(
+        'vehicle_characteristics_param_file',
+        default_value=vehicle_characteristics_param_file,
+        description='Path to config file for vehicle characteristics'
     )
 
     # Nodes
@@ -220,7 +228,10 @@ def generate_launch_description():
         executable='mpc_controller_node_exe',
         name='mpc_controller',
         namespace='control',
-        parameters=[LaunchConfiguration('mpc_param_file')]
+        parameters=[
+            LaunchConfiguration('mpc_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
     )
     recordreplay_planner = Node(
         package='recordreplay_planner_nodes',
@@ -246,6 +257,7 @@ def generate_launch_description():
         with_rviz_param,
         mpc_param,
         recordreplay_planner_param,
+        vehicle_characteristics_param,
         urdf_publisher,
         euclidean_clustering,
         filter_transform_vlp16_front,

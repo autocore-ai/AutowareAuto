@@ -14,16 +14,6 @@
 
 /**:
   ros__parameters:
-    vehicle:
-      cg_to_front_m: 2.74
-      cg_to_rear_m: 0.1
-      front_corner_stiffness: 0.1
-      rear_corner_stiffness: 0.1
-      mass_kg: 1500.0
-      yaw_inertia_kgm2: 12.0
-      width_m: 1.83
-      front_overhang_m: 1.0
-      rear_overhang_m: 1.03
     safety_factor: 2.0
     stop_margin: 20.0  # distance between control point (e.g. CoG/base_link) and obstacle
     trajectory_smoother:

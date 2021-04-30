@@ -45,6 +45,9 @@ def generate_launch_description():
     pc_filter_transform_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/pc_filter_transform.param.yaml')
 
+    vehicle_characteristics_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/vehicle_characteristics.param.yaml')
+
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
     with open(urdf_path, 'r') as infp:
@@ -76,6 +79,11 @@ def generate_launch_description():
         'pc_filter_transform_param_file',
         default_value=pc_filter_transform_param_file,
         description='Path to config file for Point Cloud Filter/Transform Nodes'
+    )
+    vehicle_characteristics_param = DeclareLaunchArgument(
+        'vehicle_characteristics_param_file',
+        default_value=vehicle_characteristics_param_file,
+        description='Path to config file for vehicle characteristics'
     )
 
     # Nodes
@@ -143,7 +151,10 @@ def generate_launch_description():
         executable='mpc_controller_node_exe',
         name='mpc_controller_node',
         namespace='control',
-        parameters=[LaunchConfiguration('mpc_param_file')]
+        parameters=[
+            LaunchConfiguration('mpc_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
     )
 
     core_launch = IncludeLaunchDescription(
@@ -157,6 +168,7 @@ def generate_launch_description():
         ndt_localizer_param,
         mpc_param,
         pc_filter_transform_param,
+        vehicle_characteristics_param,
         urdf_publisher,
         lgsvl_interface,
         map_publisher,

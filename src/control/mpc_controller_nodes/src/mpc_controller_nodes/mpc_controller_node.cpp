@@ -68,15 +68,15 @@ MpcControllerNode::MpcControllerNode(const std::string & name, const std::string
   };
   using mpc_controller::VehicleConfig;
   const VehicleConfig vehicle_param{
-    static_cast<Real>(declare_parameter("controller.vehicle.cg_to_front_m").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.cg_to_rear_m").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.front_corner_stiffness").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.rear_corner_stiffness").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.mass_kg").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.yaw_inertia_kgm2").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.width_m").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.front_overhang_m").get<double>()),
-    static_cast<Real>(declare_parameter("controller.vehicle.rear_overhang_m").get<double>())
+    static_cast<Real>(declare_parameter("vehicle.cg_to_front_m").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.cg_to_rear_m").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.front_corner_stiffness").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_corner_stiffness").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.mass_kg").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.yaw_inertia_kgm2").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.width_m").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.front_overhang_m").get<double>()),
+    static_cast<Real>(declare_parameter("vehicle.rear_overhang_m").get<double>())
   };
   using mpc_controller::BehaviorConfig;
   using controller_common::ControlReference;

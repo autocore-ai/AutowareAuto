@@ -68,12 +68,20 @@ def generate_launch_description():
         default_value=str(param_path / 'lane_planner.param.yaml'),
         description='Path to parameter file for lane planner'
     )
+    vehicle_characteristics_param = DeclareLaunchArgument(
+        'vehicle_characteristics_param_file',
+        default_value=str(param_path / 'vehicle_characteristics.param.yaml'),
+        description='Path to parameter file for vehicle characteristics'
+    )
     lane_planner = Node(
         package='lane_planner_nodes',
         name='lane_planner_node',
         namespace='planning',
         executable='lane_planner_node_exe',
-        parameters=[LaunchConfiguration('lane_planner_param_file')],
+        parameters=[
+            LaunchConfiguration('lane_planner_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
 
@@ -147,7 +155,10 @@ def generate_launch_description():
         executable='mpc_controller_node_exe',
         name='mpc_controller',
         namespace='control',
-        parameters=[LaunchConfiguration('mpc_controller_param_file')]
+        parameters=[
+            LaunchConfiguration('mpc_controller_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ]
     )
 
     parking_planner_param = DeclareLaunchArgument(
@@ -160,7 +171,10 @@ def generate_launch_description():
         name='parking_planner_node',
         namespace='planning',
         executable='parking_planner_node_exe',
-        parameters=[LaunchConfiguration('parking_planner_param_file')],
+        parameters=[
+            LaunchConfiguration('parking_planner_param_file'),
+            LaunchConfiguration('vehicle_characteristics_param_file'),
+        ],
         remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service')]
     )
 
