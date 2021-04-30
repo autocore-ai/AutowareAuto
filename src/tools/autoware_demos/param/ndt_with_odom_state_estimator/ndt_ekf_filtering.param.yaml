@@ -1,0 +1,17 @@
+---
+/**:
+  ros__parameters:
+    topics:
+      input_pose:
+        - /vehicle/odom_pose
+    data_driven: true
+    frame_id: "odom"
+    child_frame_id: "base_link"
+    mahalanobis_threshold: 2.0
+    publish_tf: true
+
+    process_noise_variances:
+      acceleration: [2.0, 2.0]
+
+    state_variances: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    min_speed_to_use_speed_orientation: 10.0

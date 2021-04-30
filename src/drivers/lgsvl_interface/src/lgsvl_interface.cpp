@@ -139,7 +139,7 @@ LgsvlInterface::LgsvlInterface(
 
     if (publish_pose) {
       m_pose_pub = node.create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-        "/gnss/pose", rclcpp::QoS{10});
+        "/vehicle/odom_pose", rclcpp::QoS{10});
     }
 
     if (publish_tf) {
@@ -363,6 +363,7 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
   }
 
   decltype(msg.pose.pose.orientation) q{msg.pose.pose.orientation};
+  // Aligning odom frame at the vehicle position at the start to remove the initial odom->bl offset
   const auto px = msg.pose.pose.position.x - m_odom_zero.x;
   const auto py = msg.pose.pose.position.y - m_odom_zero.y;
   const auto pz = msg.pose.pose.position.z - m_odom_zero.z;
@@ -418,8 +419,10 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
   if (m_pose_pub) {
     geometry_msgs::msg::PoseWithCovarianceStamped pose{};
     pose.header = msg.header;
-    pose.pose.pose.position = msg.pose.pose.position;
     pose.pose.pose.orientation = q;
+    pose.pose.pose.position.x = px;
+    pose.pose.pose.position.y = py;
+    pose.pose.pose.position.z = pz;
 
     constexpr auto EPS = std::numeric_limits<float64_t>::epsilon();
     if (std::fabs(msg.pose.covariance[COV_X]) > EPS ||
@@ -435,7 +438,7 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
         0.0, 0.0, COV_Z_VAR, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, COV_RX_VAR, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, COV_RY_VAR, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, COV_RX_VAR};
+        0.0, 0.0, 0.0, 0.0, 0.0, COV_RZ_VAR};
     } else {
       pose.pose.covariance = msg.pose.covariance;
     }

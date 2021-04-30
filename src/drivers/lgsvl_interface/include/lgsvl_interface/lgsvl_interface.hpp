@@ -59,9 +59,9 @@ using Table1D = ::autoware::common::helper_functions::LookupTable1D<double>;
 constexpr static double COV_X_VAR = 0.1;  // ros covariance array is float64 = double
 constexpr static double COV_Y_VAR = 0.1;
 constexpr static double COV_Z_VAR = 0.1;
-constexpr static double COV_RX_VAR = 1000.0;
-constexpr static double COV_RY_VAR = 1000.0;
-constexpr static double COV_RZ_VAR = 1000.0;
+constexpr static double COV_RX_VAR = 0.1;
+constexpr static double COV_RY_VAR = 0.1;
+constexpr static double COV_RZ_VAR = 0.1;
 
 // Covariance array index values
 constexpr static int32_t COV_X = 0;

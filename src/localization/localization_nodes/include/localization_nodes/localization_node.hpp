@@ -75,6 +75,9 @@ public:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using TransformStamped = geometry_msgs::msg::TransformStamped;
   using RegistrationSummary = localization_common::OptimizedRegistrationSummary;
+  // During the experiments, it was found out that running the `tf_listener` in parallel
+  // resulted in more robust ndt initialization performance: #868
+  static constexpr bool USE_DEDICATED_TF_THREAD{true};
 
   /// Constructor
   /// \param node_name Name of node
@@ -96,7 +99,7 @@ public:
     LocalizerPublishMode publish_tf = LocalizerPublishMode::NO_PUBLISH_TF)
   : Node(node_name, name_space),
     m_pose_initializer(pose_initializer),
-    m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+    m_tf_listener(m_tf_buffer, USE_DEDICATED_TF_THREAD),
     m_observation_sub(create_subscription<ObservationMsgT>(
         observation_sub_config.topic,
         observation_sub_config.qos,
@@ -128,7 +131,7 @@ public:
     const PoseInitializerT & pose_initializer)
   : Node(node_name, options),
     m_pose_initializer(pose_initializer),
-    m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+    m_tf_listener(m_tf_buffer, USE_DEDICATED_TF_THREAD),
     m_observation_sub(create_subscription<ObservationMsgT>(
         "points_in",
         rclcpp::QoS{rclcpp::KeepLast{
@@ -168,7 +171,7 @@ public:
     const PoseInitializerT & pose_initializer)
   : Node(node_name, name_space),
     m_pose_initializer(pose_initializer),
-    m_tf_listener(m_tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+    m_tf_listener(m_tf_buffer, USE_DEDICATED_TF_THREAD),
     m_observation_sub(create_subscription<ObservationMsgT>(
         "points_in",
         rclcpp::QoS{rclcpp::KeepLast{
@@ -528,6 +531,11 @@ private:
   bool m_external_pose_available{false};
   bool m_use_hack{false};
 };
+
+template<typename ObservationMsgT, typename MapMsgT, typename MapT, typename LocalizerT,
+  typename PoseInitializerT, Requires R1, Requires R2>
+constexpr bool RelativeLocalizerNode<ObservationMsgT, MapMsgT, MapT,
+  LocalizerT, PoseInitializerT, R1, R2>::USE_DEDICATED_TF_THREAD;
 }  // namespace localization_nodes
 }  // namespace localization
 }  // namespace autoware
