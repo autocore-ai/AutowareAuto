@@ -46,7 +46,7 @@ public:
   /// \param[in] closest_only the boolean to determine if closest intersection to be
   /// returned or all
   /// \return returns the intersection points
-  std::vector<EigenStlVector<Eigen::Vector2f>> get_intersections_per_object(
+  std::vector<ObjIntersections> get_intersections_per_object(
     const std::vector<std::unique_ptr<TrackedObject>> & objects,
     const bool closest_only) const;
 
@@ -65,6 +65,7 @@ private:
   /// \return returns the end point of the LiDAR beam
   Eigen::Vector2f get_beam_end(const autoware::common::types::float32_t angle) const;
 };
+
 }  // namespace tracking_test_framework
 }  // namespace autoware
 

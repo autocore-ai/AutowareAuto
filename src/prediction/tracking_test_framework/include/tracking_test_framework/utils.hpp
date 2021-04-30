@@ -93,6 +93,17 @@ inline autoware::common::types::float32_t wrap_to_2pi(
   return to_radians(angle_deg);
 }
 
+/// \brief Method to convert point in Eigen::Vector2f to autoware::common::types::PointXYZIF
+/// \param[in] v point(x,y) in Eigen::Vector2f format
+/// \return returns the autoware::common::types::PointXYZIF representation of point(x,y)
+inline autoware::common::types::PointXYZIF get_point_from_vector_2d(const Eigen::Vector2f & v)
+{
+  autoware::common::types::PointXYZIF point{};
+  point.x = static_cast<autoware::common::types::float32_t>(v(0));
+  point.y = static_cast<autoware::common::types::float32_t>(v(1));
+  return point;
+}
+
 }  // namespace utils
 }  // namespace tracking_test_framework
 }  // namespace autoware

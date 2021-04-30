@@ -13,6 +13,7 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>autoware_auto_geometry</depend>
   <depend>autoware_auto_msgs</depend>
   <depend>autoware_auto_common</depend>
   <depend>time_utils</depend>

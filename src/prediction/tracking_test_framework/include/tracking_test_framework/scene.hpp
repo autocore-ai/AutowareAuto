@@ -22,11 +22,11 @@
 
 #include <tracking_test_framework/lidar.hpp>
 
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
+
 #include <chrono>
 #include <memory>
 #include <vector>
-
-#include "autoware_auto_msgs/msg/detected_objects.hpp"
 
 namespace autoware
 {
@@ -39,7 +39,7 @@ public:
   /// \brief constructor
   /// \param[in] lidar object representing the liDAR sensor
   /// \param[in] objects std::vector of TrackedObjects put in the Scene
-  Scene(const Lidar & lidar, const std::vector<std::unique_ptr<TrackedObject>> & objects);
+  Scene(const Lidar & lidar, std::vector<std::unique_ptr<TrackedObject>> && objects);
 
   /// \brief Method to move objects in the scene
   /// \param[in] dt_in_ms time interval in milliseconds
@@ -58,7 +58,7 @@ private:
   /// \param[in] closest_only the boolean to determine if closest intersection to be
   /// returned or all
   /// \return returns the intersection points of the TrackedObjects in Scene with LiDAR
-  std::vector<EigenStlVector<Eigen::Vector2f>> get_intersections_with_lidar(
+  std::vector<ObjIntersections> get_intersections_with_lidar(
     const bool closest_only) const;
 
   /// Object representing the LiDAR sensor

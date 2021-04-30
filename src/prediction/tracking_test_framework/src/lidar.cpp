@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <tracking_test_framework/lidar.hpp>
-#include <tracking_test_framework/utils.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -40,24 +39,16 @@ Lidar::Lidar(
   }
 }
 
-struct ObjIntersections
-{
-  // ordered by distance
-  EigenStlVector<Eigen::Vector2f> points{};
-  size_t obj_idx{};
-};
-
-std::vector<EigenStlVector<Eigen::Vector2f>> Lidar::get_intersections_per_object(
+std::vector<ObjIntersections> Lidar::get_intersections_per_object(
   const std::vector<std::unique_ptr<TrackedObject>> & objects, const bool closest_only) const
 {
-  std::vector<EigenStlVector<Eigen::Vector2f>> intersections{};
+  std::vector<ObjIntersections> intersections{};
   for (const auto & beam : m_beams) {
     std::vector<ObjIntersections> intersections_all_objects{};
-    for (size_t obj_idx = 0; obj_idx < objects.size(); ++obj_idx) {
-      const auto & object = objects[obj_idx];
+    for (const auto & object : objects) {
       ObjIntersections intersections_current;
-      intersections_current.points = object->shape()->intersect_with_line(beam, closest_only);
-      intersections_current.obj_idx = obj_idx;
+      intersections_current.points = object->intersect_with_line(beam, closest_only);
+      intersections_current.obj_type = object->object_type();
       if (!intersections_current.points.empty()) {
         intersections_all_objects.push_back(intersections_current);
       }
@@ -72,13 +63,15 @@ std::vector<EigenStlVector<Eigen::Vector2f>> Lidar::get_intersections_per_object
           [&](const ObjIntersections & isec_a, const ObjIntersections & isec_b) {
             return (isec_a.points[0] - m_position).norm() < (isec_b.points[0] - m_position).norm();
           });
-        intersections[intersections_all_objects[0].obj_idx].push_back(
-          intersections_all_objects[0].points[0]);
+        intersections[0].obj_type = intersections_all_objects[0].obj_type;
+        intersections[0].points.push_back(intersections_all_objects[0].points[0]);
       } else {
         intersections.resize(intersections_all_objects.size());
-        for (const auto & isec : intersections_all_objects) {
-          intersections[isec.obj_idx].insert(
-            intersections[isec.obj_idx].end(), isec.points.begin(), isec.points.end());
+        for (size_t isec_idx = 0; isec_idx < intersections_all_objects.size(); ++isec_idx) {
+          intersections[isec_idx].obj_type = intersections_all_objects[isec_idx].obj_type;
+          intersections[isec_idx].points.insert(
+            intersections[isec_idx].points.end(), intersections_all_objects[isec_idx].points
+            .begin(), intersections_all_objects[isec_idx].points.end());
         }
       }
     }

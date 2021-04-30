@@ -31,6 +31,17 @@ namespace autoware
 {
 namespace tracking_test_framework
 {
+
+/// Enum representing the type of 2D object being tracked.
+enum class ObjectType { Car, Pedestrian };
+
+/// Struct containing intersections of the 2D objects with sensors like LiDAR.
+struct ObjIntersections
+{
+  EigenStlVector<Eigen::Vector2f> points{};
+  ObjectType obj_type{};
+};
+
 /// \brief This is the base class for the Tracked objects
 class TRACKING_TEST_FRAMEWORK_PUBLIC TrackedObject
 {
@@ -43,12 +54,6 @@ public:
     const autoware::common::types::float32_t turn_rate_deg_per_sec,
     std::unique_ptr<Shape> shape);
 
-  /// \brief copy constructor
-  TrackedObject(const TrackedObject & object) noexcept;
-
-  /// \brief virtual method to get clone of the TrackedObject derived objects
-  /// \return return a std::unique_ptr to a copy of the actual derived object
-  virtual std::unique_ptr<TrackedObject> clone() const = 0;
 
   /// \brief Method to move the TrackedObject given the time interval in seconds.This will
   /// update the current position and orientation of the object and also update the shape
@@ -70,15 +75,19 @@ public:
     return autoware::tracking_test_framework::utils::wrap_to_2pi(m_orientation_rad);
   }
 
-  /// \brief gets the Shape object associated with the TrackedObject
+  /// \brief wrapper for the shapes intersect_with_line function
   /// \return returns the Shape
-  inline const Shape * shape() const
+  template<typename ... Ts>
+  auto intersect_with_line(Ts... args)
   {
-    return m_shape.get();
+    return m_shape->intersect_with_line(args ...);
   }
 
   /// \brief Virtual destructor
   virtual ~TrackedObject() = default;
+
+  /// \brief Virtual method to get enum for object type
+  virtual ObjectType object_type() = 0;
 
 protected:
   /// \brief virtual method to update the Shape associated with a TrackedObject
@@ -112,11 +121,10 @@ public:
     const autoware::common::types::float32_t turn_rate_deg_per_sec,
     const Eigen::Vector2f & size);
 
-  /// \brief Method to get clone of the unique_ptr to a Car
-  /// \return return a std::unique_ptr to a Car object
-  inline std::unique_ptr<TrackedObject> clone() const override
+  /// \brief Method to get the enum for type of the 2D object here Car
+  inline ObjectType object_type() override
   {
-    return std::make_unique<Car>(*this);
+    return ObjectType::Car;
   }
 
 protected:
@@ -141,19 +149,16 @@ public:
     const autoware::common::types::float32_t orientation_deg,
     const autoware::common::types::float32_t turn_rate_deg_per_sec);
 
-  /// \brief Method to get clone of the unique_ptr to a Pedestrian
-  /// \return return a std::unique_ptr to a Pedestrian object
-  inline std::unique_ptr<TrackedObject> clone() const override
+  /// \brief Method to get the enum for type of the 2D object here Pedestrian
+  inline ObjectType object_type() override
   {
-    return std::make_unique<Pedestrian>(*this);
+    return ObjectType::Pedestrian;
   }
 
 protected:
   /// \brief Method to update the Shape(here Circle) associated with a Pedestrian
   void update_shape() override;
 };
-
-
 }  // namespace tracking_test_framework
 }  // namespace autoware
 

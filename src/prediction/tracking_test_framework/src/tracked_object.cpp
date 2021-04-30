@@ -34,11 +34,6 @@ TrackedObject::TrackedObject(
   m_turn_rate_rad_per_sec(autoware::tracking_test_framework::utils::to_radians
       (orientation_degrees_change)) {}
 
-TrackedObject::TrackedObject(const TrackedObject & object) noexcept
-: m_shape(object.m_shape->clone()), m_position(object.m_position), m_speed_mps(object.m_speed_mps),
-  m_orientation_rad(object.m_orientation_rad), m_turn_rate_rad_per_sec(
-    object.m_turn_rate_rad_per_sec) {}
-
 void TrackedObject::move_object(const std::chrono::milliseconds dt_in_ms)
 {
   const auto time_interval_secs = static_cast<float>(dt_in_ms.count()) / 1000.F;

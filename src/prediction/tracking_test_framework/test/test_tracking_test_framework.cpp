@@ -14,9 +14,11 @@
 
 #include <gtest/gtest.h>
 
+#include <geometry/common_2d.hpp>
 #include <tracking_test_framework/scene.hpp>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace
@@ -133,7 +135,7 @@ TEST(test_tracking_test_framework, test_scene_with_single_lidar_beam_single_obje
       Eigen::Vector2f{1.0, 1.0}, 2, 0.0, 0.0));
 
   // Setup scene
-  autoware::tracking_test_framework::Scene scene{lidar, objects};
+  autoware::tracking_test_framework::Scene scene{lidar, std::move(objects)};
   auto intersection = scene.get_detected_objects_array(true);
   ASSERT_EQ(intersection.objects.size(), 1UL);
   EXPECT_NEAR(intersection.objects[0].shape.polygon.points.front().x, 1.0F, epsilon);
@@ -161,32 +163,42 @@ TEST(test_tracking_test_framework, test_scene_with_multiple_lidar_beams_multiple
       Eigen::Vector2f{1.0, 1.0}, 2, 0.0, 0.0));
 
   // Setup scene
-  autoware::tracking_test_framework::Scene scene{lidar, objects};
+  autoware::tracking_test_framework::Scene scene{lidar, std::move(objects)};
 
   // Even though pedestrian and car are hit by lidar at a common point here we return closest
   // object to the ray only since the farther object should be occluded by using closest_only flag
   auto intersections = scene.get_detected_objects_array(true);
   ASSERT_EQ(intersections.objects.size(), 1UL);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[0].x, 1.0F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[0].y, 0.0F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[1].x, -0.8660F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[1].y, 1.5F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[2].x, -0.8660F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[2].y, -1.5F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[3].x, 1.0F, epsilon);
-  EXPECT_NEAR(intersections.objects[0].shape.polygon.points[3].y, 0.0F, epsilon);
 
-  // Here the API returns all intersection points regardless of occlusion
-  auto intersection_all = scene.get_detected_objects_array(false);
-  ASSERT_EQ(intersection_all.objects.size(), 2UL);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[0].x, 1.0F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[0].y, 0.0F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[1].x, -0.8660F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[1].y, 1.5F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[2].x, -0.8660F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[2].y, -1.5F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[3].x, 1.0F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[0].shape.polygon.points[3].y, 0.0F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[1].shape.polygon.points[0].x, 1.0F, epsilon);
-  EXPECT_NEAR(intersection_all.objects[1].shape.polygon.points[0].y, 0.0F, epsilon);
+  // Intersection points with lidar
+  geometry_msgs::msg::Polygon polygon{};
+  std::vector<Eigen::Vector2f> intersection_pts {Eigen::Vector2f{1.0F, 0.0F},
+    Eigen::Vector2f{-0.8660F, 1.5F}, Eigen::Vector2f{-0.8660F, -1.5F},
+    Eigen::Vector2f{1.0F, 1.748455e-7F}};
+  std::vector<autoware::common::types::PointXYZIF> points_vec{};
+
+  for (const auto & point : intersection_pts) {
+    points_vec.push_back(
+      autoware::tracking_test_framework::utils::
+      get_point_from_vector_2d(point));
+  }
+
+  // Assert if the intersection points are lying on or inside the fitted bounding box
+  for (const auto & point : points_vec) {
+    geometry_msgs::msg::Point32 pt;
+    pt.x = point.x;
+    pt.y = point.y;
+    pt.z = 0.0F;
+    ASSERT_TRUE(
+      autoware::common::geometry::is_point_inside_polygon_2d(
+        intersections.objects[0].shape.polygon.points.begin(),
+        intersections.objects[0].shape.polygon.points.end(), pt));
+  }
+
+  // Check if the area of the fitted bounding box is less than equal to the area of the 2D tracked
+  // object here the car.
+  const float bbox_area = autoware::common::geometry::area_2d(
+    intersections.objects[0].shape.polygon.points.begin(),
+    intersections.objects[0].shape.polygon.points.end());
+  EXPECT_GT(6.0F, bbox_area);
 }
