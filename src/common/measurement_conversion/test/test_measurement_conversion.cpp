@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-#include <state_estimation_nodes/measurement_conversion.hpp>
+#include <measurement_conversion/measurement_conversion.hpp>
 
 using autoware::common::state_estimation::StampedMeasurementPose;
 using autoware::common::state_estimation::StampedMeasurementSpeed;
@@ -109,8 +109,9 @@ TEST(MeasurementConversionTest, trivial_isometry_downscaling) {
 TEST(MeasurementConversionTest, isometry_downscaling) {
   Eigen::Isometry3f initial_isometry;
   initial_isometry.linear() =
-    Eigen::AngleAxisf{M_PI_2, Eigen::Vector3f::UnitZ()} *Eigen::Scaling(1.0F);
+    Eigen::AngleAxisf{autoware::common::types::PI, Eigen::Vector3f::UnitZ()} *Eigen::Scaling(1.0F);
   const auto isometry = downscale_isometry<2>(initial_isometry);
-  Eigen::Matrix2f expected_rotation = Eigen::Rotation2Df(M_PI_2) * Eigen::Scaling(1.0F);
+  Eigen::Matrix2f expected_rotation = Eigen::Rotation2Df(autoware::common::types::PI) *
+    Eigen::Scaling(1.0F);
   EXPECT_TRUE(isometry.linear().isApprox(expected_rotation));
 }

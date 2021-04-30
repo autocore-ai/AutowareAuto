@@ -20,5 +20,6 @@ across the Autoware.Auto system.
 - @subpage signal-filters-design
 - @subpage state-and-variables-design
 - @subpage motion-model-design
+- @subpage measurement-conversion-design
 - @subpage state-estimation-design
 - @subpage state-estimation-nodes-design

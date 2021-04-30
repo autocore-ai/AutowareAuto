@@ -21,11 +21,9 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(state_estimation_node SHARED
   include/state_estimation_nodes/history.hpp
-  include/state_estimation_nodes/measurement_conversion.hpp
   include/state_estimation_nodes/kalman_filter_wrapper.hpp
   include/state_estimation_nodes/state_estimation_node.hpp
   include/state_estimation_nodes/steady_time_grid.hpp
-  src/measurement_conversion.cpp
   src/kalman_filter_wrapper.cpp
   src/state_estimation_node.cpp)
 # TODO(igor): Remove this once tf2 warnings are removed.
@@ -47,7 +45,6 @@ if(BUILD_TESTING)
   ament_add_gmock(test_state_estimation_node
           test/test_history.cpp
           test/test_steady_time_grid.cpp
-          test/test_measurement_conversion.cpp
           test/test_kalman_filter_wrapper.cpp
           test/test_state_estimation_node.cpp
   )

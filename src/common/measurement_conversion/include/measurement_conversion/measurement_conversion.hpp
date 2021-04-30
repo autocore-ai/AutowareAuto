@@ -15,15 +15,15 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
-#ifndef STATE_ESTIMATION_NODES__MEASUREMENT_CONVERSION_HPP_
-#define STATE_ESTIMATION_NODES__MEASUREMENT_CONVERSION_HPP_
+#ifndef MEASUREMENT_CONVERSION__MEASUREMENT_CONVERSION_HPP_
+#define MEASUREMENT_CONVERSION__MEASUREMENT_CONVERSION_HPP_
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/time.hpp>
-#include <state_estimation_nodes/measurement_typedefs.hpp>
-#include <state_estimation_nodes/visibility_control.hpp>
+#include <measurement_conversion/measurement_typedefs.hpp>
+#include <measurement_conversion/visibility_control.hpp>
 
 #include <Eigen/Geometry>
 
@@ -76,23 +76,23 @@ MeasurementT message_to_measurement(
 ///
 /// @param[in]  isometry              The isometry transform
 ///
-/// @tparam     kStateDimentionality  Dimensionality of the space.
+/// @tparam     kStateDimensionality  Dimensionality of the space.
 /// @tparam     FloatT                Type of scalar.
 ///
 /// @return     Downscaled isometry.
 ///
-template<std::int32_t kStateDimentionality, typename FloatT>
+template<std::int32_t kStateDimensionality, typename FloatT>
 static constexpr Eigen::Transform<
-  FloatT, kStateDimentionality, Eigen::TransformTraits::Isometry> downscale_isometry(
+  FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry> downscale_isometry(
   const Eigen::Transform<FloatT, 3, Eigen::TransformTraits::Isometry> & isometry)
 {
-  static_assert(kStateDimentionality <= 3, "We only handle scaling the isometry down.");
+  static_assert(kStateDimensionality <= 3, "We only handle scaling the isometry down.");
   using Isometry = Eigen::Transform<
-    FloatT, kStateDimentionality, Eigen::TransformTraits::Isometry>;
+    FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry>;
   Isometry result{Isometry::Identity()};
   result.linear() = isometry.rotation()
-    .template block<kStateDimentionality, kStateDimentionality>(0, 0);
-  result.translation() = isometry.translation().topRows(kStateDimentionality);
+    .template block<kStateDimensionality, kStateDimensionality>(0, 0);
+  result.translation() = isometry.translation().topRows(kStateDimensionality);
   return result;
 }
 
@@ -106,7 +106,7 @@ static constexpr Eigen::Transform<
 /// @return     The measurement containing pose and speed.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPoseAndSpeed message_to_measurement(
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementPoseAndSpeed message_to_measurement(
   const nav_msgs::msg::Odometry & msg,
   const Eigen::Isometry3f & tf__world__frame_id,
   const Eigen::Isometry3f & tf__world__child_frame_id);
@@ -120,7 +120,7 @@ STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPoseAndSpeed message_to_measurem
 /// @return     The measurement containing speed.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementSpeed message_to_measurement(
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementSpeed message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id);
 
@@ -133,7 +133,7 @@ STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementSpeed message_to_measurement(
 /// @return     The measurement containing pose.
 ///
 template<>
-STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPose message_to_measurement(
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
   const Eigen::Isometry3f & tf__world__frame_id);
 
@@ -142,4 +142,4 @@ STATE_ESTIMATION_NODES_PUBLIC StampedMeasurementPose message_to_measurement(
 }  // namespace autoware
 
 
-#endif  // STATE_ESTIMATION_NODES__MEASUREMENT_CONVERSION_HPP_
+#endif  // MEASUREMENT_CONVERSION__MEASUREMENT_CONVERSION_HPP_

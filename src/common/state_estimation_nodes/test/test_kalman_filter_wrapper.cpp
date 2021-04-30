@@ -17,8 +17,8 @@
 
 #include <gtest/gtest.h>
 
+#include <measurement_conversion/measurement_typedefs.hpp>
 #include <state_estimation_nodes/kalman_filter_wrapper.hpp>
-#include <state_estimation_nodes/measurement_typedefs.hpp>
 #include <state_vector/common_variables.hpp>
 
 #include <common/types.hpp>

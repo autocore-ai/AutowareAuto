@@ -15,8 +15,8 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
-#ifndef STATE_ESTIMATION_NODES__MEASUREMENT_TYPEDEFS_HPP_
-#define STATE_ESTIMATION_NODES__MEASUREMENT_TYPEDEFS_HPP_
+#ifndef MEASUREMENT_CONVERSION__MEASUREMENT_TYPEDEFS_HPP_
+#define MEASUREMENT_CONVERSION__MEASUREMENT_TYPEDEFS_HPP_
 
 #include <state_estimation/measurement/linear_measurement.hpp>
 #include <state_vector/common_variables.hpp>
@@ -54,4 +54,4 @@ using StampedMeasurementPoseAndSpeed = Stamped<MeasurementPoseAndSpeed>;
 }  // namespace common
 }  // namespace autoware
 
-#endif  // STATE_ESTIMATION_NODES__MEASUREMENT_TYPEDEFS_HPP_
+#endif  // MEASUREMENT_CONVERSION__MEASUREMENT_TYPEDEFS_HPP_
