@@ -11,3 +11,7 @@ repositories:
     type: git
     url: https://gitlab.com/ApexAI/point_cloud_msg_wrapper
     version: 1.0.4
+  src/external/new_eagle_raptor:
+    type: git
+    url: https://github.com/NewEagleRaptor/raptor-dbw-ros2.git
+    version: foxy

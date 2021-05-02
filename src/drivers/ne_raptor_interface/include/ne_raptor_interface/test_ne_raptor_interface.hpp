@@ -48,9 +48,11 @@ const float32_t c_accel_limit = 3.0F;
 const float32_t c_decel_limit = 3.0F;
 const float32_t c_pos_jerk_limit = 9.0F;
 const float32_t c_neg_jerk_limit = 9.0F;
+const uint32_t c_pub_period = 100;  // Publishing period in ms
 
 /* Other useful constants */
 static constexpr uint8_t SERVICE_TIMEOUT = 5;
+static constexpr uint8_t kNumRollOver{0x10};
 
 static constexpr uint8_t kNumTests_HMCR{7};
 static constexpr uint8_t kTestValid_VSC{5};
@@ -68,6 +70,7 @@ static constexpr uint8_t kNumTests_VKS{kTestValid_VKS + kTestInvalid_VKS};
 
 using namespace std::literals::chrono_literals; //NOLINT
 const std::chrono::nanoseconds C_TIMEOUT_NANO = 1000000000ns;
+const std::chrono::milliseconds C_TIMEOUT_MILLI = std::chrono::milliseconds(c_pub_period);
 const uint8_t C_TIMEOUT_ITERATIONS = 25;
 
 /// \brief Class for testing NERaptorInterface
@@ -90,7 +93,8 @@ protected:
       c_accel_limit,
       c_decel_limit,
       c_pos_jerk_limit,
-      c_neg_jerk_limit
+      c_neg_jerk_limit,
+      c_pub_period
     );
 
     rclcpp::NodeOptions options{};

@@ -122,6 +122,7 @@ using ModeChangeResponse = autoware_auto_msgs::srv::AutonomyModeChange_Response;
 
 using autoware::drivers::vehicle_interface::DbwStateMachine;
 using autoware::drivers::vehicle_interface::DbwState;
+using namespace std::chrono_literals;  // NOLINT
 
 namespace autoware
 {
@@ -146,6 +147,7 @@ public:
   /// \param[in] deceleration_limit m/s^2, zero = no limit
   /// \param[in] acceleration_positive_jerk_limit m/s^3
   /// \param[in] deceleration_negative_jerk_limit m/s^3
+  /// \param[in] pub_period message publishing period, in milliseconds
   explicit NERaptorInterface(
     rclcpp::Node & node,
     uint16_t ecu_build_num,
@@ -156,7 +158,8 @@ public:
     float32_t acceleration_limit,
     float32_t deceleration_limit,
     float32_t acceleration_positive_jerk_limit,
-    float32_t deceleration_negative_jerk_limit
+    float32_t deceleration_negative_jerk_limit,
+    uint32_t pub_period
   );
 /// \brief Default destructor
   ~NERaptorInterface() noexcept override = default;
@@ -206,11 +209,14 @@ public:
     float32_t dt, VehicleKinematicState * vks);
 
 private:
+  /// \brief Send out command packets periodically
+  void cmdCallback();
+
   // Publishers (to Raptor DBW)
   rclcpp::Publisher<AcceleratorPedalCmd>::SharedPtr m_accel_cmd_pub;
   rclcpp::Publisher<BrakeCmd>::SharedPtr m_brake_cmd_pub;
   rclcpp::Publisher<GearCmd>::SharedPtr m_gear_cmd_pub;
-  rclcpp::Publisher<GlobalEnableCmd>::SharedPtr m_global_enable_cmd_pub;
+  rclcpp::Publisher<GlobalEnableCmd>::SharedPtr m_gl_en_cmd_pub;
   rclcpp::Publisher<MiscCmd>::SharedPtr m_misc_cmd_pub;
   rclcpp::Publisher<SteeringCmd>::SharedPtr m_steer_cmd_pub;
   rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr m_dbw_enable_cmd_pub;
@@ -236,23 +242,30 @@ private:
   float32_t m_deceleration_limit;
   float32_t m_acceleration_positive_jerk_limit;
   float32_t m_deceleration_negative_jerk_limit;
+  std::chrono::milliseconds m_pub_period;
   std::unique_ptr<DbwStateMachine> m_dbw_state_machine;
-  uint8_t m_rolling_counter_vsc;
-  uint8_t m_rolling_counter_hlcc;
-  uint8_t m_rolling_counter_vcc;
+  uint8_t m_rolling_counter;
   rclcpp::Clock m_clock;
+  rclcpp::TimerBase::SharedPtr m_timer;
 
   /* Vehicle Odometry, Vehicle State, &
    * Vehicle Kinematic State are stored
    * because they need data from multiple reports.
    *
-   * Similarly, Brake Command needs data
-   * from multiple commands.
+   * All commands are stored because they need
+   * to be sent periodically, whether or not the data changes.
    */
   VehicleOdometry m_vehicle_odometry{};
   VehicleStateReport m_vehicle_state_report{};
   VehicleKinematicState m_vehicle_kin_state{};
+
+  AcceleratorPedalCmd m_accel_cmd{};
   BrakeCmd m_brake_cmd{};
+  GearCmd m_gear_cmd{};
+  GlobalEnableCmd m_gl_en_cmd{};
+  MiscCmd m_misc_cmd{};
+  SteeringCmd m_steer_cmd{};
+
   bool8_t m_seen_brake_rpt{false};
   bool8_t m_seen_gear_rpt{false};
   bool8_t m_seen_misc_rpt{false};
@@ -265,7 +278,12 @@ private:
   std::mutex m_vehicle_odometry_mutex;
   std::mutex m_vehicle_state_report_mutex;
   std::mutex m_vehicle_kin_state_mutex;
+  std::mutex m_accel_cmd_mutex;
   std::mutex m_brake_cmd_mutex;
+  std::mutex m_gear_cmd_mutex;
+  std::mutex m_gl_en_cmd_mutex;
+  std::mutex m_misc_cmd_mutex;
+  std::mutex m_steer_cmd_mutex;
 
   /** \brief Receives the brake state report from the vehicle platform.
    * Gets parking brake status for VehicleStateReport.

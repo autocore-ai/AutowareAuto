@@ -18,6 +18,8 @@ Current version of New Eagle's Raptor DBW Node is intended for R&D only!
 ## Inputs / Outputs / API
 
 ### Inputs
+- Autoware Command messages are sent when the commanded values should change
+- Raptor DBW Command messages are sent periodically (every 20-100ms advised)
 
 #### From Autoware
 - autoware_auto_msgs::msg::HighLevelControlCommand
@@ -33,6 +35,8 @@ Current version of New Eagle's Raptor DBW Node is intended for R&D only!
 - raptor_dbw_msgs::msg::SteeringCmd
 
 ### Outputs
+- Raptor DBW Report messages are received periodically
+- Autoware Report messages are passed on once all relevant data has been compiled from the Raptor DBW Reports
 
 #### To Autoware
 - autoware_auto_msgs::msg::VehicleOdometry
@@ -57,10 +61,10 @@ Current version of New Eagle's Raptor DBW Node is intended for R&D only!
 - `deceleration_limit` m/s^2, zero = no limit
 - `acceleration_positive_jerk_limit` m/s^3
 - `deceleration_negative_jerk_limit` m/s^3
+- `pub_period` message publishing period, in milliseconds
 
 ## Inner-workings / Algorithms
-<!-- If applicable -->
-
+- Autoware Command messages are sent on change, while Raptor DBW Command messages must be sent periodically.
 
 ## Error detection and handling
 - Catches invalid autonomy mode change requests.
@@ -68,8 +72,6 @@ Current version of New Eagle's Raptor DBW Node is intended for R&D only!
   - Cannot go forward while in reverse gear/go backwards while in a forward gear. Defaults to commanding speed = 0 in such cases.
 - Constrains wheel angle commands to a valid range
 - Catches invalid gear, wiper, headlight, & turn signal state requests.
-  - Only high-beam headlight control is supported.
-  - Hazard lights are supported.
 - Catches contradicting wheel speeds
 
 # Security considerations
@@ -93,3 +95,5 @@ Current version of New Eagle's Raptor DBW Node is intended for R&D only!
 
 # Related issues
 - [#822](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/822)
+- [#991](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/991)
+- [#1025](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1025)

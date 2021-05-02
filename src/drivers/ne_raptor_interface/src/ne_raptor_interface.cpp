@@ -36,7 +36,8 @@ NERaptorInterface::NERaptorInterface(
   float32_t acceleration_limit,
   float32_t deceleration_limit,
   float32_t acceleration_positive_jerk_limit,
-  float32_t deceleration_negative_jerk_limit
+  float32_t deceleration_negative_jerk_limit,
+  uint32_t pub_period
 )
 : m_logger{node.get_logger()},
   m_ecu_build_num{ecu_build_num},
@@ -48,17 +49,16 @@ NERaptorInterface::NERaptorInterface(
   m_deceleration_limit{deceleration_limit},
   m_acceleration_positive_jerk_limit{acceleration_positive_jerk_limit},
   m_deceleration_negative_jerk_limit{deceleration_negative_jerk_limit},
+  m_pub_period{std::chrono::milliseconds(pub_period)},
   m_dbw_state_machine(new DbwStateMachine{3}),
-  m_rolling_counter_vsc{0},
-  m_rolling_counter_hlcc{0},
-  m_rolling_counter_vcc{0},
+  m_rolling_counter{0},
   m_clock{RCL_SYSTEM_TIME}
 {
   // Publishers (to Raptor DBW)
   m_accel_cmd_pub = node.create_publisher<AcceleratorPedalCmd>("accelerator_pedal_cmd", 1);
   m_brake_cmd_pub = node.create_publisher<BrakeCmd>("brake_cmd", 1);
   m_gear_cmd_pub = node.create_publisher<GearCmd>("gear_cmd", 1);
-  m_global_enable_cmd_pub = node.create_publisher<GlobalEnableCmd>("global_enable_cmd", 1);
+  m_gl_en_cmd_pub = node.create_publisher<GlobalEnableCmd>("global_enable_cmd", 1);
   m_misc_cmd_pub = node.create_publisher<MiscCmd>("misc_cmd", 1);
   m_steer_cmd_pub = node.create_publisher<SteeringCmd>("steering_cmd", 1);
   m_dbw_enable_cmd_pub = node.create_publisher<std_msgs::msg::Empty>("enable", 10);
@@ -96,6 +96,39 @@ NERaptorInterface::NERaptorInterface(
     node.create_subscription<WheelSpeedReport>(
     "wheel_speed_report", rclcpp::QoS{20},
     [this](WheelSpeedReport::SharedPtr msg) {on_wheel_spd_report(msg);});
+
+  m_timer = node.create_wall_timer(m_pub_period, std::bind(&NERaptorInterface::cmdCallback, this));
+}
+
+void NERaptorInterface::cmdCallback()
+{
+  // Increment rolling counter
+  m_rolling_counter++;
+  if (m_rolling_counter > 15) {
+    m_rolling_counter = 0;
+  }
+  std::lock_guard<std::mutex> guard_ac(m_accel_cmd_mutex);
+  std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
+  std::lock_guard<std::mutex> guard_gc(m_gear_cmd_mutex);
+  std::lock_guard<std::mutex> guard_ec(m_gl_en_cmd_mutex);
+  std::lock_guard<std::mutex> guard_mc(m_misc_cmd_mutex);
+  std::lock_guard<std::mutex> guard_sc(m_steer_cmd_mutex);
+
+  // Set rolling counters
+  m_accel_cmd.rolling_counter = m_rolling_counter;
+  m_brake_cmd.rolling_counter = m_rolling_counter;
+  m_gear_cmd.rolling_counter = m_rolling_counter;
+  m_gl_en_cmd.rolling_counter = m_rolling_counter;
+  m_misc_cmd.rolling_counter = m_rolling_counter;
+  m_steer_cmd.rolling_counter = m_rolling_counter;
+
+  // Publish commands to NE Raptor DBW
+  m_accel_cmd_pub->publish(m_accel_cmd);
+  m_brake_cmd_pub->publish(m_brake_cmd);
+  m_gear_cmd_pub->publish(m_gear_cmd);
+  m_gl_en_cmd_pub->publish(m_gl_en_cmd);
+  m_misc_cmd_pub->publish(m_misc_cmd);
+  m_steer_cmd_pub->publish(m_steer_cmd);
 }
 
 bool8_t NERaptorInterface::update(std::chrono::nanoseconds timeout)
@@ -110,43 +143,33 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
   bool8_t ret{true};
   std_msgs::msg::Empty send_req{};
   ModeChangeRequest::SharedPtr t_mode{new ModeChangeRequest};
-  // keep previous for Enable commands, if valid Enable command not received
-  static GearCmd gc{};
-  static GlobalEnableCmd gec{};
-  static MiscCmd mc{};
 
-  // Set rolling counters
-  if (m_rolling_counter_vsc < 0xFF) {
-    m_rolling_counter_vsc++;
-  } else {
-    m_rolling_counter_vsc = 0;
-  }
-  gc.rolling_counter = m_rolling_counter_vsc;
-  gec.rolling_counter = m_rolling_counter_vsc;
-  mc.rolling_counter = m_rolling_counter_vsc;
+  std::lock_guard<std::mutex> guard_gc(m_gear_cmd_mutex);
+  std::lock_guard<std::mutex> guard_ec(m_gl_en_cmd_mutex);
+  std::lock_guard<std::mutex> guard_mc(m_misc_cmd_mutex);
 
   // Set gear values
   switch (msg.gear) {
     case VehicleStateCommand::GEAR_NO_COMMAND:
-      gc.cmd.gear = Gear::NONE;
+      m_gear_cmd.cmd.gear = Gear::NONE;
       break;
     case VehicleStateCommand::GEAR_DRIVE:
-      gc.cmd.gear = Gear::DRIVE;
+      m_gear_cmd.cmd.gear = Gear::DRIVE;
       break;
     case VehicleStateCommand::GEAR_REVERSE:
-      gc.cmd.gear = Gear::REVERSE;
+      m_gear_cmd.cmd.gear = Gear::REVERSE;
       break;
     case VehicleStateCommand::GEAR_PARK:
-      gc.cmd.gear = Gear::PARK;
+      m_gear_cmd.cmd.gear = Gear::PARK;
       break;
     case VehicleStateCommand::GEAR_LOW:
-      gc.cmd.gear = Gear::LOW;
+      m_gear_cmd.cmd.gear = Gear::LOW;
       break;
     case VehicleStateCommand::GEAR_NEUTRAL:
-      gc.cmd.gear = Gear::NEUTRAL;
+      m_gear_cmd.cmd.gear = Gear::NEUTRAL;
       break;
     default:  // error
-      gc.cmd.gear = Gear::NONE;
+      m_gear_cmd.cmd.gear = Gear::NONE;
       RCLCPP_ERROR_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received command for invalid gear state.");
@@ -155,36 +178,35 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
   }
 
   // Set global enable command values
-  gec.ecu_build_number = m_ecu_build_num;
+  m_gl_en_cmd.ecu_build_number = m_ecu_build_num;
 
   // Set misc command values
-  mc.door_request_right_rear.value = DoorRequest::NO_REQUEST;
-  mc.door_request_left_rear.value = DoorRequest::NO_REQUEST;
-  mc.door_request_lift_gate.value = DoorRequest::NO_REQUEST;
-  mc.rear_wiper_cmd.status = WiperRear::OFF;
-  mc.ignition_cmd.status = Ignition::NO_REQUEST;
-  mc.low_beam_cmd.status = LowBeam::OFF;
-
-  mc.horn_cmd = msg.horn;
+  m_misc_cmd.door_request_right_rear.value = DoorRequest::NO_REQUEST;
+  m_misc_cmd.door_request_left_rear.value = DoorRequest::NO_REQUEST;
+  m_misc_cmd.door_request_lift_gate.value = DoorRequest::NO_REQUEST;
+  m_misc_cmd.rear_wiper_cmd.status = WiperRear::OFF;
+  m_misc_cmd.ignition_cmd.status = Ignition::NO_REQUEST;
+  m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
+  m_misc_cmd.horn_cmd = msg.horn;
 
   switch (msg.blinker) {
     case VehicleStateCommand::BLINKER_NO_COMMAND:
       // Keep previous
       break;
     case VehicleStateCommand::BLINKER_OFF:
-      mc.cmd.value = TurnSignal::NONE;
+      m_misc_cmd.cmd.value = TurnSignal::NONE;
       break;
     case VehicleStateCommand::BLINKER_LEFT:
-      mc.cmd.value = TurnSignal::LEFT;
+      m_misc_cmd.cmd.value = TurnSignal::LEFT;
       break;
     case VehicleStateCommand::BLINKER_RIGHT:
-      mc.cmd.value = TurnSignal::RIGHT;
+      m_misc_cmd.cmd.value = TurnSignal::RIGHT;
       break;
     case VehicleStateCommand::BLINKER_HAZARD:
-      mc.cmd.value = TurnSignal::HAZARDS;
+      m_misc_cmd.cmd.value = TurnSignal::HAZARDS;
       break;
     default:
-      mc.cmd.value = TurnSignal::SNA;
+      m_misc_cmd.cmd.value = TurnSignal::SNA;
       RCLCPP_ERROR_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received command for invalid turn signal state.");
@@ -198,10 +220,10 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       break;
     case VehicleStateCommand::HEADLIGHT_OFF:
     case VehicleStateCommand::HEADLIGHT_ON:
-      mc.high_beam_cmd.status = HighBeam::OFF;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
       break;
     case VehicleStateCommand::HEADLIGHT_HIGH:
-      mc.high_beam_cmd.status = HighBeam::ON;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::ON;
       break;
     default:
       // Keep previous
@@ -217,19 +239,19 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       // Keep previous
       break;
     case VehicleStateCommand::WIPER_OFF:
-      mc.front_wiper_cmd.status = WiperFront::OFF;
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::OFF;
       break;
     case VehicleStateCommand::WIPER_LOW:
-      mc.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
       break;
     case VehicleStateCommand::WIPER_HIGH:
-      mc.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
       break;
     case VehicleStateCommand::WIPER_CLEAN:
-      mc.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
       break;
     default:
-      mc.front_wiper_cmd.status = WiperFront::SNA;
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::SNA;
       RCLCPP_ERROR_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received command for invalid wiper state.");
@@ -239,28 +261,24 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
 
   // Set enables based on current DBW mode
   if (is_dbw_enabled) {
-    gc.enable = true;
-    gec.global_enable = true;
-    gec.enable_joystick_limits = true;
-    mc.block_standard_cruise_buttons = true;
-    mc.block_adaptive_cruise_buttons = true;
-    mc.block_turn_signal_stalk = true;
+    m_gear_cmd.enable = true;
+    m_gl_en_cmd.global_enable = true;
+    m_gl_en_cmd.enable_joystick_limits = true;
+    m_misc_cmd.block_standard_cruise_buttons = true;
+    m_misc_cmd.block_adaptive_cruise_buttons = true;
+    m_misc_cmd.block_turn_signal_stalk = true;
   } else {
-    gc.enable = false;
-    gec.global_enable = false;
-    gec.enable_joystick_limits = false;
-    mc.block_standard_cruise_buttons = false;
-    mc.block_adaptive_cruise_buttons = false;
-    mc.block_turn_signal_stalk = false;
+    m_gear_cmd.enable = false;
+    m_gl_en_cmd.global_enable = false;
+    m_gl_en_cmd.enable_joystick_limits = false;
+    m_misc_cmd.block_standard_cruise_buttons = false;
+    m_misc_cmd.block_adaptive_cruise_buttons = false;
+    m_misc_cmd.block_turn_signal_stalk = false;
   }
 
   std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
   m_brake_cmd.park_brake_cmd.status =
     (msg.hand_brake) ? ParkingBrake::ON : ParkingBrake::OFF;
-
-  m_gear_cmd_pub->publish(gc);
-  m_global_enable_cmd_pub->publish(gec);
-  m_misc_cmd_pub->publish(mc);
 
   m_seen_vehicle_state_cmd = true;
   m_dbw_state_machine->state_cmd_sent();
@@ -275,38 +293,29 @@ bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & 
   bool8_t is_dbw_enabled = m_dbw_state_machine->enabled() ? true : false;
   bool8_t ret{true};
   float32_t velocity_checked{0.0F};
-  AcceleratorPedalCmd apc{};
-  SteeringCmd sc{};
 
+  std::lock_guard<std::mutex> guard_ac(m_accel_cmd_mutex);
   std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
+  std::lock_guard<std::mutex> guard_sc(m_steer_cmd_mutex);
 
   // Using curvature for control
-  apc.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;
-  sc.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;
-  m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;
+  m_accel_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle speed
+  m_steer_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle curvature
+  m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle speed
 
   // Set enable variables
-  apc.enable = is_dbw_enabled;
+  m_accel_cmd.enable = is_dbw_enabled;
   m_brake_cmd.enable = is_dbw_enabled;
-  sc.enable = is_dbw_enabled;
-  apc.ignore = false;
-  sc.ignore = false;
-
-  // Set rolling counters
-  if (m_rolling_counter_hlcc < 0xFF) {
-    m_rolling_counter_hlcc++;
-  } else {
-    m_rolling_counter_hlcc = 0;
-  }
-  apc.rolling_counter = m_rolling_counter_hlcc;
-  m_brake_cmd.rolling_counter = m_rolling_counter_hlcc;
-  sc.rolling_counter = m_rolling_counter_hlcc;
+  m_steer_cmd.enable = is_dbw_enabled;
+  m_accel_cmd.ignore = false;
+  m_steer_cmd.ignore = false;
 
   // Set limits
-  apc.accel_limit = m_acceleration_limit;
+  m_accel_cmd.accel_limit = m_acceleration_limit;
   m_brake_cmd.decel_limit = m_deceleration_limit;
-  apc.accel_positive_jerk_limit = m_acceleration_positive_jerk_limit;
+  m_accel_cmd.accel_positive_jerk_limit = m_acceleration_positive_jerk_limit;
   m_brake_cmd.decel_negative_jerk_limit = m_deceleration_negative_jerk_limit;
+  m_steer_cmd.angle_velocity = m_max_steer_angle;
 
   // Check for invalid changes in direction
   if ( ( (m_vehicle_state_report.gear == VehicleStateReport::GEAR_DRIVE) &&
@@ -322,17 +331,9 @@ bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & 
   } else {
     velocity_checked = std::fabs(msg.velocity_mps);
   }
-  // Send commands
-  apc.speed_cmd = velocity_checked;
-  sc.vehicle_curvature_cmd = msg.curvature;
-
-  // Publish commands to NE Raptor DBW
-  m_accel_cmd_pub->publish(apc);
-  m_steer_cmd_pub->publish(sc);
-
-  if (m_seen_vehicle_state_cmd) {
-    m_brake_cmd_pub->publish(m_brake_cmd);
-  }
+  // Set commands
+  m_accel_cmd.speed_cmd = velocity_checked;
+  m_steer_cmd.vehicle_curvature_cmd = msg.curvature;
 
   m_dbw_state_machine->control_cmd_sent();
   return ret;
@@ -356,41 +357,32 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
   bool8_t ret{true};
   float32_t velocity_checked{0.0F};
   float32_t angle_checked{0.0F};
-  AcceleratorPedalCmd apc{};
-  SteeringCmd sc{};
 
+  std::lock_guard<std::mutex> guard_ac(m_accel_cmd_mutex);
   std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
+  std::lock_guard<std::mutex> guard_sc(m_steer_cmd_mutex);
 
   // Using steering wheel angle for control
-  apc.control_type.value = ActuatorControlMode::CLOSED_LOOP_ACTUATOR;
-  sc.control_type.value = ActuatorControlMode::CLOSED_LOOP_ACTUATOR;
-  m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_ACTUATOR;
+  m_accel_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;   // vehicle speed
+  m_steer_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_ACTUATOR;  // angular position
+  m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;   // vehicle speed
 
   // Set enable variables
-  apc.enable = is_dbw_enabled;
+  m_accel_cmd.enable = is_dbw_enabled;
   m_brake_cmd.enable = is_dbw_enabled;
-  sc.enable = is_dbw_enabled;
-  apc.ignore = false;
-  sc.ignore = false;
-
-  // Set rolling counters
-  if (m_rolling_counter_vcc < 0xFF) {
-    m_rolling_counter_vcc++;
-  } else {
-    m_rolling_counter_vcc = 0;
-  }
-  apc.rolling_counter = m_rolling_counter_vcc;
-  m_brake_cmd.rolling_counter = m_rolling_counter_vcc;
-  sc.rolling_counter = m_rolling_counter_vcc;
+  m_steer_cmd.enable = is_dbw_enabled;
+  m_accel_cmd.ignore = false;
+  m_steer_cmd.ignore = false;
 
   // Set limits
-  apc.accel_limit = m_acceleration_limit;
+  m_accel_cmd.accel_limit = m_acceleration_limit;
   m_brake_cmd.decel_limit = m_deceleration_limit;
-  apc.accel_positive_jerk_limit = m_acceleration_positive_jerk_limit;
+  m_accel_cmd.accel_positive_jerk_limit = m_acceleration_positive_jerk_limit;
   m_brake_cmd.decel_negative_jerk_limit = m_deceleration_negative_jerk_limit;
+  m_steer_cmd.angle_velocity = m_max_steer_angle;
 
   if (msg.long_accel_mps2 > 0.0F) {  // acceleration limit
-    apc.accel_limit = std::fabs(msg.long_accel_mps2);
+    m_accel_cmd.accel_limit = std::fabs(msg.long_accel_mps2);
   } else if (msg.long_accel_mps2 < 0.0F) {  // deceleration limit
     m_brake_cmd.decel_limit = std::fabs(msg.long_accel_mps2);
   } else {}  // no change
@@ -428,17 +420,9 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
     ret = false;
   }
 
-  // Send commands
-  apc.speed_cmd = velocity_checked;
-  sc.angle_cmd = angle_checked;
-
-  // Publish commands to NE Raptor DBW
-  m_accel_cmd_pub->publish(apc);
-  m_steer_cmd_pub->publish(sc);
-
-  if (m_seen_vehicle_state_cmd) {
-    m_brake_cmd_pub->publish(m_brake_cmd);
-  }
+  // Set commands
+  m_accel_cmd.speed_cmd = velocity_checked;
+  m_steer_cmd.angle_cmd = angle_checked;
 
   m_dbw_state_machine->control_cmd_sent();
   return ret;
@@ -447,18 +431,13 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
 bool8_t NERaptorInterface::handle_mode_change_request(ModeChangeRequest::SharedPtr request)
 {
   bool8_t ret{true};
-  bool8_t is_dbw_enabled = m_dbw_state_machine->enabled() ? true : false;
   std_msgs::msg::Empty send_req{};
   if (request->mode == ModeChangeRequest::MODE_MANUAL) {
-    if (is_dbw_enabled) {  // Only send on change
-      m_dbw_state_machine->user_request(false);
-      m_dbw_disable_cmd_pub->publish(send_req);
-    }
+    m_dbw_state_machine->user_request(false);
+    m_dbw_disable_cmd_pub->publish(send_req);
   } else if (request->mode == ModeChangeRequest::MODE_AUTONOMOUS) {
-    if (!is_dbw_enabled) {  // Only send on change
-      m_dbw_state_machine->user_request(true);
-      m_dbw_enable_cmd_pub->publish(send_req);
-    }
+    m_dbw_state_machine->user_request(true);
+    m_dbw_enable_cmd_pub->publish(send_req);
   } else {
     RCLCPP_ERROR_THROTTLE(
       m_logger, m_clock, CLOCK_1_SEC,
@@ -540,7 +519,7 @@ void NERaptorInterface::on_misc_report(const MiscReport::SharedPtr & msg)
   } else {
     m_vehicle_state_report.mode = VehicleStateReport::MODE_MANUAL;
   }
-  m_dbw_state_machine->dbw_feedback(msg->drive_by_wire_enabled);
+  m_dbw_state_machine->dbw_feedback(msg->by_wire_ready && !msg->general_driver_activity);
 
   std::lock_guard<std::mutex> guard_vks(m_vehicle_kin_state_mutex);
 
@@ -654,6 +633,7 @@ void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::Sh
       m_vehicle_state_report.headlight = VehicleStateReport::HEADLIGHT_HIGH;
       break;
     case HighBeamState::RESERVED:
+    case HighBeamState::SNA:
     default:
       m_vehicle_state_report.headlight = 0;
       RCLCPP_WARN_THROTTLE(

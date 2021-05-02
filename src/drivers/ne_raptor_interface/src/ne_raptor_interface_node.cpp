@@ -41,7 +41,8 @@ NERaptorInterfaceNode::NERaptorInterfaceNode(const rclcpp::NodeOptions & options
       get_state_machine().get_config().accel_limits().max(),
       get_state_machine().get_config().accel_limits().min(),
       declare_parameter("ne_raptor.acceleration_positive_jerk_limit").get<float32_t>(),
-      declare_parameter("ne_raptor.deceleration_negative_jerk_limit").get<float32_t>()
+      declare_parameter("ne_raptor.deceleration_negative_jerk_limit").get<float32_t>(),
+      declare_parameter("ne_raptor.pub_period").get<uint32_t>()
   ));
 }
 
