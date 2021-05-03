@@ -26,10 +26,12 @@ ament_auto_find_build_dependencies(REQUIRED
 
 set(MEASUREMENT_CONVERSION_LIB_SRC
   src/measurement_conversion.cpp
+  src/measurement_transformation.cpp
 )
 
 set(MEASUREMENT_CONVERSION_LIB_HEADERS
   include/measurement_conversion/measurement_conversion.hpp
+  include/measurement_conversion/measurement_transformation.hpp
   include/measurement_conversion/measurement_typedefs.hpp
   include/measurement_conversion/visibility_control.hpp
 )
@@ -48,7 +50,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   # Unit tests
-  set(TEST_SOURCES test/test_measurement_conversion.cpp)
+  set(TEST_SOURCES test/test_measurement_conversion.cpp test/test_measurement_transformation.cpp)
   set(TEST_MEASUREMENT_CONVERSION_EXE test_measurement_conversion)
   ament_add_gtest(${TEST_MEASUREMENT_CONVERSION_EXE} ${TEST_SOURCES})
   autoware_set_compile_options(${TEST_MEASUREMENT_CONVERSION_EXE})

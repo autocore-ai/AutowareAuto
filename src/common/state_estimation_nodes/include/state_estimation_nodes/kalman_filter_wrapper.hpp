@@ -58,9 +58,9 @@ class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
     FilterT,
     PredictionEvent,
     ResetEvent<FilterT>,
-    MeasurementPose,
-    MeasurementSpeed,
-    MeasurementPoseAndSpeed>;
+    Measurement2dPose,
+    Measurement2dSpeed,
+    Measurement2dPoseAndSpeed>;
 
 public:
   using State = typename FilterT::State;

@@ -43,99 +43,67 @@ namespace state_estimation
 /// @return     The measurement created from a message.
 ///
 template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_measurement(const MessageT &, const Eigen::Isometry3f &)
+MEASUREMENT_CONVERSION_PUBLIC MeasurementT message_to_measurement(const MessageT &)
 {
   static_assert(
     sizeof(MessageT) == 0,
     "Only specializations for message_to_measurement() function are allowed!");
 }
-
-///
-/// @brief      Interface for converting a message into a measurement that accepts an additional
-///             transformation.
-///
-/// @details    This function is needed to transform messages like Odometry, where different parts
-///             of the measurement must be transformed with different transformation matrices.
-///
-/// @tparam     MeasurementT  Type of measurement.
-/// @tparam     MessageT      Type of ROS 2 message.
-///
-/// @return     The measurement created from a message.
-///
-template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_measurement(
-  const MessageT &, const Eigen::Isometry3f &, const Eigen::Isometry3f &)
-{
-  static_assert(
-    sizeof(MessageT) == 0,
-    "Only specializations for message_to_measurement() function are allowed!");
-}
-
-///
-/// @brief      Downscale the isometry to a lower dimension if needed.
-///
-/// @param[in]  isometry              The isometry transform
-///
-/// @tparam     kStateDimensionality  Dimensionality of the space.
-/// @tparam     FloatT                Type of scalar.
-///
-/// @return     Downscaled isometry.
-///
-template<std::int32_t kStateDimensionality, typename FloatT>
-static constexpr Eigen::Transform<
-  FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry> downscale_isometry(
-  const Eigen::Transform<FloatT, 3, Eigen::TransformTraits::Isometry> & isometry)
-{
-  static_assert(kStateDimensionality <= 3, "We only handle scaling the isometry down.");
-  using Isometry = Eigen::Transform<
-    FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry>;
-  Isometry result{Isometry::Identity()};
-  result.linear() = isometry.rotation()
-    .template block<kStateDimensionality, kStateDimensionality>(0, 0);
-  result.translation() = isometry.translation().topRows(kStateDimensionality);
-  return result;
-}
-
-///
-/// @brief      Specialization of message_to_measurement for odometry message.
-///
-/// @param[in]  msg                        The odometry message.
-/// @param[in]  tf__world__frame_id        A transform from message frame_id to world frame.
-/// @param[in]  tf__world__child_frame_id  A transform from message frame_id to child_frame_id.
-///
-/// @return     The measurement containing pose and speed.
-///
-template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementPoseAndSpeed message_to_measurement(
-  const nav_msgs::msg::Odometry & msg,
-  const Eigen::Isometry3f & tf__world__frame_id,
-  const Eigen::Isometry3f & tf__world__child_frame_id);
 
 ///
 /// @brief      Specialization of message_to_measurement for twist message.
 ///
 /// @param[in]  msg                  The twist message.
-/// @param[in]  tf__world__frame_id  A transform from message frame_id to world frame.
 ///
 /// @return     The measurement containing speed.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementSpeed message_to_measurement(
-  const geometry_msgs::msg::TwistWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC Measurement2dSpeed message_to_measurement(
+  const geometry_msgs::msg::TwistWithCovariance & msg);
 
 ///
 /// @brief      Specialization of message_to_measurement for pose message.
 ///
 /// @param[in]  msg                  The pose message.
-/// @param[in]  tf__world__frame_id  A transform from message frame_id to world frame.
 ///
 /// @return     The measurement containing pose.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurementPose message_to_measurement(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & msg,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC Measurement2dPose message_to_measurement(
+  const geometry_msgs::msg::PoseWithCovariance & msg);
+
+///
+/// @brief      Specialization of message_to_measurement for stamped twist message.
+///
+/// @param[in]  msg                  The stamped twist message.
+///
+/// @return     The measurement containing speed.
+///
+template<>
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dSpeed message_to_measurement(
+  const geometry_msgs::msg::TwistWithCovarianceStamped & msg);
+
+///
+/// @brief      Specialization of message_to_measurement for stamped pose message.
+///
+/// @param[in]  msg                  The stamped pose message.
+///
+/// @return     The measurement containing pose.
+///
+template<>
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose message_to_measurement(
+  const geometry_msgs::msg::PoseWithCovarianceStamped & msg);
+
+///
+/// @brief      Specialization of message_to_measurement for odometry message.
+///
+/// @param[in]  msg                  The odometry message.
+///
+/// @return     The measurement containing pose and speed.
+///
+template<>
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPoseAndSpeed message_to_measurement(
+  const nav_msgs::msg::Odometry & msg);
 
 }  // namespace state_estimation
 }  // namespace common

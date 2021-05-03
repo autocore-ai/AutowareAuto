@@ -5,12 +5,11 @@ This is the design document for the `measurement_conversion` package.
 
 
 # Purpose / Use cases
-<!-- Required -->
-This package provides conversions from message types to measurement types, i.e. types inheriting from `MeasurementInterface`.
+This package provides conversions from message types to measurement types, i.e. types inheriting from `MeasurementInterface`. They contain values and their covariances.
+
 
 # Design
-<!-- Required -->
-The conversion is implemented as a function template. In addition to the message, it additionally takes a transform as input which is applied to the measurement.
+The conversion is implemented as a function template. There is an additional template that takes a transform as input which is applied to a measurement.
 
 
 ## Assumptions / Known limits
@@ -18,21 +17,21 @@ Message objects are assumed to be valid, e.g. in a `PoseWithCovariance` message 
 
 
 ## Inputs / Outputs / API
-<!-- Required -->
-<!-- Things to consider:
-    - How do you use the package / API? -->
-As of writing, the API consists of a templated function `message_to_measurement` with two overloads:
+As of writing, the API consists of two templated functions:
 
 ```
 template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_measurement(const MessageT &, const Eigen::Isometry3f &)
+MeasurementT message_to_measurement(const MessageT &)
 
-template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_measurement(
-  const MessageT &, const Eigen::Isometry3f &, const Eigen::Isometry3f &)
+template<typename MeasurementT>
+MeasurementT transform_measurement(const MeasurementT &, const Eigen::Isometry3f &)
 ```
+
+A footnote: the `transform_measurement` function also has another overload with two isometries to accomodate message types like `Odometry`.
 
 Please search for this function in the API docs to see a list of available specializations.
+
+For message and measurement types for which both templates are specialized, a combined function `message_to_transformed_measurement` is automatically available.
 
 
 ## Inner-workings / Algorithms

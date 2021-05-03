@@ -35,20 +35,20 @@ struct Stamped
   MeasurementT measurement;
 };
 
-using MeasurementPose = LinearMeasurement<
+using Measurement2dPose = LinearMeasurement<
   state_vector::FloatState<
     state_vector::variable::X, state_vector::variable::Y>>;
-using MeasurementSpeed = LinearMeasurement<
+using Measurement2dSpeed = LinearMeasurement<
   state_vector::FloatState<
     state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
-using MeasurementPoseAndSpeed = LinearMeasurement<
+using Measurement2dPoseAndSpeed = LinearMeasurement<
   state_vector::FloatState<
     state_vector::variable::X, state_vector::variable::Y,
     state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
 
-using StampedMeasurementPose = Stamped<MeasurementPose>;
-using StampedMeasurementSpeed = Stamped<MeasurementSpeed>;
-using StampedMeasurementPoseAndSpeed = Stamped<MeasurementPoseAndSpeed>;
+using StampedMeasurement2dPose = Stamped<Measurement2dPose>;
+using StampedMeasurement2dSpeed = Stamped<Measurement2dSpeed>;
+using StampedMeasurement2dPoseAndSpeed = Stamped<Measurement2dPoseAndSpeed>;
 
 }  // namespace state_estimation
 }  // namespace common

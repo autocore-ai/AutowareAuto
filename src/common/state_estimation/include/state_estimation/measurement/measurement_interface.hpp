@@ -59,11 +59,6 @@ struct STATE_ESTIMATION_PUBLIC MeasurementInterface : public common::helper_func
   auto & covariance() {return this->impl().crtp_covariance();}
   const auto & covariance() const {return this->impl().crtp_covariance();}
 
-  /// @brief      Get variances as a vector. Note that these represent sigmas, not sigmas^2.
-  auto & variances() {return this->impl().crtp_variances();}
-  /// @brief      Get variances as a vector. Note that these represent sigmas, not sigmas^2.
-  const auto & variances() const {return this->impl().crtp_variances();}
-
   ///
   /// @brief      Create a new instance of the measurement from another state.
   ///

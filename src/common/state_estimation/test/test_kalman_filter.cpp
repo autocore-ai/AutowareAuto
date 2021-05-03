@@ -88,12 +88,13 @@ TEST(TestKalmanFilter, TrackStaticObjectWithDirectMeasurements) {
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, Matrix::Identity());
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
   auto covariance = kf.covariance();
+  const MeasurementState::Vector stddev = MeasurementState::Vector::Constant(0.1F);
   for (int i = 0; i < 10; ++i) {
     kf.predict(std::chrono::milliseconds{100LL});
     kf.correct(
-      LinearMeasurement<MeasurementState>{
-      MeasurementState::Vector::Zero(),
-      0.1F * MeasurementState::Vector::Ones()});
+      LinearMeasurement<MeasurementState>::create_with_stddev(
+        MeasurementState::Vector::Zero(),
+        stddev));
     EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F)) <<
       "Vector " << kf.state().vector().transpose() << " is not a zero vector.";
     const auto covariance_difference = kf.covariance() - covariance;
@@ -113,12 +114,13 @@ TEST(TestKalmanFilter, TrackStaticObjectHiddenState) {
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, 10.0F * Matrix::Identity());
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
   auto covariance = kf.covariance();
+  const MeasurementState::Vector stddev = MeasurementState::Vector::Constant(0.1F);
   for (int i = 0; i < 10; ++i) {
     kf.predict(std::chrono::milliseconds{100LL});
     kf.correct(
-      LinearMeasurement<MeasurementState>{
-      MeasurementState::Vector::Zero(),
-      0.1F * MeasurementState::Vector::Ones()});
+      LinearMeasurement<MeasurementState>::create_with_stddev(
+        MeasurementState::Vector::Zero(),
+        stddev));
     EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F)) <<
       "Vector " << kf.state().vector().transpose() << " is not a zero vector.";
   }
@@ -147,14 +149,14 @@ TEST(TestKalmanFilter, TrackMovingObject) {
   const auto speed = 10.0F;  // m/s
   const std::chrono::milliseconds dt{100LL};
   const std::chrono::seconds total_time{5};
+  const MeasurementState::Vector stddev = MeasurementState::Vector::Constant(0.1F);
   for (auto t = dt; t <= total_time; t += dt) {
     const auto float_seconds = std::chrono::duration<float32_t>{t}.count();
     const auto travelled_distance = float_seconds * speed;
     const auto observation = travelled_distance * MeasurementState::Vector::Ones();
-    const auto measurement_covariance = 0.1F * MeasurementState::Vector::Ones();
     kf.predict(std::chrono::milliseconds{100LL});
     kf.correct(
-      LinearMeasurement<MeasurementState>{observation, measurement_covariance});
+      LinearMeasurement<MeasurementState>::create_with_stddev(observation, stddev));
   }
   const auto total_float_seconds = std::chrono::duration<float32_t>{total_time}.count();
   const float32_t eps = 0.001F;
@@ -210,6 +212,7 @@ TEST(TestKalmanFilter, TrackThrownBall) {
   const auto increment = 10ms;
   const float32_t seconds_increment{FloatSeconds{increment}.count()};
   State expected_state{initial_state};
+  const MeasurementState::Vector stddev = MeasurementState::Vector::Constant(0.1F);
   for (auto timestamp = start_time; timestamp <= expected_end_time; timestamp += increment) {
     expected_state.at<X>() += seconds_increment * expected_state.at<X_VELOCITY>();
     expected_state.at<Y>() += seconds_increment * expected_state.at<Y_VELOCITY>();
@@ -218,9 +221,9 @@ TEST(TestKalmanFilter, TrackThrownBall) {
 
     kf.predict(increment);
     kf.correct(
-      LinearMeasurement<MeasurementState>(
+      LinearMeasurement<MeasurementState>::create_with_stddev(
         MeasurementState::Vector{expected_state.at<X>(), expected_state.at<Y>()},
-        0.1F * MeasurementState::Vector::Ones()));
+        stddev));
   }
   // Quickly check our "simulation" of the ball.
   const auto duration_seconds = std::chrono::duration<float32_t>{duration}.count();
