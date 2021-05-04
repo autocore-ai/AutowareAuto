@@ -49,44 +49,42 @@ struct PointXYZI
 };  // struct PointXYZI
 
 /// \brief Helper point for which euclidean distance is computed only once
-class EUCLIDEAN_CLUSTER_PUBLIC PointXYZII
+class EUCLIDEAN_CLUSTER_PUBLIC PointXYZIR
 {
 public:
-  PointXYZII() = default;
+  PointXYZIR() = default;
   /// \brief Conversion constructor
   /// \param[in] pt The point to convert
-  /// \param[in] id The unique identifier for this point within a frame
-  PointXYZII(const PointXYZI & pt, const uint32_t id);
+  explicit PointXYZIR(const common::types::PointXYZIF & pt);
+  /// \brief Conversion constructor
+  /// \param[in] pt The point to convert
+  explicit PointXYZIR(const PointXYZI & pt);
   /// \brief Constructor
   /// \param[in] x The x position of the point
   /// \param[in] y The y position of the point
   /// \param[in] z The z position of the point
   /// \param[in] intensity The intensity value of the point
-  /// \param[in] id The unique identifier for this point within a frame
-  PointXYZII(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const float32_t intensity,
-    const uint32_t id);
-  /// \brief Getter for id, for "seen" bookkeeping
-  /// \return Unique integer id
-  uint32_t get_id() const;
+  PointXYZIR(const float32_t x, const float32_t y, const float32_t z, const float32_t intensity);
+  /// \brief Getter for radius
+  /// \return The projected radial distance
+  float32_t get_r() const;
   /// \brief Get core point
   /// \return Reference to internally stored point
   const PointXYZI & get_point() const;
+  /// \brief Explicit conversion operator from PointXYZIR to msg type PointXYZIF
+  /// \return a PointXYZIF type
+  explicit operator autoware_auto_msgs::msg::PointXYZIF() const;
 
 private:
   // This could instead be a pointer; I'm pretty sure ownership would work out, but I'm
   // uncomfortable doing it that way (12 vs 20 bytes)
   PointXYZI m_point;
-  uint32_t m_id = 0;
-};  // class PointXYZII
+  float32_t m_r_xy;
+};  // class PointXYZIR
 
 using HashConfig = autoware::common::geometry::spatial_hash::Config2d;
-using Hash = autoware::common::geometry::spatial_hash::SpatialHash2d<PointXYZII>;
+using Hash = autoware::common::geometry::spatial_hash::SpatialHash2d<PointXYZIR>;
 using Clusters = autoware_auto_msgs::msg::PointClusters;
-using Cluster = decltype(Clusters::clusters)::value_type;
 
 /// \brief Configuration class for euclidean cluster
 /// In the future this can become a base class with subclasses defining different
@@ -100,24 +98,47 @@ public:
   /// \param[in] min_cluster_size The number of points that must be in a cluster before it is not
   ///                             considered noise
   /// \param[in] max_num_clusters The maximum preallocated number of clusters in a scene
+  /// \param[in] min_cluster_threshold_m The minimum connectivity threshold when r = 0
+  /// \param[in] max_cluster_threshold_m The maximum connectivity threshold when
+  ///                                    r = cluster_threshold_saturation_distance
+  /// \param[in] cluster_threshold_saturation_distance_m The distance at which the cluster threshold
+  ///                                                    is clamped to the maximum value
   Config(
     const std::string & frame_id,
     const std::size_t min_cluster_size,
-    const std::size_t max_num_clusters);
+    const std::size_t max_num_clusters,
+    const float32_t min_cluster_threshold_m,
+    const float32_t max_cluster_threshold_m,
+    const float32_t cluster_threshold_saturation_distance_m);
   /// \brief Gets minimum number of points needed for a cluster to not be considered noise
   /// \return Minimum cluster size
   std::size_t min_cluster_size() const;
   /// \brief Gets maximum preallocated number of clusters
   /// \return Maximum number of clusters
   std::size_t max_num_clusters() const;
+  /// \brief Compute the connectivity threshold for a given point
+  /// \param[in] pt The point whose connectivity criterion will be calculated
+  /// \return The connectivity threshold, in meters
+  float32_t threshold(const PointXYZIR & pt) const;
+  /// \brief Compute the connectivity threshold for a given point
+  /// \param[in] r The projected radial distance of the point
+  /// \return The connectivity threshold, in meters
+  float32_t threshold(const float32_t r) const;
   /// \brief Get frame id
   /// \return The frame id
   const std::string & frame_id() const;
+  /// \brief Check the external clusters size with the EuclideanClusters configuration
+  /// \param[in] clusters The clusters object
+  /// \return True if config is valid
+  bool match_clusters_size(const Clusters & clusters) const;
 
 private:
   const std::string m_frame_id;
   const std::size_t m_min_cluster_size;
   const std::size_t m_max_num_clusters;
+  const float32_t m_min_thresh_m;
+  const float32_t m_max_distance_m;
+  const float32_t m_thresh_rate;
 };  // class Config
 
 /// \brief implementation of euclidean clustering for point cloud segmentation
@@ -139,17 +160,9 @@ public:
   ///                     number of points in a scene
   EuclideanCluster(const Config & cfg, const HashConfig & hash_cfg);
   /// \brief Insert an individual point
-  /// \param[in] args Parameters forwarded to PointXYZII constructor (except for ID)
+  /// \param[in] pt The point to insert
   /// \throw std::length_error If the underlying spatial hash is full
-  template<typename ... Args>
-  void insert(Args && ... args)
-  {
-    // can't do anything with return values
-    (void)m_hash.insert(
-      PointXYZII{std::forward<Args>(args)..., static_cast<uint32_t>(m_seen.size())});
-    m_seen.push_back(false);
-  }
-
+  void insert(const PointXYZIR & pt);
   /// \brief Multi-insert
   /// \param[in] begin Iterator pointing to to the first point to insert
   /// \param[in] end Iterator pointing to one past the last point to insert
@@ -162,20 +175,12 @@ public:
       throw std::length_error{"EuclideanCluster: Multi insert would overrun capacity"};
     }
     for (auto it = begin; it != end; ++it) {
-      insert(*it);
+      insert(PointXYZIR{*it});
     }
   }
 
-  /// \brief Compute the clusters from the inserted points
-  /// It should in theory be ok to reinterpret_cast the points into a PointXYZI. Internally, they
-  /// were constructed in place using placement new, so the dynamic type should be correct.
-  /// \return A reference to the resulting clusters
-  const Clusters & cluster(const builtin_interfaces::msg::Time stamp);
-
   /// \brief Compute the clusters from the inserted points, where the final clusters object lives in
-  ///        another scope. The final clusters object should return_clusters after being used
-  /// It should in theory be ok to reinterpret_cast the points into a PointXYZI. Internally, they
-  /// were constructed in place using placement new, so the dynamic type should be correct.
+  ///        another scope.
   /// \param[inout] clusters The clusters object
   void cluster(Clusters & clusters);
 
@@ -185,17 +190,13 @@ public:
   /// perfectly valid information that is still usable in an error state.
   Error get_error() const;
 
-  /// \brief Returns the preallocated clusters to the internal pool so the cluster object can safely
-  ///        be resized without memory allocation due to default/copy construction. Additionally
-  ///        throws an error based on the result of get_error. Intended to be used with a cluster
-  ///        result that lives in an external scope
-  /// \param[inout] clusters The vector of clusters for which all clusters will be moved away
-  /// \throw std::runtime_error If the maximum number of clusters may have been exceeded
-  void cleanup(Clusters & clusters);
-
   /// \brief Gets the internal configuration class, for use when it was inline generated
   /// \return Internal configuration class
   const Config & get_config() const;
+
+  /// \brief Throw the stored error during clustering process
+  /// \throw std::runtime_error If the maximum number of clusters may have been exceeded
+  void throw_stored_error() const;
 
 private:
   /// \brief Internal struct instead of pair since I can guarantee some memory stuff
@@ -207,23 +208,21 @@ private:
   /// \brief Do the clustering process, with no error checking
   EUCLIDEAN_CLUSTER_LOCAL void cluster_impl(Clusters & clusters);
   /// \brief Compute the next cluster, seeded by the given point, and grown using the remaining
-  ///         unseen points
-  EUCLIDEAN_CLUSTER_LOCAL void cluster(Clusters & clusters, const PointXYZII & pt);
+  ///         points still contained in the hash
+  EUCLIDEAN_CLUSTER_LOCAL void cluster(Clusters & clusters, const Hash::IT it);
   /// \brief Add all near neighbors of a point to a given cluster
-  EUCLIDEAN_CLUSTER_LOCAL void add_neighbors(Cluster & cls, const PointXY pt);
-  /// \brief Adds a point to the cluster, internal version since no error checking is needed
-  EUCLIDEAN_CLUSTER_LOCAL static void add_point(Cluster & cls, const PointXYZII & pt);
+  EUCLIDEAN_CLUSTER_LOCAL void add_neighbors_to_last_cluster(
+    Clusters & clusters, const PointXY pt);
+  /// \brief Adds a point to the last cluster, internal version since no error checking is needed
+  EUCLIDEAN_CLUSTER_LOCAL static void add_point_to_last_cluster(
+    Clusters & clusters, const PointXYZIR & pt);
   /// \brief Get a specified point from the cluster
-  EUCLIDEAN_CLUSTER_LOCAL static PointXY get_point(const Cluster & cls, const std::size_t idx);
-  /// \brief Returns the preallocated clusters to the internal pool so the cluster object can safely
-  ///        be resized without memory allocation due to default/copy construction
-  /// \param[inout] clusters The vector of clusters for which all clusters will be moved away
-  EUCLIDEAN_CLUSTER_LOCAL void return_clusters(Clusters & clusters);
+  EUCLIDEAN_CLUSTER_LOCAL static PointXY get_point_from_last_cluster(
+    const Clusters & clusters, const std::size_t cls_pt_idx);
+  EUCLIDEAN_CLUSTER_LOCAL static std::size_t last_cluster_size(const Clusters & clusters);
 
   const Config m_config;
   Hash m_hash;
-  Clusters m_clusters;
-  decltype(Clusters::clusters) m_cluster_pool;
   Error m_last_error;
   std::vector<bool8_t> m_seen;
 };  // class EuclideanCluster
@@ -233,18 +232,10 @@ namespace details
 {
 using BoundingBox = autoware_auto_msgs::msg::BoundingBox;
 using BoundingBoxArray = autoware_auto_msgs::msg::BoundingBoxArray;
-/// \brief Compute lfit bounding box from individual cluster
-/// \param[inout] cls The cluster for which to compute the bounding box, gets shuffled
-/// \return Lfit bounding box
-EUCLIDEAN_CLUSTER_PUBLIC BoundingBox compute_lfit_bounding_box(Cluster & cls);
-/// \brief Compute eigenbox from individual cluster
-/// \param[in] cls The cluster for which to compute the bounding box
-/// \return Best fit eigenbox
-EUCLIDEAN_CLUSTER_PUBLIC BoundingBox compute_eigenbox(const Cluster & cls);
-/// \brief Compute lfit bounding boxes from clusters
-/// \param[out] boxes Message that gets filled with the resulting bounding boxes
-/// \param[inout] clusters A set of clusters for which to compute the bounding boxes. Individual
-///                        clusters get their points shuffled
+///// \brief Compute lfit bounding boxes from clusters
+///// \param[out] boxes Message that gets filled with the resulting bounding boxes
+///// \param[inout] clusters A set of clusters for which to compute the bounding boxes. Individual
+/////                        clusters get their points shuffled
 EUCLIDEAN_CLUSTER_PUBLIC
 void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes);
 /// \brief Compute lfit bounding boxes from clusters, including z coordinate
@@ -275,19 +266,19 @@ namespace point_adapter
 {
 template<>
 inline EUCLIDEAN_CLUSTER_PUBLIC auto x_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+  const perception::segmentation::euclidean_cluster::PointXYZIR & pt)
 {
   return pt.get_point().x;
 }
 template<>
 inline EUCLIDEAN_CLUSTER_PUBLIC auto y_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+  const perception::segmentation::euclidean_cluster::PointXYZIR & pt)
 {
   return pt.get_point().y;
 }
 template<>
 inline EUCLIDEAN_CLUSTER_PUBLIC auto z_(
-  const perception::segmentation::euclidean_cluster::PointXYZII & pt)
+  const perception::segmentation::euclidean_cluster::PointXYZIR & pt)
 {
   return pt.get_point().z;
 }

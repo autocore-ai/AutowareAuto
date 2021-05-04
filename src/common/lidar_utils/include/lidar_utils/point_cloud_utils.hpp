@@ -21,6 +21,7 @@
 
 #include <lidar_utils/visibility_control.hpp>
 
+#include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <common/types.hpp>
 #include <helper_functions/float_comparisons.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -35,6 +36,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 
@@ -198,6 +200,25 @@ LIDAR_UTILS_PUBLIC void reset_pcl_msg(
 LIDAR_UTILS_PUBLIC void resize_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
   const std::size_t new_size);
+
+/// \brief Get cluster from clusters based on the cluster id
+/// \param[in] clusters The clusters object
+/// \param[in] cls_id The id of the target cluster
+/// \return Pointers pair which are begin and end of the target cluster in clusters points
+LIDAR_UTILS_PUBLIC
+std::pair<autoware_auto_msgs::msg::PointClusters::_points_type::iterator,
+  autoware_auto_msgs::msg::PointClusters::_points_type::iterator>
+get_cluster(autoware_auto_msgs::msg::PointClusters & clusters, const std::size_t cls_id);
+
+/// \brief Get cluster from clusters based on the cluster id
+/// \param[in] clusters The clusters object
+/// \param[in] cls_id The id of the target cluster
+/// \return Pointers pair which are begin and end of the target cluster in clusters points
+LIDAR_UTILS_PUBLIC
+std::pair<autoware_auto_msgs::msg::PointClusters::_points_type::const_iterator,
+  autoware_auto_msgs::msg::PointClusters::_points_type::const_iterator>
+get_cluster(const autoware_auto_msgs::msg::PointClusters & clusters, const std::size_t cls_id);
+
 
 /// Check that the pointcloud msg has x, y, z of type float32_t as the first three fields,
 /// otherwise throw an exception; check that the pointcloud msg has intensity field as

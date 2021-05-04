@@ -62,7 +62,11 @@ m_cluster_alg{
   euclidean_cluster::Config{
     declare_parameter("cluster.frame_id").get<std::string>().c_str(),
     static_cast<std::size_t>(declare_parameter("cluster.min_cluster_size").get<std::size_t>()),
-    static_cast<std::size_t>(declare_parameter("cluster.max_num_clusters").get<std::size_t>())
+    static_cast<std::size_t>(declare_parameter("cluster.max_num_clusters").get<std::size_t>()),
+    static_cast<float32_t>(declare_parameter("cluster.min_cluster_threshold_m").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("cluster.max_cluster_threshold_m").get<float32_t>()),
+    static_cast<float32_t>(declare_parameter("cluster.threshold_saturation_distance_m")
+    .get<float32_t>())
   },
   euclidean_cluster::HashConfig{
     static_cast<float32_t>(declare_parameter("hash.min_x").get<float32_t>()),
@@ -118,7 +122,6 @@ void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
     throw std::domain_error{"EuclideanClusterNode: No publisher topics provided"};
   }
   // Reserve
-  m_clusters.clusters.reserve(cfg.max_num_clusters());
   m_boxes.header.frame_id.reserve(256U);
   m_boxes.header.frame_id = cfg.frame_id().c_str();
 }
@@ -126,11 +129,22 @@ void EuclideanClusterNode::init(const euclidean_cluster::Config & cfg)
 void EuclideanClusterNode::insert_plain(const PointCloud2 & cloud)
 {
   using euclidean_cluster::PointXYZI;
-  //lint -e{826, 9176} NOLINT I claim this is ok and tested
-  const auto begin = reinterpret_cast<const PointXYZI *>(&cloud.data[0U]);
-  //lint -e{826, 9176} NOLINT I claim this is ok and tested
-  const auto end = reinterpret_cast<const PointXYZI *>(&cloud.data[cloud.row_step]);
-  m_cluster_alg.insert(begin, end);
+  const auto indices = common::lidar_utils::sanitize_point_cloud(cloud);
+  if (indices.point_step != cloud.point_step) {
+    std::cout << "Using only a subset of Point cloud fields" << std::endl;
+  }
+  if (indices.data_length != cloud.data.size()) {
+    std::cout << "Misaligned data: Using only a subset of Point cloud data" << std::endl;
+  }
+  // Insert via memcpy to ensure proper aliasing
+  for (auto idx = 0U; idx < indices.data_length; idx += cloud.point_step) {
+    using euclidean_cluster::PointXYZI;
+    PointXYZI pt;
+    void * const dest = &pt;
+    const void * const src = &cloud.data[idx];
+    (void)std::memcpy(dest, src, indices.point_step);
+    m_cluster_alg.insert(euclidean_cluster::PointXYZIR{pt});
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanClusterNode::insert_voxel(const PointCloud2 & cloud)
@@ -152,11 +166,7 @@ void EuclideanClusterNode::publish_clusters(
   Clusters & clusters,
   const std_msgs::msg::Header & header)
 {
-  for (auto & cls : clusters.clusters) {
-    cls.header.stamp = header.stamp;
-    // frame id was reserved
-    cls.header.frame_id = header.frame_id;
-  }
+  m_clusters.header = header;
   m_cluster_pub_ptr->publish(clusters);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +243,7 @@ void EuclideanClusterNode::handle(const PointCloud2::SharedPtr msg_ptr)
     m_cluster_alg.cluster(m_clusters);
     //lint -e{523} NOLINT empty functions to make this modular
     handle_clusters(m_clusters, msg_ptr->header);
-    m_cluster_alg.cleanup(m_clusters);
+    m_cluster_alg.throw_stored_error();
   } catch (const std::exception & e) {
     RCLCPP_ERROR(get_logger(), e.what());
   } catch (...) {

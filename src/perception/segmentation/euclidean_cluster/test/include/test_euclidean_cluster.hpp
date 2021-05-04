@@ -32,26 +32,25 @@ using autoware::common::types::float32_t;
 /// test for minimal functionality
 TEST(euclidean_cluster, simple_bar)
 {
-  // setup
-  builtin_interfaces::msg::Time t;
-  Config cfg{"foo", 10U, 100U};
+  /// setup
+  Config cfg{"foo", 10U, 100U, 1.0F, 1.0F, 10.0F};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float32_t, float32_t>> output;
+  Clusters clusters;
+  std::vector<std::pair<float, float>> output;
   // insert points
   insert_line(output, cls, -10.0F, -15.0F, -10.0F, 5.0F, 0.9F);
   // check clusters
-  const auto & clusters = cls.cluster(t);
-  EXPECT_EQ(clusters.clusters.size(), static_cast<size_t>(1));
+  cls.cluster(clusters);
+  EXPECT_EQ(clusters.cluster_boundary.size(), 1U);
   // TODO(c.ho) frame
-  EXPECT_TRUE(check_cluster(clusters.clusters[0], output));
-  EXPECT_EQ(clusters.clusters[0].header.frame_id, "foo");
+  EXPECT_TRUE(check_cluster(clusters, 0, output));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
-  const auto & clusters2 = cls.cluster(t);
-  EXPECT_EQ(clusters2.clusters.size(), static_cast<size_t>(0));
+  cls.cluster(clusters);
+  EXPECT_EQ(clusters.cluster_boundary.size(), 0U);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -60,28 +59,28 @@ TEST(euclidean_cluster, noisy_L)
 {
   // setup
   builtin_interfaces::msg::Time t;
-  Config cfg{"foo", 10U, 100U};
+  Config cfg{"foo", 10U, 100U, 1.0F, 1.0F, 10.0F};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float32_t, float32_t>> output;
-  std::vector<std::pair<float32_t, float32_t>> empty;
+  Clusters res1;
+  std::vector<std::pair<float, float>> output;
+  std::vector<std::pair<float, float>> empty;
   // insert points
   insert_line(output, cls, 10.0F, 15.0F, 15.0F, 20.0F, 0.9F);
   insert_line(output, cls, 5.0F, 20.0F, 10.0F, 15.0F, 0.9F);
   // insert noise
   insert_mesh(empty, cls, -10.0F, -10.0F, -20.0F, -20.0F, 2.0F, 2.0F);
-  const auto & res1 = cls.cluster(t);
+  cls.cluster(res1);
   // check clusters
-  EXPECT_EQ(res1.clusters.size(), static_cast<size_t>(1));
-  EXPECT_TRUE(check_cluster(res1.clusters[0], output));
-  EXPECT_EQ(res1.clusters[0].header.frame_id, "foo");
+  EXPECT_EQ(res1.cluster_boundary.size(), 1U);
+  EXPECT_TRUE(check_cluster(res1, 0, output));
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 
   // insert_point function is already tested for memory
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
-  const auto & res2 = cls.cluster(t);
-  EXPECT_EQ(res2.clusters.size(), static_cast<size_t>(0));
+  cls.cluster(res1);
+  EXPECT_EQ(res1.cluster_boundary.size(), 0U);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -90,14 +89,15 @@ TEST(euclidean_cluster, multi_object)
 {
   // setup
   builtin_interfaces::msg::Time t;
-  Config cfg{"bar", 10U, 100U};
+  Config cfg{"bar", 10U, 100U, 1.0F, 1.0F, 10.0F};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float32_t, float32_t>> output1;
-  std::vector<std::pair<float32_t, float32_t>> output2;
-  std::vector<std::pair<float32_t, float32_t>> output3;
-  std::vector<std::pair<float32_t, float32_t>> output4;
-  std::vector<std::pair<float32_t, float32_t>> empty;
+  Clusters res1;
+  std::vector<std::pair<float, float>> output1;
+  std::vector<std::pair<float, float>> output2;
+  std::vector<std::pair<float, float>> output3;
+  std::vector<std::pair<float, float>> output4;
+  std::vector<std::pair<float, float>> empty;
   // L
   insert_line(output1, cls, 11.0F, 16.0F, 16.0F, 21.0F, 0.9F);
   insert_ring(cls, 70.0F, 30U);  // noise ring
@@ -119,19 +119,19 @@ TEST(euclidean_cluster, multi_object)
   insert_line(output4, cls, -15.0F, 17.0F, -4.0F, 14.0F, 0.9F);
 
   // cluster
-  const auto & res1 = cls.cluster(t);
+  cls.cluster(res1);
   // check clusters
-  EXPECT_EQ(res1.clusters.size(), static_cast<size_t>(4));
+  EXPECT_EQ(res1.cluster_boundary.size(), 4U);
 
-  std::vector<std::vector<std::pair<float32_t, float32_t>> *> outputs =
+  std::vector<std::vector<std::pair<float, float>> *> outputs =
   {&output1, &output2, &output3, &output4};
-  check_clusters(res1, outputs, "bar");
+  check_clusters(res1, outputs);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 
   // push another point to force a reset
   insert_point(cls, 0.0F, 0.0F);
-  const auto & res2 = cls.cluster(t);
-  EXPECT_EQ(res2.clusters.size(), static_cast<size_t>(0));
+  cls.cluster(res1);
+  EXPECT_EQ(res1.cluster_boundary.size(), 0U);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 
@@ -140,17 +140,18 @@ TEST(euclidean_cluster, no_cluster)
 {
   // setup
   builtin_interfaces::msg::Time t;
-  Config cfg{"bar", 10U, 100U};
+  Config cfg{"bar", 10U, 100U, 1.0F, 1.0F, 10.0F};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};
   EuclideanCluster cls{cfg, hcfg};
-  std::vector<std::pair<float32_t, float32_t>> output;
+  Clusters res;
+  std::vector<std::pair<float, float>> output;
   // insert points
   insert_line(output, cls, 0.0F, 0.0F, 8.0F, 0.0F, 0.9F);
   insert_line(output, cls, 16.0F, 1.1F, 8.0F, 1.1F, 0.9F);
 
   // cluster and check
-  const auto & res = cls.cluster(t);
-  EXPECT_EQ(res.clusters.size(), static_cast<size_t>(0));
+  cls.cluster(res);
+  EXPECT_EQ(res.cluster_boundary.size(), 0U);
   EXPECT_EQ(cls.get_error(), EuclideanCluster::Error::NONE);
 }
 #endif  // TEST_EUCLIDEAN_CLUSTER_HPP_

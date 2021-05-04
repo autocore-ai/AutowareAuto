@@ -48,6 +48,15 @@ grid) for faster near neighbor queries
 - The input into the spatial hash was the output of a 2D voxel grid with a
 maximum height of approximately the vehicle's height. This is to reduce the
 number of points into the spatial hash and reduce computational burden
+- Rather than partitioning points into rings with different thresholds, a
+threshold that varies with radial distance is used and points are clustered
+together only if the thresholds for both points were satisfied, removing the
+need for cluster merging
+- As soon as a point is found in a near-neighbor query, and thus assigned to a
+cluster, it is removed from the spatial hash for the purpose of near-neighbor
+queries. This is to reduce the computational burden of subsequent near-neighbor
+queries on the spatial hash
+
 
 # Performance characterization
 
@@ -64,6 +73,11 @@ The algorithm consists of the following steps:
 This results in an algorithm that is `O(n^2 + n^2)`, but is in practice `O(n)`.
 In practice, the first term should be `O(n)` as inserting into a hashmap is
 average case `O(1)`.
+
+The second term should also be `O(n)` because pruning should result in each
+point showing up in a near-neighbor query exactly once, and marking points as
+seen should result in skipping many inner iterations of the main loop.
+
 
 ## Space
 
@@ -87,9 +101,7 @@ calls are occurring in a sequence)
 2. Clustering (i.e. a call to one of the
 [cluster](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::cluster)
 methods)
-3. Result ready (i.e. before
-[cleanup](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::cleanup)
-is called)
+3. Result ready
 
 The second state, clustering, can be thought of as a separate state because it performs destructive
 operations on the underlying data structure.
@@ -105,22 +117,14 @@ such that operations or manipulations may be done on the resulting (large) clust
 For more details on the API, see the
 [documentation](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster).
 
-This class supports two modes of output:
-
-1. Using the internally allocated output
-2. Using externally allocated output
-
-The latter case is when further operations must be done on the output, such as sorting during a
-hull formation process. In this case, preallocated memory must be explicitly returned to the
-class via the
-[cleanup](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::cleanup)
-method.
+This class uses externally allocated output, which supports the use case of performing further
+operations on the output, such as sorting during a hull formation process.
 
 Finally,
-[cleanup](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::cleanup)
-and
 [get_error](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::get_error)
-are provided separate from
+and
+[throw_stored_error](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::throw_stored_error)
+are provided separately from
 [cluster](@ref autoware::perception::segmentation::euclidean_cluster::EuclideanCluster::cluster)
 because some errors during the clustering process do not necessarily invalidate the remainder
 of the results. Recovery action should still be taken, but to some extent, the result is still
@@ -135,3 +139,4 @@ with modifications from [CPFL's Autoware](https://github.com/CPFL/Autoware/blob/
 # Related issues
 
 - #28: Port to open source
+- #918: Port memory optimizations and dynamic cluster threshold

@@ -14,7 +14,6 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-//lint -e537 pclint vs cpplint NOLINT
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <common/types.hpp>
 #include <helper_functions/float_comparisons.hpp>
@@ -23,6 +22,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "lidar_utils/point_cloud_utils.hpp"
@@ -40,6 +40,48 @@ namespace lidar_utils
 using autoware::common::types::bool8_t;
 using autoware::common::types::char8_t;
 using autoware::common::types::float32_t;
+
+std::pair<autoware_auto_msgs::msg::PointClusters::_points_type::iterator,
+  autoware_auto_msgs::msg::PointClusters::_points_type::iterator>
+get_cluster(autoware_auto_msgs::msg::PointClusters & clusters, const std::size_t cls_id)
+{
+  if (cls_id >= clusters.cluster_boundary.size()) {
+    return {clusters.points.end(), clusters.points.end()};
+  }
+
+  uint32_t cls_begin_offset;
+  uint32_t cls_end_offset;  // this offset is the past-the-end element of the target cluster
+  if (cls_id == 0U) {
+    cls_begin_offset = 0U;
+    cls_end_offset = clusters.cluster_boundary[cls_id];
+  } else {
+    cls_begin_offset = clusters.cluster_boundary[cls_id - 1U];
+    cls_end_offset = clusters.cluster_boundary[cls_id];
+  }
+
+  return {clusters.points.begin() + cls_begin_offset, clusters.points.begin() + cls_end_offset};
+}
+
+std::pair<autoware_auto_msgs::msg::PointClusters::_points_type::const_iterator,
+  autoware_auto_msgs::msg::PointClusters::_points_type::const_iterator>
+get_cluster(const autoware_auto_msgs::msg::PointClusters & clusters, const std::size_t cls_id)
+{
+  if (cls_id >= clusters.cluster_boundary.size()) {
+    return {clusters.points.end(), clusters.points.end()};
+  }
+
+  uint32_t cls_begin_offset;
+  uint32_t cls_end_offset;  // this offset is the past-the-end element of the target cluster
+  if (cls_id == 0U) {
+    cls_begin_offset = 0U;
+    cls_end_offset = clusters.cluster_boundary[cls_id];
+  } else {
+    cls_begin_offset = clusters.cluster_boundary[cls_id - 1U];
+    cls_end_offset = clusters.cluster_boundary[cls_id];
+  }
+
+  return {clusters.points.begin() + cls_begin_offset, clusters.points.begin() + cls_end_offset};
+}
 
 bool8_t has_intensity_and_throw_if_no_xyz(
   const PointCloud2::SharedPtr & cloud)
@@ -123,10 +165,8 @@ void PointCloudIts::reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx)
 std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2 & msg) noexcept
 {
   // Count expected amount of data from various source of truths
-  //lint -e9123 NOLINT There's absolutely nothing wrong with casting to a larger type...
   const auto expected_total_data1 =
     static_cast<std::size_t>(msg.point_step * (msg.width * msg.height));
-  //lint -e9123 NOLINT There's absolutely nothing wrong with casting to a larger type...
   const auto expected_total_data2 = static_cast<std::size_t>(msg.row_step * msg.height);
   const auto actual_total_data = msg.data.size();
   // Get the smallest of these

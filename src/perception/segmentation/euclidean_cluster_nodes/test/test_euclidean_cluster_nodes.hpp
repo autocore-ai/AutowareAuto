@@ -83,6 +83,18 @@ TEST_F(EuclideanClusterNodesTest, instantiate)
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
 
+  params.emplace_back("cluster.min_cluster_threshold_m", 0.5);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
+  params.emplace_back("cluster.max_cluster_threshold_m", 1.5);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
+  params.emplace_back("cluster.threshold_saturation_distance_m", 60.0);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
   params.emplace_back("hash.min_x", -130.0);
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
@@ -151,6 +163,18 @@ TEST_F(EuclideanClusterNodesTest, instantiate_downsample)
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
 
+  params.emplace_back("cluster.min_cluster_threshold_m", 0.5);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
+  params.emplace_back("cluster.max_cluster_threshold_m", 1.5);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
+  params.emplace_back("cluster.threshold_saturation_distance_m", 60.0);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
   params.emplace_back("hash.min_x", -130.0);
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
@@ -205,6 +229,7 @@ TEST_F(EuclideanClusterNodesTest, instantiate_downsample)
 
   params.emplace_back("voxel.voxel_size.z", 0.2);
   node_options.parameter_overrides(params);
+
   ASSERT_NO_THROW(EuclideanClusterNode{node_options});
 }
 

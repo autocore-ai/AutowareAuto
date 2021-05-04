@@ -32,41 +32,64 @@ namespace segmentation
 namespace euclidean_cluster
 {
 ////////////////////////////////////////////////////////////////////////////////
-PointXYZII::PointXYZII(const PointXYZI & pt, const uint32_t id)
-: m_point{pt},
-  m_id{id}
+PointXYZIR::PointXYZIR(const common::types::PointXYZIF & pt)
+: m_point{pt.x, pt.y, pt.z, pt.intensity},
+  m_r_xy{sqrtf((pt.x * pt.x) + (pt.y * pt.y))}
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
-PointXYZII::PointXYZII(
+PointXYZIR::PointXYZIR(const PointXYZI & pt)
+: m_point{pt},
+  m_r_xy{sqrtf((pt.x * pt.x) + (pt.y * pt.y))}
+{
+}
+////////////////////////////////////////////////////////////////////////////////
+PointXYZIR::PointXYZIR(
   const float32_t x,
   const float32_t y,
   const float32_t z,
-  const float32_t intensity,
-  const uint32_t id)
+  const float32_t intensity)
 : m_point{x, y, z, intensity},
-  m_id{id}
+  m_r_xy{std::hypotf(x, y)}
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
-uint32_t PointXYZII::get_id() const
+float32_t PointXYZIR::get_r() const
 {
-  return m_id;
+  return m_r_xy;
 }
 ////////////////////////////////////////////////////////////////////////////////
-const PointXYZI & PointXYZII::get_point() const
+const PointXYZI & PointXYZIR::get_point() const
 {
   return m_point;
 }
 ////////////////////////////////////////////////////////////////////////////////
+PointXYZIR::operator autoware_auto_msgs::msg::PointXYZIF() const
+{
+  /*lint -e{1793} it's safe to call non-const member function on a temporary in this case*/
+  autoware_auto_msgs::msg::PointXYZIF ret;
+
+  ret.x = m_point.x;
+  ret.y = m_point.y;
+  ret.z = m_point.z;
+  ret.intensity = m_point.intensity;
+  return ret;
+}
 ////////////////////////////////////////////////////////////////////////////////
 Config::Config(
   const std::string & frame_id,
   const std::size_t min_cluster_size,
-  const std::size_t max_num_clusters)
+  const std::size_t max_num_clusters,
+  const float32_t min_cluster_threshold_m,
+  const float32_t max_cluster_threshold_m,
+  const float32_t cluster_threshold_saturation_distance_m)
 : m_frame_id(frame_id),
   m_min_cluster_size(min_cluster_size),
-  m_max_num_clusters(max_num_clusters)
+  m_max_num_clusters(max_num_clusters),
+  m_min_thresh_m(min_cluster_threshold_m),
+  m_max_distance_m(cluster_threshold_saturation_distance_m),
+  m_thresh_rate((max_cluster_threshold_m - min_cluster_threshold_m) /
+    cluster_threshold_saturation_distance_m)
 {
   // TODO(c.ho) sanity checking
 }
@@ -81,6 +104,16 @@ std::size_t Config::max_num_clusters() const
   return m_max_num_clusters;
 }
 ////////////////////////////////////////////////////////////////////////////////
+float32_t Config::threshold(const PointXYZIR & pt) const
+{
+  return threshold(pt.get_r());
+}
+////////////////////////////////////////////////////////////////////////////////
+float32_t Config::threshold(const float32_t r) const
+{
+  return m_min_thresh_m + (std::min(m_max_distance_m, r) * m_thresh_rate);
+}
+////////////////////////////////////////////////////////////////////////////////
 const std::string & Config::frame_id() const
 {
   return m_frame_id;
@@ -90,64 +123,37 @@ const std::string & Config::frame_id() const
 EuclideanCluster::EuclideanCluster(const Config & cfg, const HashConfig & hash_cfg)
 : m_config(cfg),
   m_hash(hash_cfg),
-  m_clusters(),
-  m_cluster_pool(),
-  m_last_error(Error::NONE),
-  m_seen{}
+  m_last_error(Error::NONE)
+{}
+////////////////////////////////////////////////////////////////////////////////
+bool Config::match_clusters_size(const Clusters & clusters) const
 {
-  // Reservation
-  m_clusters.clusters.reserve(m_config.max_num_clusters());
-  m_cluster_pool.resize(m_config.max_num_clusters());
-  m_seen.reserve(hash_cfg.get_capacity());
-  // initialize clusters
-  for (auto & cls : m_cluster_pool) {
-    common::lidar_utils::init_pcl_msg(cls, cfg.frame_id(), hash_cfg.get_capacity());
-    cls.width = 0U;
-    // check pointstep vs sizeof(PointXY) and sizeof(PointXYZIF)
-    if (cls.point_step < sizeof(PointXY)) {
-      throw std::domain_error{"Cluster initialized with point size smaller than PointXY"};
-    }
-    if (cls.point_step != sizeof(PointXYZI)) {
-      throw std::domain_error{"Cluster initialized with point size != PointXYZI"};
-    }
+  bool ret = true;
+  if (clusters.cluster_boundary.capacity() < m_max_num_clusters) {
+    ret = false;
   }
+  if (clusters.points.capacity() < (m_max_num_clusters * m_min_cluster_size)) {
+    ret = false;
+  }
+  return ret;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EuclideanCluster::insert(const PointXYZIR & pt)
+{
+  // can't do anything with return values
+  (void)m_hash.insert(pt);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EuclideanCluster::cluster(Clusters & clusters)
 {
-  if (clusters.clusters.capacity() < m_config.max_num_clusters()) {
-    throw std::domain_error{"EuclideanCluster: Provided clusters must have sufficient capacity"};
-  }
+  // Clean the previous clustering result
+  clusters.points.clear();
+  clusters.cluster_boundary.clear();
   cluster_impl(clusters);
 }
 ////////////////////////////////////////////////////////////////////////////////
-void EuclideanCluster::return_clusters(Clusters & clusters)
+void EuclideanCluster::throw_stored_error() const
 {
-  for (std::size_t idx = 0U; idx < clusters.clusters.size(); ++idx) {
-    m_cluster_pool[idx] = std::move(clusters.clusters[idx]);
-    m_cluster_pool[idx].width = 0U;
-  }
-  clusters.clusters.resize(0U);
-  m_seen.clear();
-}
-////////////////////////////////////////////////////////////////////////////////
-const Clusters & EuclideanCluster::cluster(const builtin_interfaces::msg::Time stamp)
-{
-  // Reset clusters to pool
-  return_clusters(m_clusters);
-  // Actual clustering process
-  cluster_impl(m_clusters);
-  // Assign time stamp
-  for (auto & cls : m_clusters.clusters) {
-    cls.header.stamp = stamp;
-  }
-  return m_clusters;
-}
-////////////////////////////////////////////////////////////////////////////////
-void EuclideanCluster::cleanup(Clusters & clusters)
-{
-  // Return data to algorithm
-  return_clusters(clusters);
   // Error handling after publishing
   switch (get_error()) {
     case Error::TOO_MANY_CLUSTERS:
@@ -171,193 +177,179 @@ const Config & EuclideanCluster::get_config() const
 void EuclideanCluster::cluster_impl(Clusters & clusters)
 {
   m_last_error = Error::NONE;
-  for (const auto & kv : m_hash) {
-    const auto & pt = kv.second;
-    if (!m_seen[pt.get_id()]) {
-      cluster(clusters, pt);
-    }
+  auto it = m_hash.begin();
+  while (it != m_hash.end()) {
+    cluster(clusters, it);
+    // Go to next point still in hash; points assigned to a cluster are removed from hash
+    it = m_hash.begin();
   }
-  m_hash.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////
-void EuclideanCluster::cluster(Clusters & clusters, const PointXYZII & pt)
+void EuclideanCluster::cluster(Clusters & clusters, const Hash::IT it)
 {
   // init new cluster
-  const auto num_clusters = clusters.clusters.size();
-  if (num_clusters >= m_config.max_num_clusters()) {
+  if (clusters.cluster_boundary.size() >= m_config.max_num_clusters()) {
     m_last_error = Error::TOO_MANY_CLUSTERS;
+    // Flush the remaining points in the hash for the new scan
+    m_hash.clear();
   } else {
-    clusters.clusters.emplace_back(std::move(m_cluster_pool[num_clusters]));
-    // Seed cluster with new point
-    auto & cluster = clusters.clusters.back();
-    add_point(cluster, pt);
-    m_seen[pt.get_id()] = true;
-    // Start clustering process
-    std::size_t last_seed_idx = 0U;
-    while (last_seed_idx < cluster.width) {
-      const auto pt = get_point(cluster, last_seed_idx);
-      add_neighbors(cluster, pt);
-      // Increment seed point
-      ++last_seed_idx;
-    }
-    // check if cluster is large enough: roll back pointer if so
-    if (last_seed_idx < m_config.min_cluster_size()) {
-      // return cluster to pool
-      m_cluster_pool[num_clusters] = std::move(clusters.clusters[num_clusters]);
-      m_cluster_pool[num_clusters].width = 0U;
-      clusters.clusters.resize(num_clusters);
+    // initialize new cluster in clusters
+    if (clusters.cluster_boundary.empty()) {
+      clusters.cluster_boundary.emplace_back(0U);
     } else {
-      // finalize cluster
-      cluster.row_step = cluster.point_step * cluster.width;
+      clusters.cluster_boundary.emplace_back(clusters.cluster_boundary.back());
+    }
+    // Seed cluster with new point
+    add_point_to_last_cluster(clusters, it->second);
+    // Erase returns the element after the removed element but it is not useful here
+    (void)m_hash.erase(it);
+    // Start clustering process
+    std::size_t last_cls_pt_idx = 0U;
+    while (last_cls_pt_idx < last_cluster_size(clusters)) {
+      const auto pt = get_point_from_last_cluster(clusters, last_cls_pt_idx);
+      add_neighbors_to_last_cluster(clusters, pt);
+      // Increment seed point
+      ++last_cls_pt_idx;
+    }
+    // check if cluster is large enough
+    if (last_cls_pt_idx < m_config.min_cluster_size()) {
+      // reject the cluster if too small
+      clusters.cluster_boundary.pop_back();
     }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void EuclideanCluster::add_neighbors(Cluster & cls, const EuclideanCluster::PointXY pt)
+void EuclideanCluster::add_neighbors_to_last_cluster(
+  Clusters & clusters,
+  const EuclideanCluster::PointXY pt)
 {
+  // TODO(c.ho) make this more generic... also duplicated work..
+  const float32_t r = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+  const float32_t thresh1 = m_config.threshold(r);
   // z is not needed since it's a 2d hash
-  const auto & nbrs = m_hash.near(pt.x, pt.y);
-  // For each point within a fixed radius, check if already seen
+  const auto & nbrs = m_hash.near(pt.x, pt.y, thresh1);
+  // For each point within a fixed radius, check for connectivity
   for (const auto itd : nbrs) {
     const auto & qt = itd.get_point();
-    const auto id = qt.get_id();
-    if (!m_seen[id]) {
-      // Add to cluster
-      add_point(cls, qt);
-      // Mark point as seen
-      m_seen[id] = true;
+    // Ensure that threshold is satisfied bidirectionally
+    const float32_t thresh2 = m_config.threshold(qt);
+    if (itd.get_distance() <= thresh2) {
+      // Add to the last cluster
+      add_point_to_last_cluster(clusters, qt);
+      // Remove from hash: point is already assigned to a cluster; never need to see again
+      // (equivalent to marking a point as "seen")
+      (void)m_hash.erase(itd);
     }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void EuclideanCluster::add_point(Cluster & cls, const PointXYZII & pt)
+void EuclideanCluster::add_point_to_last_cluster(Clusters & clusters, const PointXYZIR & pt)
 {
-  // Clustering cannot overrun cluster capacity since each cluster is preallocated with the
-  // max capacity of the hash, so the data structure would throw before you overrun the cluster
-  using Size = decltype(Cluster::data)::size_type;
-  const auto idx = static_cast<Size>(cls.width) * static_cast<Size>(cls.point_step);
-  cls.data.resize(idx + static_cast<Size>(cls.point_step));
-  // Placement new to ensure dynamic type is accurate (allowing for reinterpret_cast to not be UB)
-  (void)new(&cls.data[idx]) PointXYZI(pt.get_point());
-  ++cls.width;
+  // If there are non-valid points in the container due to rejecting small clusters,
+  // overwrite the non-valid points, otherwise emplace new point
+  if (clusters.cluster_boundary.back() < clusters.points.size()) {
+    clusters.points[clusters.cluster_boundary.back()] =
+      static_cast<autoware_auto_msgs::msg::PointXYZIF>(pt);
+  } else {
+    clusters.points.emplace_back(static_cast<autoware_auto_msgs::msg::PointXYZIF>(pt));
+  }
+  clusters.cluster_boundary.back() = clusters.cluster_boundary.back() + 1U;
 }
 ////////////////////////////////////////////////////////////////////////////////
-EuclideanCluster::PointXY EuclideanCluster::get_point(const Cluster & cls, const std::size_t idx)
+EuclideanCluster::PointXY EuclideanCluster::get_point_from_last_cluster(
+  const Clusters & clusters,
+  const std::size_t cls_pt_idx)
 {
-  PointXY ret{};
-  //lint -e{586, 925} NOLINT guaranteed not to have overlap, so it's fine; no other way to do
-  (void)memcpy(
-    static_cast<void *>(&ret),
-    static_cast<const void *>(&cls.data[idx * cls.point_step]),
-    sizeof(ret));
-  return ret;
+  const std::size_t num_of_clusters = clusters.cluster_boundary.size();
+  // num_of_clusters will be at least 1
+  const auto points_idx = (num_of_clusters < 2U) ?
+    cls_pt_idx : (cls_pt_idx + clusters.cluster_boundary[num_of_clusters - 2U]);
+  return PointXY{clusters.points[points_idx].x, clusters.points[points_idx].y};
 }
-
+////////////////////////////////////////////////////////////////////////////////
+std::size_t EuclideanCluster::last_cluster_size(const Clusters & clusters)
+{
+  const std::size_t num_of_clusters = clusters.cluster_boundary.size();
+  if (num_of_clusters < 2U) {
+    return clusters.cluster_boundary.front();
+  } else {
+    const auto cluster_size =
+      clusters.cluster_boundary[num_of_clusters - 1U] -
+      clusters.cluster_boundary[num_of_clusters - 2U];
+    return cluster_size;
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
 namespace details
 {
-
-namespace
-{
-using euclidean_cluster::PointXYZI;
-std::pair<const PointXYZI *, const PointXYZI *> point_struct_iterators(
-  const euclidean_cluster::Cluster & cls)
-{
-  if (cls.data.empty()) {
-    throw std::runtime_error("PointCloud2 data is empty");
-  }
-  if (cls.data.size() != cls.row_step * cls.height) {
-    throw std::runtime_error("PointCloud2 data has invalid size");
-  }
-  if (cls.point_step != sizeof(PointXYZI)) {
-    throw std::runtime_error("PointCloud2 data has unexpected point_step");
-  }
-  if (reinterpret_cast<std::uintptr_t>(cls.data.data()) % alignof(PointXYZI) != 0) {
-    throw std::runtime_error("PointCloud2 data is not aligned like required by PointXYZI");
-  }
-  if ((__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) != cls.is_bigendian) {
-    throw std::runtime_error("PointCloud2 does not have native endianness");
-  }
-  //lint -e{826, 9176} NOLINT I claim this is ok and tested
-  const auto begin = reinterpret_cast<const PointXYZI *>(&cls.data[0]);
-  //lint -e{826, 9176} NOLINT I claim this is ok and tested
-  const auto end = reinterpret_cast<const PointXYZI *>(&cls.data[0] + cls.data.size());
-  return std::make_pair(begin, end);
-}
-
-std::pair<PointXYZI *, PointXYZI *> point_struct_iterators(euclidean_cluster::Cluster & cls)
-{
-  auto iterators = point_struct_iterators(const_cast<const euclidean_cluster::Cluster &>(cls));
-  return std::make_pair(
-    const_cast<PointXYZI *>(iterators.first),
-    const_cast<PointXYZI *>(iterators.second));
-}
-
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-BoundingBox compute_eigenbox(const euclidean_cluster::Cluster & cls)
-{
-  const auto iterators = point_struct_iterators(cls);
-  return common::geometry::bounding_box::eigenbox_2d(iterators.first, iterators.second);
-}
-////////////////////////////////////////////////////////////////////////////////
-BoundingBox compute_lfit_bounding_box(Cluster & cls)
-{
-  const auto iterators = point_struct_iterators(cls);
-  return common::geometry::bounding_box::lfit_bounding_box_2d(iterators.first, iterators.second);
-}
-////////////////////////////////////////////////////////////////////////////////
-void compute_eigenboxes(const Clusters & clusters, BoundingBoxArray & boxes)
+void compute_eigenboxes(const Clusters & clusters, details::BoundingBoxArray & boxes)
 {
   boxes.boxes.clear();
-  for (auto & cls : clusters.clusters) {
+  for (uint32_t cls_id = 0U; cls_id < clusters.cluster_boundary.size(); cls_id++) {
     try {
-      boxes.boxes.push_back(compute_eigenbox(cls));
+      const auto iter_pair = common::lidar_utils::get_cluster(clusters, cls_id);
+      if (iter_pair.first == iter_pair.second) {
+        continue;
+      }
+      boxes.boxes.push_back(
+        common::geometry::bounding_box::eigenbox_2d(iter_pair.first, iter_pair.second));
     } catch (const std::exception & e) {
-      std::cerr << e.what() << "\n";
+      std::cerr << e.what() << std::endl;
     }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & boxes)
+void compute_eigenboxes_with_z(const Clusters & clusters, details::BoundingBoxArray & boxes)
 {
   boxes.boxes.clear();
-  for (auto & cls : clusters.clusters) {
+  for (uint32_t cls_id = 0U; cls_id < clusters.cluster_boundary.size(); cls_id++) {
     try {
-      const auto iterators = point_struct_iterators(cls);
-      auto box = common::geometry::bounding_box::eigenbox_2d(iterators.first, iterators.second);
-      common::geometry::bounding_box::compute_height(iterators.first, iterators.second, box);
-      boxes.boxes.push_back(box);
+      const auto iter_pair = common::lidar_utils::get_cluster(clusters, cls_id);
+      if (iter_pair.first == iter_pair.second) {
+        continue;
+      }
+      boxes.boxes.push_back(
+        common::geometry::bounding_box::eigenbox_2d(iter_pair.first, iter_pair.second));
+      common::geometry::bounding_box::compute_height(
+        iter_pair.first, iter_pair.second, boxes.boxes.back());
     } catch (const std::exception & e) {
-      std::cerr << e.what() << "\n";
+      std::cerr << e.what() << std::endl;
     }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes)
+void compute_lfit_bounding_boxes(Clusters & clusters, details::BoundingBoxArray & boxes)
 {
   boxes.boxes.clear();
-  for (auto & cls : clusters.clusters) {
+  for (uint32_t cls_id = 0U; cls_id < clusters.cluster_boundary.size(); cls_id++) {
     try {
-      boxes.boxes.push_back(compute_lfit_bounding_box(cls));
+      const auto iter_pair = common::lidar_utils::get_cluster(clusters, cls_id);
+      if (iter_pair.first == iter_pair.second) {
+        continue;
+      }
+      boxes.boxes.push_back(
+        common::geometry::bounding_box::lfit_bounding_box_2d(iter_pair.first, iter_pair.second));
     } catch (const std::exception & e) {
-      std::cerr << e.what() << "\n";
+      std::cerr << e.what() << std::endl;
     }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void compute_lfit_bounding_boxes_with_z(Clusters & clusters, BoundingBoxArray & boxes)
+void compute_lfit_bounding_boxes_with_z(Clusters & clusters, details::BoundingBoxArray & boxes)
 {
   boxes.boxes.clear();
-  for (auto & cls : clusters.clusters) {
+  for (uint32_t cls_id = 0U; cls_id < clusters.cluster_boundary.size(); cls_id++) {
     try {
-      boxes.boxes.push_back(autoware_auto_msgs::msg::BoundingBox{});
-      auto & box = boxes.boxes[boxes.boxes.size()];
-      const auto iterators = point_struct_iterators(cls);
-      box = common::geometry::bounding_box::lfit_bounding_box_2d(iterators.first, iterators.second);
-      common::geometry::bounding_box::compute_height(iterators.first, iterators.second, box);
+      const auto iter_pair = common::lidar_utils::get_cluster(clusters, cls_id);
+      if (iter_pair.first == iter_pair.second) {
+        continue;
+      }
+      boxes.boxes.push_back(
+        common::geometry::bounding_box::lfit_bounding_box_2d(iter_pair.first, iter_pair.second));
+      common::geometry::bounding_box::compute_height(
+        iter_pair.first, iter_pair.second, boxes.boxes.back());
     } catch (const std::exception & e) {
-      std::cerr << e.what() << "\n";
+      std::cerr << e.what() << std::endl;
     }
   }
 }
