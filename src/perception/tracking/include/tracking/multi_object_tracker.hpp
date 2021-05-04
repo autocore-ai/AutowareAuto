@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 
-#include "autoware_auto_msgs/msg/detected_dynamic_object_array.hpp"
-#include "autoware_auto_msgs/msg/tracked_dynamic_object.hpp"
-#include "autoware_auto_msgs/msg/tracked_dynamic_object_array.hpp"
+#include "autoware_auto_msgs/msg/detected_object.hpp"
+#include "autoware_auto_msgs/msg/tracked_object.hpp"
+#include "autoware_auto_msgs/msg/tracked_objects.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tracking/data_association.hpp"
 #include "tracking/tracked_object.hpp"
@@ -69,7 +69,7 @@ enum class TrackerUpdateStatus
 struct TRACKING_PUBLIC TrackerUpdateResult
 {
   /// The tracking output. It can be nullptr when the status is not Ok.
-  std::unique_ptr<autoware_auto_msgs::msg::TrackedDynamicObjectArray> objects;
+  std::unique_ptr<autoware_auto_msgs::msg::TrackedObjects> objects;
   /// Indicates the success or failure, and kind of failure, of the tracking operation.
   TrackerUpdateStatus status;
   /// How many of the input objects are not present in the output.
@@ -95,8 +95,8 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
 class TRACKING_PUBLIC MultiObjectTracker
 {
 public:
-  using DetectedObjectsMsg = autoware_auto_msgs::msg::DetectedDynamicObjectArray;
-  using TrackedObjectsMsg = autoware_auto_msgs::msg::TrackedDynamicObjectArray;
+  using DetectedObjectsMsg = autoware_auto_msgs::msg::DetectedObjects;
+  using TrackedObjectsMsg = autoware_auto_msgs::msg::TrackedObjects;
 
   /// Constructor
   explicit MultiObjectTracker(MultiObjectTrackerOptions options);

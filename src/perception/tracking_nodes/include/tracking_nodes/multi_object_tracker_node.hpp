@@ -19,8 +19,8 @@
 #ifndef TRACKING_NODES__MULTI_OBJECT_TRACKER_NODE_HPP_
 #define TRACKING_NODES__MULTI_OBJECT_TRACKER_NODE_HPP_
 
-#include <autoware_auto_msgs/msg/detected_dynamic_object_array.hpp>
-#include <autoware_auto_msgs/msg/tracked_dynamic_object_array.hpp>
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
+#include <autoware_auto_msgs/msg/tracked_objects.hpp>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <nav_msgs/msg/odometry.hpp>
@@ -47,20 +47,20 @@ public:
   /// Callback for matching detections + odometry messages.
   /// This unusual signature is mandated by message_filters.
   void process(
-    const autoware_auto_msgs::msg::DetectedDynamicObjectArray::ConstSharedPtr & objs,
+    const autoware_auto_msgs::msg::DetectedObjects::ConstSharedPtr & objs,
     const nav_msgs::msg::Odometry::ConstSharedPtr & odom);
 
 private:
   /// The actual tracker implementation.
   autoware::perception::tracking::MultiObjectTracker m_tracker;
   /// Subscription to odometry and detection messages.
-  message_filters::Subscriber<autoware_auto_msgs::msg::DetectedDynamicObjectArray> m_objects_sub;
+  message_filters::Subscriber<autoware_auto_msgs::msg::DetectedObjects> m_objects_sub;
   message_filters::Subscriber<nav_msgs::msg::Odometry> m_odom_sub;
   std::shared_ptr<message_filters::TimeSynchronizer<
-      autoware_auto_msgs::msg::DetectedDynamicObjectArray,
+      autoware_auto_msgs::msg::DetectedObjects,
       nav_msgs::msg::Odometry>> m_sync;
   /// Publisher for tracked objects.
-  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedDynamicObjectArray>::SharedPtr m_pub;
+  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_pub;
 };
 }  // namespace tracking_nodes
 }  // namespace autoware

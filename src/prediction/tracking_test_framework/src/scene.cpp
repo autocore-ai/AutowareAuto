@@ -47,13 +47,13 @@ std::vector<EigenStlVector<Eigen::Vector2f>> Scene::get_intersections_with_lidar
   return m_lidar.get_intersections_per_object(m_objects, closest_only);
 }
 
-autoware_auto_msgs::msg::DetectedDynamicObjectArray Scene::get_detected_objects_array(
+autoware_auto_msgs::msg::DetectedObjects Scene::get_detected_objects_array(
   const bool closest_only) const
 {
   std::vector<EigenStlVector<Eigen::Vector2f>> intersections_all_objects =
     this->get_intersections_with_lidar(closest_only);
 
-  autoware_auto_msgs::msg::DetectedDynamicObjectArray detected_object_msg_array{};
+  autoware_auto_msgs::msg::DetectedObjects detected_object_msg_array{};
   for (const auto & intersection_per_object : intersections_all_objects) {
     /// Fill Shape with all intersections of LiDAR and each object
     autoware_auto_msgs::msg::Shape shape_msg{};
@@ -69,7 +69,7 @@ autoware_auto_msgs::msg::DetectedDynamicObjectArray Scene::get_detected_objects_
     shape_msg.height = 0.0;
 
     /// Detected Object
-    autoware_auto_msgs::msg::DetectedDynamicObject detected_object_msg{};
+    autoware_auto_msgs::msg::DetectedObject detected_object_msg{};
     detected_object_msg.existence_probability = 1.0;
     detected_object_msg.classification.resize(1);
     detected_object_msg.classification.front().classification =

@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-#include "autoware_auto_msgs/msg/detected_dynamic_object_array.hpp"
+#include "autoware_auto_msgs/msg/detected_objects.hpp"
 
 namespace autoware
 {
@@ -45,12 +45,12 @@ public:
   /// \param[in] dt_in_ms time interval in milliseconds
   void move_all_objects(const std::chrono::milliseconds dt_in_ms);
 
-  /// \brief Method to get DetectedObjectsArray of the TrackedObjects in the Scene with LiDAR
+  /// \brief Method to get DetectedObjects of the TrackedObjects in the Scene with LiDAR
   /// \param[in] closest_only the boolean to determine if closest intersection to be
   /// returned or all
-  /// \return returns the DetectedObjectsArray filled with the TrackedObjects information in
+  /// \return returns the DetectedObjects filled with the TrackedObjects information in
   /// the scene
-  autoware_auto_msgs::msg::DetectedDynamicObjectArray get_detected_objects_array(
+  autoware_auto_msgs::msg::DetectedObjects get_detected_objects_array(
     const bool closest_only) const;
 
 private:

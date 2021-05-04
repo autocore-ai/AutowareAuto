@@ -40,8 +40,8 @@ refined upon :
 /// std::vector<std::unique_ptr<TrackedObject>> :
 4. Scene(const Lidar & lidar, const std::vector<std::unique_ptr<TrackedObject>> & objects);
 /// \brief Intersections between the Lidar and TrackedObjects are returned in a 
-/// DetectedDynamicObjectArray form :
-5. autoware_auto_msgs::msg::DetectedDynamicObjectArray Scene::get_detected_objects_array(
+/// DetectedObjects form :
+5. autoware_auto_msgs::msg::DetectedObjects Scene::get_detected_objects_array(
   const bool closest_only) const
 /// \brief Objects can be moved in the scene using:
 6. void Scene::move_all_objects(const std::chrono::milliseconds dt_in_secs)

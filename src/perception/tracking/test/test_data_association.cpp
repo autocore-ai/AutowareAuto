@@ -16,11 +16,11 @@
 
 #include <tracking/data_association.hpp>
 
-using TrackedDynamicObjectArray = autoware_auto_msgs::msg::TrackedDynamicObjectArray;
-using TrackedDynamicObject = autoware_auto_msgs::msg::TrackedDynamicObject;
+using TrackedObjects = autoware_auto_msgs::msg::TrackedObjects;
+using TrackedObject = autoware_auto_msgs::msg::TrackedObject;
 
-using DetectedDynamicObjectArray = autoware_auto_msgs::msg::DetectedDynamicObjectArray;
-using DetectedDynamicObject = autoware_auto_msgs::msg::DetectedDynamicObject;
+using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
+using DetectedObject = autoware_auto_msgs::msg::DetectedObject;
 
 namespace tracking = autoware::perception::tracking;
 
@@ -70,8 +70,8 @@ protected:
 // same x. Associator should associate track with object2
 TEST_F(AssociationTester, basic)
 {
-  TrackedDynamicObjectArray tracks_msg;
-  TrackedDynamicObject track1_obj;
+  TrackedObjects tracks_msg;
+  TrackedObject track1_obj;
 
   track1_obj.shape.push_back(create_square(4.0F));
   track1_obj.kinematics.pose.pose.position.x = 2.0;
@@ -82,8 +82,8 @@ TEST_F(AssociationTester, basic)
   track1_obj.kinematics.pose.covariance[3] = 10.43;
   tracks_msg.objects.push_back(track1_obj);
 
-  DetectedDynamicObjectArray objects_msg;
-  DetectedDynamicObject obj1;
+  DetectedObjects objects_msg;
+  DetectedObject obj1;
   obj1.shape = create_square(4.0F);
   obj1.kinematics.pose.pose.position.x = 2.5;
   obj1.kinematics.pose.pose.position.y = 2.0;
@@ -93,7 +93,7 @@ TEST_F(AssociationTester, basic)
   obj1.kinematics.pose.covariance[3] = 10.43;
   objects_msg.objects.push_back(obj1);
 
-  DetectedDynamicObject obj2;
+  DetectedObject obj2;
   obj2 = obj1;
   obj2.kinematics.pose.pose.position.x = 2.0;
   obj2.kinematics.pose.pose.position.y = 3.0;
@@ -111,11 +111,11 @@ TEST_F(AssociationTester, more_tracks_less_objects)
   const auto num_tracks = 10U;
   auto num_associated_dets = 0U;
 
-  TrackedDynamicObjectArray tracks_msg;
-  DetectedDynamicObjectArray detections_msg;
+  TrackedObjects tracks_msg;
+  DetectedObjects detections_msg;
 
   for (size_t i = 0U; i < num_tracks; ++i) {
-    TrackedDynamicObject current_track;
+    TrackedObject current_track;
     const auto current_shape = create_square(4.0F);
     current_track.shape.push_back(current_shape);
     current_track.kinematics.pose.pose.position.x = 2.0 * static_cast<double>(i + 1U);
@@ -127,7 +127,7 @@ TEST_F(AssociationTester, more_tracks_less_objects)
     //  Create detections that can be associated with tracks
     if (i % 2 == 0) {
       ++num_associated_dets;
-      DetectedDynamicObject current_detection;
+      DetectedObject current_detection;
       current_detection.shape = current_shape;
       // Move detections a bit to test out distance calculation logic as well
       current_detection.kinematics.pose.pose.position.x = current_track.kinematics.pose.pose
@@ -156,14 +156,14 @@ TEST_F(AssociationTester, area_gating_fails)
   const auto num_tracks = 5U;
   auto num_unassociated_dets = 0U;
 
-  TrackedDynamicObjectArray tracks_msg;
-  DetectedDynamicObjectArray detections_msg;
+  TrackedObjects tracks_msg;
+  DetectedObjects detections_msg;
 
   // toggle to set some detections to bigger size and some to smaller size
   bool toggle = true;
 
   for (size_t i = 0U; i < num_tracks; ++i) {
-    TrackedDynamicObject current_track;
+    TrackedObject current_track;
     const auto current_shape = create_square(4.0F);
     current_track.shape.push_back(current_shape);
     current_track.kinematics.pose.pose.position.x = 2.0 * static_cast<double>(i + 1U);
@@ -172,7 +172,7 @@ TEST_F(AssociationTester, area_gating_fails)
 
     tracks_msg.objects.push_back(current_track);
 
-    DetectedDynamicObject current_detection;
+    DetectedObject current_detection;
     if (i % 2 == 0) {
       // Create detections that cannot be associated with tracks
       ++num_unassociated_dets;

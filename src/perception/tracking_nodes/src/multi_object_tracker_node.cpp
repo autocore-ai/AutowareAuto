@@ -32,8 +32,8 @@ using autoware::perception::tracking::MultiObjectTracker;
 using autoware::perception::tracking::MultiObjectTrackerOptions;
 using autoware::perception::tracking::TrackerUpdateResult;
 using autoware::perception::tracking::TrackerUpdateStatus;
-using autoware_auto_msgs::msg::DetectedDynamicObjectArray;
-using autoware_auto_msgs::msg::TrackedDynamicObjectArray;
+using autoware_auto_msgs::msg::DetectedObjects;
+using autoware_auto_msgs::msg::TrackedObjects;
 using nav_msgs::msg::Odometry;
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -80,20 +80,20 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
   m_tracker(init_tracker(*this))
 {
   const size_t history_depth = static_cast<size_t>(this->declare_parameter("history_depth", 20));
-  m_pub = this->create_publisher<TrackedDynamicObjectArray>("tracked_objects", history_depth);
+  m_pub = this->create_publisher<TrackedObjects>("tracked_objects", history_depth);
   m_objects_sub.subscribe(
     this, "detected_objects",
     rclcpp::QoS(history_depth).get_rmw_qos_profile());
   m_odom_sub.subscribe(this, "odometry", rclcpp::QoS(history_depth).get_rmw_qos_profile());
 
   m_sync =
-    std::make_shared<message_filters::TimeSynchronizer<DetectedDynamicObjectArray, Odometry>>(
+    std::make_shared<message_filters::TimeSynchronizer<DetectedObjects, Odometry>>(
     m_objects_sub, m_odom_sub, history_depth);
   m_sync->registerCallback(std::bind(&MultiObjectTrackerNode::process, this, _1, _2));
 }
 
 void MultiObjectTrackerNode::process(
-  const DetectedDynamicObjectArray::ConstSharedPtr & objs,
+  const DetectedObjects::ConstSharedPtr & objs,
   const Odometry::ConstSharedPtr & odom)
 {
   TrackerUpdateResult result = m_tracker.update(*objs, *odom);

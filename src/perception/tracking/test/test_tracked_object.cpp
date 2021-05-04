@@ -15,11 +15,11 @@
 #include <chrono>
 
 #include "gtest/gtest.h"
-#include "autoware_auto_msgs/msg/detected_dynamic_object.hpp"
+#include "autoware_auto_msgs/msg/detected_object.hpp"
 #include "tracking/tracked_object.hpp"
 
 using TrackedObject = autoware::perception::tracking::TrackedObject;
-using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedDynamicObject;
+using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedObject;
 
 // Test that creating a tracked object without pose is not allowed.
 TEST(test_tracked_object, test_pose_required) {
