@@ -18,8 +18,8 @@
 #include <tf2_ros/buffer.h>
 #include <recordreplay_planner_nodes/visibility_control.hpp>
 #include <recordreplay_planner/recordreplay_planner.hpp>
-#include <recordreplay_planner_actions/action/record_trajectory.hpp>
-#include <recordreplay_planner_actions/action/replay_trajectory.hpp>
+#include <autoware_auto_msgs/action/record_trajectory.hpp>
+#include <autoware_auto_msgs/action/replay_trajectory.hpp>
 
 #include <autoware_auto_msgs/msg/trajectory.hpp>
 #include <autoware_auto_msgs/msg/trajectory_point.hpp>
@@ -50,8 +50,8 @@ using PlannerPtr = std::unique_ptr<motion::planning::recordreplay_planner::Recor
 using autoware_auto_msgs::msg::Trajectory;
 using autoware_auto_msgs::msg::TrajectoryPoint;
 using autoware_auto_msgs::srv::ModifyTrajectory;
-using recordreplay_planner_actions::action::RecordTrajectory;
-using recordreplay_planner_actions::action::ReplayTrajectory;
+using autoware_auto_msgs::action::RecordTrajectory;
+using autoware_auto_msgs::action::ReplayTrajectory;
 using State = autoware_auto_msgs::msg::VehicleKinematicState;
 using Transform = geometry_msgs::msg::TransformStamped;
 using motion::motion_common::Real;

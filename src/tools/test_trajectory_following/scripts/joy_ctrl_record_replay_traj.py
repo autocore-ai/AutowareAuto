@@ -23,8 +23,8 @@ from rclpy.action import ActionClient
 from autoware_auto_msgs.msg import VehicleKinematicState
 from std_msgs.msg import UInt8
 
-from recordreplay_planner_actions.action import RecordTrajectory
-from recordreplay_planner_actions.action import ReplayTrajectory
+from autoware_auto_msgs.action import RecordTrajectory
+from autoware_auto_msgs.action import ReplayTrajectory
 
 
 class InternalState(IntEnum):

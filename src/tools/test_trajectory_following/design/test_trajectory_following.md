@@ -46,7 +46,7 @@ ros2 launch test_trajectory_following trajectory_recording.launch.py
 * send a record action
 
 ```
-ros2 action send_goal /planning/recordtrajectory recordreplay_planner_actions/action/RecordTrajectory "{record_path: "/tmp/path"}" --feedback
+ros2 action send_goal /planning/recordtrajectory autoware_auto_msgs/action/RecordTrajectory "{record_path: "/tmp/path"}" --feedback
 ```
 
 * drive vehicle manually in simulator/real world
@@ -57,7 +57,7 @@ ros2 action send_goal /planning/recordtrajectory recordreplay_planner_actions/ac
   * If `with_obstacle:=True` trajectory replay should handle obstacles from simulation (perception stack also launched).
 
 ```
-ros2 action send_goal /planning/replaytrajectory recordreplay_planner_actions/action/ReplayTrajectory "{replay_path: "/tmp/path"}" --feedback
+ros2 action send_goal /planning/replaytrajectory autoware_auto_msgs/action/ReplayTrajectory "{replay_path: "/tmp/path"}" --feedback
 ```
 
 * stop replaying (`ctrl+c`)

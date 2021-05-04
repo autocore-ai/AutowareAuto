@@ -24,9 +24,8 @@ import launch_testing
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
+from autoware_auto_msgs.action import RecordTrajectory, ReplayTrajectory
 from autoware_auto_msgs.msg import VehicleKinematicState, Trajectory
-
-from recordreplay_planner_actions.action import RecordTrajectory, ReplayTrajectory
 
 import subprocess
 import time

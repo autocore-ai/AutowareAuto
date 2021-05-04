@@ -39,7 +39,7 @@ In a new terminal:
 
 ```{bash}
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 action send_goal /planning/recordtrajectory recordreplay_planner_actions/action/RecordTrajectory "{record_path: "/tmp/path"}" --feedback
+ade$ ros2 action send_goal /planning/recordtrajectory autoware_auto_msgs/action/RecordTrajectory "{record_path: "/tmp/path"}" --feedback
 ```
 
 In LGSVL, drive the vehicle around to record the path.
@@ -50,7 +50,7 @@ To replay the recorded path:
 
 ```{bash}
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 action send_goal /planning/replaytrajectory recordreplay_planner_actions/action/ReplayTrajectory "{replay_path: "/tmp/path"}" --feedback
+ade$ ros2 action send_goal /planning/replaytrajectory autoware_auto_msgs/action/ReplayTrajectory "{replay_path: "/tmp/path"}" --feedback
 ```
 
 When the vehicle reaches to the goal of the replayed trajectory, the planner stops automatically and outputs `status::SUCCEED` to the terminal in which you ran the `ros2 action send_goal` command.
