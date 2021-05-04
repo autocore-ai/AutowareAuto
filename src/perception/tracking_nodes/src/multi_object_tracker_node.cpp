@@ -69,6 +69,7 @@ std::string status_to_string(TrackerUpdateStatus status)
     case TrackerUpdateStatus::TrackerFrameMismatch: return "TrackerFrameMismatch";
     case TrackerUpdateStatus::FrameNotGravityAligned: return "FrameNotGravityAligned";
     case TrackerUpdateStatus::InvalidShape: return "InvalidShape";
+    case TrackerUpdateStatus::EmptyDetection: return "EmptyDetection";
   }
   return "Invalid status";
 }

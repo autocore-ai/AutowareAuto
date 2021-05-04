@@ -1,4 +1,4 @@
-tracking_nodes {#tracking_nodes-package-design}
+tracking_nodes {#tracking-nodes-design}
 ===========
 
 This is the design document for the `tracking_nodes` package.

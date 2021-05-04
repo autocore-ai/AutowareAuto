@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <chrono>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "autoware_auto_msgs/msg/detected_object.hpp"
@@ -20,11 +21,12 @@
 
 using TrackedObject = autoware::perception::tracking::TrackedObject;
 using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedObject;
+using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedObject;
 
 // Test that creating a tracked object without pose is not allowed.
 TEST(test_tracked_object, test_pose_required) {
   DetectedObjectMsg msg;
-  EXPECT_THROW((TrackedObject{msg, 1.0F, 1.0F}), std::runtime_error);
+  EXPECT_THROW((TrackedObject{msg, 1.0F, 1.0F}), std::invalid_argument);
   msg.kinematics.has_pose = true;
   EXPECT_NO_THROW((TrackedObject{msg, 1.0F, 1.0F}));
 }
@@ -104,4 +106,31 @@ TEST(test_tracked_object, test_predict) {
   EXPECT_EQ(object.msg().kinematics.pose.pose.position.x, 0.0);
   object.predict(std::chrono::milliseconds(500));
   EXPECT_NE(object.msg().kinematics.pose.pose.position.x, 0.0);
+}
+
+// Test that the update() method can handle detected objects with or without pose and twist.
+TEST(test_tracked_object, test_update) {
+  const float kDefaultVarianceF = 1.0F;
+  DetectedObjectMsg msg;
+  msg.kinematics.has_pose = true;
+  std::vector<TrackedObjectMsg> distinct_results;
+  // Iterate over possible true/false combinations
+  for (size_t i = 1; i < 4; ++i) {
+    // Create an object at (0, 0) with velocity 0.
+    TrackedObject track{msg, kDefaultVarianceF, 30.0F};
+
+    DetectedObjectMsg obs;
+    obs.kinematics.has_pose = static_cast<bool>(i & 1);
+    obs.kinematics.has_twist = static_cast<bool>(i & 2);
+    obs.kinematics.twist.twist.linear.x = 3.0;
+    obs.kinematics.pose.pose.position.y = 2.0;
+    EXPECT_NO_THROW(track.update(obs));
+    distinct_results.push_back(track.msg());
+  }
+
+  for (size_t i = 0; i < distinct_results.size(); ++i) {
+    for (size_t j = i + 1; j < distinct_results.size(); ++j) {
+      EXPECT_NE(distinct_results[i], distinct_results[j]);
+    }
+  }
 }

@@ -20,8 +20,8 @@
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
-#include "time_utils/time_utils.hpp"
 #include "tf2_eigen/tf2_eigen.h"
+#include "time_utils/time_utils.hpp"
 
 namespace autoware
 {
@@ -128,9 +128,13 @@ TrackerUpdateResult MultiObjectTracker::update(
   // Initialize new tracks
   // ==================================
   for (size_t new_detection_idx : association.unassigned_detection_indices) {
+    const auto & detection = detections.objects[new_detection_idx];
+    if (!detection.kinematics.has_pose) {
+      continue;
+    }
     m_objects.push_back(
       TrackedObject(
-        detections.objects[new_detection_idx],
+        detection,
         m_options.default_variance, m_options.noise_variance));
   }
 
@@ -165,6 +169,11 @@ TrackerUpdateStatus MultiObjectTracker::validate(
   }
   if (!is_gravity_aligned(detection_frame_odometry.pose.pose.orientation)) {
     return TrackerUpdateStatus::FrameNotGravityAligned;
+  }
+  for (const auto & detection : detections.objects) {
+    if (!detection.kinematics.has_pose && !detection.kinematics.has_twist) {
+      return TrackerUpdateStatus::EmptyDetection;
+    }
   }
   // Could also validate
   // * classes

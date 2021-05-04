@@ -21,15 +21,16 @@
 
 #include <chrono>
 
+#include "autoware_auto_msgs/msg/detected_object.hpp"
 #include "autoware_auto_msgs/msg/detected_objects.hpp"
 #include "autoware_auto_msgs/msg/tracked_object.hpp"
 #include "autoware_auto_msgs/msg/tracked_objects.hpp"
+#include "common/types.hpp"
 #include "motion_model/linear_motion_model.hpp"
 #include "state_estimation/kalman_filter/kalman_filter.hpp"
 #include "state_estimation/noise_model/wiener_noise.hpp"
 #include "state_vector/common_states.hpp"
 #include "tracking/visibility_control.hpp"
-
 
 namespace autoware
 {
@@ -52,10 +53,13 @@ public:
 
   /// Constructor
   /// \param detection A detection from which to initialize this object. Must have a pose.
-  /// \param default_variance All variables will initially have this variance
+  /// \param default_variance All variables will initially have this variance where the detection
+  /// does not contain one.
   /// \param noise_variance The sigma for the acceleration noise
   /// \throws std::runtime_error if the detection does not have a pose.
-  TrackedObject(const DetectedObjectMsg & detection, float default_variance, float noise_variance);
+  TrackedObject(
+    const DetectedObjectMsg & detection, common::types::float32_t default_variance,
+    common::types::float32_t noise_variance);
   /// Extrapolate the track forward.
   // TODO(nikolai.morin): Change signature to use absolute time after #1002
   void predict(std::chrono::nanoseconds dt);
@@ -78,6 +82,9 @@ private:
   size_t m_ticks_since_last_seen = 0;
   /// The number of updates (seen or not) since this object has been created
   size_t m_ticks_alive = 0;
+  /// All variables will initially have this variance where the detection
+  /// does not contain one.
+  common::types::float32_t m_default_variance = -1.0F;
 };
 
 }  // namespace tracking

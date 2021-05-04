@@ -21,6 +21,7 @@
   <depend>state_estimation</depend>
   <depend>state_vector</depend>
   <build_depend>eigen</build_depend>
+  <build_depend>measurement_conversion</build_depend>
   <build_depend>tf2_eigen</build_depend>
   <build_depend>time_utils</build_depend>
 
