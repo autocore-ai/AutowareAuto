@@ -56,7 +56,7 @@ static constexpr uint8_t kNumRollOver{0x10};
 
 static constexpr uint8_t kNumTests_HMCR{7};
 static constexpr uint8_t kTestValid_VSC{5};
-static constexpr uint8_t kTestInvalid_VSC{12};
+static constexpr uint8_t kTestInvalid_VSC{14};
 static constexpr uint8_t kNumTests_VSC{kTestValid_VSC + kTestInvalid_VSC};
 static constexpr uint8_t kNumTests_HLCC{8};
 static constexpr uint8_t kNumTests_VCC{12};

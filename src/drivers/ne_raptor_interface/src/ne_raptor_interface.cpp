@@ -186,7 +186,6 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
   m_misc_cmd.door_request_lift_gate.value = DoorRequest::NO_REQUEST;
   m_misc_cmd.rear_wiper_cmd.status = WiperRear::OFF;
   m_misc_cmd.ignition_cmd.status = Ignition::NO_REQUEST;
-  m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
   m_misc_cmd.horn_cmd = msg.horn;
 
   switch (msg.blinker) {
@@ -219,10 +218,15 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       // Keep previous
       break;
     case VehicleStateCommand::HEADLIGHT_OFF:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
+      break;
     case VehicleStateCommand::HEADLIGHT_ON:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::ON;
       m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
       break;
     case VehicleStateCommand::HEADLIGHT_HIGH:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
       m_misc_cmd.high_beam_cmd.status = HighBeam::ON;
       break;
     default:

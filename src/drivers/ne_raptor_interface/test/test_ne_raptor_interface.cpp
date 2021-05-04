@@ -710,6 +710,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
     myTests[i].exp_gec.global_enable = true;
     myTests[i].exp_gec.enable_joystick_limits = true;
     myTests[i].exp_mc.cmd.value = TurnSignal::HAZARDS;
+    myTests[i].exp_mc.low_beam_cmd.status = LowBeam::OFF;
     myTests[i].exp_mc.high_beam_cmd.status = HighBeam::ON;
     myTests[i].exp_mc.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
     myTests[i].exp_mc.horn_cmd = true;
@@ -736,6 +737,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[0].exp_gec.global_enable = false;
   myTests[0].exp_gec.enable_joystick_limits = false;
   myTests[0].exp_mc.cmd.value = TurnSignal::NONE;
+  myTests[0].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[0].exp_mc.high_beam_cmd.status = HighBeam::OFF;
   myTests[0].exp_mc.front_wiper_cmd.status = WiperFront::OFF;
   myTests[0].exp_mc.horn_cmd = false;
@@ -758,6 +760,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[1].exp_gec.global_enable = false;
   myTests[1].exp_gec.enable_joystick_limits = false;
   myTests[1].exp_mc.cmd.value = TurnSignal::NONE;
+  myTests[1].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[1].exp_mc.high_beam_cmd.status = HighBeam::OFF;
   myTests[1].exp_mc.front_wiper_cmd.status = WiperFront::OFF;
   myTests[1].exp_mc.horn_cmd = false;
@@ -775,22 +778,28 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[2].exp_gec.enable_joystick_limits = false;
 
   /* Test valid:
-   * gear == low, blinker == left, wiper == low */
+   * gear == low, blinker == left, headlight == on, wiper == low */
   myTests[3].in_vsc.gear = VehicleStateCommand::GEAR_LOW;
   myTests[3].in_vsc.blinker = VehicleStateCommand::BLINKER_LEFT;
   myTests[3].in_vsc.wiper = VehicleStateCommand::WIPER_LOW;
+  myTests[3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
   myTests[3].exp_gc.cmd.gear = Gear::LOW;
   myTests[3].exp_mc.cmd.value = TurnSignal::LEFT;
   myTests[3].exp_mc.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
+  myTests[3].exp_mc.low_beam_cmd.status = LowBeam::ON;
+  myTests[3].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
   /* Test valid:
-   * gear == neutral, blinker == right, wiper == clean */
+   * gear == neutral, blinker == right, headlight == high, wiper == clean */
   myTests[4].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL;
   myTests[4].in_vsc.blinker = VehicleStateCommand::BLINKER_RIGHT;
   myTests[4].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN;
+  myTests[4].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH;
   myTests[4].exp_gc.cmd.gear = Gear::NEUTRAL;
   myTests[4].exp_mc.cmd.value = TurnSignal::RIGHT;
   myTests[4].exp_mc.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
+  myTests[4].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[4].exp_mc.high_beam_cmd.status = HighBeam::ON;
 
   /** Test invalid inputs **/
   // Test invalid: blinker
@@ -800,62 +809,76 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[kTestValid_VSC + 1].in_vsc.blinker = 0xFF;
   myTests[kTestValid_VSC + 1].exp_mc.cmd.value = TurnSignal::SNA;
 
-  // Test invalid: headlight (keep previous: on)
+  // Test invalid: headlight (keep previous: high)
   myTests[kTestValid_VSC + 2].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH + 1;
+  myTests[kTestValid_VSC + 2].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[kTestValid_VSC + 2].exp_mc.high_beam_cmd.status = HighBeam::ON;
 
-  // not high beam, so high beams are OFF
+  // Regular headlights ON
   myTests[kTestValid_VSC + 3].exp_success = true;
   myTests[kTestValid_VSC + 3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
+  myTests[kTestValid_VSC + 3].exp_mc.low_beam_cmd.status = LowBeam::ON;
   myTests[kTestValid_VSC + 3].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  // Test invalid: headlight (keep previous: off)
+  // Test invalid: headlight (keep previous: on)
   myTests[kTestValid_VSC + 4].in_vsc.headlight = 0xFF;
+  myTests[kTestValid_VSC + 4].exp_mc.low_beam_cmd.status = LowBeam::ON;
   myTests[kTestValid_VSC + 4].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  // Test invalid: wiper
-  myTests[kTestValid_VSC + 5].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN + 1;
-  myTests[kTestValid_VSC + 5].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+  // Headlights OFF
+  myTests[kTestValid_VSC + 5].exp_success = true;
+  myTests[kTestValid_VSC + 5].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_OFF;
+  myTests[kTestValid_VSC + 5].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[kTestValid_VSC + 5].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  myTests[kTestValid_VSC + 6].in_vsc.wiper = 0xFF;
-  myTests[kTestValid_VSC + 6].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+  // Test invalid: headlight (keep previous: off)
+  myTests[kTestValid_VSC + 6].in_vsc.headlight = 0xFF;
+  myTests[kTestValid_VSC + 6].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[kTestValid_VSC + 6].exp_mc.high_beam_cmd.status = HighBeam::OFF;
+
+  // Test invalid: wiper
+  myTests[kTestValid_VSC + 7].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN + 1;
+  myTests[kTestValid_VSC + 7].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+
+  myTests[kTestValid_VSC + 8].in_vsc.wiper = 0xFF;
+  myTests[kTestValid_VSC + 8].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
 
   // Test invalid: gear
-  myTests[kTestValid_VSC + 7].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL + 1;
-  myTests[kTestValid_VSC + 7].exp_gc.cmd.gear = Gear::NONE;
+  myTests[kTestValid_VSC + 9].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL + 1;
+  myTests[kTestValid_VSC + 9].exp_gc.cmd.gear = Gear::NONE;
 
-  myTests[kTestValid_VSC + 8].in_vsc.gear = 0xFF;
-  myTests[kTestValid_VSC + 8].exp_gc.cmd.gear = Gear::NONE;
+  myTests[kTestValid_VSC + 10].in_vsc.gear = 0xFF;
+  myTests[kTestValid_VSC + 10].exp_gc.cmd.gear = Gear::NONE;
 
   // Test invalid: mode (keep previous: on)
-  myTests[kTestValid_VSC + 9].exp_success = true;
-  myTests[kTestValid_VSC + 9].exp_dbw_success = false;
-  myTests[kTestValid_VSC + 9].exp_dbw_enable = false;
-  myTests[kTestValid_VSC + 9].exp_dbw_disable = false;
-  myTests[kTestValid_VSC + 9].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS + 1;
-  myTests[kTestValid_VSC + 9].exp_gc.enable = true;
-  myTests[kTestValid_VSC + 9].exp_gec.global_enable = true;
-  myTests[kTestValid_VSC + 9].exp_gec.enable_joystick_limits = true;
-
-  // Set previous mode to off
-  myTests[kTestValid_VSC + 10].exp_success = true;
-  myTests[kTestValid_VSC + 10].exp_dbw_success = true;
-  myTests[kTestValid_VSC + 10].in_mcr = ModeChangeRequest::MODE_MANUAL;
-  myTests[kTestValid_VSC + 10].exp_gc.enable = false;
-  myTests[kTestValid_VSC + 10].exp_gec.global_enable = false;
-  myTests[kTestValid_VSC + 10].exp_gec.enable_joystick_limits = false;
-  myTests[kTestValid_VSC + 10].exp_dbw_disable = true;
-  myTests[kTestValid_VSC + 10].exp_dbw_enable = false;
-
-  // Test invalid: mode (keep previous: off)
   myTests[kTestValid_VSC + 11].exp_success = true;
   myTests[kTestValid_VSC + 11].exp_dbw_success = false;
   myTests[kTestValid_VSC + 11].exp_dbw_enable = false;
   myTests[kTestValid_VSC + 11].exp_dbw_disable = false;
-  myTests[kTestValid_VSC + 11].in_mcr = 0xFF;
-  myTests[kTestValid_VSC + 11].exp_gc.enable = false;
-  myTests[kTestValid_VSC + 11].exp_gec.global_enable = false;
-  myTests[kTestValid_VSC + 11].exp_gec.enable_joystick_limits = false;
+  myTests[kTestValid_VSC + 11].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS + 1;
+  myTests[kTestValid_VSC + 11].exp_gc.enable = true;
+  myTests[kTestValid_VSC + 11].exp_gec.global_enable = true;
+  myTests[kTestValid_VSC + 11].exp_gec.enable_joystick_limits = true;
+
+  // Set previous mode to off
+  myTests[kTestValid_VSC + 12].exp_success = true;
+  myTests[kTestValid_VSC + 12].exp_dbw_success = true;
+  myTests[kTestValid_VSC + 12].in_mcr = ModeChangeRequest::MODE_MANUAL;
+  myTests[kTestValid_VSC + 12].exp_gc.enable = false;
+  myTests[kTestValid_VSC + 12].exp_gec.global_enable = false;
+  myTests[kTestValid_VSC + 12].exp_gec.enable_joystick_limits = false;
+  myTests[kTestValid_VSC + 12].exp_dbw_disable = true;
+  myTests[kTestValid_VSC + 12].exp_dbw_enable = false;
+
+  // Test invalid: mode (keep previous: off)
+  myTests[kTestValid_VSC + 13].exp_success = true;
+  myTests[kTestValid_VSC + 13].exp_dbw_success = false;
+  myTests[kTestValid_VSC + 13].exp_dbw_enable = false;
+  myTests[kTestValid_VSC + 13].exp_dbw_disable = false;
+  myTests[kTestValid_VSC + 13].in_mcr = 0xFF;
+  myTests[kTestValid_VSC + 13].exp_gc.enable = false;
+  myTests[kTestValid_VSC + 13].exp_gec.global_enable = false;
+  myTests[kTestValid_VSC + 13].exp_gec.enable_joystick_limits = false;
 
   /* Run all tests in a loop */
   for (test_rollover = 1; ((test_rollover <= num_rollover_tests) && rollover_OK); test_rollover++) {
@@ -1052,6 +1075,7 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
     myTests[i].exp_gec.global_enable = true;
     myTests[i].exp_gec.enable_joystick_limits = true;
     myTests[i].exp_mc.cmd.value = TurnSignal::HAZARDS;
+    myTests[i].exp_mc.low_beam_cmd.status = LowBeam::OFF;
     myTests[i].exp_mc.high_beam_cmd.status = HighBeam::ON;
     myTests[i].exp_mc.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
     myTests[i].exp_mc.horn_cmd = true;
@@ -1078,12 +1102,15 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   myTests[0].exp_gec.global_enable = false;
   myTests[0].exp_gec.enable_joystick_limits = false;
   myTests[0].exp_mc.cmd.value = TurnSignal::NONE;
+  myTests[0].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[0].exp_mc.high_beam_cmd.status = HighBeam::OFF;
   myTests[0].exp_mc.front_wiper_cmd.status = WiperFront::OFF;
   myTests[0].exp_mc.horn_cmd = false;
   myTests[0].in_mr.drive_by_wire_enabled = false;
   myTests[0].in_mr.by_wire_ready = false;
   myTests[0].in_mr.general_driver_activity = false;
+  myTests[0].exp_dbw_enable = false;
+  myTests[0].exp_dbw_disable = true;
 
   // Test valid: all off
   myTests[1].in_vsc.blinker = VehicleStateCommand::BLINKER_OFF;
@@ -1098,6 +1125,7 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   myTests[1].exp_gec.global_enable = false;
   myTests[1].exp_gec.enable_joystick_limits = false;
   myTests[1].exp_mc.cmd.value = TurnSignal::NONE;
+  myTests[1].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[1].exp_mc.high_beam_cmd.status = HighBeam::OFF;
   myTests[1].exp_mc.front_wiper_cmd.status = WiperFront::OFF;
   myTests[1].exp_mc.horn_cmd = false;
@@ -1105,6 +1133,8 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   myTests[1].in_mr.drive_by_wire_enabled = false;
   myTests[1].in_mr.by_wire_ready = false;
   myTests[1].in_mr.general_driver_activity = false;
+  myTests[1].exp_dbw_enable = false;
+  myTests[1].exp_dbw_disable = true;
 
   // Test valid: DBW state machine --> on (debounced)
   myTests[2].exp_dbw_enable = true;
@@ -1113,22 +1143,28 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   myTests[2].exp_gec.enable_joystick_limits = false;
 
   /* Test valid:
-   * gear == low, blinker == left, wiper == low */
+   * gear == low, blinker == left, headlight == on, wiper == low */
   myTests[3].in_vsc.gear = VehicleStateCommand::GEAR_LOW;
   myTests[3].in_vsc.blinker = VehicleStateCommand::BLINKER_LEFT;
   myTests[3].in_vsc.wiper = VehicleStateCommand::WIPER_LOW;
+  myTests[3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
   myTests[3].exp_gc.cmd.gear = Gear::LOW;
   myTests[3].exp_mc.cmd.value = TurnSignal::LEFT;
   myTests[3].exp_mc.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
+  myTests[3].exp_mc.low_beam_cmd.status = LowBeam::ON;
+  myTests[3].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
   /* Test valid:
-   * gear == neutral, blinker == right, wiper == clean */
+   * gear == neutral, blinker == right, headlight == high, wiper == clean */
   myTests[4].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL;
   myTests[4].in_vsc.blinker = VehicleStateCommand::BLINKER_RIGHT;
   myTests[4].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN;
+  myTests[4].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH;
   myTests[4].exp_gc.cmd.gear = Gear::NEUTRAL;
   myTests[4].exp_mc.cmd.value = TurnSignal::RIGHT;
   myTests[4].exp_mc.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
+  myTests[4].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[4].exp_mc.high_beam_cmd.status = HighBeam::ON;
 
   /** Test invalid inputs **/
   // Test invalid: blinker
@@ -1138,62 +1174,76 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   myTests[kTestValid_VSC + 1].in_vsc.blinker = 0xFF;
   myTests[kTestValid_VSC + 1].exp_mc.cmd.value = TurnSignal::SNA;
 
-  // Test invalid: headlight (keep previous: on)
+  // Test invalid: headlight (keep previous: high)
   myTests[kTestValid_VSC + 2].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH + 1;
+  myTests[kTestValid_VSC + 2].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[kTestValid_VSC + 2].exp_mc.high_beam_cmd.status = HighBeam::ON;
 
-  // not high beam, so high beams are OFF
+  // Regular headlights ON
   myTests[kTestValid_VSC + 3].exp_success = true;
   myTests[kTestValid_VSC + 3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
+  myTests[kTestValid_VSC + 3].exp_mc.low_beam_cmd.status = LowBeam::ON;
   myTests[kTestValid_VSC + 3].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  // Test invalid: headlight (keep previous: off)
+  // Test invalid: headlight (keep previous: on)
   myTests[kTestValid_VSC + 4].in_vsc.headlight = 0xFF;
+  myTests[kTestValid_VSC + 4].exp_mc.low_beam_cmd.status = LowBeam::ON;
   myTests[kTestValid_VSC + 4].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  // Test invalid: wiper
-  myTests[kTestValid_VSC + 5].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN + 1;
-  myTests[kTestValid_VSC + 5].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+  // Headlights OFF
+  myTests[kTestValid_VSC + 5].exp_success = true;
+  myTests[kTestValid_VSC + 5].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_OFF;
+  myTests[kTestValid_VSC + 5].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[kTestValid_VSC + 5].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
-  myTests[kTestValid_VSC + 6].in_vsc.wiper = 0xFF;
-  myTests[kTestValid_VSC + 6].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+  // Test invalid: headlight (keep previous: off)
+  myTests[kTestValid_VSC + 6].in_vsc.headlight = 0xFF;
+  myTests[kTestValid_VSC + 6].exp_mc.low_beam_cmd.status = LowBeam::OFF;
+  myTests[kTestValid_VSC + 6].exp_mc.high_beam_cmd.status = HighBeam::OFF;
+
+  // Test invalid: wiper
+  myTests[kTestValid_VSC + 7].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN + 1;
+  myTests[kTestValid_VSC + 7].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
+
+  myTests[kTestValid_VSC + 8].in_vsc.wiper = 0xFF;
+  myTests[kTestValid_VSC + 8].exp_mc.front_wiper_cmd.status = WiperFront::SNA;
 
   // Test invalid: gear
-  myTests[kTestValid_VSC + 7].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL + 1;
-  myTests[kTestValid_VSC + 7].exp_gc.cmd.gear = Gear::NONE;
+  myTests[kTestValid_VSC + 9].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL + 1;
+  myTests[kTestValid_VSC + 9].exp_gc.cmd.gear = Gear::NONE;
 
-  myTests[kTestValid_VSC + 8].in_vsc.gear = 0xFF;
-  myTests[kTestValid_VSC + 8].exp_gc.cmd.gear = Gear::NONE;
+  myTests[kTestValid_VSC + 10].in_vsc.gear = 0xFF;
+  myTests[kTestValid_VSC + 10].exp_gc.cmd.gear = Gear::NONE;
 
   // Test invalid: mode (keep previous: on)
-  myTests[kTestValid_VSC + 9].exp_success = true;
-  myTests[kTestValid_VSC + 9].exp_dbw_success = false;
-  myTests[kTestValid_VSC + 9].exp_dbw_enable = false;
-  myTests[kTestValid_VSC + 9].exp_dbw_disable = false;
-  myTests[kTestValid_VSC + 9].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS + 1;
-  myTests[kTestValid_VSC + 9].exp_gc.enable = true;
-  myTests[kTestValid_VSC + 9].exp_gec.global_enable = true;
-  myTests[kTestValid_VSC + 9].exp_gec.enable_joystick_limits = true;
-
-  // Set previous mode to off
-  myTests[kTestValid_VSC + 10].exp_success = true;
-  myTests[kTestValid_VSC + 10].exp_dbw_success = true;
-  myTests[kTestValid_VSC + 10].in_mcr = ModeChangeRequest::MODE_MANUAL;
-  myTests[kTestValid_VSC + 10].exp_gc.enable = false;
-  myTests[kTestValid_VSC + 10].exp_gec.global_enable = false;
-  myTests[kTestValid_VSC + 10].exp_gec.enable_joystick_limits = false;
-  myTests[kTestValid_VSC + 10].exp_dbw_disable = true;
-  myTests[kTestValid_VSC + 10].exp_dbw_enable = false;
-
-  // Test invalid: mode (keep previous: off)
   myTests[kTestValid_VSC + 11].exp_success = true;
   myTests[kTestValid_VSC + 11].exp_dbw_success = false;
   myTests[kTestValid_VSC + 11].exp_dbw_enable = false;
   myTests[kTestValid_VSC + 11].exp_dbw_disable = false;
-  myTests[kTestValid_VSC + 11].in_mcr = 0xFF;
-  myTests[kTestValid_VSC + 11].exp_gc.enable = false;
-  myTests[kTestValid_VSC + 11].exp_gec.global_enable = false;
-  myTests[kTestValid_VSC + 11].exp_gec.enable_joystick_limits = false;
+  myTests[kTestValid_VSC + 11].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS + 1;
+  myTests[kTestValid_VSC + 11].exp_gc.enable = true;
+  myTests[kTestValid_VSC + 11].exp_gec.global_enable = true;
+  myTests[kTestValid_VSC + 11].exp_gec.enable_joystick_limits = true;
+
+  // Set previous mode to off
+  myTests[kTestValid_VSC + 12].exp_success = true;
+  myTests[kTestValid_VSC + 12].exp_dbw_success = true;
+  myTests[kTestValid_VSC + 12].in_mcr = ModeChangeRequest::MODE_MANUAL;
+  myTests[kTestValid_VSC + 12].exp_gc.enable = false;
+  myTests[kTestValid_VSC + 12].exp_gec.global_enable = false;
+  myTests[kTestValid_VSC + 12].exp_gec.enable_joystick_limits = false;
+  myTests[kTestValid_VSC + 12].exp_dbw_disable = true;
+  myTests[kTestValid_VSC + 12].exp_dbw_enable = false;
+
+  // Test invalid: mode (keep previous: off)
+  myTests[kTestValid_VSC + 13].exp_success = true;
+  myTests[kTestValid_VSC + 13].exp_dbw_success = false;
+  myTests[kTestValid_VSC + 13].exp_dbw_enable = false;
+  myTests[kTestValid_VSC + 13].exp_dbw_disable = false;
+  myTests[kTestValid_VSC + 13].in_mcr = 0xFF;
+  myTests[kTestValid_VSC + 13].exp_gc.enable = false;
+  myTests[kTestValid_VSC + 13].exp_gec.global_enable = false;
+  myTests[kTestValid_VSC + 13].exp_gec.enable_joystick_limits = false;
 
   /* Run all tests in a loop */
   for (test_rollover = 1; test_rollover <= num_rollover_tests; test_rollover++) {
