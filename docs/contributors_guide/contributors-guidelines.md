@@ -27,16 +27,13 @@ Guidelines and Best Practices {#contributor-guidelines}
     2. Reviewer reviews and assigns back to Submitter for changes.
     3. Submitter addresses the reviews making necessary changes if any and assigns to Reviewer(s).
     4. Repeat 2 and 3 as necessary.
-    5. When Reviewer approves, they either merge (if they have access) the changes or assign to someone with merge access.
+    5. When Reviewer approves, the MR should be assigned to the `@merge-bot` account which will automatically rebase and merge it.
   2. In order for a merge request to be merged to Autoware.Auto, it must meet the following criteria:
     - All discussions on the merge request must be resolved.
     - All items of the merge-request checklist are checked off.
     - It must be approved by at least one maintainer.
     - CI jobs for the merge request must have passed successfully.
-  3. If you have permissions, the "Merge" button will show up automatically on your merge request once the above criteria are met.
-     If you do not have permissions and the above criteria are met, assign the merge request to a [maintainer](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/project_members).
-  4. If another merge request is merged before yours, your merge request is out of date and needs to be rebased and CI needs to run again.
-
+  3. Once your merge request has been accepted by the reviewer, assign the merge request to the `@merge-bot` account.
 
 
 # Guidelines for General Code Development
