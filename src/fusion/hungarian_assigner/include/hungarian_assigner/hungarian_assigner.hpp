@@ -77,6 +77,7 @@ public:
   };  // class no_uncovered_values_c
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief This index denotes a worker for which no job assignment was possible
   static constexpr index_t UNASSIGNED = std::numeric_limits<index_t>::max();
   static constexpr float MAX_WEIGHT = 10000.F;

@@ -49,6 +49,7 @@ class STATE_ESTIMATION_PUBLIC LinearMeasurement
     Eigen::Matrix<typename StateT::Scalar, StateT::size(), OtherStateT::size()>;
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using State = StateT;
   /// @brief      Default constructor.
   LinearMeasurement() = default;

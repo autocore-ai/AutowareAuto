@@ -108,6 +108,7 @@ template<typename DomainValue, typename ComparatorT = decltype(std::equal_to<Dom
 class OPTIMIZATION_PUBLIC CacheStateMachine
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// Constructor
   /// \param comparator Equality comparison functor object.
   explicit CacheStateMachine(const ComparatorT & comparator = ComparatorT())

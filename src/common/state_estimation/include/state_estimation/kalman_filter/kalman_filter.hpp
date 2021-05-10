@@ -53,6 +53,7 @@ class STATE_ESTIMATION_PUBLIC KalmanFilter
     "\n\nMotion model and noise model must have the same underlying state\n\n");
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using State = typename MotionModelT::State;
   using StateMatrix = typename State::Matrix;
   using MotionModel = MotionModelT;

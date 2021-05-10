@@ -63,6 +63,7 @@ class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
     Measurement2dPoseAndSpeed>;
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using State = typename FilterT::State;
 
   ///

@@ -23,6 +23,7 @@
 #include <mpark_variant_vendor/variant.hpp>
 #include <state_estimation_nodes/steady_time_grid.hpp>
 
+#include <Eigen/Core>
 #include <Eigen/Cholesky>
 
 #include <chrono>
@@ -80,6 +81,7 @@ struct PredictionEvent {};
 template<typename FilterT>
 struct ResetEvent
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   typename FilterT::State state;
   typename FilterT::State::Matrix covariance;
 };
@@ -180,6 +182,9 @@ template<typename FilterT, typename ... EventT>
 class History<FilterT, EventT...>::HistoryEntry
 {
 public:
+  // cppcheck-suppress unknownMacro  // cppcheck seems to be confused due to lots of templates.
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   template<typename SingleEventT>
   // cppcheck-suppress noExplicitConstructor; Conversion to the variant type takes place.
   HistoryEntry(const SingleEventT & event) : m_event {event} {}

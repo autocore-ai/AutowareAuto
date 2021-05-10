@@ -112,6 +112,7 @@ class CachedExpression : public
     DomainValueT, NumJacobianColsT, NumVarsT>
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   static constexpr auto NumJacobianCols = NumJacobianColsT;
   static constexpr auto NumVars = NumVarsT;
   using DomainValue = DomainValueT;

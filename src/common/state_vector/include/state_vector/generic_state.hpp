@@ -69,6 +69,7 @@ class STATE_VECTOR_PUBLIC GenericState
   constexpr static std::int32_t kSize = sizeof...(VariableTs);
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Variables = std::tuple<VariableTs...>;
   using Vector = Eigen::Matrix<ScalarT, kSize, 1>;
   using Matrix = Eigen::Matrix<ScalarT, kSize, kSize>;

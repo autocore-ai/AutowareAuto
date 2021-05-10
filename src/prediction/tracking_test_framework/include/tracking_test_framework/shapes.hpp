@@ -63,6 +63,7 @@ public:
 class TRACKING_TEST_FRAMEWORK_PUBLIC Line : public Shape
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief default constructor
   Line() = default;
 
@@ -135,6 +136,7 @@ private:
 class TRACKING_TEST_FRAMEWORK_PUBLIC Rectangle : public Shape
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief constructor
   Rectangle(
     const Eigen::Vector2f & center, const Eigen::Vector2f & size,
@@ -171,6 +173,7 @@ private:
 class TRACKING_TEST_FRAMEWORK_PUBLIC Circle : public Shape
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief constructor
   Circle(const Eigen::Vector2f & center, const autoware::common::types::float32_t radius);
 

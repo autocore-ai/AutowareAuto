@@ -1,4 +1,4 @@
-// Copyright 2019 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@
 #ifndef NDT__NDT_VOXEL_HPP_
 #define NDT__NDT_VOXEL_HPP_
 
-#include <ndt/ndt_common.hpp>
+#include <common/types.hpp>
 #include <experimental/optional>
+#include <ndt/ndt_common.hpp>
 #include <voxel_grid/voxels.hpp>
-#include "common/types.hpp"
+
+#include <Eigen/Core>
 
 using autoware::common::types::bool8_t;
 
@@ -44,6 +46,7 @@ enum class Invertibility
 class NDT_PUBLIC DynamicNDTVoxel
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Point = Eigen::Vector3d;
   using Cov = Eigen::Matrix3d;
   DynamicNDTVoxel();
