@@ -90,6 +90,8 @@ RUN apt-get update \
 
 ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/master/nvidia_icd.json" /etc/vulkan/icd.d/nvidia_icd.json
 RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
+ADD "https://gitlab.com/nvidia/container-images/opengl/raw/ubuntu20.04/glvnd/runtime/10_nvidia.json" /etc/glvnd/egl_vendor.d/10_nvidia.json
+RUN chmod 644 /etc/glvnd/egl_vendor.d/10_nvidia.json
 
 # ===================== END OF CLEAN UP ZONE ===================== #
 

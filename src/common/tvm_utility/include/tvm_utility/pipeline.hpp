@@ -255,7 +255,7 @@ public:
         TVMArrayContainer(
           output_config.second, config.tvm_dtype_code,
           config.tvm_dtype_bits, config.tvm_dtype_lanes,
-          config.tvm_device_type, config.tvm_device_id));
+          kDLCPU, 0));
     }
   }
 

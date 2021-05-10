@@ -36,3 +36,18 @@ $ curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg \
 $ colcon build --packages-up-to tvm_utility
 $ colcon test --packages-select tvm_utility
 ```
+
+# GPU backend
+
+Vulkan is supported by default by the tvm_vendor package.
+
+In order to use a GPU backend with ade, Autoware.Auto provides a `.aderc-gpu` configuration file.
+
+## Troubleshooting
+
+To work around a bug for the nvidia+mesa libraries combination in the case of Vulkan, X forwading
+is needed in the docker container.
+- When launching Autoware locally, `ade` will take care of it with an `xhost` command.
+- When launching Autoware on a remote machine over ssh, `ssh -X` is needed and the hostname of the
+  container must match the one of the host. This can be done by editing the `.aderc` file in use
+  and adding "-h ${YOUR_HOSTNAME}" to the `ADE_DOCKER_RUN_ARGS` variable.
