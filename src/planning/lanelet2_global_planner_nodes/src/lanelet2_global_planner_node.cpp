@@ -34,7 +34,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <cmath>
 
 using namespace std::chrono_literals;
 using autoware::common::types::bool8_t;
@@ -56,8 +55,8 @@ autoware_auto_msgs::msg::TrajectoryPoint convertToTrajectoryPoint(
   const geometry_msgs::msg::Pose & pose)
 {
   autoware_auto_msgs::msg::TrajectoryPoint pt;
-  pt.x = pose.position.x;
-  pt.y = pose.position.y;
+  pt.x = static_cast<float>(pose.position.x);
+  pt.y = static_cast<float>(pose.position.y);
   const auto angle = tf2::getYaw(pose.orientation);
   pt.heading = ::motion::motion_common::from_angle(angle);
   return pt;
@@ -270,7 +269,7 @@ bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
   return true;
 }
 
-}  // namespace lanelet2_global_planner
+}  // namespace lanelet2_global_planner_nodes
 }  // namespace planning
 }  // namespace autoware
 

@@ -27,8 +27,6 @@ ament_auto_add_library(${CLUSTER_NODE_LIB} SHARED
   include/euclidean_cluster_nodes/euclidean_cluster_node.hpp
   src/euclidean_cluster_node.cpp)
 autoware_set_compile_options(${CLUSTER_NODE_LIB})
-target_compile_options(
-  ${CLUSTER_NODE_LIB} PUBLIC "-Wno-sign-conversion" "-Wno-conversion")
 
 rclcpp_components_register_node(${CLUSTER_NODE_LIB}
   PLUGIN "autoware::perception::segmentation::euclidean_cluster_nodes::EuclideanClusterNode"

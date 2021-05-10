@@ -102,7 +102,6 @@ if(BUILD_TESTING)
     ${PROJECT_NAME}
   )
   add_dependencies(${TEST_LANELET2_MAP_PROVIDER_EXE} ${PROJECT_NAME})
-  target_include_directories(${TEST_LANELET2_MAP_PROVIDER_EXE} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 endif()
 
 # ament package generation and installing

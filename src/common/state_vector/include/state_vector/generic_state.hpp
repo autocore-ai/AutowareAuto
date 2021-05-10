@@ -29,7 +29,13 @@
 #include <state_vector/common_variables.hpp>
 #include <state_vector/visibility_control.hpp>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
 #include <Eigen/Core>
+#pragma GCC diagnostic pop
 
 #include <tuple>
 

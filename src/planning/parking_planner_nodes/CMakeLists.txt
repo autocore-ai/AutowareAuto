@@ -9,7 +9,6 @@ ament_auto_find_build_dependencies()
 set(PARKING_PLANNER_NODE_LIB parking_planner_node)
 ament_auto_add_library(${PARKING_PLANNER_NODE_LIB} SHARED
   src/parking_planner_nodes/parking_planner_node.cpp)
-target_include_directories(${PARKING_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 autoware_set_compile_options(${PARKING_PLANNER_NODE_LIB})
 
 rclcpp_components_register_node(${PARKING_PLANNER_NODE_LIB}

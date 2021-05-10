@@ -105,10 +105,19 @@ void PointCloudIts::reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx)
   m_its.emplace_back(cloud, "intensity");
 
   // Advance iterators to given index
-  x_it() += idx;
-  y_it() += idx;
-  z_it() += idx;
-  intensity_it() += idx;
+  // TODO(vrichard) replace explicit check by safe_cast
+  // See https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1027
+  if (idx > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+    // prevent future access to random memory value or segmentation fault
+    throw std::runtime_error(
+            "converting " + std::to_string(
+              idx) + " to int would change sign of value");
+  }
+  const int i = static_cast<int>(idx);
+  x_it() += i;
+  y_it() += i;
+  z_it() += i;
+  intensity_it() += i;
 }
 
 std::size_t index_after_last_safe_byte_index(const sensor_msgs::msg::PointCloud2 & msg) noexcept
@@ -238,10 +247,19 @@ bool8_t add_point_to_cloud(
   sensor_msgs::PointCloud2Iterator<float32_t> z_it(cloud, "z");
   sensor_msgs::PointCloud2Iterator<float32_t> intensity_it(cloud, "intensity");
 
-  x_it += point_cloud_idx;
-  y_it += point_cloud_idx;
-  z_it += point_cloud_idx;
-  intensity_it += point_cloud_idx;
+  // TODO(vrichard) replace explicit check by safe_cast
+  // See https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1027
+  if (point_cloud_idx > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+    // prevent future access to random memory value or segmentation fault
+    throw std::runtime_error(
+            "converting " + std::to_string(
+              point_cloud_idx) + " to int would change sign of value");
+  }
+  const int idx = static_cast<int>(point_cloud_idx);
+  x_it += idx;
+  y_it += idx;
+  z_it += idx;
+  intensity_it += idx;
 
   // Actual size is 20 due to padding by compilers for the memory alignment boundary.
   // This check is to make sure that when we do a insert of 16 bytes, we will not stride
@@ -279,9 +297,18 @@ bool8_t add_point_to_cloud(
   sensor_msgs::PointCloud2Iterator<float32_t> y_it(cloud, "y");
   sensor_msgs::PointCloud2Iterator<float32_t> z_it(cloud, "z");
 
-  x_it += point_cloud_idx;
-  y_it += point_cloud_idx;
-  z_it += point_cloud_idx;
+  // TODO(vrichard) replace explicit check by safe_cast
+  // See https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1027
+  if (point_cloud_idx > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+    // prevent future access to random memory value or segmentation fault
+    throw std::runtime_error(
+            "converting " + std::to_string(
+              point_cloud_idx) + " to int would change sign of value");
+  }
+  const int idx = static_cast<int>(point_cloud_idx);
+  x_it += idx;
+  y_it += idx;
+  z_it += idx;
 
   static_assert(
     sizeof(autoware::common::types::PointXYZIF) >= ((3U * sizeof(float32_t)) + sizeof(uint16_t)),
@@ -340,13 +367,17 @@ constexpr float32_t DistanceFilter::FEPS;
 
 StaticTransformer::StaticTransformer(const geometry_msgs::msg::Transform & tf)
 {
-  Eigen::Quaternionf rotation(tf.rotation.w, tf.rotation.x, tf.rotation.y, tf.rotation.z);
+  Eigen::Quaternionf rotation(static_cast<float>(tf.rotation.w), static_cast<float>(tf.rotation.x),
+    static_cast<float>(tf.rotation.y), static_cast<float>(tf.rotation.z));
   if (!comp::abs_eq(rotation.norm(), 1.0f, EPSf)) {
     throw std::domain_error("StaticTransformer: quaternion is not normalized");
   }
   m_tf.setIdentity();
   m_tf.rotate(rotation);
-  m_tf.translate(Eigen::Vector3f(tf.translation.x, tf.translation.y, tf.translation.z));
+  m_tf.translate(
+    Eigen::Vector3f(
+      static_cast<float>(tf.translation.x),
+      static_cast<float>(tf.translation.y), static_cast<float>(tf.translation.z)));
 }
 
 AngleFilter::AngleFilter(float32_t start_angle, float32_t end_angle)

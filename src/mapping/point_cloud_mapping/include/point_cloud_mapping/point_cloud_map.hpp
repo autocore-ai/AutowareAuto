@@ -26,7 +26,13 @@
 #include <helper_functions/template_utils.hpp>
 #include <common/types.hpp>
 #include <time_utils/time_utils.hpp>
+#pragma GCC diagnostic push
+// silence unsafe signed <-> unsigned conversion
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
 #include <pcl/io/pcd_io.h>
+#pragma GCC diagnostic pop
 #include <vector>
 #include <string>
 #include <unordered_map>

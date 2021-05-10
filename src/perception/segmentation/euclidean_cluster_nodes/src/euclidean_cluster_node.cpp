@@ -194,7 +194,7 @@ void EuclideanClusterNode::handle_clusters(
       m.header.stamp = rclcpp::Time(0);
       m.header.frame_id = header.frame_id;
       m.ns = "bbox";
-      m.id = id_counter;
+      m.id = static_cast<int>(id_counter);
       m.type = Marker::CUBE;
       m.action = Marker::ADD;
       m.pose.position.x = static_cast<float64_t>(box.centroid.x);

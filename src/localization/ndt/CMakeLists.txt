@@ -43,17 +43,6 @@ target_link_libraries(${PROJECT_NAME}
   ${GeographicLib_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
   ${PCL_LIBRARIES})
-# turn off warnings to be able to successfully compile upstream ros packages
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-set(ROS_NO_WARN_LIST
-        -Wno-sign-conversion
-        -Wno-conversion
-        -Wno-old-style-cast
-        -Wno-useless-cast
-        -Wno-double-promotion
-        -Wno-nonnull-compare
-        -Wuseless-cast)
-target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
 
 # TODO(yunus.caliskan): Remove once #978 is fixed.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -87,8 +76,7 @@ if(BUILD_TESTING)
 
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
   autoware_set_compile_options(${NDT_TEST})
-  # turn off warnings to be able to successfully compile upstream ros packages
-  target_compile_options(${NDT_TEST} PRIVATE ${ROS_NO_WARN_LIST})
+  target_compile_options(${NDT_TEST} PRIVATE -Wno-float-conversion -Wno-double-promotion)
 endif()
 
 ament_export_include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})

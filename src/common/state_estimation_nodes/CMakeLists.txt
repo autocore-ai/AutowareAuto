@@ -26,8 +26,6 @@ ament_auto_add_library(state_estimation_node SHARED
   include/state_estimation_nodes/steady_time_grid.hpp
   src/kalman_filter_wrapper.cpp
   src/state_estimation_node.cpp)
-# TODO(igor): Remove this once tf2 warnings are removed.
-target_include_directories(state_estimation_node SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 target_link_libraries(state_estimation_node Eigen3::Eigen)
 autoware_set_compile_options(state_estimation_node)
 

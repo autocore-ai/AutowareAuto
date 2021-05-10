@@ -14,8 +14,6 @@ ament_auto_add_library(${GB_PLANNER_LIB} SHARED
   include/lanelet2_global_planner/visibility_control.hpp
 )
 autoware_set_compile_options(${GB_PLANNER_LIB})
-target_compile_options(${GB_PLANNER_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-double-promotion)
-target_include_directories(${GB_PLANNER_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 
 if(BUILD_TESTING)
   # run linters

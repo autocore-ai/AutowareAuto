@@ -132,13 +132,13 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_pose_marker
   marker->pose.orientation.y = 0.0;
   marker->pose.orientation.z = point.heading.imag;
   marker->pose.orientation.w = point.heading.real;
-  marker->scale.x = 1 * scale;
-  marker->scale.y = 0.1 * scale;
-  marker->scale.z = 0.1 * scale;
+  marker->scale.x = 1.0f * scale;
+  marker->scale.y = 0.1f * scale;
+  marker->scale.z = 0.1f * scale;
   marker->color.a = alpha;
-  marker->color.r = color.redF();
-  marker->color.g = color.greenF();
-  marker->color.b = color.blueF();
+  marker->color.r = static_cast<float>(color.redF());
+  marker->color.g = static_cast<float>(color.greenF());
+  marker->color.b = static_cast<float>(color.blueF());
 
   return marker;
 }
@@ -157,11 +157,11 @@ visualization_msgs::msg::Marker::SharedPtr TrajectoryDisplay::create_velocity_ma
   marker->pose.position.x = static_cast<float64_t>(point.x);
   marker->pose.position.y = static_cast<float64_t>(point.y);
   marker->pose.position.z = 0.1;
-  marker->scale.z = 0.2 * text_scale;
+  marker->scale.z = 0.2f * text_scale;
   marker->color.a = text_alpha;
-  marker->color.r = color.redF();
-  marker->color.g = color.greenF();
-  marker->color.b = color.blueF();
+  marker->color.r = static_cast<float>(color.redF());
+  marker->color.g = static_cast<float>(color.greenF());
+  marker->color.b = static_cast<float>(color.blueF());
   marker->text = std::to_string(point.longitudinal_velocity_mps) + "mps";
 
   return marker;

@@ -40,9 +40,9 @@ PointCloudFusionNode::PointCloudFusionNode(
   const rclcpp::NodeOptions & node_options)
 : Node("point_cloud_fusion_nodes", node_options),
   m_cloud_publisher(create_publisher<PointCloudMsgT>("output_topic", rclcpp::QoS(10))),
-  m_input_topics(declare_parameter("number_of_sources").get<std::size_t>()),
+  m_input_topics(static_cast<std::size_t>(declare_parameter("number_of_sources").get<int>())),
   m_output_frame_id(declare_parameter("output_frame_id").get<std::string>()),
-  m_cloud_capacity(declare_parameter("cloud_size").get<uint32_t>())
+  m_cloud_capacity(static_cast<uint32_t>(declare_parameter("cloud_size").get<int>()))
 {
   for (size_t i = 0; i < m_input_topics.size(); ++i) {
     m_input_topics[i] = "input_topic" + std::to_string(i + 1);

@@ -13,10 +13,6 @@ ament_auto_add_library(${GB_PLANNER_NODE_LIB} SHARED
   src/lanelet2_global_planner_node.cpp
 )
 autoware_set_compile_options(${GB_PLANNER_NODE_LIB})
-target_include_directories(${GB_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-target_include_directories(${GB_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-target_compile_options(${GB_PLANNER_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-  -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
 
 set(GB_PLANNER_NODE_EXE ${GB_PLANNER_NODE_LIB}_exe)
 rclcpp_components_register_node(${GB_PLANNER_NODE_LIB}

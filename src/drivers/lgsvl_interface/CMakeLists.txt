@@ -10,9 +10,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/lgsvl_interface.cpp
   src/lgsvl_interface_node.cpp)
 autoware_set_compile_options(${PROJECT_NAME})
-target_compile_options(${PROJECT_NAME} PRIVATE
-  -Wno-useless-cast -Wno-double-promotion -Wno-old-style-cast -Wno-sign-conversion)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "lgsvl_interface::LgsvlInterfaceNode"

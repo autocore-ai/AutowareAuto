@@ -34,8 +34,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   ${TRAJECTORY_PLANNER_NODE_BASE_LIB_HEADERS}
 )
 autoware_set_compile_options(${PROJECT_NAME})
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-old-style-cast
-        -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare -Wuseless-cast)
+
 # Testing
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

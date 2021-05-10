@@ -35,9 +35,5 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# required by tf2, message_filters
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion
-    -Wno-old-style-cast -Wno-useless-cast -Wno-double-promotion -Wno-nonnull-compare)
-
 # Ament Exporting
 ament_auto_package()

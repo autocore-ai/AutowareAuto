@@ -9,7 +9,6 @@ ament_auto_find_build_dependencies()
 set(RECORDREPLAY_PLANNER_NODE_LIB recordreplay_planner_node)
 ament_auto_add_library(${RECORDREPLAY_PLANNER_NODE_LIB} SHARED
   src/recordreplay_planner_nodes/recordreplay_planner_node.cpp)
-target_include_directories(${RECORDREPLAY_PLANNER_NODE_LIB} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 autoware_set_compile_options(${RECORDREPLAY_PLANNER_NODE_LIB})
 
 rclcpp_components_register_node(${RECORDREPLAY_PLANNER_NODE_LIB}

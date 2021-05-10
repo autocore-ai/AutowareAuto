@@ -257,25 +257,25 @@ const
   if (lanelet::geometry::distance2d(p0, p1) > lanelet::geometry::distance2d(p1, p2)) {
     const auto c_p1 = (p0 + p3) / 2.0;
     const auto c_p2 = (p1 + p2) / 2.0;
-    center_p1.x = c_p1.x();
-    center_p1.y = c_p1.y();
-    center_p2.x = c_p2.x();
-    center_p2.y = c_p2.y();
+    center_p1.x = static_cast<float>(c_p1.x());
+    center_p1.y = static_cast<float>(c_p1.y());
+    center_p2.x = static_cast<float>(c_p2.x());
+    center_p2.y = static_cast<float>(c_p2.y());
   } else {
     const auto c_p1 = (p0 + p1) / 2.0;
     const auto c_p2 = (p2 + p3) / 2.0;
-    center_p1.x = c_p1.x();
-    center_p1.y = c_p1.y();
-    center_p2.x = c_p2.x();
-    center_p2.y = c_p2.y();
+    center_p1.x = static_cast<float>(c_p1.x());
+    center_p1.y = static_cast<float>(c_p1.y());
+    center_p2.x = static_cast<float>(c_p2.x());
+    center_p2.y = static_cast<float>(c_p2.y());
   }
 
   // calculate refined point
   TrajectoryPoint refined_point;
 
   // Get centerpoint of centerline
-  refined_point.x = (center_p1.x + center_p2.x) / 2.0;
-  refined_point.y = (center_p1.y + center_p2.y) / 2.0;
+  refined_point.x = (center_p1.x + center_p2.x) / 2.0f;
+  refined_point.y = (center_p1.y + center_p2.y) / 2.0f;
 
   const auto direction_vector = autoware::common::geometry::minus_2d(center_p2, center_p1);
   const auto angle_center_line = std::atan2(direction_vector.y, direction_vector.x);
@@ -283,10 +283,11 @@ const
   const auto angle_diff =
     std::abs(::motion::motion_common::to_angle(input_point.heading - heading_center_line));
 
-  if (angle_diff < M_PI / 2) {
+  if (static_cast<double>(angle_diff) < M_PI / 2.0) {
     refined_point.heading = heading_center_line;
   } else {
-    refined_point.heading = ::motion::motion_common::from_angle(angle_center_line + M_PI);
+    refined_point.heading =
+      ::motion::motion_common::from_angle(static_cast<double>(angle_center_line) + M_PI);
   }
 
   return refined_point;
@@ -336,7 +337,7 @@ const
 {
   // loop through parking space to find the closest distance error
   float64_t min_dist = 1e9;
-  auto i = std::min_element(
+  auto it = std::min_element(
     std::begin(parking_id_list),
     std::end(parking_id_list),
     [ =, &min_dist](lanelet::Id park_id1, lanelet::Id park_id2)
@@ -359,7 +360,7 @@ const
   // get parking id
   // Improvement- Check if the parking point is too far away?
   //              Check if min_dist below the threshold
-  return parking_id_list[std::distance(std::begin(parking_id_list), i)];
+  return parking_id_list[static_cast<size_t>(std::distance(std::begin(parking_id_list), it))];
 }
 
 lanelet::Id Lanelet2GlobalPlanner::find_nearroute_from_parking(const lanelet::Id & park_id)
@@ -504,9 +505,9 @@ std::vector<lanelet::Id> Lanelet2GlobalPlanner::lanelet_chr2num(const std::strin
   // extract number at 3-8, 14-19
   std::string prefix_str = "'";
   size_t pos = 0U;
-  uint32_t counter = 0U;
-  uint32_t start = 0U;
-  uint32_t end = 0U;
+  size_t counter = 0U;
+  size_t start = 0U;
+  size_t end = 0U;
   std::vector<lanelet::Id> lanes;
   while ((pos = str.find(prefix_str, pos)) != std::string::npos) {
     ++counter;

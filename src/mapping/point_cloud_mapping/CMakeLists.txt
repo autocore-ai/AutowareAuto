@@ -42,17 +42,7 @@ target_link_libraries(${PROJECT_NAME}
     ${PCL_LIBRARIES})
 
 autoware_set_compile_options(${PROJECT_NAME})
-# turn off warnings to be able to successfully compile upstream ros packages
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-set(ROS_NO_WARN_LIST
-        -Wno-sign-conversion
-        -Wno-conversion
-        -Wno-old-style-cast
-        -Wno-useless-cast
-        -Wno-double-promotion
-        -Wno-nonnull-compare
-        -Wuseless-cast)
-target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
+
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
@@ -68,8 +58,6 @@ if(BUILD_TESTING)
           test/test_map.cpp
   )
   autoware_set_compile_options(${PC_MAPPING_TEST})
-  # turn off warnings to be able to successfully compile upstream ros packages
-  target_compile_options(${PC_MAPPING_TEST} PRIVATE ${ROS_NO_WARN_LIST})
   target_link_libraries(${PC_MAPPING_TEST} ${PROJECT_NAME})
 endif()
 

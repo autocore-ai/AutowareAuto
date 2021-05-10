@@ -28,7 +28,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/euclidean_cluster.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-sign-conversion -Wno-conversion)
 
 if(BUILD_TESTING)
   # run linters

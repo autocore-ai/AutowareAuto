@@ -27,7 +27,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   include/pure_pursuit_nodes/visibility_control.hpp
   src/pure_pursuit_node.cpp
 )
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 autoware_set_compile_options(${PROJECT_NAME})
 
 set(PURE_PURSUIT_NODE_EXE pure_pursuit_node_exe)

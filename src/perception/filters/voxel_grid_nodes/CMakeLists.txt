@@ -64,8 +64,6 @@ if(BUILD_TESTING)
   )
 endif()
 
-target_compile_options(${VOXEL_GRID_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
-
 # Ament Exporting
 ament_auto_package(INSTALL_TO_SHARE
   param)

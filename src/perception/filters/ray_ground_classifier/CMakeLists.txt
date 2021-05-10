@@ -5,6 +5,15 @@ cmake_minimum_required(VERSION 3.5)
 ### Export headers
 project(ray_ground_classifier)
 
+set(use_OMP FALSE)
+if(use_OMP)
+  find_package(OpenMP REQUIRED)
+  set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})
+  set(OpenMP_LIBS gomp)
+else()
+  set(OpenMP_FLAGS "-Wno-unknown-pragmas")
+endif()
+
 ## dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -34,6 +43,7 @@ if(BUILD_TESTING)
   )
   target_link_libraries(test_ray_ground_classifier_gtest
     ${PROJECT_NAME}
+    ${OpenMP_LIBS}
   )
 
   ament_add_gtest(test_ray_ground_classifier_raytrace_gtest
@@ -46,6 +56,7 @@ if(BUILD_TESTING)
   )
   target_link_libraries(test_ray_ground_classifier_raytrace_gtest
     ${PROJECT_NAME}
+    ${OpenMP_LIBS}
   )
 
   ament_add_gtest(test_ray_aggregator_gtest
@@ -59,13 +70,18 @@ if(BUILD_TESTING)
   )
   target_link_libraries(test_ray_aggregator_gtest
     ${PROJECT_NAME}
+    ${OpenMP_LIBS}
   )
-
+  if(use_OMP)
+    target_compile_options(test_ray_aggregator_gtest PRIVATE
+    ${OpenMP_FLAGS})
+  endif()
 endif()
 
 # workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
 target_compile_options(${PROJECT_NAME} PRIVATE
-  -Wno-sign-conversion -Wno-conversion
+    -Wno-sign-conversion
+    ${OpenMP_FLAGS}
 )
 
 

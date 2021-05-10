@@ -78,8 +78,3 @@ endif()
 
 ## install stuff
 ament_auto_package(INSTALL_TO_SHARE param launch)
-
-# workaround to disable sign conversion errors from sensor_msgs::PointCloud2Iterator
-# -Wno-ignored-qualifiers is temp fix for udp_driver bug
-target_compile_options(${CLOUD_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)
-target_compile_options(${CLOUD_EXEC} PRIVATE -Wno-sign-conversion -Wno-conversion -Wno-ignored-qualifiers)

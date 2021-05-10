@@ -34,18 +34,6 @@ rclcpp_components_register_node(${PROJECT_NAME}
   EXECUTABLE ${MAPPER_NODE_EXE}
 )
 
-# turn off warnings to be able to successfully compile upstream ros packages
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-set(ROS_NO_WARN_LIST
-        -Wno-sign-conversion
-        -Wno-conversion
-        -Wno-old-style-cast
-        -Wno-useless-cast
-        -Wno-double-promotion
-        -Wno-nonnull-compare
-        -Wuseless-cast)
-target_compile_options(${PROJECT_NAME} PRIVATE ${ROS_NO_WARN_LIST})
-
 # TODO(yunus.caliskan): Remove once #978 is fixed.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Og")
@@ -72,7 +60,6 @@ if(BUILD_TESTING)
 
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
   target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME} ${PCL_LIBRARIES})
-  target_include_directories(test_${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE param launch)

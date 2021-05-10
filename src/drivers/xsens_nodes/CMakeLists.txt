@@ -67,8 +67,3 @@ endif()
 
 ## install stuff
 ament_auto_package(INSTALL_TO_SHARE param)
-
-target_compile_options(${XSENS_IMU_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
-target_compile_options(${XSENS_IMU_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)
-target_compile_options(${XSENS_GPS_NODE_LIB} PRIVATE -Wno-sign-conversion -Wno-conversion)
-target_compile_options(${XSENS_GPS_NODE_EXE} PRIVATE -Wno-sign-conversion -Wno-conversion)

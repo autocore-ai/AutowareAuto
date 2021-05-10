@@ -315,9 +315,12 @@ void StaticNDTMap::deserialize_from(const sensor_msgs::msg::PointCloud2 & msg)
   const auto voxel_size = next(pc_its);
 
   const Config config{
-    PointXYZ{}.set__x(min_point.x).set__y(min_point.y).set__z(min_point.z),
-    PointXYZ{}.set__x(max_point.x).set__y(max_point.y).set__z(max_point.z),
-    PointXYZ{}.set__x(voxel_size.x).set__y(voxel_size.y).set__z(voxel_size.z),
+    PointXYZ{}.set__x(static_cast<float>(min_point.x)).set__y(static_cast<float>(min_point.y)).
+    set__z(static_cast<float>(min_point.z)),
+    PointXYZ{}.set__x(static_cast<float>(max_point.x)).set__y(static_cast<float>(max_point.y)).
+    set__z(static_cast<float>(max_point.z)),
+    PointXYZ{}.set__x(static_cast<float>(voxel_size.x)).set__y(static_cast<float>(voxel_size.y)).
+    set__z(static_cast<float>(voxel_size.z)),
     map_size};
 
   // Either update the map config or initialize the map.

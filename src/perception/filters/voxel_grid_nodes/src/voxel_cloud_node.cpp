@@ -46,7 +46,8 @@ VoxelCloudNode::VoxelCloudNode(
   m_sub_ptr{create_subscription<Message>(
       "points_in",
       rclcpp::QoS(
-        declare_parameter("subscription.qos.history_depth", 10)
+        static_cast<size_t>(static_cast<int>(declare_parameter("subscription.qos.history_depth",
+        10)))
       ).durability(
         parse_durability_parameter(
           declare_parameter("subscription.qos.durability", "volatile")
@@ -58,7 +59,7 @@ VoxelCloudNode::VoxelCloudNode(
   m_pub_ptr{create_publisher<Message>(
       "points_downsampled",
       rclcpp::QoS(
-        declare_parameter("publisher.qos.history_depth", 10)
+        static_cast<size_t>(static_cast<int>(declare_parameter("publisher.qos.history_depth", 10)))
       ).durability(
         parse_durability_parameter(
           declare_parameter("publisher.qos.durability", "volatile")

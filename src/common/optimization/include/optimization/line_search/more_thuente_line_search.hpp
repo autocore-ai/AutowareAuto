@@ -226,12 +226,14 @@ DomainValueT MoreThuenteLineSearch::compute_next_step_(
   auto f_l = psi(interval.a_l);
   auto f_u = psi(interval.a_u);
 
+  using ValueT = typename OptimizationProblemT::Value;
+
   bool use_auxiliary_function = true;
   // Follows the "Search Algorithm" as presented in the paper.
   for (auto step_iterations = 0; step_iterations < m_max_iterations; ++step_iterations) {
     constexpr decltype(psi_t.value) ZERO{};
     if ((psi_t.value <= ZERO) &&
-      (std::abs(phi_t.derivative) <= m_eta * std::abs(phi_0.derivative)))
+      (std::abs(phi_t.derivative) <= static_cast<ValueT>(m_eta) * std::abs(phi_0.derivative)))
     {
       // We reached the termination condition as the step satisfies the strong Wolfe conditions (the
       // ones in the if condition). This means we have converged and are ready to return the found
@@ -365,6 +367,7 @@ template<typename ObjectiveFunctionT>
 class MoreThuenteLineSearch::AuxiliaryFunction
 {
   using FunctionValue = typename ObjectiveFunctionT::FunctionValue;
+  using ValueT = decltype(FunctionValue::value);
 
 public:
   /// Constructs a new instance of function psi.
@@ -380,9 +383,11 @@ public:
     const auto value =
       objective_function_value.value -
       m_initial_objective_function_value.value -
-      m_mu * step_size * objective_function_value.derivative;
+      static_cast<ValueT>(m_mu) * static_cast<ValueT>(step_size) *
+      objective_function_value.derivative;
     const auto derivative =
-      objective_function_value.derivative - m_mu * m_initial_objective_function_value.derivative;
+      objective_function_value.derivative - static_cast<ValueT>(m_mu) *
+      m_initial_objective_function_value.derivative;
     return {step_size, value, derivative};
   }
 
@@ -397,6 +402,8 @@ template<typename FunctionValueT>
 MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
   const FunctionValueT & f_t, const FunctionValueT & f_l, const FunctionValueT & f_u)
 {
+  using ValueT = decltype(FunctionValueT::value);
+
   if (std::isnan(f_t.argument) || std::isnan(f_l.argument) || std::isnan(f_u.argument)) {
     throw std::runtime_error("Got nan values in the step computation function.");
   }
@@ -408,12 +415,16 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
-      const auto z = 3.0F * (f_a.value - f_b.value) /
-        (f_b.argument - f_a.argument) + f_a.derivative + f_b.derivative;
+      const auto z = static_cast<ValueT>(3.0) * (f_a.value - f_b.value) /
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) + f_a.derivative +
+        f_b.derivative;
       const auto w = std::sqrt(z * z - f_a.derivative * f_b.derivative);
       // Equation 2.4.56 [Sun, Yuan 2006]
-      return f_b.argument - (f_b.argument - f_a.argument) * (f_b.derivative + w - z) /
-             (f_b.derivative - f_a.derivative + 2.0F * w);
+      return static_cast<StepT>(
+        static_cast<ValueT>(f_b.argument) -
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) *
+        (f_b.derivative + w - z) /
+        (f_b.derivative - f_a.derivative + static_cast<ValueT>(2.0) * w));
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f_a, f_b and f'_a
@@ -422,9 +433,15 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
-      return f_a.argument + 0.5F *
-             (f_b.argument - f_a.argument) * (f_b.argument - f_a.argument) * f_a.derivative /
-             (f_a.value - f_b.value + (f_b.argument - f_a.argument) * f_a.derivative);
+      return
+        static_cast<StepT>(
+        static_cast<ValueT>(f_a.argument) + static_cast<ValueT>(0.5) *
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) *
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) *
+        f_a.derivative /
+        (f_a.value - f_b.value +
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) *
+        f_a.derivative));
     };
 
   // A lambda to calculate the minimizer of the quadratic that interpolates f'_a, and f'_b
@@ -433,8 +450,10 @@ MoreThuenteLineSearch::StepT MoreThuenteLineSearch::find_next_step_length(
       if (comp::approx_eq(f_a.argument, f_b.argument, kStepEps, kStepEps)) {
         return f_a.argument;
       }
-      return f_a.argument +
-             (f_b.argument - f_a.argument) * f_a.derivative / (f_a.derivative - f_b.derivative);
+      return static_cast<StepT>(
+        static_cast<ValueT>(f_a.argument) +
+        (static_cast<ValueT>(f_b.argument) - static_cast<ValueT>(f_a.argument)) * f_a.derivative /
+        (f_a.derivative - f_b.derivative));
     };
 
   // We cover here all the cases presented in the More-Thuente paper in section 4.
@@ -476,13 +495,15 @@ template<typename FunctionValueT>
 MoreThuenteLineSearch::Interval MoreThuenteLineSearch::update_interval(
   const FunctionValueT & f_t, const FunctionValueT & f_l, const FunctionValueT & f_u)
 {
+  using ValueT = decltype(FunctionValueT::value);
+
   // Following either "Updating Algorithm" or "Modifier Updating Algorithm" depending on the
   // provided function f (can be psi or phi).
   if (f_t.value > f_l.value) {
     return {f_l.argument, f_t.argument};  // case a
-  } else if (f_t.derivative * (f_t.argument - f_l.argument) < 0) {
+  } else if (f_t.derivative * static_cast<ValueT>(f_t.argument - f_l.argument) < 0) {
     return {f_t.argument, f_u.argument};  // case b
-  } else if (f_t.derivative * (f_t.argument - f_l.argument) > 0) {
+  } else if (f_t.derivative * static_cast<ValueT>(f_t.argument - f_l.argument) > 0) {
     return {f_t.argument, f_l.argument};  // case c
   }
   // Converged to a point.
