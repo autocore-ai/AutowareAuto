@@ -440,7 +440,9 @@ public:
         point_field_value = *m_intensity_it_float32;
         break;
       default:
-        throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+        throw std::runtime_error(
+                "Intensity type not supported: " +
+                std::to_string(m_intensity_datatype));
     }
   }
 };

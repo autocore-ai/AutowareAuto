@@ -432,7 +432,9 @@ bool8_t IntensityIteratorWrapper::eof()
     case sensor_msgs::msg::PointField::FLOAT32:
       return !(m_intensity_it_float32 != m_intensity_it_float32.end());
     default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+      throw std::runtime_error(
+              "Intensity type not supported: " +
+              std::to_string(m_intensity_datatype));
   }
 }
 
@@ -446,7 +448,9 @@ void IntensityIteratorWrapper::next()
       ++m_intensity_it_float32;
       break;
     default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+      throw std::runtime_error(
+              "Intensity type not supported: " +
+              std::to_string(m_intensity_datatype));
   }
 }
 
@@ -465,7 +469,9 @@ IntensityIteratorWrapper::IntensityIteratorWrapper(
     case sensor_msgs::msg::PointField::FLOAT32:
       break;
     default:
-      throw std::runtime_error("Intensity type not supported: " + m_intensity_datatype);
+      throw std::runtime_error(
+              "Intensity type not supported: " +
+              std::to_string(m_intensity_datatype));
   }
 }
 

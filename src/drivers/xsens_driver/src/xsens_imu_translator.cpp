@@ -151,7 +151,7 @@ void XsensImuTranslator::parse_orientation_data(
       // Euler Angles
       throw std::runtime_error("Euler angles not supported yet");
     default:
-      throw std::runtime_error("Unknown data_id: " + +data_id);
+      throw std::runtime_error("Unknown data_id: " + std::to_string(data_id));
   }
 }
 
@@ -183,7 +183,7 @@ void XsensImuTranslator::parse_angular_velocity(
       }
       break;
     default:
-      throw std::runtime_error("Unknown data_id: " + +data_id);
+      throw std::runtime_error("Unknown data_id: " + std::to_string(data_id));
   }
 }
 
