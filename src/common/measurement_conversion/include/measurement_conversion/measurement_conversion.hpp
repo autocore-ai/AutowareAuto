@@ -18,12 +18,13 @@
 #ifndef MEASUREMENT_CONVERSION__MEASUREMENT_CONVERSION_HPP_
 #define MEASUREMENT_CONVERSION__MEASUREMENT_CONVERSION_HPP_
 
+#include <autoware_auto_msgs/msg/relative_position_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
-#include <nav_msgs/msg/odometry.hpp>
-#include <rclcpp/time.hpp>
 #include <measurement_conversion/measurement_typedefs.hpp>
 #include <measurement_conversion/visibility_control.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <rclcpp/time.hpp>
 
 #include <Eigen/Geometry>
 
@@ -93,6 +94,17 @@ MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dSpeed message_to_measurement(
 template<>
 MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg);
+
+///
+/// @brief      Specialization of message_to_measurement for stamped relative position message.
+///
+/// @param[in]  msg                  The stamped relative position message.
+///
+/// @return     The measurement containing the relative position.
+///
+template<>
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose message_to_measurement(
+  const autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped & msg);
 
 ///
 /// @brief      Specialization of message_to_measurement for odometry message.

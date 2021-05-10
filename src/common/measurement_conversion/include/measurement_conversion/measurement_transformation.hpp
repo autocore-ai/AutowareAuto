@@ -18,8 +18,9 @@
 #ifndef MEASUREMENT_CONVERSION__MEASUREMENT_TRANSFORMATION_HPP_
 #define MEASUREMENT_CONVERSION__MEASUREMENT_TRANSFORMATION_HPP_
 
-#include <measurement_conversion/measurement_typedefs.hpp>
+#include <measurement_conversion/eigen_utils.hpp>
 #include <measurement_conversion/measurement_conversion.hpp>
+#include <measurement_conversion/measurement_typedefs.hpp>
 #include <measurement_conversion/visibility_control.hpp>
 
 #include <Eigen/Geometry>
@@ -36,35 +37,11 @@ namespace state_estimation
 ///
 /// @tparam     MeasurementT  Type of measurement.
 ///
-/// @param[in]  measurement          The measurement.
-/// @param[in]  tf__world__frame_id  A transform from frame_id to world frame.
-///
-/// @return     The measurement, but transformed
-///
-template<typename MeasurementT>
-MeasurementT transform_measurement(
-  const MeasurementT & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id)
-{
-  static_assert(
-    sizeof(MeasurementT) == 0,
-    "Only specializations for transform_measurement() function are allowed!");
-}
-
-///
-/// @brief      Interface for transforming a measurement into a different coordinate system.
-///
-/// @details    This function is needed to transform messages like Odometry, where different parts
-///             of the measurement must be transformed with different transformation matrices.
-///
-/// @tparam     MeasurementT  Type of measurement.
-///
 /// @return     The measurement, but transformed
 ///
 template<typename MeasurementT>
 MeasurementT transform_measurement(
   const MeasurementT &,
-  const Eigen::Isometry3f &,
   const Eigen::Isometry3f &)
 {
   static_assert(
@@ -88,52 +65,6 @@ MeasurementT message_to_transformed_measurement(
 {
   const auto measurement = message_to_measurement<MeasurementT, MessageT>(msg);
   return transform_measurement(measurement, tf__world__frame_id);
-}
-
-///
-/// @brief      Convenience function for converting a message into a measurement and transforming
-///             it into a different coordinate frame.
-///
-/// @details    This function is needed to transform messages like Odometry, where different parts
-///             of the measurement must be transformed with different transformation matrices.
-///
-/// @tparam     MeasurementT  Type of measurement.
-/// @tparam     MessageT      Type of ROS 2 message.
-///
-/// @return     The measurement created from a message.
-///
-template<typename MeasurementT, typename MessageT>
-MeasurementT message_to_transformed_measurement(
-  const MessageT & msg, const Eigen::Isometry3f & tf__world__frame_id,
-  const Eigen::Isometry3f & tf__world__child_frame_id)
-{
-  const auto measurement = message_to_measurement<MeasurementT, MessageT>(msg);
-  return transform_measurement(measurement, tf__world__frame_id, tf__world__child_frame_id);
-}
-
-///
-/// @brief      Downscale the isometry to a lower dimension if needed.
-///
-/// @param[in]  isometry              The isometry transform
-///
-/// @tparam     kStateDimensionality  Dimensionality of the space.
-/// @tparam     FloatT                Type of scalar.
-///
-/// @return     Downscaled isometry.
-///
-template<std::int32_t kStateDimensionality, typename FloatT>
-static constexpr Eigen::Transform<
-  FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry> downscale_isometry(
-  const Eigen::Transform<FloatT, 3, Eigen::TransformTraits::Isometry> & isometry)
-{
-  static_assert(kStateDimensionality <= 3, "We only handle scaling the isometry down.");
-  using Isometry = Eigen::Transform<
-    FloatT, kStateDimensionality, Eigen::TransformTraits::Isometry>;
-  Isometry result{Isometry::Identity()};
-  result.linear() = isometry.rotation()
-    .template block<kStateDimensionality, kStateDimensionality>(0, 0);
-  result.translation() = isometry.translation().topRows(kStateDimensionality);
-  return result;
 }
 
 // Doxygen is buggy when the parameters are repeated here, so they are omitted.
@@ -176,8 +107,7 @@ MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose transform_measurement(
 template<>
 MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPoseAndSpeed transform_measurement(
   const StampedMeasurement2dPoseAndSpeed & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id,
-  const Eigen::Isometry3f & tf__world__child_frame_id);
+  const Eigen::Isometry3f & tf__world__frame_id);
 
 }  // namespace state_estimation
 }  // namespace common

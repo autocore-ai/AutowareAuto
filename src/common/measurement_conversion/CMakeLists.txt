@@ -30,6 +30,7 @@ set(MEASUREMENT_CONVERSION_LIB_SRC
 )
 
 set(MEASUREMENT_CONVERSION_LIB_HEADERS
+  include/measurement_conversion/eigen_utils.hpp
   include/measurement_conversion/measurement_conversion.hpp
   include/measurement_conversion/measurement_transformation.hpp
   include/measurement_conversion/measurement_typedefs.hpp

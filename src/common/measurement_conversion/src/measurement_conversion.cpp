@@ -18,19 +18,28 @@
 #include <measurement_conversion/measurement_conversion.hpp>
 
 #include <common/types.hpp>
+#include <measurement_conversion/eigen_utils.hpp>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace
 {
 constexpr auto kCovarianceMatrixRows = 6U;
+constexpr auto kCovarianceMatrixRowsRelativePos = 3U;
 constexpr auto kIndexX = 0U;
 constexpr auto kIndexXY = 1U;
 constexpr auto kIndexY = kCovarianceMatrixRows + 1U;
 constexpr auto kIndexYX = kCovarianceMatrixRows;
+constexpr auto kIndexXRelativePos = 0U;
+constexpr auto kIndexXYRelativePos = 1U;
+constexpr auto kIndexYRelativePos = kCovarianceMatrixRowsRelativePos + 1U;
+constexpr auto kIndexYXRelativePos = kCovarianceMatrixRowsRelativePos;
 constexpr auto kCovarianceMatrixRowsSquared = kCovarianceMatrixRows * kCovarianceMatrixRows;
 static_assert(
   std::tuple_size<
     geometry_msgs::msg::PoseWithCovariance::_covariance_type>::value ==
   kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
+// TODO(#789 autoware_auto_msgs) add a static assert once the RelativePosition message covariance is
+// represented by an std::array.
 
 /// Convert the ROS timestamp to chrono time point.
 std::chrono::system_clock::time_point to_time_point(const rclcpp::Time & time)
@@ -96,31 +105,56 @@ StampedMeasurement2dPose message_to_measurement(
 }
 
 template<>
-StampedMeasurement2dPoseAndSpeed message_to_measurement(
-  const nav_msgs::msg::Odometry & msg)
+StampedMeasurement2dPose message_to_measurement(
+  const autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped & msg)
 {
-  using FloatT = common::types::float32_t;
+  using common::types::float32_t;
+  Eigen::Matrix2d covariance;
+  covariance <<
+    msg.covariance[kIndexXRelativePos], msg.covariance[kIndexXYRelativePos],
+    msg.covariance[kIndexYXRelativePos], msg.covariance[kIndexYRelativePos];
+  return StampedMeasurement2dPose{
+    to_time_point(msg.header.stamp),
+    Measurement2dPose{
+      Eigen::Vector2f{msg.position.x, msg.position.y},
+      covariance.cast<float32_t>()}};
+}
+
+template<>
+StampedMeasurement2dPoseAndSpeed message_to_measurement(const nav_msgs::msg::Odometry & msg)
+{
+  using common::types::float32_t;
+  Eigen::Isometry3d tf__msg_frame_id__msg_child_frame_id;
+  tf2::fromMsg(msg.pose.pose, tf__msg_frame_id__msg_child_frame_id);
+  const Eigen::Matrix2f rx__msg_frame_id__msg_child_frame_id = downscale_isometry<2>(
+    tf__msg_frame_id__msg_child_frame_id).cast<float32_t>().rotation();
+
   const Eigen::Vector2f pos_state {
-    static_cast<FloatT>(msg.pose.pose.position.x),
-    static_cast<FloatT>(msg.pose.pose.position.y),
+    static_cast<float32_t>(msg.pose.pose.position.x),
+    static_cast<float32_t>(msg.pose.pose.position.y),
   };
-  const Eigen::Vector2f speed_state{
-    static_cast<FloatT>(msg.twist.twist.linear.x),
-    static_cast<FloatT>(msg.twist.twist.linear.y),
+  const Eigen::Vector2f speed_in_child_frame{
+    static_cast<float32_t>(msg.twist.twist.linear.x),
+    static_cast<float32_t>(msg.twist.twist.linear.y),
   };
-  Eigen::Matrix4d covariance;
-  covariance.topLeftCorner(2, 2) <<
+  const Eigen::Vector2f speed{rx__msg_frame_id__msg_child_frame_id * speed_in_child_frame};
+  Eigen::Matrix4d covariance_double{Eigen::Matrix4d::Zero()};
+  covariance_double.topLeftCorner(2, 2) <<
     msg.pose.covariance[kIndexX], msg.pose.covariance[kIndexXY],
     msg.pose.covariance[kIndexYX], msg.pose.covariance[kIndexY];
-  covariance.bottomRightCorner(2, 2) <<
+  covariance_double.bottomRightCorner(2, 2) <<
     msg.twist.covariance[kIndexX], msg.twist.covariance[kIndexXY],
     msg.twist.covariance[kIndexYX], msg.twist.covariance[kIndexY];
+  Eigen::Matrix4f covariance{covariance_double.cast<float32_t>()};
+  // Rotate the speed covariance as the speed is now in frame_id frame and not in child_frame_id.
+  covariance.bottomRightCorner(2, 2) =
+    rx__msg_frame_id__msg_child_frame_id *
+    covariance.bottomRightCorner(2, 2) *
+    rx__msg_frame_id__msg_child_frame_id.transpose();
 
   return StampedMeasurement2dPoseAndSpeed{
     to_time_point(msg.header.stamp),
-    Measurement2dPoseAndSpeed{
-      (Eigen::Vector4f{} << pos_state, speed_state).finished(),
-      covariance.cast<FloatT>()}};
+    Measurement2dPoseAndSpeed{(Eigen::Vector4f{} << pos_state, speed).finished(), covariance}};
 }
 
 }  // namespace state_estimation

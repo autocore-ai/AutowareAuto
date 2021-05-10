@@ -191,8 +191,7 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 
   const auto measurement = message_to_transformed_measurement<StampedMeasurement2dPoseAndSpeed>(
     *msg,
-    tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>(),
-    tf2::transformToEigen(tf__m_frame_id__msg_child_frame_id).cast<float32_t>());
+    tf2::transformToEigen(tf__m_frame_id__msg_frame_id).cast<float32_t>());
   if (m_ekf->is_initialized()) {
     if (!m_ekf->add_observation_to_history(measurement)) {
       throw std::runtime_error("Cannot add an odometry observation to history.");
