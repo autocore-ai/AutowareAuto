@@ -40,8 +40,6 @@ public:
   explicit Lanelet2MapVisualizer(const rclcpp::NodeOptions & options);
 
 private:
-  rclcpp::TimerBase::SharedPtr m_timer;
-
   rclcpp::Client<autoware_auto_msgs::srv::HADMapService>::SharedPtr m_client;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr m_viz_pub;
 

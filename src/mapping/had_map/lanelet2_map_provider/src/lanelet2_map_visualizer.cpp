@@ -128,10 +128,7 @@ void Lanelet2MapVisualizer::visualize_map_callback(
       marker_t, "parking_access_area_triangles",
       ll_parking_access_areas, color_parking_access));
 
-  // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
-  m_timer = this->create_wall_timer(
-    std::chrono::seconds(1),
-    [this, map_marker_array]() {m_viz_pub->publish(map_marker_array);});
+  m_viz_pub->publish(map_marker_array);
 }
 
 Lanelet2MapVisualizer::Lanelet2MapVisualizer(const rclcpp::NodeOptions & options)
