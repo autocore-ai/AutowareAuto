@@ -17,7 +17,6 @@
 #ifndef NDT__NDT_COMMON_HPP_
 #define NDT__NDT_COMMON_HPP_
 
-#include <lidar_utils/point_cloud_utils.hpp>
 #include <ndt/visibility_control.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>

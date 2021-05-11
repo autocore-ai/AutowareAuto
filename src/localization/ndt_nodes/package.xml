@@ -18,6 +18,7 @@
     <depend>ndt</depend>
     <depend>localization_nodes</depend>
     <depend>voxel_grid_nodes</depend>
+    <test_depend>point_cloud_msg_wrapper</test_depend>
 
     <exec_depend>ament_index_python</exec_depend>
 

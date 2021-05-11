@@ -51,6 +51,9 @@ else()
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize")
 endif()
 
+# Required for point_cloud_msg_wrapper
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-conversion)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -76,7 +79,7 @@ if(BUILD_TESTING)
 
   target_link_libraries(${NDT_TEST} ${PROJECT_NAME} ${PCL_LIBRARIES})
   autoware_set_compile_options(${NDT_TEST})
-  target_compile_options(${NDT_TEST} PRIVATE -Wno-float-conversion -Wno-double-promotion)
+  target_compile_options(${NDT_TEST} PRIVATE -Wno-conversion -Wno-float-conversion -Wno-double-promotion)
 endif()
 
 ament_export_include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})

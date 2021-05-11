@@ -15,7 +15,6 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <ndt/ndt_scan.hpp>
-#include <lidar_utils/point_cloud_utils.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 #include <algorithm>

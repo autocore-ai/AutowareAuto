@@ -20,10 +20,13 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <geometry_msgs/msg/transform.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
+#include <helper_functions/float_comparisons.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <Eigen/Eigenvalues>
 #include <algorithm>
 #include <limits>
+#include <tuple>
 
 namespace autoware
 {
@@ -31,6 +34,57 @@ namespace localization
 {
 namespace ndt
 {
+
+struct PointWithCovariances
+{
+  double x;
+  double y;
+  double z;
+  double icov_xx;
+  double icov_xy;
+  double icov_xz;
+  double icov_yy;
+  double icov_yz;
+  double icov_zz;
+  friend bool operator==(const PointWithCovariances & p1, const PointWithCovariances & p2)
+  {
+    constexpr auto eps = std::numeric_limits<double>::epsilon();
+    return common::helper_functions::comparisons::rel_eq(p1.x, p2.x, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.y, p2.y, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.z, p2.z, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_xx, p2.icov_xx, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_xy, p2.icov_xy, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_xz, p2.icov_xz, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_yy, p2.icov_yy, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_yz, p2.icov_yz, eps) &&
+           common::helper_functions::comparisons::rel_eq(p1.icov_zz, p2.icov_zz, eps);
+  }
+};
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_xx);
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_xy);
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_xz);
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_yy);
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_yz);
+LIDAR_UTILS__DEFINE_FIELD_GENERATOR_FOR_MEMBER(icov_zz);
+
+using PointWithCovariancesFieldGenerators = std::tuple<
+  point_cloud_msg_wrapper::field_x_generator,
+  point_cloud_msg_wrapper::field_y_generator,
+  point_cloud_msg_wrapper::field_z_generator,
+  field_icov_xx_generator,
+  field_icov_xy_generator,
+  field_icov_xz_generator,
+  field_icov_yy_generator,
+  field_icov_yz_generator,
+  field_icov_zz_generator>;
+
+using NdtMapCloudModifier =
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointWithCovariances,
+    PointWithCovariancesFieldGenerators>;
+
+using NdtMapCloudView =
+  point_cloud_msg_wrapper::PointCloud2View<PointWithCovariances,
+    PointWithCovariancesFieldGenerators>;
 
 /// This function will check if the covariance is valid based on its eigenvalues. If the covariance
 /// is valid, eigen values smaller than a fraction of the biggest eigen value will be capped to the

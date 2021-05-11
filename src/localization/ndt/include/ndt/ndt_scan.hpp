@@ -19,12 +19,13 @@
 
 #include <helper_functions/crtp.hpp>
 #include <ndt/visibility_control.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <common/types.hpp>
 #include <time_utils/time_utils.hpp>
 #include <Eigen/Core>
 #include <vector>
-#include "common/types.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -156,24 +157,10 @@ public:
     if (msg.width > m_points.capacity()) {
       throw std::length_error(container_full_error);
     }
-
-    // TODO(yunus.caliskan): Can we avoid copying and use PointCloud2 directly? #102
-    // Also validate map?
-    sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
-    sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
-    sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
-
-    while (x_it != x_it.end() &&
-      y_it != y_it.end() &&
-      z_it != z_it.end())
-    {
-      if (m_points.size() == m_points.capacity()) {
-        throw std::length_error(container_full_error);
-      }
-      m_points.emplace_back(*x_it, *y_it, *z_it);
-      ++x_it;
-      ++y_it;
-      ++z_it;
+    using PointXYZI = autoware::common::types::PointXYZI;
+    point_cloud_msg_wrapper::PointCloud2View<PointXYZI> msg_view{msg};
+    for (const auto & point : msg_view) {
+      m_points.emplace_back(point.x, point.y, point.z);
     }
   }
 

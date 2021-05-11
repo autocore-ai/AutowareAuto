@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include <ndt/utils.hpp>
 #include <Eigen/LU>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <vector>
 #include <limits>
 #include <string>
@@ -27,142 +28,26 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-using autoware::localization::ndt::validate_pcl_map;
 using autoware::localization::ndt::DynamicNDTVoxel;
 using autoware::localization::ndt::StaticNDTVoxel;
 using autoware::localization::ndt::Real;
 using autoware::localization::ndt::try_stabilize_covariance;
 using autoware::localization::ndt::StaticNDTMap;
 using autoware::perception::filters::voxel_grid::Config;
-using autoware::common::lidar_utils::add_point_to_cloud;
-
-constexpr uint32_t MapValidationContext::point_step;
-constexpr uint32_t MapValidationContext::num_points;
-constexpr uint32_t MapValidationContext::num_points_with_config;
-constexpr uint32_t MapValidationContext::data_size;
-constexpr uint32_t MapValidationContext::width;
-constexpr uint32_t MapValidationContext::row_step;
+constexpr std::uint32_t DenseNDTMapContext::NUM_POINTS;
 
 class DenseNDTMapTest : public DenseNDTMapContext, public ::testing::Test {};
-class MapValidationTest : public MapValidationContext, public ::testing::Test {};
 class NDTMapTest : public NDTMapContext, public ::testing::Test
 {
 public:
   NDTMapTest()
   {
     // Make voxel grid's max point to include points up to 50.0
-    m_max_point.x = num_points + 0.5F;
-    m_max_point.y = num_points + 0.5F;
-    m_max_point.z = num_points + 0.5F;
+    m_max_point.x = NUM_POINTS + 0.5F;
+    m_max_point.y = NUM_POINTS + 0.5F;
+    m_max_point.z = NUM_POINTS + 0.5F;
   }
 };
-
-/////////////////////////////
-TEST_F(MapValidationTest, map_pcl_meta_validation) {
-  using PointField = sensor_msgs::msg::PointField;
-
-  // Some invalid fields:
-  const auto pf11 = make_pf("x", 4U, PointField::FLOAT64, 1U);
-  const auto pf12 = make_pf("x", 8U, PointField::FLOAT64, 2U);
-  const auto pf13 = make_pf("xyz", 8U, PointField::FLOAT64, 1U);
-  const auto pf14 = make_pf("x", 8U, PointField::FLOAT32, 1U);
-
-  const std::vector<PointField> correct_field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
-
-  const std::vector<std::vector<PointField>> incorrect_field_sets{
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9, pf11},  // Extra field
-    {pf2, pf1, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Misordered
-    {pf14, pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in start
-    {pf1, pf2, pf14, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // Extra field in middle
-    {pf14, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
-    {pf11, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
-    {pf12, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
-    {pf13, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9},  // invalid field
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8},  // missing field
-    {}
-  };
-
-  auto correct_pcl = make_pcl(correct_field_set, 1U, data_size, row_step, width, point_step);
-
-  EXPECT_GT(validate_pcl_map(correct_pcl), 0U);
-
-  for (const auto & incorrect_field_set : incorrect_field_sets) {
-    auto incorrect_pcl = make_pcl(incorrect_field_set, 1U, data_size, row_step, width, point_step);
-    EXPECT_EQ(validate_pcl_map(incorrect_pcl), 0U);
-  }
-
-  // Check with invalid height
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        correct_field_set, 0U, data_size, row_step, width,
-        point_step)), 0U);
-  // Check with invalid point step
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        correct_field_set, 1U, data_size, row_step, width,
-        point_step - 1U)), 0U);
-}
-
-TEST_F(MapValidationTest, map_pcl_size_validation) {
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
-
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size, row_step, width,
-        point_step)), num_points_with_config);
-
-  // Data larger than expected means that the return value will exclude the excess data
-  // data.size(), row_step and width * point_step should be consistent, otherwise the
-  // minimum of 3 will determine the returned size
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size + point_step, row_step, width,
-        point_step)), num_points_with_config);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size, row_step + point_step, width,
-        point_step)), num_points_with_config);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(field_set, 1U, data_size, row_step, width + 1U, point_step)),
-    num_points_with_config);
-
-  // Data shorter than expected: return the greatest number of points that can be read
-  // given the point_step
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size - 1U, row_step, width,
-        point_step)), num_points_with_config - 1U);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size, row_step - 1U, width,
-        point_step)), num_points_with_config - 1U);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size, row_step, width - 1U,
-        point_step)), num_points_with_config - 1U);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size - 2 * point_step, row_step, width,
-        point_step)), num_points_with_config - 2U);
-  EXPECT_EQ(
-    validate_pcl_map(
-      make_pcl(
-        field_set, 1U, data_size - 2 * point_step - 1U, row_step, width,
-        point_step)), num_points_with_config - 3U);
-}
-
-////////////////////////////////////
 
 TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic_io) {
   constexpr auto eps = 1e-6;
@@ -355,37 +240,29 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
 }
 
 TEST_F(NDTMapTest, map_representation_bad_input) {
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
+  sensor_msgs::msg::PointCloud2 invalid_pc1;
+  sensor_msgs::msg::PointCloud2 invalid_pc2;
+
+  // initialize the messages
+  // Message with the missing fields
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI>
+  pc_view_with_wrong_point{invalid_pc1, "map"};
+  pc_view_with_wrong_point.resize(100U);
+  // Correct message format, but empty
+  autoware::localization::ndt::NdtMapCloudModifier empty_view{invalid_pc2, "map"};
 
   StaticNDTMap map_grid{};
 
-  // Map with invalid field set
-  auto invalid_pc1 = make_pcl(
-    {pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8},
-    1U, data_size, row_step, width, point_step);
-  // Empty map
-  auto invalid_pc2 = make_pcl(field_set, 1U, 0U, 0U, 0U, point_step);
   EXPECT_THROW(map_grid.set(invalid_pc1), std::runtime_error);
   EXPECT_THROW(map_grid.set(invalid_pc2), std::runtime_error);
 }
 
 TEST_F(NDTMapTest, map_representation_basics) {
-  auto add_pt = [](
-    std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_pt_its,
-    std::vector<sensor_msgs::PointCloud2Iterator<Real>> & pc_cov_its,
-    Real value) {
-      for (auto & it : pc_pt_its) {
-        *it = value;
-        ++it;
-      }
-      for (auto & it : pc_cov_its) {
-        *it = value++;
-        ++it;
-      }
+  sensor_msgs::msg::PointCloud2 msg;
+  autoware::localization::ndt::NdtMapCloudModifier modifier{msg, "map"};
+  auto add_pt = [&msg, &modifier](Real value) {
+      modifier.push_back({value, value, value, value, 0.0, 0.0, value, 0.0, value});
     };
-
-  const std::vector<PointField> field_set{pf1, pf2, pf3, pf4, pf5, pf6, pf7, pf8, pf9};
-  auto msg = make_pcl(field_set, 1U, data_size, row_step, width, point_step);
 
 
   auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
@@ -397,28 +274,12 @@ TEST_F(NDTMapTest, map_representation_basics) {
   // No map is added, so a lookup should result in an exception
   EXPECT_THROW(map_grid.cell(0.0, 0.0, 0.0), std::runtime_error);
 
-  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_point_its{
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "x"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "y"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "z")
-  };
-  // Only using diagonal elements to not get accidental singularity.
-  std::vector<sensor_msgs::PointCloud2Iterator<Real>> pc_cov_its{
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_xx"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_yy"),
-    sensor_msgs::PointCloud2Iterator<Real>(msg, "icov_zz")
-  };
-
-  add_pt(pc_point_its, pc_cov_its, grid_config.get_min_point().x);
-  add_pt(pc_point_its, pc_cov_its, grid_config.get_max_point().x);
-  add_pt(pc_point_its, pc_cov_its, grid_config.get_voxel_size().x);
+  add_pt(grid_config.get_min_point().x);
+  add_pt(grid_config.get_max_point().x);
+  add_pt(grid_config.get_voxel_size().x);
 
   auto value = Real{1.0};
-  while (std::all_of(
-      pc_point_its.begin(), pc_point_its.end(), [](auto & it) {
-        return it != it.end();
-      }))
-  {
+  for (auto i = 0U; i < NUM_POINTS; ++i) {
     const Eigen::Vector3d added_pt{value, value, value};
     // Turn the point into a pointcloud to insert. The point should be inserted enough to make
     // the voxel usable. (equal to NUM_POINT_THRESHOLD)
@@ -436,13 +297,13 @@ TEST_F(NDTMapTest, map_representation_basics) {
         std::numeric_limits<Real>::epsilon()));
     ASSERT_EQ(generating_voxel.get().count(), DynamicNDTVoxel::NUM_POINT_THRESHOLD);
 
-    add_pt(pc_point_its, pc_cov_its, value);
+    add_pt(value);
 
     ++value;
   }
 
   // Each point should correspond to a single voxel for this test case
-  ASSERT_EQ(generator_grid.size(), num_points);
+  ASSERT_EQ(generator_grid.size(), NUM_POINTS);
 
   // All points should be able to be inserted since
   EXPECT_NO_THROW(map_grid.set(msg));
@@ -499,15 +360,14 @@ sensor_msgs::msg::PointCloud2 make_pcl(
 sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
 {
   sensor_msgs::msg::PointCloud2 cloud;
-  autoware::common::lidar_utils::init_pcl_msg(cloud, "base_link", pts.size());
-  auto idx = 0U;
-
+  point_cloud_msg_wrapper::PointCloud2Modifier<autoware::common::types::PointXYZI>
+  modifier{cloud, "map"};
   for (const auto & pt : pts) {
-    autoware::common::types::PointXYZIF ptF{};
+    autoware::common::types::PointXYZI ptF{};
     ptF.x = static_cast<float>(pt(0U));
     ptF.y = static_cast<float>(pt(1U));
     ptF.z = static_cast<float>(pt(2U));
-    add_point_to_cloud(cloud, ptF, idx);
+    modifier.push_back(ptF);
   }
   return cloud;
 }
@@ -525,18 +385,9 @@ sensor_msgs::msg::PointField make_pf(
   return pf;
 }
 
-void populate_pc(
-  sensor_msgs::msg::PointCloud2 & pc,
-  size_t num_points)
+autoware::common::types::PointXYZI get_point_from_vector(const Eigen::Vector3d & v)
 {
-  if (validate_pcl_map(pc) != num_points) {
-    throw std::runtime_error("make sure you use a valid pcl format.");
-  }
-}
-
-autoware::common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v)
-{
-  autoware::common::types::PointXYZIF ptF{};
+  autoware::common::types::PointXYZI ptF{};
   ptF.x = static_cast<float32_t>(v(0));
   ptF.y = static_cast<float32_t>(v(1));
   ptF.z = static_cast<float32_t>(v(2));
@@ -546,10 +397,10 @@ autoware::common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d 
 // add the point `center` and 4 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance
 void add_cell(
-  sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> & msg_wrapper,
   const Eigen::Vector3d & center, float64_t fixed_deviation)
 {
-  add_point_to_cloud(msg, get_point_from_vector(center), pc_idx);
+  msg_wrapper.push_back(get_point_from_vector(center));
 
   std::vector<Eigen::Vector3d> points;
   for (auto idx = 0U; idx < 3U; idx++) {
@@ -561,30 +412,14 @@ void add_cell(
         deviated_pt(idx) -= fixed_deviation;
       }
       points.push_back(deviated_pt);
-      EXPECT_TRUE(add_point_to_cloud(msg, get_point_from_vector(deviated_pt), pc_idx));
+      msg_wrapper.push_back(get_point_from_vector(deviated_pt));
     }
   }
 }
 
-MapValidationContext::MapValidationContext()
-: pf1{make_pf("x", 0U, PointField::FLOAT64, 1U)},
-  pf2{make_pf("y", 1U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf3{make_pf("z", 2U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf4{make_pf("icov_xx", 3U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf5{make_pf("icov_xy", 4U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf6{make_pf("icov_xz", 5U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf7{make_pf("icov_yy", 6U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf8{make_pf("icov_yz", 7U * sizeof(float64_t), PointField::FLOAT64, 1U)},
-  pf9{make_pf("icov_zz", 8U * sizeof(float64_t), PointField::FLOAT64, 1U)}
-{}
-
 DenseNDTMapContext::DenseNDTMapContext()
+: m_pc_wrapper{m_pc, "map"}
 {
-  // TODO(yunus.caliskan): Use the map manager for special cloud formatting.
-  // init with a size to account for all the points in the map
-  autoware::common::lidar_utils::init_pcl_msg(
-    m_pc, "map",
-    POINTS_PER_DIM * POINTS_PER_DIM * POINTS_PER_DIM * 7);
   // Grid and spatial hash uses these boundaries. The setup allows for a grid of 125 cells: 5x5x5
   // where the centroid coordinates range from the integers 1 to 5 and the voxel size is 1
   m_min_point.x = 0.5F;
@@ -604,7 +439,7 @@ void DenseNDTMapContext::build_pc(const Config & cfg)
       for (auto z = 1U; z <= POINTS_PER_DIM; ++z) {
         Eigen::Vector3d center{static_cast<float64_t>(x), static_cast<float64_t>(y),
           static_cast<float64_t>(z)};
-        add_cell(m_pc, m_pc_idx, center, FIXED_DEVIATION);
+        add_cell(m_pc_wrapper, center, FIXED_DEVIATION);
         m_voxel_centers[cfg.index(center)] = center;
       }
     }

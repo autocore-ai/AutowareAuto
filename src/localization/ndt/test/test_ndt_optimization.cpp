@@ -212,22 +212,14 @@ INSTANTIATE_TEST_CASE_P(
 
 pcl::PointCloud<pcl::PointXYZ> from_pointcloud2(const sensor_msgs::msg::PointCloud2 & msg)
 {
+  point_cloud_msg_wrapper::PointCloud2View<autoware::common::types::PointXYZI> msg_view{msg};
   pcl::PointCloud<pcl::PointXYZ> res{};
-  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it(msg, "x");
-  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it(msg, "y");
-  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it(msg, "z");
 
-  while (x_it != x_it.end() &&
-    y_it != y_it.end() &&
-    z_it != z_it.end())
-  {
+  for (const auto & pt_in : msg_view) {
     pcl::PointXYZ pt;
-    pt.x = *x_it;
-    pt.y = *y_it;
-    pt.z = *z_it;
-    ++x_it;
-    ++y_it;
-    ++z_it;
+    pt.x = pt_in.x;
+    pt.y = pt_in.y;
+    pt.z = pt_in.z;
     res.push_back(pt);
   }
   return res;

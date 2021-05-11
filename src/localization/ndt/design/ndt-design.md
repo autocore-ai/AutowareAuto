@@ -30,9 +30,9 @@ each voxel's centroid and covariance can be serialized into a `PointCloud2` mess
 sparse and only an intermediate representation of a transformed map. This point cloud can then be converted back into
 an NDT map representation via [StaticNDTMap](@ref autoware::localization::ndt::StaticNDTMap)
  where no centroid/covariance is computed but only the points
-are inserted into their corresponding voxels for lookup. Input point cloud is validated via
-[validate_pcl_map()](@ref autoware::localization::ndt::validate_pcl_map) function before converting it into the map
-representation.
+are inserted into their corresponding voxels for lookup. Input point cloud is validated by the 
+`point_cloud_msg_wrapper::PointCloudMsgWrapper<>` where each points is represented as the 
+[PointWithCovariances](@ref autoware::localization::ndt::PointWithCovariances) class.
 
 ### Inputs / Outputs / API
  Inputs:

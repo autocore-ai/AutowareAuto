@@ -61,5 +61,7 @@ if(BUILD_TESTING)
   add_dependencies(test_${PROJECT_NAME} ${PROJECT_NAME})
   target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME} ${PCL_LIBRARIES})
 endif()
-
+# TODO(yunus.caliskan): Remove after #1098
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-float-conversion -Wno-conversion
+-Wno-double-promotion)
 ament_auto_package(INSTALL_TO_SHARE param launch)

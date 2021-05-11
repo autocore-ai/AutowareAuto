@@ -17,6 +17,7 @@
 #include <common/types.hpp>
 #include <ndt_nodes/map_publisher.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -33,11 +34,10 @@ namespace localization
 {
 namespace ndt_nodes
 {
-/// Helper function to abstract the unused arguments of the `lidar_utils::reset_pcl_msg` .
+/// Clear the given pointcloud message
 void reset_pc_msg(sensor_msgs::msg::PointCloud2 & msg)
 {
-  auto dummy_idx = 0U;  // TODO(yunus.caliskan): Change in #102
-  common::lidar_utils::reset_pcl_msg(msg, 0U, dummy_idx);
+  point_cloud_msg_wrapper::PointCloud2Modifier<common::types::PointXYZI>{msg}.clear();
 }
 
 NDTMapPublisherNode::NDTMapPublisherNode(
@@ -87,8 +87,8 @@ void NDTMapPublisherNode::init(
   const std::string & viz_map_topic)
 {
   m_ndt_map_ptr = std::make_unique<ndt::DynamicNDTMap>(*m_map_config_ptr);
-
-  common::lidar_utils::init_pcl_msg(m_source_pc, map_frame);
+  point_cloud_msg_wrapper::PointCloud2Modifier<common::types::PointXYZI> initializer{m_source_pc,
+    map_frame};
 
   m_pub = create_publisher<sensor_msgs::msg::PointCloud2>(
     map_topic,
@@ -113,7 +113,8 @@ void NDTMapPublisherNode::init(
       10000000U);
 
     // Initialize Voxel Grid and output message for downsampling map
-    common::lidar_utils::init_pcl_msg(m_downsampled_pc, map_frame);
+    point_cloud_msg_wrapper::PointCloud2Modifier<common::types::PointXYZI>
+    downsampled_pc_initializer{m_downsampled_pc, map_frame};
     m_voxelgrid_ptr = std::make_unique<VoxelGrid>(*m_viz_map_config_ptr);
 
     // Periodic publishing is a temp. hack until the rviz in ade has transient_local qos support.
@@ -175,8 +176,6 @@ void NDTMapPublisherNode::publish_earth_to_map_transform(ndt::geocentric_pose_t 
 
 void NDTMapPublisherNode::downsample_pc()
 {
-  common::lidar_utils::resize_pcl_msg(m_downsampled_pc, m_source_pc.data.size());
-
   try {
     m_voxelgrid_ptr->insert(m_source_pc);
     m_downsampled_pc = m_voxelgrid_ptr->get();

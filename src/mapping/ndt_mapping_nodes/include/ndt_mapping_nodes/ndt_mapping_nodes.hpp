@@ -63,7 +63,7 @@ public:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using Cloud = sensor_msgs::msg::PointCloud2;
   using RegistrationSummary = localization::localization_common::OptimizedRegistrationSummary;
-
+  using PointXYZI = common::types::PointXYZI;
   // Static asserts to make sure the policies are valid
   static_assert(
     std::is_base_of<mapping::point_cloud_mapping::TriggerPolicyBase<WriteTriggerPolicyT>,
@@ -190,7 +190,8 @@ private:
 
     m_previous_transform.transform.rotation.set__w(1.0);
     m_previous_transform.header.frame_id = m_map_ptr->frame_id();
-    common::lidar_utils::init_pcl_msg(m_cached_increment, map_frame_id);
+    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> msg_initializer{m_cached_increment,
+      map_frame_id};
   }
 
   void observation_callback(Cloud::ConstSharedPtr msg_ptr)
@@ -271,7 +272,8 @@ private:
     const Cloud & observation,
     const PoseWithCovarianceStamped & registered_pose)
   {
-    reset_cached_msg(get_msg_size(observation));
+    point_cloud_msg_wrapper::PointCloud2View<PointXYZI> obs_view{observation};
+    reset_cached_msg(obs_view.size());
     // Convert pose to transform for `doTransform()`
     geometry_msgs::msg::TransformStamped tf;
     tf.header.stamp = registered_pose.header.stamp;
@@ -297,19 +299,9 @@ private:
   /// Clear the cached pc2 message used for storing the transformed point clouds
   void reset_cached_msg(std::size_t size)
   {
-    sensor_msgs::PointCloud2Modifier inc_modifier{m_cached_increment};
+    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> inc_modifier{m_cached_increment};
     inc_modifier.clear();
     inc_modifier.resize(size);
-  }
-
-  /// Get the safe message size
-  std::size_t get_msg_size(const Cloud & msg) const
-  {
-    // TODO(yunus.caliskan): Use a pointcloud2 wrapper once it becomes available.
-    const auto safe_indices = common::lidar_utils::sanitize_point_cloud(msg);
-    // Only do the division when necessary.
-    return (safe_indices.data_length == msg.data.size()) ?
-           msg.width : (safe_indices.data_length / safe_indices.point_step);
   }
 
   /// Convert a `PoseWithCovarianceStamped` into a `TransformStamped`

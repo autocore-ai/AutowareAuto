@@ -19,9 +19,9 @@
 
 #include <point_cloud_mapping/visibility_control.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <voxel_grid/voxel_grid.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <helper_functions/crtp.hpp>
 #include <helper_functions/template_utils.hpp>
 #include <common/types.hpp>
@@ -102,7 +102,6 @@ class POINT_CLOUD_MAPPING_PUBLIC DualVoxelMap
 public:
   static constexpr auto NUM_FIELDS{4U};
   using Cloud = sensor_msgs::msg::PointCloud2;
-  using CloudConstIt = sensor_msgs::PointCloud2ConstIterator<float32_t>;
 
   /// Constructor
   /// \param grid_config Grid configuration of the underlying voxel grid.
@@ -125,23 +124,14 @@ public:
       throw std::runtime_error("pointcloud map and the updates should be on the same frame");
     }
 
-    const auto check_not_end = [](const auto & its) {
-        return std::all_of(its.cbegin(), its.cend(), [](const auto & it) {return it != it.end();});
-      };
-
     MapUpdateSummary ret{MapUpdateType::NO_CHANGE, 0U};
 
-    std::array<CloudConstIt, NUM_FIELDS> obs_its = {
-      CloudConstIt(observation, "x"),
-      CloudConstIt(observation, "y"),
-      CloudConstIt(observation, "z"),
-      CloudConstIt(observation, "intensity")
-    };
+    using PointXYZI = autoware::common::types::PointXYZI;
+    point_cloud_msg_wrapper::PointCloud2View<PointXYZI> observation_view{observation};
 
     ret.update_type = m_grid.empty() ? MapUpdateType::NEW : MapUpdateType::UPDATE;
     auto obs_idx = 0U;
-    for (; check_not_end(obs_its); ++obs_idx) {
-      common::types::PointXYZIF pt{*obs_its[0], *obs_its[1], *obs_its[2], *obs_its[3]};
+    for (const auto & pt : observation_view) {
       const auto pt_key = m_grid_config.index(pt);
       if (m_grid.size() >= capacity() &&
         m_grid.find(pt_key) == m_grid.end())
@@ -153,12 +143,10 @@ public:
         }
         break;
       }
-
       m_grid[pt_key].add_observation(pt);
-
-      // Advance the iterators.
-      std::for_each(obs_its.begin(), obs_its.end(), [](auto & it) {++it;});
+      ++obs_idx;
     }
+
     m_localizer_map.insert(observation);
     ret.num_added_pts = obs_idx;
     return ret;
@@ -221,7 +209,7 @@ public:
 private:
   perception::filters::voxel_grid::Config m_grid_config;
   std::unordered_map<uint64_t,
-    perception::filters::voxel_grid::CentroidVoxel<common::types::PointXYZIF>> m_grid;
+    perception::filters::voxel_grid::CentroidVoxel<common::types::PointXYZI>> m_grid;
   std::string m_frame_id;
   LocalizerMapT m_localizer_map;
 };

@@ -21,6 +21,7 @@
 #include <localization_common/optimized_registration_summary.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <ndt/ndt_common.hpp>
 #include <ndt/ndt_optimization_problem.hpp>

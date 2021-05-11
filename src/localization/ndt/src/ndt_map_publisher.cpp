@@ -15,9 +15,11 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <GeographicLib/Geocentric.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 #include <ndt/ndt_map_publisher.hpp>
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
@@ -68,6 +70,8 @@ void read_from_yaml(
 
 void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 * msg)
 {
+  // TODO(yunus.caliskan): Consider replacing the logic here with pointcloud_msg_wrapper once
+  // It supports the padding in the structs with heterogeneous fields.
   pcl::PCLPointCloud2 pcl_cloud;
   if (pcl::io::loadPCDFile(file_name, pcl_cloud) == -1) {  // load the file
     throw std::runtime_error(std::string("PCD file ") + file_name + " could not be loaded.");
@@ -127,9 +131,7 @@ geocentric_pose_t load_map(
   const std::string & pcl_file_name,
   sensor_msgs::msg::PointCloud2 & pc_out)
 {
-  auto dummy_idx = 0U;  // TODO(yunus.caliskan): Change in #102
-  common::lidar_utils::reset_pcl_msg(pc_out, 0U, dummy_idx);
-
+  point_cloud_msg_wrapper::PointCloud2Modifier<common::types::PointXYZI>{pc_out}.clear();
   geodetic_pose_t geodetic_pose{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
   if (!yaml_file_name.empty()) {

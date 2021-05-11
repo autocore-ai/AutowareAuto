@@ -88,7 +88,12 @@ if(BUILD_TESTING)
   target_link_libraries(${NDT_NODES_TEST}
     ${NDT_MAP_PUBLISHER_NODE_LIB}
     ${YAML_CPP_LIBRARIES})
+  # Required for point_cloud_msg_wrapper
+  target_compile_options(${NDT_NODES_TEST} PRIVATE -Wno-conversion)
+
 endif()
+# TODO(yunus.caliskan): Remove after #1098
+target_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB} PRIVATE -Wno-float-conversion -Wno-double-promotion)
 
 ament_auto_package(INSTALL_TO_SHARE
   data

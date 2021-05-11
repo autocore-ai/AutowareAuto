@@ -21,7 +21,6 @@
 #include <geometry/spatial_hash_config.hpp>
 #include <voxel_grid/config.hpp>
 #include <geometry_msgs/msg/point32.hpp>
-#include <lidar_utils/point_cloud_utils.hpp>
 #include <Eigen/Core>
 #include <vector>
 #include <set>
@@ -53,42 +52,17 @@ sensor_msgs::msg::PointField make_pf(
 void populate_pc(
   sensor_msgs::msg::PointCloud2 & pc,
   size_t num_points);
+using PointXYZI = autoware::common::types::PointXYZI;
 
-autoware::common::types::PointXYZIF get_point_from_vector(const Eigen::Vector3d & v);
+PointXYZI get_point_from_vector(const Eigen::Vector3d & v);
 
 // add the point `center` and 4 additional points in a fixed distance from the center
 // resulting in 7 points with random but bounded covariance
 void add_cell(
-  sensor_msgs::msg::PointCloud2 & msg, uint32_t & pc_idx,
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> & msg_wrapper,
   const Eigen::Vector3d & center, double fixed_deviation);
 
-class MapValidationContext
-{
-public:
-  using PointField = sensor_msgs::msg::PointField;
-  MapValidationContext();
-
-protected:
-  // Correct fields.
-  const PointField pf1;
-  const PointField pf2;
-  const PointField pf3;
-  const PointField pf4;
-  const PointField pf5;
-  const PointField pf6;
-  const PointField pf7;
-  const PointField pf8;
-  const PointField pf9;
-  static constexpr uint32_t point_step{static_cast<uint32_t>(9U * sizeof(float64_t))};
-  static constexpr uint32_t num_points{50U};
-  static constexpr uint32_t num_points_with_config{50U + kNumConfigPoints};
-  static constexpr uint32_t data_size{point_step * (num_points_with_config)};
-  static constexpr uint32_t width{num_points_with_config};
-  static constexpr uint32_t row_step{data_size};
-};
-
 using PointXYZ = geometry_msgs::msg::Point32;
-
 
 class DenseNDTMapContext
 {
@@ -101,9 +75,10 @@ protected:
 
   void build_pc(const autoware::perception::filters::voxel_grid::Config & cfg);
 
-  uint32_t m_pc_idx{0U};
   sensor_msgs::msg::PointCloud2 m_pc;
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> m_pc_wrapper;
   std::map<uint64_t, Eigen::Vector3d> m_voxel_centers;
+  static constexpr std::uint32_t NUM_POINTS{50U};
   PointXYZ m_min_point;
   PointXYZ m_max_point;
   PointXYZ m_voxel_size;
@@ -111,6 +86,6 @@ protected:
 };
 
 
-class NDTMapContext : protected DenseNDTMapContext, protected MapValidationContext {};
+class NDTMapContext : protected DenseNDTMapContext {};
 
 #endif  // TEST_NDT_MAP_HPP_
