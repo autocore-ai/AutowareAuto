@@ -122,6 +122,29 @@ void NERaptorInterface::cmdCallback()
   m_misc_cmd.rolling_counter = m_rolling_counter;
   m_steer_cmd.rolling_counter = m_rolling_counter;
 
+  const auto is_dbw_enabled = m_dbw_state_machine->get_state() != DbwState::DISABLED;
+
+  // Set enables based on current DBW mode
+  if (is_dbw_enabled) {
+    m_accel_cmd.enable = true;
+    m_brake_cmd.enable = true;
+    m_gear_cmd.enable = true;
+    m_gl_en_cmd.global_enable = true;
+    m_misc_cmd.block_standard_cruise_buttons = true;
+    m_misc_cmd.block_adaptive_cruise_buttons = true;
+    m_misc_cmd.block_turn_signal_stalk = true;
+    m_steer_cmd.enable = true;
+  } else {
+    m_accel_cmd.enable = false;
+    m_brake_cmd.enable = false;
+    m_gear_cmd.enable = false;
+    m_gl_en_cmd.global_enable = false;
+    m_misc_cmd.block_standard_cruise_buttons = false;
+    m_misc_cmd.block_adaptive_cruise_buttons = false;
+    m_misc_cmd.block_turn_signal_stalk = false;
+    m_steer_cmd.enable = false;
+  }
+
   // Publish commands to NE Raptor DBW
   m_accel_cmd_pub->publish(m_accel_cmd);
   m_brake_cmd_pub->publish(m_brake_cmd);
@@ -129,6 +152,10 @@ void NERaptorInterface::cmdCallback()
   m_gl_en_cmd_pub->publish(m_gl_en_cmd);
   m_misc_cmd_pub->publish(m_misc_cmd);
   m_steer_cmd_pub->publish(m_steer_cmd);
+
+  // Set state flags
+  m_dbw_state_machine->control_cmd_sent();
+  m_dbw_state_machine->state_cmd_sent();
 }
 
 bool8_t NERaptorInterface::update(std::chrono::nanoseconds timeout)
@@ -139,10 +166,7 @@ bool8_t NERaptorInterface::update(std::chrono::nanoseconds timeout)
 
 bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
 {
-  bool8_t is_dbw_enabled = m_dbw_state_machine->enabled() ? true : false;
   bool8_t ret{true};
-  std_msgs::msg::Empty send_req{};
-  ModeChangeRequest::SharedPtr t_mode{new ModeChangeRequest};
 
   std::lock_guard<std::mutex> guard_gc(m_gear_cmd_mutex);
   std::lock_guard<std::mutex> guard_ec(m_gl_en_cmd_mutex);
@@ -263,29 +287,11 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       break;
   }
 
-  // Set enables based on current DBW mode
-  if (is_dbw_enabled) {
-    m_gear_cmd.enable = true;
-    m_gl_en_cmd.global_enable = true;
-    m_gl_en_cmd.enable_joystick_limits = true;
-    m_misc_cmd.block_standard_cruise_buttons = true;
-    m_misc_cmd.block_adaptive_cruise_buttons = true;
-    m_misc_cmd.block_turn_signal_stalk = true;
-  } else {
-    m_gear_cmd.enable = false;
-    m_gl_en_cmd.global_enable = false;
-    m_gl_en_cmd.enable_joystick_limits = false;
-    m_misc_cmd.block_standard_cruise_buttons = false;
-    m_misc_cmd.block_adaptive_cruise_buttons = false;
-    m_misc_cmd.block_turn_signal_stalk = false;
-  }
-
   std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
   m_brake_cmd.park_brake_cmd.status =
     (msg.hand_brake) ? ParkingBrake::ON : ParkingBrake::OFF;
 
   m_seen_vehicle_state_cmd = true;
-  m_dbw_state_machine->state_cmd_sent();
 
   return ret;
 }
@@ -294,7 +300,6 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
  */
 bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & msg)
 {
-  bool8_t is_dbw_enabled = m_dbw_state_machine->enabled() ? true : false;
   bool8_t ret{true};
   float32_t velocity_checked{0.0F};
 
@@ -306,13 +311,6 @@ bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & 
   m_accel_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle speed
   m_steer_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle curvature
   m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;  // vehicle speed
-
-  // Set enable variables
-  m_accel_cmd.enable = is_dbw_enabled;
-  m_brake_cmd.enable = is_dbw_enabled;
-  m_steer_cmd.enable = is_dbw_enabled;
-  m_accel_cmd.ignore = false;
-  m_steer_cmd.ignore = false;
 
   // Set limits
   m_accel_cmd.accel_limit = m_acceleration_limit;
@@ -339,7 +337,6 @@ bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & 
   m_accel_cmd.speed_cmd = velocity_checked;
   m_steer_cmd.vehicle_curvature_cmd = msg.curvature;
 
-  m_dbw_state_machine->control_cmd_sent();
   return ret;
 }
 
@@ -357,7 +354,6 @@ bool8_t NERaptorInterface::send_control_command(const RawControlCommand & msg)
 
 bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & msg)
 {
-  bool8_t is_dbw_enabled = m_dbw_state_machine->enabled() ? true : false;
   bool8_t ret{true};
   float32_t velocity_checked{0.0F};
   float32_t angle_checked{0.0F};
@@ -370,13 +366,6 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
   m_accel_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;   // vehicle speed
   m_steer_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_ACTUATOR;  // angular position
   m_brake_cmd.control_type.value = ActuatorControlMode::CLOSED_LOOP_VEHICLE;   // vehicle speed
-
-  // Set enable variables
-  m_accel_cmd.enable = is_dbw_enabled;
-  m_brake_cmd.enable = is_dbw_enabled;
-  m_steer_cmd.enable = is_dbw_enabled;
-  m_accel_cmd.ignore = false;
-  m_steer_cmd.ignore = false;
 
   // Set limits
   m_accel_cmd.accel_limit = m_acceleration_limit;
@@ -428,7 +417,6 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
   m_accel_cmd.speed_cmd = velocity_checked;
   m_steer_cmd.angle_cmd = angle_checked;
 
-  m_dbw_state_machine->control_cmd_sent();
   return ret;
 }
 
