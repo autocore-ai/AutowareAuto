@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>benchmark_tool_nodes</name>
+  <version>1.0.0</version>
+  <description>The benchmark_tool_nodes package</description>
+
+  <maintainer email="ambroise.vincent@arm.com">Ambroise Vincent</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-psutil</exec_depend>
+  <exec_depend>qt_dotgraph</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2topic</exec_depend>
+
+  <exec_depend>benchmark_tool</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
