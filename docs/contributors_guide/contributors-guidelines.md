@@ -22,16 +22,15 @@ Guidelines and Best Practices {#contributor-guidelines}
 
 5. Finish a merge request
 
-  1. The review process for the MR is as follows: 
-    1. Submitter adds Reviewer(s) and Assigned person(s) (same in the beginning) .
-    2. Reviewer reviews and assigns back to Submitter for changes.
-    3. Submitter addresses the reviews making necessary changes if any and assigns to Reviewer(s).
+  1. The review process for the MR is as follows:
+    1. Submitter adds Reviewer(s) and assigns herself.
+    2. Reviewer reviews and submits comments.
+    3. Assignee addresses the reviews making necessary changes and notifies Reviewer(s) to have another look.
     4. Repeat 2 and 3 as necessary.
     5. When Reviewer approves, the MR should be assigned to the `@merge-bot` account which will automatically rebase and merge it.
   2. In order for a merge request to be merged to Autoware.Auto, it must meet the following criteria:
     - All discussions on the merge request must be resolved.
     - All items of the merge-request checklist are checked off.
-    - It must be approved by at least one maintainer.
     - CI jobs for the merge request must have passed successfully.
   3. Once your merge request has been accepted by the reviewer, assign the merge request to the `@merge-bot` account.
 

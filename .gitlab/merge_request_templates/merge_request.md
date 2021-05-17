@@ -102,4 +102,5 @@ After receiving approval:
 1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-rendering) looks as expected
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
 1. [ ] Developers were informed about breaking changes on slack in the _committers-autoware-auto_ channel
-1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: JWhitleyWork
+1. [ ] If there are multiple commits, the MR title has to contain the issue number as it's used for the squashed commit message; e.g. `[#928] Fix foo in bar`
+1. [ ] Assign MR to `@merge-bot`

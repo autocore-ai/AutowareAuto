@@ -49,4 +49,5 @@ If the MR provides an improvement, don't hesitate to add a :thumbsup: emoji for 
 After receiving approval:
 
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
-1. [ ] Assign MR to maintainer with sufficient rights to merge. Default: JWhitleyWork
+1. [ ] If there are multiple commits, the MR title has to contain the issue number as it's used for the squashed commit message; e.g. `[#928] Fix foo in bar`
+1. [ ] Assign MR to `@merge-bot`
