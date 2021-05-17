@@ -141,7 +141,13 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Prune tracks
   // ==================================
-  // TODO(nikolai.morin): Implement pruning rule
+  const auto last = std::remove_if(
+    m_objects.begin(), m_objects.end(), [this](const auto & object) {
+      return object.should_be_removed(
+        this->m_options.pruning_time_threshold,
+        this->m_options.pruning_ticks_threshold);
+    });
+  m_objects.erase(last, m_objects.end());
 
   // ==================================
   // Build result

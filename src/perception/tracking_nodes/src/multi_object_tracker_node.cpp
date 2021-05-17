@@ -16,6 +16,8 @@
 
 #include <rclcpp_components/register_node_macro.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -54,8 +56,15 @@ MultiObjectTracker init_tracker(rclcpp::Node & node)
   const float32_t noise_variance =
     static_cast<float32_t>(node.declare_parameter(
       "ekf_noise_variance").get<float64_t>());
+  const std::chrono::nanoseconds pruning_time_threshold =
+    std::chrono::milliseconds(
+    node.declare_parameter(
+      "pruning_time_threshold_ms").get<int64_t>());
+  const std::size_t pruning_ticks_threshold =
+    static_cast<std::size_t>(node.declare_parameter(
+      "pruning_ticks_threshold").get<int64_t>());
   MultiObjectTrackerOptions options{{max_distance, max_area_ratio}, default_variance,
-    noise_variance};
+    noise_variance, pruning_time_threshold, pruning_ticks_threshold};
   return MultiObjectTracker{options};
 }
 

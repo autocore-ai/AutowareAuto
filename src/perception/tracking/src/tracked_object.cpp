@@ -127,10 +127,12 @@ TrackedObject::TrackedObject(
 void TrackedObject::predict(std::chrono::nanoseconds dt)
 {
   m_ekf.predict(dt);
+  m_time_since_last_seen += dt;
 }
 
 void TrackedObject::update(const DetectedObjectMsg & detection)
 {
+  m_time_since_last_seen = std::chrono::nanoseconds::zero();
   m_ticks_alive++;
   m_ticks_since_last_seen = 0;
   // Update the shape
@@ -231,6 +233,13 @@ const TrackedObject::TrackedObjectMsg & TrackedObject::msg()
       m_ekf.state().index_of<Y_VELOCITY>()));
   // TODO(nikolai.morin): Set is_stationary, classification etc.
   return m_msg;
+}
+
+bool TrackedObject::should_be_removed(
+  const std::chrono::nanoseconds time_threshold,
+  const std::size_t ticks_threshold) const
+{
+  return m_time_since_last_seen >= time_threshold || m_ticks_since_last_seen >= ticks_threshold;
 }
 
 }  // namespace tracking

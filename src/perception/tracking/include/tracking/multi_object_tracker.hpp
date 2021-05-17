@@ -20,6 +20,8 @@
 #define TRACKING__MULTI_OBJECT_TRACKER_HPP_
 
 #include <chrono>
+#include <cstddef>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +29,7 @@
 #include "autoware_auto_msgs/msg/detected_object.hpp"
 #include "autoware_auto_msgs/msg/tracked_object.hpp"
 #include "autoware_auto_msgs/msg/tracked_objects.hpp"
+#include "common/types.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tracking/data_association.hpp"
 #include "tracking/tracked_object.hpp"
@@ -85,9 +88,13 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
   DataAssociationConfig association_config;
   /// When initializing a new track, this value is used for the variance when none is provided by
   /// the detection.
-  float default_variance = -1.0F;  // Invalid, to make sure it is set.
+  float32_t default_variance = -1.0F;  // Invalid, to make sure it is set.
   /// The magnitude of the noise in the Kalman filter.
-  float noise_variance = -1.0F;  // Invalid, to make sure it is set.
+  float32_t noise_variance = -1.0F;  // Invalid, to make sure it is set.
+  /// Time after which unseen tracks should be pruned.
+  std::chrono::nanoseconds pruning_time_threshold = std::chrono::nanoseconds::max();
+  /// Number of updates after which unseen tracks should be pruned.
+  std::size_t pruning_ticks_threshold = std::numeric_limits<std::size_t>::max();
   /// The frame in which to do tracking.
   std::string frame = "map";  // This default probably does not need to be changed.
 };

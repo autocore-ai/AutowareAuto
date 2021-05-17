@@ -134,3 +134,20 @@ TEST(test_tracked_object, test_update) {
     }
   }
 }
+
+// Test that a newly created track isn't pruned right away, but an old track is
+TEST(test_tracked_object, test_should_be_removed) {
+  DetectedObjectMsg msg;
+  msg.kinematics.has_pose = true;
+  TrackedObject object{msg, 1.0F, 30.0F};
+  EXPECT_EQ(object.should_be_removed(std::chrono::milliseconds(100), 5), false);
+  object.predict(std::chrono::milliseconds(500));
+  object.no_update();
+  EXPECT_EQ(object.should_be_removed(std::chrono::milliseconds(100), 5), true);
+  EXPECT_EQ(object.should_be_removed(std::chrono::milliseconds(1000), 5), false);
+  object.no_update();
+  object.no_update();
+  object.no_update();
+  object.no_update();
+  EXPECT_EQ(object.should_be_removed(std::chrono::milliseconds(1000), 5), true);
+}
