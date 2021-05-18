@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <tvm_vendor/dlpack/dlpack.h>
 #include <tvm_vendor/tvm/runtime/c_runtime_api.h>
 #include <tvm_vendor/tvm/runtime/module.h>
@@ -39,12 +40,12 @@ public:
 
   TVMArrayContainer(
     std::vector<int64_t> shape, DLDataTypeCode dtype_code,
-    uint32_t dtype_bits, uint32_t dtype_lanes,
-    DLDeviceType device_type, uint32_t device_id)
+    int32_t dtype_bits, int32_t dtype_lanes,
+    DLDeviceType device_type, int32_t device_id)
   {
     TVMArrayHandle x{};
     TVMArrayAlloc(
-      &shape[0], shape.size(), dtype_code, dtype_bits, dtype_lanes, device_type,
+      &shape[0], static_cast<int>(shape.size()), dtype_code, dtype_bits, dtype_lanes, device_type,
       device_id, &x);
     handle_ = std::make_shared<TVMArrayHandle>(x);
   }
@@ -139,8 +140,9 @@ public:
   Pipeline(
     PreProcessorType pre_processor, InferenceEngineType inference_engine,
     PostProcessorType post_processor)
-  : pre_processor_(pre_processor), post_processor_(post_processor),
-    inference_engine_(inference_engine) {}
+  : pre_processor_(pre_processor),
+    inference_engine_(inference_engine),
+    post_processor_(post_processor) {}
 
   /**
    * @brief run the pipeline. Return asynchronously in a callback.
@@ -165,6 +167,10 @@ private:
 using NetworkNode = std::pair<std::string, std::vector<int64_t>>;
 typedef struct
 {
+  // Network info
+  std::string network_name;
+  std::string network_backend;
+
   // Network files
   std::string network_module_path;
   std::string network_graph_path;
@@ -172,12 +178,12 @@ typedef struct
 
   // Network data type configurations
   DLDataTypeCode tvm_dtype_code;
-  uint32_t tvm_dtype_bits;
-  uint32_t tvm_dtype_lanes;
+  int32_t tvm_dtype_bits;
+  int32_t tvm_dtype_lanes;
 
   // Inference hardware configuration
   DLDeviceType tvm_device_type;
-  uint32_t tvm_device_id;
+  int32_t tvm_device_id;
 
   // Network inputs
   std::vector<NetworkNode> network_inputs;
@@ -189,39 +195,43 @@ typedef struct
 class InferenceEngineTVM : public InferenceEngine
 {
 public:
-  explicit InferenceEngineTVM(InferenceEngineTVMConfig config)
+  explicit InferenceEngineTVM(const InferenceEngineTVMConfig & config)
   : config_(config)
   {
+    // Get full network path
+    std::string network_prefix = ament_index_cpp::get_package_share_directory("neural_networks") +
+      "/networks/" + config.network_name + "/" + config.network_backend + "/";
+    std::string network_module_path = network_prefix + config.network_module_path;
+    std::string network_graph_path = network_prefix + config.network_graph_path;
+    std::string network_params_path = network_prefix + config.network_params_path;
+
     // Load compiled functions
-    std::ifstream module(config.network_module_path);
+    std::ifstream module(network_module_path);
     if (!module.good()) {
       throw std::runtime_error(
-              "File " + config.network_module_path +
-              " specified in inference_engine_tvm_config.h not "
-              "found");
+              "File " + network_module_path +
+              " specified in inference_engine_tvm_config.hpp not found");
     }
     module.close();
-    tvm::runtime::Module mod = tvm::runtime::Module::LoadFromFile(config.network_module_path);
+    tvm::runtime::Module mod = tvm::runtime::Module::LoadFromFile(network_module_path);
 
     // Load json graph
-    std::ifstream json_in(config.network_graph_path, std::ios::in);
+    std::ifstream json_in(network_graph_path, std::ios::in);
     if (!json_in.good()) {
       throw std::runtime_error(
-              "File " + config.network_graph_path +
-              " specified in inference_engine_tvm_config.h not "
-              "found");
+              "File " + network_graph_path +
+              " specified in inference_engine_tvm_config.hpp not found");
     }
     std::string json_data((std::istreambuf_iterator<char>(json_in)),
       std::istreambuf_iterator<char>());
     json_in.close();
 
     // Load parameters from binary file
-    std::ifstream params_in(config.network_params_path, std::ios::binary);
+    std::ifstream params_in(network_params_path, std::ios::binary);
     if (!params_in.good()) {
       throw std::runtime_error(
-              "File " + config.network_params_path +
-              " specified in inference_engine_tvm_config.h not "
-              "found");
+              "File " + network_params_path +
+              " specified in inference_engine_tvm_config.hpp not found");
     }
     std::string params_data((std::istreambuf_iterator<char>(params_in)),
       std::istreambuf_iterator<char>());

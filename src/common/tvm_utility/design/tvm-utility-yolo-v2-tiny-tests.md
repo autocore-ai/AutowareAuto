@@ -16,30 +16,22 @@ $ curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg \
   > artifacts/yolo_v2_tiny/test_image_0.jpg
 ```
 
-2. Compile the neural network model using TVM. A CLI utility program and
-   instructions on how to compile can be found at:
-   https://github.com/autowarefoundation/modelzoo/tree/master/scripts/tvm_cli
+2. If running under `ade`, start the Autoware docker environment (see @ref installation-ade).
 
-   The files produced by the tvm_cli must then be placed in
-   `/artifacts/yolo_v2_tiny/`. These files are:
-
-   - inference_engine_tvm_config.hpp
-   - deploy_lib.so
-   - deploy_graph.json
-   - deploy_param.params
-
-3. Start autoware docker environment.
-
-4. Build and test
+3. Build and test (see @ref building) with the `DOWNLOAD_ARTIFACTS` flag set.
 
 ```sh
-$ colcon build --packages-up-to tvm_utility
+$ colcon build --packages-up-to tvm_utility --cmake-args -DDOWNLOAD_ARTIFACTS=ON
 $ colcon test --packages-select tvm_utility
 ```
 
 # GPU backend
 
-Vulkan is supported by default by the tvm_vendor package.
+Vulkan is supported by default by the tvm_vendor package. It can be selected by setting the
+`tvm_utility_BACKEND` variable:
+```sh
+$ colcon build --packages-up-to tvm_utility --cmake-args -DDOWNLOAD_ARTIFACTS=ON -Dtvm_utility_BACKEND=vulkan
+```
 
 ## Troubleshooting
 

@@ -33,6 +33,15 @@ int main() {
 }
 ```
 
+### Outputs
+
+- `autoware_check_neural_network` cmake macro to check if a specific network and backend combination exists
+
+### Backend
+
+Dependent packages are expected to include `model_zoo.hpp` in order to get the TVM configuration structure of the targeted model/backend combination.
+The backend used to do the inference can be specified by setting `NETWORKS_BACKEND` as a compile definition.
+It defaults to `llvm`.
 
 ## Error detection and handling
 

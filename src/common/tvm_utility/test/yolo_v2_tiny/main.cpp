@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <inference_engine_tvm_config.hpp>
 #include <opencv2/opencv.hpp>
 
 #include <algorithm>
@@ -21,18 +20,21 @@
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "tvm_utility/model_zoo.hpp"
 #include "tvm_utility/pipeline.hpp"
+
+using model_zoo::perception::camera_obstacle_detection::yolo_v2_tiny::tensorflow_fp32_coco::config;
 
 // Name of file containing the human readable names of the classes. One class
 // on each line.
-static constexpr const char * LABEL_FILENAME = "./labels.txt";
+static constexpr const char * LABEL_FILENAME = "./yolo_v2_tiny_artifacts/labels.txt";
 
 // Name of file containing the anchor values for the network. Each line is one
 // anchor. each anchor has 2 comma separated floating point values.
-static constexpr const char * ANCHOR_FILENAME = "./anchors.csv";
+static constexpr const char * ANCHOR_FILENAME = "./yolo_v2_tiny_artifacts/anchors.csv";
 
 // Filename of the image on which to run the inference
-static constexpr const char * IMAGE_FILENAME = "./test_image_0.jpg";
+static constexpr const char * IMAGE_FILENAME = "./yolo_v2_tiny_artifacts/test_image_0.jpg";
 
 namespace tvm_utility
 {
@@ -259,15 +261,9 @@ TEST(PipelineExamples, SimplePipeline) {
   using IET = tvm_utility::pipeline::InferenceEngineTVM;
   using PostPT = PostProcessorYoloV2Tiny;
 
-  PrePT PreP =
-    PrePT{model_zoo::perception::camera_obstacle_detection::yolo_v2_tiny::tensorflow_fp32_coco::
-    config};
-  IET IE =
-    IET{model_zoo::perception::camera_obstacle_detection::yolo_v2_tiny::tensorflow_fp32_coco::
-    config};
-  PostPT PostP =
-    PostPT{model_zoo::perception::camera_obstacle_detection::yolo_v2_tiny::tensorflow_fp32_coco::
-    config};
+  PrePT PreP{config};
+  IET IE{config};
+  PostPT PostP{config};
 
   tvm_utility::pipeline::Pipeline<PrePT, IET, PostPT> pipeline(PreP, IE, PostP);
 
