@@ -9,6 +9,7 @@ visualization tools and interfaces for debugging.
 
 # Subpages
 
+- @subpage autoware-auto-cmake-design
 - @subpage autoware_auto_create_pkg-package-design
 - @subpage autoware-auto-launch-package-design
 - @subpage autoware-demos-package-design

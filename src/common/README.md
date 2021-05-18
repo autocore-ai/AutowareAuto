@@ -16,6 +16,7 @@ across the Autoware.Auto system.
 - @subpage helper-comparisons
 - @subpage more-thuente-line-search-design
 - @subpage mpark_variant_vendor-package-design
+- @subpage neural-networks-design
 - @subpage reference-tracking-controller-design
 - @subpage signal-filters-design
 - @subpage state-and-variables-design

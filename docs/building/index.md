@@ -157,6 +157,16 @@ can be generated with the following flag:
 colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 
+### Configuration variables
+The Autoware build system defines global variables that can be set to change the build configuration.
+For example, to enable downloading artifacts at build time:
+
+```{bash}
+colcon build --cmake-args -DDOWNLOAD_ARTIFACTS=ON
+```
+
+See the @ref cmake-config-variables.
+
 ### Cleaning the build output
 `colcon` isn't very good at being stateless, so when you build, make changes, and build again, you can sometimes end up with a different result than when you build from scratch. To make sure you're getting a fresh build of a package, just do
 
