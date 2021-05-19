@@ -36,17 +36,6 @@
       translation: 50.0
       # Rotation threshold in radians
       rotation: 3.15
-    init_hack:
-      translation:
-        x: 0.0
-        y: 0.0
-        z: 0.0
-      quaternion:
-        x: 0.0
-        y: 0.0
-        z: 0.0
-        w: 1.0
-      enabled: true
     # localizer specific configuration
     localizer:
       #underlying voxel grid configuration of the map

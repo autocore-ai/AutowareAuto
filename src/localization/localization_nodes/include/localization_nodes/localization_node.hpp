@@ -299,31 +299,29 @@ private:
         "/tf",
         rclcpp::QoS{rclcpp::KeepLast{m_pose_publisher->get_queue_size()}});
     }
-
-    if (declare_parameter("init_hack.enabled", false)) {
-      /////////////////////////////////////////////////
-      // TODO(yunus.caliskan): Remove in #425
-      // Since this hack is only needed for the demo, it is not provided in the non-ros constructor.
-      geometry_msgs::msg::TransformStamped init_hack_transform;
-      auto & tf = init_hack_transform.transform;
-      tf.rotation.x = declare_parameter("init_hack.quaternion.x").template get<float64_t>();
-      tf.rotation.y = declare_parameter("init_hack.quaternion.y").template get<float64_t>();
-      tf.rotation.z = declare_parameter("init_hack.quaternion.z").template get<float64_t>();
-      tf.rotation.w = declare_parameter("init_hack.quaternion.w").template get<float64_t>();
-      tf.translation.x = declare_parameter("init_hack.translation.x").template get<float64_t>();
-      tf.translation.y = declare_parameter("init_hack.translation.y").template get<float64_t>();
-      tf.translation.z = declare_parameter("init_hack.translation.z").template get<float64_t>();
-      init_hack_transform.header.frame_id = "map";
-      init_hack_transform.child_frame_id = "base_link";
-      m_external_pose = init_hack_transform;
-      m_external_pose_available = true;
-      m_use_hack = true;
-      // we currently need the hack for the AVP demo MS2.
-      ////////////////////////////////////////////////////
+    if (declare_parameter("load_initial_pose_from_parameters", false)) {
+      m_pose_initializer.set_fallback_pose(get_initial_pose());
     }
   }
 
-  /// Process the registration summary. By default does nothing.
+  geometry_msgs::msg::TransformStamped get_initial_pose()
+  {
+    geometry_msgs::msg::TransformStamped initial_transform;
+    auto & tf = initial_transform.transform;
+    tf.rotation.x = declare_parameter("initial_pose.quaternion.x").template get<float64_t>();
+    tf.rotation.y = declare_parameter("initial_pose.quaternion.y").template get<float64_t>();
+    tf.rotation.z = declare_parameter("initial_pose.quaternion.z").template get<float64_t>();
+    tf.rotation.w = declare_parameter("initial_pose.quaternion.w").template get<float64_t>();
+    tf.translation.x = declare_parameter("initial_pose.translation.x").template get<float64_t>();
+    tf.translation.y = declare_parameter("initial_pose.translation.y").template get<float64_t>();
+    tf.translation.z = declare_parameter("initial_pose.translation.z").template get<float64_t>();
+    initial_transform.header.frame_id = "map";
+    initial_transform.child_frame_id = "base_link";
+    return initial_transform;
+  }
+
+
+/// Process the registration summary. By default does nothing.
   virtual void handle_registration_summary(const RegistrationSummary &) {}
 
   /// Callback that registers each received observation and outputs the result.
@@ -344,24 +342,8 @@ private:
     const auto & map_frame = m_map_ptr->frame_id();
 
     try {
-      geometry_msgs::msg::TransformStamped initial_guess;
-      if (m_external_pose_available) {
-        // If someone set a transform and then requests a different transform, that's an error
-        if (m_external_pose.header.frame_id != map_frame ||
-          m_external_pose.child_frame_id != observation_frame)
-        {
-          throw std::runtime_error(
-                  "The pose initializer's set_external_pose() "
-                  "and guess() methods were called with different frames.");
-        }
-        m_external_pose_available = false;
-        initial_guess = m_external_pose;
-        initial_guess.header.stamp = get_stamp(*msg_ptr);
-      } else {
-        initial_guess =
-          m_pose_initializer.guess(m_tf_buffer, observation_time, map_frame, observation_frame);
-      }
-
+      geometry_msgs::msg::TransformStamped initial_guess = m_pose_initializer.guess(
+        m_tf_buffer, observation_time, map_frame, observation_frame);
       RegistrationSummary summary{};
       const auto pose_out =
         m_localizer_ptr->register_measurement(*msg_ptr, initial_guess, *m_map_ptr, &summary);
@@ -385,10 +367,6 @@ private:
         on_invalid_output(pose_out);
       }
     } catch (...) {
-      // TODO(mitsudome-r) remove this hack in #458
-      if (m_tf_publisher && m_use_hack) {
-        republish_tf(get_stamp(*msg_ptr));
-      }
       on_bad_registration(std::current_exception());
     }
   }
@@ -455,20 +433,6 @@ private:
     m_tf_publisher->publish(tf_message);
   }
 
-  // TODO(mitsudome-r) remove this hack in #458
-  /// Publish the pose message as a transform.
-  void republish_tf(builtin_interfaces::msg::Time stamp)
-  {
-    // no need to check the m_map_ptr for null as it is already done in the callbacks.
-    auto map_odom_tf = m_tf_buffer.lookupTransform(
-      m_map_ptr->frame_id(), "odom",
-      tf2::TimePointZero);
-    map_odom_tf.header.stamp = stamp;
-    tf2_msgs::msg::TFMessage tf_message;
-    tf_message.transforms.push_back(map_odom_tf);
-    m_tf_publisher->publish(tf_message);
-  }
-
   void initial_pose_callback(const typename PoseWithCovarianceStamped::ConstSharedPtr msg_ptr)
   {
     // The child frame is implicitly base_link.
@@ -508,8 +472,7 @@ private:
     // future and the localizer couldn't use it as its next initial pose.
     // We'd need to know the current time before it can be published, and set the
     // time in the header to a recent time.
-    m_external_pose = transformed_pose_stamped;
-    m_external_pose_available = true;
+    m_pose_initializer.set_fallback_pose(transformed_pose_stamped);
   }
 
   std::unique_ptr<LocalizerT> m_localizer_ptr;
@@ -526,10 +489,6 @@ private:
 
   // Receive updates from "/initialpose" (e.g. rviz2)
   typename rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr m_initial_pose_sub;
-  // Stores "/initialpose", the timestamp is not used/valid
-  geometry_msgs::msg::TransformStamped m_external_pose;
-  bool m_external_pose_available{false};
-  bool m_use_hack{false};
 };
 
 template<typename ObservationMsgT, typename MapMsgT, typename MapT, typename LocalizerT,

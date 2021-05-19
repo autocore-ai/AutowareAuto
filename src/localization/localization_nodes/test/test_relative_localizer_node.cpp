@@ -376,3 +376,5 @@ Transform MockInitializer::guess(
   transform.header.frame_id = obs_frame + map_frame;
   return transform;
 }
+
+void MockInitializer::set_fallback_pose(const geometry_msgs::msg::TransformStamped &) {}

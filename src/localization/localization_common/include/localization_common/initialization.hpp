@@ -21,8 +21,11 @@
 #include <localization_common/visibility_control.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <helper_functions/crtp.hpp>
+#include <time_utils/time_utils.hpp>
 #include <tf2/buffer_core.h>
+#include <experimental/optional>
 #include <string>
+
 // probably include the motion model
 
 namespace autoware
@@ -46,6 +49,8 @@ public:
   /// transform graph between the specified frames. If extrapolation is required, the behavior is
   /// determined by the implementation class. tf2 lookup may generate exceptions if the lookup
   /// fails in other ways. For details, see tf2::BufferCore class.
+  /// If a fallback pose was set externally, then the first lookup failure is ignored and the
+  /// fallback pose is served instead.
   /// \param tf_graph Transform graph that contains all the transforms to look up.
   /// \param time_point Time to guess the pose.
   /// \param target_frame Target frame of the transform. (i.e. "map")
@@ -55,19 +60,40 @@ public:
     const tf2::BufferCore & tf_graph, tf2::TimePoint time_point,
     const std::string & target_frame, const std::string & source_frame)
   {
-    PoseT ret;
-
     try {
       // attempt to get transform at a given point.
-      ret = tf_graph.lookupTransform(target_frame, source_frame, time_point);
+      return tf_graph.lookupTransform(target_frame, source_frame, time_point);
       // TODO(yunus.caliskan): Consider detecting too large interpolations and issuing a
       //  warning/error.
     } catch (const tf2::ExtrapolationException &) {
-      ret = this->impl().extrapolate(tf_graph, time_point, target_frame, source_frame);
+      return this->impl().extrapolate(tf_graph, time_point, target_frame, source_frame);
+    } catch (...) {
+      if (!m_fallback_pose) {
+        std::rethrow_exception(std::current_exception());
+      }
+      if ((m_fallback_pose->header.frame_id != target_frame) ||
+        (m_fallback_pose->child_frame_id != source_frame))
+      {
+        throw std::runtime_error(
+                "The initial pose provided to the pose initializer does not "
+                "have the matching frame IDs.");
+      }
+      m_fallback_pose.value().header.stamp = ::time_utils::to_message(time_point);
+      return m_fallback_pose.value();
     }
-
-    return ret;
   }
+
+  /// \brief Explicitly set a transform to be served first time a queried transform is not
+  /// available. This pose is only served once and after that, it is not available until a
+  /// new one is set.
+  /// \param pose Fallback pose to set
+  void set_fallback_pose(const PoseT & pose)
+  {
+    m_fallback_pose.emplace(pose);
+  }
+
+private:
+  std::experimental::optional<PoseT> m_fallback_pose{std::experimental::nullopt};
 };
 
 /// Pose initialization implementation where the extrapolation policy is to simply
