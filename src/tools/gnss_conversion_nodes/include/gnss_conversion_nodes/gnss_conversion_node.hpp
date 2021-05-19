@@ -27,8 +27,11 @@
 
 #include <GeographicLib/Geocentric.hpp>
 
-#include <string>
+#include <tf2/buffer_core.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace autoware
@@ -49,6 +52,9 @@ public:
   ///
   explicit GnssConversionNode(const rclcpp::NodeOptions & options);
 
+  /// Expose the TF buffer for testing purposes.
+  tf2::BufferCore & tf_buffer() {return m_tf_buffer;}
+
 private:
   /// @brief      Callback for the NavSatFix message.
   void GNSS_CONVERSION_NODE_LOCAL nav_sat_fix_callback(
@@ -68,6 +74,11 @@ private:
 
   /// A converter used for performing the actual conversions.
   GeographicLib::Geocentric m_wgs84_to_ecef_convertor{};
+
+  /// A TF buffer.
+  tf2::BufferCore m_tf_buffer;
+  /// A TF listener.
+  tf2_ros::TransformListener m_tf_listener;
 
   /// A clock used for logging.
   mutable rclcpp::Clock m_steady_clock{RCL_STEADY_TIME};

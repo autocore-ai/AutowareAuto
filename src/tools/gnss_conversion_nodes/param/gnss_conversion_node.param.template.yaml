@@ -1,7 +1,9 @@
 ---
 /**:
   ros__parameters:
-    # The frame_id to be set for the output messages. Is "earth" if unspecified.
+    # The frame_id to be set for the output messages. Is "earth" if unspecified. If a different frame
+    # is specified, a conversion using TF will take place. If the link from "earth" to the specified
+    # frame is not specified, the node throws.
     output_frame_id: "earth"
 
     # The child_frame_id to be set for the output messages. Is "base_link" if unspecified.
@@ -10,5 +12,5 @@
     # Specify the history size.
     history_size: 10
 
-    # Set the variances (sigmas) for the ECEF XYZ coordinates that will override the estimated ones.
+    # Set the variances (sigmas) for the XYZ coordinates in the output_frame_id.
     override_variances: [42.0, 42.0, 42.0]
