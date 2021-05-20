@@ -31,7 +31,6 @@
 namespace
 {
 static constexpr auto kDefaultHistorySize = 10;
-static constexpr auto kNumOfCovarianceEntries = 9UL;
 static constexpr auto kHistorySizeTag = "history_size";
 static constexpr auto kOutputTopic = "gnss_position";
 static constexpr auto kGnssFixInputTopic = "wgs84_position";
@@ -139,7 +138,6 @@ void GnssConversionNode::nav_sat_fix_callback(
   out_msg.header.stamp = msg->header.stamp;
   out_msg.header.frame_id = kDefaultFrameId;
   out_msg.child_frame_id = m_child_frame_id;
-  out_msg.covariance.resize(kNumOfCovarianceEntries);
   m_wgs84_to_ecef_convertor.Forward(
     msg->latitude, msg->longitude, msg->altitude,
     out_msg.position.x, out_msg.position.y, out_msg.position.z);
