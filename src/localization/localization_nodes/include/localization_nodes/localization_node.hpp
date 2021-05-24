@@ -443,7 +443,7 @@ private:
       RCLCPP_ERROR(
         get_logger(),
         "Failed to find transform from %s to %s frame. Failed to give initial pose.",
-        msg_ptr->header.frame_id, map_frame);
+        msg_ptr->header.frame_id.c_str(), map_frame.c_str());
       return;
     }
     const auto transform = m_tf_buffer.lookupTransform(

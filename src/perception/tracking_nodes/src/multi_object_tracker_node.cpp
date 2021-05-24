@@ -115,7 +115,7 @@ void MultiObjectTrackerNode::process(
     RCLCPP_WARN(
       get_logger(), "Tracker update for detection at time %d.%d failed. Reason: %s",
       objs->header.stamp.sec, objs->header.stamp.nanosec,
-      status_to_string(result.status));
+      status_to_string(result.status).c_str());
   }
 }
 
