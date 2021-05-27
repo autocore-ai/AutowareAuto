@@ -4,7 +4,7 @@
     ip: "127.0.0.1"
     port: 2369
     cloud_size:  55000
-    topic: "points_raw"  # UdpDriverNode strictly expects to get the topic via `declare_parameter`.
+    topic: "points_xyzi"  # UdpDriverNode strictly expects to get the topic via `declare_parameter`.
     frame_id: "lidar_rear"
     timeout_ms: 10
     rpm:        600

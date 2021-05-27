@@ -34,5 +34,5 @@ def generate_launch_description():
         name='ray_ground_classifier',
         parameters=[get_package_share_directory('ray_ground_classifier_nodes') +
                     '/param/vlp16_lexus.param.yaml'],
-        remappings=[('points_in', '/lidar_front/points_raw')])
+        remappings=[('points_in', '/lidar_front/points_xyzi')])
     return launch.LaunchDescription([driver, classifier])

@@ -61,7 +61,7 @@ def generate_test_description():
                 "expected_num_publishers":  1,
             }
         ],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
 
     filtered_points_checker = lidar_integration.make_pcl_checker(

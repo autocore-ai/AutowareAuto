@@ -80,7 +80,7 @@ Normally this node can be run with following commands:
 # Please update this path with your configuration
 
 source ~/projects/AutowareAuto/install/setup.bash
-ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args -r __ns:=/lidar_front --params-file ~/projects/AutowareAuto/src/perception/filters/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml -r __node:=filter_transform_vlp16_front -r points_in:=/lidar_front/points_raw
+ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args -r __ns:=/lidar_front --params-file ~/projects/AutowareAuto/src/perception/filters/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml -r __node:=filter_transform_vlp16_front -r points_in:=/lidar_front/points_xyzi
 ```
 
 There are some [Path Variables](https://www.jetbrains.com/help/clion/absolute-path-variables.html) 
@@ -121,7 +121,7 @@ To be able to run and/or debug this file with CLion, do the following:
 
 -# Executable: `/home/mfc/projects/AutowareAuto/install/point_cloud_filter_transform_nodes/lib/point_cloud_filter_transform_nodes/point_cloud_filter_transform_node_exe` (Absolute path is required here)
 
--# Program Arguments: `--ros-args -r __ns:=/lidar_front --params-file $ContentRoot$/src/perception/filters/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml -r __node:=filter_transform_vlp16_front -r points_in:=/lidar_front/points_raw`
+-# Program Arguments: `--ros-args -r __ns:=/lidar_front --params-file $ContentRoot$/src/perception/filters/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml -r __node:=filter_transform_vlp16_front -r points_in:=/lidar_front/points_xyzi`
 
 -# (optional) Working Directory: `$ContentRoot$/install/`
 

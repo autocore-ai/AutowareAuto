@@ -147,7 +147,7 @@ def generate_launch_description():
         namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
@@ -156,7 +156,7 @@ def generate_launch_description():
         namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
         condition=IfCondition(LaunchConfiguration('with_obstacle')),
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',

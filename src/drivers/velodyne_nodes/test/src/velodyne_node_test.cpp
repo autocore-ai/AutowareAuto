@@ -107,7 +107,7 @@ TEST_P(velodyne_node_integration, test)
   std::shared_ptr<LidarIntegrationListener> listen_ptr;
   using lidar_integration::LidarIntegrationPclListener;
   listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-    "points_raw",
+    "points_xyzi",
     param.expected_period_ms,
     param.expected_size,
     0.7,  // period tolerance

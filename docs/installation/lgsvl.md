@@ -216,6 +216,18 @@ ade$ source /opt/AutowareAuto/setup.bash
 ade$ ros2 run lgsvl_interface lgsvl_interface_exe --ros-args --params-file /opt/AutowareAuto/share/lgsvl_interface/param/lgsvl.param.yaml
 ```
 
+Autoware.Auto uses PointCloud2 messages with `x,y,z,intensity` rather than `x,y,z,intensity,timestamp` fields.
+
+This node will convert `points_xyzi`
+
+Run `point_type_adapter` to convert the messages.
+
+```
+$ ade enter
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch point_type_adapter point_type_adapter.launch.py
+```
+
 Launch scripts are also provided for convenience. For example for a joystick control demo, run the following in a new terminal window:
 
 ```{bash}

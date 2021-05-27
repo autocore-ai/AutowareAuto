@@ -37,7 +37,7 @@ The rviz config has displays for all topics in this tutorial. As nodes are launc
 
 ### Publishing sensor data
 
-In order to bring up the perception stack, point cloud data needs to be published to the `/lidar_front/points_raw` topic. Several methods for doing this are given below.
+In order to bring up the perception stack, point cloud data needs to be published to the `/lidar_front/points_xyzi` topic. Several methods for doing this are given below.
 
 1. Replaying recorded sensor data. To do this:
   1. Download the PCAP file [Dual VLP-16 Hi-Res pcap file](https://autoware-auto.s3.us-east-2.amazonaws.com/route_small_loop_rw.pcap).
@@ -114,7 +114,7 @@ This node transforms point clouds from the `velodyne_node` to a common frame. In
 ```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
+ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_xyzi
 ```
 
 ![Autoware.Auto transformed points snapshot](autoware-auto-transformed-points.png)

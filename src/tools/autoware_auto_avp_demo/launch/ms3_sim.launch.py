@@ -113,7 +113,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_front',
         namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
@@ -121,7 +121,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_rear',
         namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     map_publisher = Node(
         package='ndt_nodes',
@@ -162,6 +162,15 @@ def generate_launch_description():
         launch_arguments={}.items()
     )
 
+    point_type_adapter_pkg_prefix = get_package_share_directory(
+        'point_type_adapter')
+
+    adapter_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(point_type_adapter_pkg_prefix,
+                         'launch/point_type_adapter.launch.py'))
+    )
+
     return LaunchDescription([
         lgsvl_interface_param,
         map_publisher_param,
@@ -177,4 +186,5 @@ def generate_launch_description():
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
         core_launch,
+        adapter_launch,
     ])

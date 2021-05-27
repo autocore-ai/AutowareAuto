@@ -182,7 +182,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /lidar_front/points_raw
+          Topic: /lidar_front/points_xyzi
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -212,7 +212,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /lidar_rear/points_raw
+          Topic: /lidar_rear/points_xyzi
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true

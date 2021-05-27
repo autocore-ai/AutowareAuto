@@ -39,7 +39,7 @@ def generate_test_description():
                 "output_frame_id": "frameid",
             }
         ],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
 
     # Fallback on data from transform publisher if transform not found in test.param.yaml
@@ -62,7 +62,7 @@ def generate_test_description():
         package="lidar_integration",
         executable="point_cloud_mutation_spoofer_exe",
         arguments=[
-            "--topic", "/lidar_front/points_raw",
+            "--topic", "/lidar_front/points_xyzi",
             "--freq", "10",
             "--runtime", "10",
             "--mean", "30000",

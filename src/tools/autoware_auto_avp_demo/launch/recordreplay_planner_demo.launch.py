@@ -145,7 +145,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_front',
         namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     filter_transform_vlp16_rear = Node(
         package='point_cloud_filter_transform_nodes',
@@ -153,7 +153,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_rear',
         namespace='lidar_rear',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
     point_cloud_fusion_node = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(

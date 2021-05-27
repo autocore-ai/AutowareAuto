@@ -76,7 +76,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /lidar_front/points_raw
+      Topic: /lidar_front/points_xyzi
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

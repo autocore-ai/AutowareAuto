@@ -56,7 +56,7 @@ The thresholds and the transform parameters can only be loaded while constructin
 These nodes have the following basic structure:
 
 Input:
-- points_raw (Message of `PointCloud2` directly from driver nodes)
+- points_xyzi (Message of `PointCloud2` directly from driver nodes or the `point_type_adapter node`)
 
 Output:
 - points_filtered (Message of `PointCloud2`)

@@ -221,7 +221,7 @@ TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
   params.emplace_back("expected_num_subscribers", 0);
   params.emplace_back("pcl_size", 55000);
 
-  rclcpp::NodeOptions options = rclcpp::NodeOptions().arguments({"points_in:=points_raw"});
+  rclcpp::NodeOptions options = rclcpp::NodeOptions().arguments({"points_in:=points_xyzi"});
   options.parameter_overrides(params);
   const auto pc2_filter_ptr = std::make_shared<PointCloud2FilterTransformNode>(options);
 
@@ -234,7 +234,7 @@ TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
     0.1F  // size tolerance
   );
   const auto raw_listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-    "points_raw",
+    "points_xyzi",
     100,
     29000,
     0.7,  // period tolerance

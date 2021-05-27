@@ -42,7 +42,7 @@ VelodyneCloudNode<T>::VelodyneCloudNode(
   const Config & config)
 : UdpDriverNode(
     node_name,
-    "points_raw",
+    "points_xyzi",
     typename UdpDriverNode::UdpConfig{ip, port}),
   m_translator(config),
   m_published_cloud(false),

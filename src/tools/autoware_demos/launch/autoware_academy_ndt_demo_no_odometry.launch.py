@@ -78,7 +78,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_front',
         namespace='lidar_front',
         parameters=[LaunchConfiguration('pc_filter_transform_param_file')],
-        remappings=[("points_in", "points_raw")]
+        remappings=[("points_in", "points_xyzi")]
     )
 
     scan_downsampler = Node(

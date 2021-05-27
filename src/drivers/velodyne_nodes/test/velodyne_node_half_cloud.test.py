@@ -39,7 +39,7 @@ def generate_test_description():
                 "expected_num_subscribers": 1,
             }
         ],
-        remappings=[("points_raw", test_topic)],
+        remappings=[("points_xyzi", test_topic)],
         arguments=["--model", "vlp16"]
     )
 

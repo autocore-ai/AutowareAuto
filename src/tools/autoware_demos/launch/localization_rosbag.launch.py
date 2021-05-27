@@ -140,7 +140,7 @@ def generate_launch_description():
             name='filter_transform_vlp16_front',
             namespace='lidar_front',
             parameters=[pc_filter_transform_param_file_path],
-            remappings=[("points_in", "points_raw")]
+            remappings=[("points_in", "points_xyzi")]
         ),
 
         launch_ros.actions.Node(
@@ -149,7 +149,7 @@ def generate_launch_description():
             name='filter_transform_vlp16_rear',
             namespace='lidar_rear',
             parameters=[pc_filter_transform_param_file_path],
-            remappings=[("points_in", "points_raw")]
+            remappings=[("points_in", "points_xyzi")]
         ),
 
         launch_ros.actions.Node(
