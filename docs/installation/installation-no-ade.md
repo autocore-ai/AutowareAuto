@@ -50,6 +50,7 @@ Once installed, dependencies can be deduced from the sources of the [Autoware.Au
 $ git clone https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto.git
 $ cd AutowareAuto
 $ vcs import < autoware.auto.$ROS_DISTRO.repos
+$ export ROS_VERSION=2
 $ rosdep install -y -i --from-paths src
 ```
 
