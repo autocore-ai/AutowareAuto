@@ -48,6 +48,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 # Testing
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # ament_cppcheck has an internal error for no good reason.
+  set(ament_cmake_cppcheck_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
   # Unit tests

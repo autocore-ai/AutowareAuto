@@ -75,7 +75,7 @@ protected:
 
 
 ///
-/// @brief      A specialization of this function for a state::ConstAccelerationXYYaw state.
+/// @brief      A specialization of this function for a state::ConstAccelerationXYYaw32 state.
 ///
 /// @param[in]  state  The current state. Unused in this function.
 /// @param[in]  dt     Time difference.
@@ -83,12 +83,25 @@ protected:
 /// @return     The Jacobian matrix.
 ///
 template<>
-MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXYYaw::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXYYaw>::crtp_jacobian(
+MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXYYaw32::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXYYaw32>::crtp_jacobian(
   const State & state, const std::chrono::nanoseconds & dt) const;
 
 ///
-/// @brief      A specialization of this function for a state::ConstAccelerationXY state.
+/// @brief      A specialization of this function for a state::ConstAccelerationXYYaw32 state.
+///
+/// @param[in]  state  The current state. Unused in this function.
+/// @param[in]  dt     Time difference.
+///
+/// @return     The Jacobian matrix.
+///
+template<>
+MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXYYaw64::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXYYaw64>::crtp_jacobian(
+  const State & state, const std::chrono::nanoseconds & dt) const;
+
+///
+/// @brief      A specialization of this function for a state::ConstAccelerationXY32 tate.
 ///
 /// @param[in]  state  The current state. Unused in this function.
 /// @param[in]  dt    Time difference.
@@ -96,8 +109,21 @@ LinearMotionModel<common::state_vector::ConstAccelerationXYYaw>::crtp_jacobian(
 /// @return     The Jacobian matrix.
 ///
 template<>
-MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXY::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXY>::crtp_jacobian(
+MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXY32::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXY32>::crtp_jacobian(
+  const State & state, const std::chrono::nanoseconds & dt) const;
+
+///
+/// @brief      A specialization of this function for a state::ConstAccelerationXY32 tate.
+///
+/// @param[in]  state  The current state. Unused in this function.
+/// @param[in]  dt    Time difference.
+///
+/// @return     The Jacobian matrix.
+///
+template<>
+MOTION_MODEL_PUBLIC common::state_vector::ConstAccelerationXY64::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXY64>::crtp_jacobian(
   const State & state, const std::chrono::nanoseconds & dt) const;
 
 }  // namespace motion_model

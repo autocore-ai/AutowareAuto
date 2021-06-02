@@ -58,9 +58,9 @@ class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
     FilterT,
     PredictionEvent,
     ResetEvent<FilterT>,
-    Measurement2dPose,
-    Measurement2dSpeed,
-    Measurement2dPoseAndSpeed>;
+    Measurement2dPose32,
+    Measurement2dSpeed32,
+    Measurement2dPoseAndSpeed32>;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

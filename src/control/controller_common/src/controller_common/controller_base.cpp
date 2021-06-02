@@ -248,7 +248,7 @@ Point ControllerBase::predict(const Point & point, std::chrono::nanoseconds dt) 
   using autoware::common::state_vector::variable::YAW;
   using autoware::common::state_vector::variable::YAW_CHANGE_RATE;
   // Set up state
-  autoware::common::motion_model::CatrMotionModel::State state{};
+  autoware::common::motion_model::CatrMotionModel32::State state{};
   state.at<X>() = point.x;
   state.at<Y>() = point.y;
   state.at<XY_VELOCITY>() = point.longitudinal_velocity_mps;

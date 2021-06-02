@@ -16,17 +16,36 @@
 
 #include <motion_model/linear_motion_model.hpp>
 
+#include <common/types.hpp>
+
 namespace
 {
-Eigen::Matrix3f create_single_variable_block(const std::chrono::nanoseconds & dt)
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
+
+template<typename ScalarT>
+Eigen::Matrix<ScalarT, 3, 3> create_single_variable_block(const std::chrono::nanoseconds & dt)
 {
-  const auto t = std::chrono::duration<float>{dt}.count();
+  const auto t = std::chrono::duration<float64_t>{dt}.count();
   const auto t2 = t * t;
-  return (Eigen::Matrix3f{} <<
-         1.0F, t, 0.5F * t2,
-         0.0F, 1.0F, t,
-         0.0F, 0.0F, 1.0F).finished();
+  return (Eigen::Matrix3d{} <<
+         1.0, t, 0.5 * t2,
+         0.0, 1.0, t,
+         0.0, 0.0, 1.0).finished().cast<ScalarT>();
 }
+
+template<typename ScalarT, int size>
+Eigen::Matrix<ScalarT, size, size> create_jacobian(const std::chrono::nanoseconds & dt)
+{
+  const Eigen::Matrix<ScalarT, 3,
+    3> single_variable_block{create_single_variable_block<ScalarT>(dt)};
+  Eigen::Matrix<ScalarT, size, size> m{Eigen::Matrix<ScalarT, size, size>::Zero()};
+  for (int i = 0; i < size; i += 3) {
+    m.template block<3, 3>(i, i) = single_variable_block;
+  }
+  return m;
+}
+
 }  // namespace
 
 namespace autoware
@@ -37,28 +56,35 @@ namespace motion_model
 {
 
 template<>
-common::state_vector::ConstAccelerationXYYaw::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXYYaw>::crtp_jacobian(
+common::state_vector::ConstAccelerationXYYaw32::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXYYaw32>::crtp_jacobian(
   const State &, const std::chrono::nanoseconds & dt) const
 {
-  const Eigen::Matrix3f single_variable_block{create_single_variable_block(dt)};
-  State::Matrix m{State::Matrix::Zero()};
-  m.block<3, 3>(0, 0) = single_variable_block;
-  m.block<3, 3>(3, 3) = single_variable_block;
-  m.block<3, 3>(6, 6) = single_variable_block;
-  return m;
+  return create_jacobian<float32_t, 9>(dt);
 }
 
 template<>
-common::state_vector::ConstAccelerationXY::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXY>::crtp_jacobian(
+common::state_vector::ConstAccelerationXYYaw64::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXYYaw64>::crtp_jacobian(
   const State &, const std::chrono::nanoseconds & dt) const
 {
-  const Eigen::Matrix3f single_variable_block{create_single_variable_block(dt)};
-  State::Matrix m{State::Matrix::Zero()};
-  m.block<3, 3>(0, 0) = single_variable_block;
-  m.block<3, 3>(3, 3) = single_variable_block;
-  return m;
+  return create_jacobian<float64_t, 9>(dt);
+}
+
+template<>
+common::state_vector::ConstAccelerationXY32::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXY32>::crtp_jacobian(
+  const State &, const std::chrono::nanoseconds & dt) const
+{
+  return create_jacobian<float32_t, 6>(dt);
+}
+
+template<>
+common::state_vector::ConstAccelerationXY64::Matrix
+LinearMotionModel<common::state_vector::ConstAccelerationXY64>::crtp_jacobian(
+  const State &, const std::chrono::nanoseconds & dt) const
+{
+  return create_jacobian<float64_t, 6>(dt);
 }
 
 }  // namespace motion_model

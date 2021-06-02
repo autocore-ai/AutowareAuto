@@ -42,7 +42,7 @@ namespace state_estimation
 template<typename MeasurementT>
 MeasurementT transform_measurement(
   const MeasurementT &,
-  const Eigen::Isometry3f &)
+  const Eigen::Isometry3d &)
 {
   static_assert(
     sizeof(MeasurementT) == 0,
@@ -61,11 +61,12 @@ MeasurementT transform_measurement(
 template<typename MeasurementT, typename MessageT>
 MeasurementT message_to_transformed_measurement(
   const MessageT & msg,
-  const Eigen::Isometry3f & tf__world__frame_id)
+  const Eigen::Isometry3d & tf__world__frame_id)
 {
   const auto measurement = message_to_measurement<MeasurementT, MessageT>(msg);
   return transform_measurement(measurement, tf__world__frame_id);
 }
+
 
 // Doxygen is buggy when the parameters are repeated here, so they are omitted.
 
@@ -73,41 +74,41 @@ MeasurementT message_to_transformed_measurement(
 /// @brief      Specialization of transform_measurement for speed measurement.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC Measurement2dSpeed transform_measurement(
-  const Measurement2dSpeed & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC Measurement2dSpeed64 transform_measurement(
+  const Measurement2dSpeed64 & measurement,
+  const Eigen::Isometry3d & tf__world__frame_id);
 
 ///
 /// @brief      Specialization of transform_measurement for pose measurement.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC Measurement2dPose transform_measurement(
-  const Measurement2dPose & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC Measurement2dPose64 transform_measurement(
+  const Measurement2dPose64 & measurement,
+  const Eigen::Isometry3d & tf__world__frame_id);
 
 ///
 /// @brief      Specialization of transform_measurement for stamped speed measurement.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dSpeed transform_measurement(
-  const StampedMeasurement2dSpeed & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dSpeed64 transform_measurement(
+  const StampedMeasurement2dSpeed64 & measurement,
+  const Eigen::Isometry3d & tf__world__frame_id);
 
 ///
 /// @brief      Specialization of transform_measurement for stamped pose measurement.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose transform_measurement(
-  const StampedMeasurement2dPose & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPose64 transform_measurement(
+  const StampedMeasurement2dPose64 & measurement,
+  const Eigen::Isometry3d & tf__world__frame_id);
 
 ///
 /// @brief      Specialization of transform_measurement for stamped pose and speed measurement.
 ///
 template<>
-MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPoseAndSpeed transform_measurement(
-  const StampedMeasurement2dPoseAndSpeed & measurement,
-  const Eigen::Isometry3f & tf__world__frame_id);
+MEASUREMENT_CONVERSION_PUBLIC StampedMeasurement2dPoseAndSpeed64 transform_measurement(
+  const StampedMeasurement2dPoseAndSpeed64 & measurement,
+  const Eigen::Isometry3d & tf__world__frame_id);
 
 }  // namespace state_estimation
 }  // namespace common

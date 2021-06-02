@@ -20,8 +20,8 @@
 #include <gtest/gtest.h>
 
 using autoware::common::motion_model::LinearMotionModel;
-using autoware::common::state_vector::ConstAccelerationXY;
-using autoware::common::state_vector::ConstAccelerationXYYaw;
+using autoware::common::state_vector::ConstAccelerationXY32;
+using autoware::common::state_vector::ConstAccelerationXYYaw32;
 using autoware::common::state_vector::variable::X;
 using autoware::common::state_vector::variable::Y;
 using autoware::common::state_vector::variable::YAW;
@@ -34,9 +34,9 @@ using autoware::common::state_vector::variable::YAW_CHANGE_ACCELERATION;
 
 
 /// @test Test that prediction on independent x, y, yaw with constant acceleration works.
-TEST(LinearMotionModel, PredictConstAccelerationXYYaw) {
-  ConstAccelerationXYYaw state{ConstAccelerationXYYaw::Vector::Ones()};
-  LinearMotionModel<ConstAccelerationXYYaw> motion_model{};
+TEST(LinearMotionModel, PredictConstAccelerationXYYaw32) {
+  ConstAccelerationXYYaw32 state{ConstAccelerationXYYaw32::Vector::Ones()};
+  LinearMotionModel<ConstAccelerationXYYaw32> motion_model{};
   state = motion_model.predict(state, std::chrono::milliseconds{100});
   EXPECT_FLOAT_EQ(1.105F, state.at<X>());
   EXPECT_FLOAT_EQ(1.1F, state.at<X_VELOCITY>());
@@ -52,8 +52,8 @@ TEST(LinearMotionModel, PredictConstAccelerationXYYaw) {
 
 /// @test Test that prediction on independent x, y with constant acceleration works.
 TEST(LinearMotionModel, PredictConstAccelerationXY) {
-  ConstAccelerationXY state{ConstAccelerationXY::Vector::Ones()};
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
+  ConstAccelerationXY32 state{ConstAccelerationXY32::Vector::Ones()};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
   state = motion_model.predict(state, std::chrono::milliseconds{100});
   EXPECT_FLOAT_EQ(1.105F, state.at<X>());
   EXPECT_FLOAT_EQ(1.1F, state.at<X_VELOCITY>());

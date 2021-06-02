@@ -107,20 +107,34 @@ auto make_wiener_noise(const std::vector<OtherScalarT> & acceleration_variances)
 /// @brief      A specialization of the number_of_acceleration_components trait for
 ///             common::state_vector::ConstAccelerationXY.
 ///
-template<>
-struct number_of_acceleration_components<common::state_vector::ConstAccelerationXY>
+template<typename ScalarT>
+struct number_of_acceleration_components<common::state_vector::ConstAccelerationXY<ScalarT>>
   : public std::integral_constant<std::size_t, 2UL> {};
 
 ///
-/// @brief      A specialization of covariance matrix computation for ConstAccelerationXY state.
+/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXY32
+///             state.
 ///
 /// @param[in]  dt    Time step.
 ///
 /// @return     Covariance matrix.
 ///
 template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXY::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXY>::crtp_covariance(
+STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXY32::Matrix
+WienerNoise<common::state_vector::ConstAccelerationXY32>::crtp_covariance(
+  const std::chrono::nanoseconds & dt) const;
+
+///
+/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXY64
+///             state.
+///
+/// @param[in]  dt    Time step.
+///
+/// @return     Covariance matrix.
+///
+template<>
+STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXY64::Matrix
+WienerNoise<common::state_vector::ConstAccelerationXY64>::crtp_covariance(
   const std::chrono::nanoseconds & dt) const;
 
 
@@ -128,20 +142,34 @@ WienerNoise<common::state_vector::ConstAccelerationXY>::crtp_covariance(
 /// @brief      A specialization of the number_of_acceleration_components trait for
 ///             common::state_vector::ConstAccelerationXYYaw.
 ///
-template<>
-struct number_of_acceleration_components<common::state_vector::ConstAccelerationXYYaw>
+template<typename ScalarT>
+struct number_of_acceleration_components<common::state_vector::ConstAccelerationXYYaw<ScalarT>>
   : public std::integral_constant<std::size_t, 3UL> {};
 
 ///
-/// @brief      A specialization of covariance matrix computation for ConstAccelerationXYYaw state.
+/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXYYaw32
+///             state.
 ///
 /// @param[in]  dt    Time step.
 ///
 /// @return     Covariance matrix.
 ///
 template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXYYaw::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXYYaw>::crtp_covariance(
+STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXYYaw32::Matrix
+WienerNoise<common::state_vector::ConstAccelerationXYYaw32>::crtp_covariance(
+  const std::chrono::nanoseconds & dt) const;
+
+///
+/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXYYaw64
+///             state.
+///
+/// @param[in]  dt    Time step.
+///
+/// @return     Covariance matrix.
+///
+template<>
+STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXYYaw64::Matrix
+WienerNoise<common::state_vector::ConstAccelerationXYYaw64>::crtp_covariance(
   const std::chrono::nanoseconds & dt) const;
 
 }  // namespace state_estimation

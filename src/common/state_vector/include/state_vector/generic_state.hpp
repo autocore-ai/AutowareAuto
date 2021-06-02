@@ -377,6 +377,17 @@ public:
     return state;
   }
 
+  ///
+  /// @brief      Cast to another scalar type.
+  ///
+  /// @return     The state with a different scalar type.
+  ///
+  template<typename NewScalarT>
+  GenericState<NewScalarT, VariableTs...> cast() const noexcept
+  {
+    return GenericState<NewScalarT, VariableTs...>{m_state.template cast<NewScalarT>()};
+  }
+
 private:
   /// Underlying Eigen vector.
   Vector m_state{Vector::Zero()};

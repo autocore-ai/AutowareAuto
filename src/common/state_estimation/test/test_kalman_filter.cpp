@@ -38,16 +38,16 @@ using autoware::common::state_estimation::LinearMeasurement;
 using autoware::common::state_estimation::KalmanFilter;
 using autoware::common::state_estimation::WienerNoise;
 using autoware::common::motion_model::LinearMotionModel;
-using autoware::common::state_vector::ConstAccelerationXY;
-using autoware::common::state_vector::ConstAccelerationXYYaw;
+using autoware::common::state_vector::ConstAccelerationXY32;
+using autoware::common::state_vector::ConstAccelerationXYYaw32;
 using autoware::common::types::float32_t;
 
 /// @test Test that a filter can be created and reset and is in a valid state throughout this.
 TEST(TestKalmanFilter, CreateAndReset) {
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXY32>::State;
   using Matrix = State::Matrix;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
+  WienerNoise<ConstAccelerationXY32> noise_model{{1.0F, 1.0F}};
   auto kf = make_kalman_filter(
     motion_model, noise_model, State{}, {{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F}});
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
@@ -59,10 +59,10 @@ TEST(TestKalmanFilter, CreateAndReset) {
 
 /// @test Test that predictions without measurements always increase uncertainty.
 TEST(TestKalmanFilter, PredictionsIncreaseUncertainty) {
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXY32>::State;
   using Matrix = State::Matrix;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
+  WienerNoise<ConstAccelerationXY32> noise_model{{1.0F, 1.0F}};
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, Matrix::Identity());
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
   auto covariance = kf.covariance();
@@ -78,13 +78,13 @@ TEST(TestKalmanFilter, PredictionsIncreaseUncertainty) {
 
 /// @test Test that we can track a static object measuring its full state.
 TEST(TestKalmanFilter, TrackStaticObjectWithDirectMeasurements) {
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXY32>::State;
   using Matrix = State::Matrix;
   using MeasurementState = FloatState<
     X, X_VELOCITY, X_ACCELERATION,
     Y, Y_VELOCITY, Y_ACCELERATION>;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
+  WienerNoise<ConstAccelerationXY32> noise_model{{1.0F, 1.0F}};
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, Matrix::Identity());
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
   auto covariance = kf.covariance();
@@ -106,11 +106,11 @@ TEST(TestKalmanFilter, TrackStaticObjectWithDirectMeasurements) {
 
 /// @test Test that we can track a static object measuring only its partial state.
 TEST(TestKalmanFilter, TrackStaticObjectHiddenState) {
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXY32>::State;
   using Matrix = State::Matrix;
   using MeasurementState = FloatState<X, Y>;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
+  WienerNoise<ConstAccelerationXY32> noise_model{{1.0F, 1.0F}};
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, 10.0F * Matrix::Identity());
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
   auto covariance = kf.covariance();
@@ -138,11 +138,11 @@ TEST(TestKalmanFilter, TrackStaticObjectHiddenState) {
 /// @details The object is assumed to move at a straight line, changing its orientation with
 ///     constant angular velocity. All the variables, X, Y, YAW are changing independently.
 TEST(TestKalmanFilter, TrackMovingObject) {
-  using State = LinearMotionModel<ConstAccelerationXYYaw>::State;
+  using State = LinearMotionModel<ConstAccelerationXYYaw32>::State;
   using Matrix = State::Matrix;
   using MeasurementState = FloatState<X, Y, YAW>;
-  LinearMotionModel<ConstAccelerationXYYaw> motion_model{};
-  WienerNoise<ConstAccelerationXYYaw> noise_model{{1.0F, 1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXYYaw32> motion_model{};
+  WienerNoise<ConstAccelerationXYYaw32> noise_model{{1.0F, 1.0F, 1.0F}};
   const auto initial_covariance = Matrix::Identity();
   auto kf = make_kalman_filter(motion_model, noise_model, State{}, initial_covariance);
   EXPECT_TRUE(kf.state().vector().isApproxToConstant(0.0F));
@@ -186,11 +186,11 @@ TEST(TestKalmanFilter, TrackMovingObject) {
 TEST(TestKalmanFilter, TrackThrownBall) {
   using namespace std::chrono_literals;
   using FloatSeconds = std::chrono::duration<float32_t>;
-  using State = LinearMotionModel<ConstAccelerationXY>::State;
+  using State = LinearMotionModel<ConstAccelerationXY32>::State;
   using Matrix = State::Matrix;
   using MeasurementState = FloatState<X, Y>;
-  LinearMotionModel<ConstAccelerationXY> motion_model{};
-  WienerNoise<ConstAccelerationXY> noise_model{{1.0F, 1.0F}};
+  LinearMotionModel<ConstAccelerationXY32> motion_model{};
+  WienerNoise<ConstAccelerationXY32> noise_model{{1.0F, 1.0F}};
 
   const float32_t g = -9.80665F;  // m/s^2.
   const float32_t initial_speed = 9.80665F;  // m/s

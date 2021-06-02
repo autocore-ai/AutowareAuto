@@ -23,6 +23,9 @@
 
 namespace
 {
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
+
 constexpr auto kCovarianceMatrixRows = 6U;
 constexpr auto kCovarianceMatrixRowsRelativePos = 3U;
 constexpr auto kIndexX = 0U;
@@ -56,106 +59,104 @@ namespace state_estimation
 {
 
 template<>
-Measurement2dSpeed message_to_measurement(
+Measurement2dSpeed64 message_to_measurement(
   const geometry_msgs::msg::TwistWithCovariance & msg)
 {
-  using FloatT = common::types::float32_t;
+  Eigen::Vector2d mean{msg.twist.linear.x, msg.twist.linear.y};
   Eigen::Matrix2d covariance;
   covariance <<
     msg.covariance[kIndexX], msg.covariance[kIndexXY],
     msg.covariance[kIndexYX], msg.covariance[kIndexY];
-  return Measurement2dSpeed{
-    Eigen::Vector2f{msg.twist.linear.x, msg.twist.linear.y},
-    covariance.cast<FloatT>()};
+  return Measurement2dSpeed64{
+    mean,
+    covariance};
 }
 
 template<>
-Measurement2dPose message_to_measurement(
+Measurement2dPose64 message_to_measurement(
   const geometry_msgs::msg::PoseWithCovariance & msg)
 {
-  using FloatT = common::types::float32_t;
+  Eigen::Vector2d mean{msg.pose.position.x, msg.pose.position.y};
   Eigen::Matrix2d covariance;
   covariance <<
     msg.covariance[kIndexX], msg.covariance[kIndexXY],
     msg.covariance[kIndexYX], msg.covariance[kIndexY];
-  return Measurement2dPose{Eigen::Vector2f{
-      msg.pose.position.x, msg.pose.position.y},
-    covariance.cast<FloatT>()};
+  return Measurement2dPose64{
+    mean,
+    covariance};
 }
 
-
 template<>
-StampedMeasurement2dSpeed message_to_measurement(
+StampedMeasurement2dSpeed64 message_to_measurement(
   const geometry_msgs::msg::TwistWithCovarianceStamped & msg)
 {
-  return StampedMeasurement2dSpeed{
+  return StampedMeasurement2dSpeed64{
     to_time_point(msg.header.stamp),
-    message_to_measurement<Measurement2dSpeed>(msg.twist)
+    message_to_measurement<Measurement2dSpeed64>(msg.twist)
   };
 }
 
 template<>
-StampedMeasurement2dPose message_to_measurement(
+StampedMeasurement2dPose64 message_to_measurement(
   const geometry_msgs::msg::PoseWithCovarianceStamped & msg)
 {
-  return StampedMeasurement2dPose{
+  return StampedMeasurement2dPose64{
     to_time_point(msg.header.stamp),
-    message_to_measurement<Measurement2dPose>(msg.pose)
+    message_to_measurement<Measurement2dPose64>(msg.pose)
   };
 }
 
 template<>
-StampedMeasurement2dPose message_to_measurement(
+StampedMeasurement2dPose64 message_to_measurement(
   const autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped & msg)
 {
-  using common::types::float32_t;
+  Eigen::Vector2d mean{msg.position.x, msg.position.y};
   Eigen::Matrix2d covariance;
   covariance <<
     msg.covariance[kIndexXRelativePos], msg.covariance[kIndexXYRelativePos],
     msg.covariance[kIndexYXRelativePos], msg.covariance[kIndexYRelativePos];
-  return StampedMeasurement2dPose{
+  return StampedMeasurement2dPose64{
     to_time_point(msg.header.stamp),
-    Measurement2dPose{
-      Eigen::Vector2f{msg.position.x, msg.position.y},
-      covariance.cast<float32_t>()}};
+    Measurement2dPose64{mean, covariance}};
 }
 
 template<>
-StampedMeasurement2dPoseAndSpeed message_to_measurement(const nav_msgs::msg::Odometry & msg)
+StampedMeasurement2dPoseAndSpeed64 message_to_measurement(
+  const nav_msgs::msg::Odometry & msg)
 {
-  using common::types::float32_t;
   Eigen::Isometry3d tf__msg_frame_id__msg_child_frame_id;
   tf2::fromMsg(msg.pose.pose, tf__msg_frame_id__msg_child_frame_id);
-  const Eigen::Matrix2f rx__msg_frame_id__msg_child_frame_id = downscale_isometry<2>(
-    tf__msg_frame_id__msg_child_frame_id).cast<float32_t>().rotation();
+  const Eigen::Matrix2d rx__msg_frame_id__msg_child_frame_id = downscale_isometry<2>(
+    tf__msg_frame_id__msg_child_frame_id).rotation();
 
-  const Eigen::Vector2f pos_state {
-    static_cast<float32_t>(msg.pose.pose.position.x),
-    static_cast<float32_t>(msg.pose.pose.position.y),
+  const Eigen::Vector2d pos_state {
+    msg.pose.pose.position.x,
+    msg.pose.pose.position.y,
   };
-  const Eigen::Vector2f speed_in_child_frame{
-    static_cast<float32_t>(msg.twist.twist.linear.x),
-    static_cast<float32_t>(msg.twist.twist.linear.y),
+  const Eigen::Vector2d speed_in_child_frame{
+    msg.twist.twist.linear.x,
+    msg.twist.twist.linear.y,
   };
-  const Eigen::Vector2f speed{rx__msg_frame_id__msg_child_frame_id * speed_in_child_frame};
-  Eigen::Matrix4d covariance_double{Eigen::Matrix4d::Zero()};
-  covariance_double.topLeftCorner(2, 2) <<
+  const Eigen::Vector2d speed{rx__msg_frame_id__msg_child_frame_id * speed_in_child_frame};
+  Eigen::Matrix4d covariance{Eigen::Matrix4d::Zero()};
+  covariance.topLeftCorner(2, 2) <<
     msg.pose.covariance[kIndexX], msg.pose.covariance[kIndexXY],
     msg.pose.covariance[kIndexYX], msg.pose.covariance[kIndexY];
-  covariance_double.bottomRightCorner(2, 2) <<
+  covariance.bottomRightCorner(2, 2) <<
     msg.twist.covariance[kIndexX], msg.twist.covariance[kIndexXY],
     msg.twist.covariance[kIndexYX], msg.twist.covariance[kIndexY];
-  Eigen::Matrix4f covariance{covariance_double.cast<float32_t>()};
   // Rotate the speed covariance as the speed is now in frame_id frame and not in child_frame_id.
   covariance.bottomRightCorner(2, 2) =
     rx__msg_frame_id__msg_child_frame_id *
     covariance.bottomRightCorner(2, 2) *
     rx__msg_frame_id__msg_child_frame_id.transpose();
 
-  return StampedMeasurement2dPoseAndSpeed{
+  const Eigen::Vector4d mean = (Eigen::Vector4d{} << pos_state, speed).finished();
+  return StampedMeasurement2dPoseAndSpeed64{
     to_time_point(msg.header.stamp),
-    Measurement2dPoseAndSpeed{(Eigen::Vector4f{} << pos_state, speed).finished(), covariance}};
+    Measurement2dPoseAndSpeed64{mean, covariance}};
 }
+
 
 }  // namespace state_estimation
 }  // namespace common

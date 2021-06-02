@@ -83,6 +83,21 @@ public:
       standard_deviation.array().square().matrix().asDiagonal()};
   }
 
+  ///
+  /// @brief      Cast to another scalar type.
+  ///
+  /// @return     The measurement with a different scalar type.
+  ///
+  template<typename NewScalarT>
+  auto cast() const noexcept
+  {
+    using NewState = decltype(m_measurement.template cast<NewScalarT>());
+    return LinearMeasurement<NewState>{
+      m_measurement.vector().template cast<NewScalarT>(),
+      m_covariance.template cast<NewScalarT>()
+    };
+  }
+
 protected:
   // Allow the CRTP interface to call private functions from this class.
   friend MeasurementInterface<LinearMeasurement<StateT>>;

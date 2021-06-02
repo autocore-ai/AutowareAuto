@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-using autoware::common::state_vector::ConstAccelerationXYYaw;
+using autoware::common::state_vector::ConstAccelerationXYYaw32;
 using autoware::common::state_estimation::WienerNoise;
 
 namespace
@@ -33,7 +33,7 @@ TEST(WienerNoiseModel, Create) {
   const auto sigma_x = 1.0F;
   const auto sigma_y = 2.0F;
   const auto sigma_yaw = 3.0F;
-  WienerNoise<ConstAccelerationXYYaw> noise{{sigma_x, sigma_y, sigma_yaw}};
+  WienerNoise<ConstAccelerationXYYaw32> noise{{sigma_x, sigma_y, sigma_yaw}};
   const auto dt = std::chrono::milliseconds{100LL};
   const auto covariance = noise.covariance(dt);
   const auto t = std::chrono::duration<float>{dt}.count();

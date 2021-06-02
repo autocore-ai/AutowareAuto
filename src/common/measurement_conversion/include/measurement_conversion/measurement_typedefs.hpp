@@ -18,6 +18,7 @@
 #ifndef MEASUREMENT_CONVERSION__MEASUREMENT_TYPEDEFS_HPP_
 #define MEASUREMENT_CONVERSION__MEASUREMENT_TYPEDEFS_HPP_
 
+#include <common/types.hpp>
 #include <state_estimation/measurement/linear_measurement.hpp>
 #include <state_vector/common_variables.hpp>
 
@@ -33,22 +34,56 @@ struct Stamped
 {
   std::chrono::system_clock::time_point timestamp;
   MeasurementT measurement;
+
+  template<typename NewScalarT>
+  auto cast() const noexcept
+  {
+    using NewMeasurementT = decltype(measurement.template cast<NewScalarT>());
+    return Stamped<NewMeasurementT> {
+      timestamp,
+      measurement.template cast<NewScalarT>()
+    };
+  }
 };
 
+template<typename ScalarT>
 using Measurement2dPose = LinearMeasurement<
-  state_vector::FloatState<
-    state_vector::variable::X, state_vector::variable::Y>>;
-using Measurement2dSpeed = LinearMeasurement<
-  state_vector::FloatState<
-    state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
-using Measurement2dPoseAndSpeed = LinearMeasurement<
-  state_vector::FloatState<
-    state_vector::variable::X, state_vector::variable::Y,
-    state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
+  state_vector::GenericState<ScalarT,
+  state_vector::variable::X, state_vector::variable::Y>>;
+using Measurement2dPose32 = Measurement2dPose<common::types::float32_t>;
+using Measurement2dPose64 = Measurement2dPose<common::types::float64_t>;
 
-using StampedMeasurement2dPose = Stamped<Measurement2dPose>;
-using StampedMeasurement2dSpeed = Stamped<Measurement2dSpeed>;
-using StampedMeasurement2dPoseAndSpeed = Stamped<Measurement2dPoseAndSpeed>;
+template<typename ScalarT>
+using Measurement2dSpeed = LinearMeasurement<
+  state_vector::GenericState<ScalarT,
+  state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
+using Measurement2dSpeed32 = Measurement2dSpeed<common::types::float32_t>;
+using Measurement2dSpeed64 = Measurement2dSpeed<common::types::float64_t>;
+
+template<typename ScalarT>
+using Measurement2dPoseAndSpeed = LinearMeasurement<
+  state_vector::GenericState<ScalarT,
+  state_vector::variable::X, state_vector::variable::Y,
+  state_vector::variable::X_VELOCITY, state_vector::variable::Y_VELOCITY>>;
+using Measurement2dPoseAndSpeed32 = Measurement2dPoseAndSpeed<common::types::float32_t>;
+using Measurement2dPoseAndSpeed64 = Measurement2dPoseAndSpeed<common::types::float64_t>;
+
+template<typename ScalarT>
+using StampedMeasurement2dPose = Stamped<Measurement2dPose<ScalarT>>;
+using StampedMeasurement2dPose32 = StampedMeasurement2dPose<common::types::float32_t>;
+using StampedMeasurement2dPose64 = StampedMeasurement2dPose<common::types::float64_t>;
+
+template<typename ScalarT>
+using StampedMeasurement2dSpeed = Stamped<Measurement2dSpeed<ScalarT>>;
+using StampedMeasurement2dSpeed32 = StampedMeasurement2dSpeed<common::types::float32_t>;
+using StampedMeasurement2dSpeed64 = StampedMeasurement2dSpeed<common::types::float64_t>;
+
+template<typename ScalarT>
+using StampedMeasurement2dPoseAndSpeed = Stamped<Measurement2dPoseAndSpeed<ScalarT>>;
+using StampedMeasurement2dPoseAndSpeed32 =
+  StampedMeasurement2dPoseAndSpeed<common::types::float32_t>;
+using StampedMeasurement2dPoseAndSpeed64 =
+  StampedMeasurement2dPoseAndSpeed<common::types::float64_t>;
 
 }  // namespace state_estimation
 }  // namespace common

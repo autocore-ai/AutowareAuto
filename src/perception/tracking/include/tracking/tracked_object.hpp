@@ -45,7 +45,7 @@ class TRACKING_PUBLIC TrackedObject
 {
 public:
   // Aliases for convenience
-  using CA = autoware::common::state_vector::ConstAccelerationXY;
+  using CA = autoware::common::state_vector::ConstAccelerationXY64;
   using MotionModel = autoware::common::motion_model::LinearMotionModel<CA>;
   using NoiseModel = autoware::common::state_estimation::WienerNoise<CA>;
   using EKF = autoware::common::state_estimation::KalmanFilter<MotionModel, NoiseModel>;
@@ -59,8 +59,8 @@ public:
   /// \param noise_variance The sigma for the acceleration noise
   /// \throws std::runtime_error if the detection does not have a pose.
   TrackedObject(
-    const DetectedObjectMsg & detection, common::types::float32_t default_variance,
-    common::types::float32_t noise_variance);
+    const DetectedObjectMsg & detection, common::types::float64_t default_variance,
+    common::types::float64_t noise_variance);
   /// Extrapolate the track forward.
   // TODO(nikolai.morin): Change signature to use absolute time after #1002
   void predict(std::chrono::nanoseconds dt);
@@ -92,7 +92,7 @@ private:
   std::size_t m_ticks_alive = 1;
   /// All variables will initially have this variance where the detection
   /// does not contain one.
-  common::types::float32_t m_default_variance = -1.0F;
+  common::types::float64_t m_default_variance = -1.0;
 };
 
 }  // namespace tracking

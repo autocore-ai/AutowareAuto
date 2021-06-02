@@ -61,39 +61,68 @@ protected:
 
 /// @brief      An alias of the differential drive motion model for the
 ///             common::state_vector::ConstantVelocityAndTurnRate state.
+template<typename ScalarT>
 using CvtrMotionModel =
-  DifferentialDriveMotionModel<common::state_vector::ConstantVelocityAndTurnRate>;
+  DifferentialDriveMotionModel<common::state_vector::ConstantVelocityAndTurnRate<ScalarT>>;
+using CvtrMotionModel32 = CvtrMotionModel<common::types::float32_t>;
+using CvtrMotionModel64 = CvtrMotionModel<common::types::float64_t>;
+
 /// @brief      An alias of the differential drive motion model for the
 ///             common::state_vector::ConstantAccelerationAndTurnRate state.
+template<typename ScalarT>
 using CatrMotionModel =
-  DifferentialDriveMotionModel<common::state_vector::ConstantAccelerationAndTurnRate>;
+  DifferentialDriveMotionModel<common::state_vector::ConstantAccelerationAndTurnRate<ScalarT>>;
+using CatrMotionModel32 = CatrMotionModel<common::types::float32_t>;
+using CatrMotionModel64 = CatrMotionModel<common::types::float64_t>;
 
 
 /// @brief      A crtp-called function that predicts the state forward.
 template<>
-MOTION_MODEL_PUBLIC CvtrMotionModel::State CvtrMotionModel::crtp_predict(
-  const CvtrMotionModel::State & state,
+MOTION_MODEL_PUBLIC CvtrMotionModel32::State CvtrMotionModel32::crtp_predict(
+  const CvtrMotionModel32::State & state,
   const std::chrono::nanoseconds & dt) const;
-
-/// @brief      A crtp-called function that computes a Jacobian.
-template<>
-MOTION_MODEL_PUBLIC CvtrMotionModel::State::Matrix CvtrMotionModel::crtp_jacobian(
-  const CvtrMotionModel::State & state,
-  const std::chrono::nanoseconds & dt) const;
-
 
 /// @brief      A crtp-called function that predicts the state forward.
 template<>
-MOTION_MODEL_PUBLIC CatrMotionModel::State CatrMotionModel::crtp_predict(
-  const CatrMotionModel::State & state,
+MOTION_MODEL_PUBLIC CvtrMotionModel64::State CvtrMotionModel64::crtp_predict(
+  const CvtrMotionModel64::State & state,
   const std::chrono::nanoseconds & dt) const;
 
 /// @brief      A crtp-called function that computes a Jacobian.
 template<>
-MOTION_MODEL_PUBLIC CatrMotionModel::State::Matrix CatrMotionModel::crtp_jacobian(
-  const CatrMotionModel::State & state,
+MOTION_MODEL_PUBLIC CvtrMotionModel32::State::Matrix CvtrMotionModel32::crtp_jacobian(
+  const CvtrMotionModel32::State & state,
   const std::chrono::nanoseconds & dt) const;
 
+/// @brief      A crtp-called function that computes a Jacobian.
+template<>
+MOTION_MODEL_PUBLIC CvtrMotionModel64::State::Matrix CvtrMotionModel64::crtp_jacobian(
+  const CvtrMotionModel64::State & state,
+  const std::chrono::nanoseconds & dt) const;
+
+/// @brief      A crtp-called function that predicts the state forward.
+template<>
+MOTION_MODEL_PUBLIC CatrMotionModel32::State CatrMotionModel32::crtp_predict(
+  const CatrMotionModel32::State & state,
+  const std::chrono::nanoseconds & dt) const;
+
+/// @brief      A crtp-called function that predicts the state forward.
+template<>
+MOTION_MODEL_PUBLIC CatrMotionModel64::State CatrMotionModel64::crtp_predict(
+  const CatrMotionModel64::State & state,
+  const std::chrono::nanoseconds & dt) const;
+
+/// @brief      A crtp-called function that computes a Jacobian.
+template<>
+MOTION_MODEL_PUBLIC CatrMotionModel32::State::Matrix CatrMotionModel32::crtp_jacobian(
+  const CatrMotionModel32::State & state,
+  const std::chrono::nanoseconds & dt) const;
+
+/// @brief      A crtp-called function that computes a Jacobian.
+template<>
+MOTION_MODEL_PUBLIC CatrMotionModel64::State::Matrix CatrMotionModel64::crtp_jacobian(
+  const CatrMotionModel64::State & state,
+  const std::chrono::nanoseconds & dt) const;
 
 }  // namespace motion_model
 }  // namespace common
