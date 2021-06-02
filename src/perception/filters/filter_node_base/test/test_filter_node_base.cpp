@@ -100,7 +100,7 @@ inline void create_dummy_cloud(sensor_msgs::msg::PointCloud2 & cloud)
   }
 }
 
-TEST_F(TestFilterNodeBase, test_filter) {
+TEST_F(TestFilterNodeBase, DISABLED_test_filter) {
   // Create dummy point cloud
   sensor_msgs::msg::PointCloud2 cloud;
   create_dummy_cloud(cloud);
