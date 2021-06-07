@@ -20,6 +20,7 @@
 #define STATE_ESTIMATION_NODES__STATE_ESTIMATION_NODE_HPP_
 
 
+#include <autoware_auto_msgs/msg/relative_position_with_covariance_stamped.hpp>
 #include <common/types.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
@@ -71,6 +72,7 @@ private:
   using OdomMsgT = nav_msgs::msg::Odometry;
   using PoseMsgT = geometry_msgs::msg::PoseWithCovarianceStamped;
   using TwistMsgT = geometry_msgs::msg::TwistWithCovarianceStamped;
+  using RelativePosMsgT = autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped;
   using TfMsgT = tf2_msgs::msg::TFMessage;
 
   template<std::int32_t kDim>
@@ -94,6 +96,12 @@ private:
   ///
   void STATE_ESTIMATION_NODES_LOCAL twist_callback(const TwistMsgT::SharedPtr msg);
 
+  /// Gets called when a new relative position measurement arrives.
+  ///
+  /// @param[in]  msg   The relative position message that holds a relative position.
+  ///
+  void STATE_ESTIMATION_NODES_LOCAL relative_pos_callback(const RelativePosMsgT::SharedPtr msg);
+
   /// Predict the state and publish the current estimate.
   void STATE_ESTIMATION_NODES_LOCAL predict_and_publish_current_state();
 
@@ -104,12 +112,6 @@ private:
   void STATE_ESTIMATION_NODES_LOCAL update_latest_orientation_if_needed(
     const geometry_msgs::msg::QuaternionStamped & rotation);
 
-  /// Get the transformation from a frame in a provided header to the current frame.
-  geometry_msgs::msg::TransformStamped STATE_ESTIMATION_NODES_LOCAL get_transform(
-    const std_msgs::msg::Header::_frame_id_type & target_frame_id,
-    const std_msgs::msg::Header::_frame_id_type & source_frame_id,
-    const std_msgs::msg::Header::_stamp_type & timestamp);
-
   template<typename MessageT>
   using CallbackFnT = void (StateEstimationNode::*)(const typename MessageT::SharedPtr);
 
@@ -119,15 +121,10 @@ private:
     std::vector<typename rclcpp::Subscription<MessageT>::SharedPtr> * subscribers,
     CallbackFnT<MessageT> callback);
 
-  template<std::int32_t kNumOfStates, std::int32_t kProcessNoiseDim>
-  static Eigen::Matrix<autoware::common::types::float32_t, kNumOfStates, kProcessNoiseDim>
-  create_GQ_factor(
-    const std::chrono::nanoseconds & expected_delta_t,
-    const VectorT<kProcessNoiseDim> & process_noise_variances);
-
   std::vector<rclcpp::Subscription<OdomMsgT>::SharedPtr> m_odom_subscribers;
   std::vector<rclcpp::Subscription<PoseMsgT>::SharedPtr> m_pose_subscribers;
   std::vector<rclcpp::Subscription<TwistMsgT>::SharedPtr> m_twist_subscribers;
+  std::vector<rclcpp::Subscription<RelativePosMsgT>::SharedPtr> m_relative_pos_subscribers;
 
   std::shared_ptr<rclcpp::Publisher<OdomMsgT>> m_publisher{};
   std::shared_ptr<rclcpp::Publisher<TfMsgT>> m_tf_publisher{};

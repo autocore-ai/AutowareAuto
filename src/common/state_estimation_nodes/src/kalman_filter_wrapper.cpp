@@ -35,6 +35,7 @@ namespace
 {
 constexpr auto kCovarianceMatrixRows = 6U;
 constexpr auto kIndexX = 0U;
+constexpr auto kDefaultChildFrameId = "base_link";
 constexpr auto kIndexY = kCovarianceMatrixRows + 1U;
 constexpr auto kCovarianceMatrixRowsSquared = kCovarianceMatrixRows * kCovarianceMatrixRows;
 static_assert(
@@ -88,6 +89,7 @@ nav_msgs::msg::Odometry ConstantAccelerationFilterWrapper::get_state() const
   const auto last_event = m_history.get_last_event();
   msg.header.stamp = rclcpp::Time{to_ros_time(m_history.get_last_timestamp())};
   msg.header.frame_id = m_frame_id;
+  msg.child_frame_id = kDefaultChildFrameId;
   // Fill state.
   const auto state = last_event.stored_state();
   msg.pose.pose.position.x = static_cast<float64_t>(state.at<X>());

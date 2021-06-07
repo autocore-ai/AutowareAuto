@@ -21,15 +21,16 @@
       input_twist:
         - /twist_topic_1
         - /twist_topic_2
+      # Topics in input_relative_pos subscribe to
+      # autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped messages.
+      input_relative_pos:
+        - /relative_pos_topic_1
+        - /relative_pos_topic_2
 
-    # Specify variances for the process noise. The values are optional, but at least one for
-    # acceleration has to be provided. These will influence the form of the process noise matrix G *
-    # Q * G.T used in the EKF. The number of values represent the dimentionality of the state. For
-    # example, if your state concerns 2D motion (along x and y) then there should be two values in
-    # each provided array.
+    # Specify variances for the process noise. The number of values represent the dimensionality of
+    # the state. For example, if your state concerns 2D motion (along x and y) then there should be
+    # two values in the provided array.
     process_noise_variances:
-      position: [2.0, 2.0]
-      velocity: [2.0, 2.0]
       acceleration: [2.0, 2.0]
 
     # Specify the variances for the state noise. Note that these are not sigma squared, but just

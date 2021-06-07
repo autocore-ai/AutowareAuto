@@ -52,13 +52,6 @@ static_assert(
     geometry_msgs::msg::PoseWithCovariance::_covariance_type>::value ==
   kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
 
-/// Convert the ROS timestamp to chrono time point.
-std::chrono::system_clock::time_point
-to_time_point(const rclcpp::Time & time)
-{
-  return std::chrono::system_clock::time_point{std::chrono::nanoseconds{time.nanoseconds()}};
-}
-
 void assert_all_entries_positive(const std::vector<float64_t> & entries, const std::string & tag)
 {
   for (const auto entry : entries) {
@@ -135,10 +128,6 @@ StateEstimationNode::StateEstimationNode(
       std::bind(&StateEstimationNode::predict_and_publish_current_state, this));
   }
 
-  const auto position_variance{
-    declare_parameter("process_noise_variances.position", std::vector<float64_t>{})};
-  const auto velocity_variance{
-    declare_parameter("process_noise_variances.velocity", std::vector<float64_t>{})};
   const auto acceleration_variances{
     declare_parameter("process_noise_variances.acceleration", std::vector<float64_t>{})};
   const auto state_variances{
@@ -161,6 +150,8 @@ StateEstimationNode::StateEstimationNode(
   const auto input_odom_topics{declare_parameter("topics.input_odom", empty_vector)};
   const auto input_pose_topics{declare_parameter("topics.input_pose", empty_vector)};
   const auto input_twist_topics{declare_parameter("topics.input_twist", empty_vector)};
+  const auto input_relative_pos_topics{
+    declare_parameter("topics.input_relative_pos", empty_vector)};
   if (input_odom_topics.empty() && input_pose_topics.empty() && input_twist_topics.empty()) {
     throw std::runtime_error("No input topics provided. Make sure to set these in the param file.");
   }
@@ -170,6 +161,10 @@ StateEstimationNode::StateEstimationNode(
     input_pose_topics, &m_pose_subscribers, &StateEstimationNode::pose_callback);
   create_subscriptions<TwistMsgT>(
     input_twist_topics, &m_twist_subscribers, &StateEstimationNode::twist_callback);
+  create_subscriptions<RelativePosMsgT>(
+    input_relative_pos_topics,
+    &m_relative_pos_subscribers,
+    &StateEstimationNode::relative_pos_callback);
 
   m_publisher = create_publisher<nav_msgs::msg::Odometry>(kDefaultOutputTopic, kDefaultHistory);
 
@@ -184,13 +179,11 @@ StateEstimationNode::StateEstimationNode(
 
 void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 {
-  const auto tf__m_frame_id__msg_frame_id =
-    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
-  const auto tf__m_frame_id__msg_child_frame_id =
-    get_transform(m_frame_id, msg->child_frame_id, msg->header.stamp);
-
-  const auto measurement = message_to_transformed_measurement<StampedMeasurement2dPoseAndSpeed64>(
-    *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id));
+  if ((msg->header.frame_id != m_frame_id) || (msg->child_frame_id != m_child_frame_id)) {
+    throw std::runtime_error("Odometry message frames don't match the expected ones.");
+  }
+  const auto measurement =
+    message_to_measurement<StampedMeasurement2dPoseAndSpeed64>(*msg);
   if (m_ekf->is_initialized()) {
     if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
       throw std::runtime_error("Cannot add an odometry observation to history.");
@@ -198,13 +191,10 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
   } else {
     m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
   }
-  geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
-  tf2::doTransform(
-    geometry_msgs::msg::QuaternionStamped{}.
-    set__quaternion(msg->pose.pose.orientation).
-    set__header(msg->header),
-    orientation_in_expected_frame, tf__m_frame_id__msg_frame_id);
-  update_latest_orientation_if_needed(orientation_in_expected_frame);
+  geometry_msgs::msg::QuaternionStamped orientation;
+  orientation.quaternion = msg->pose.pose.orientation;
+  orientation.header = msg->header;
+  update_latest_orientation_if_needed(orientation);
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
@@ -212,10 +202,11 @@ void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
 
 void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 {
-  const auto tf__m_frame_id__msg_frame_id =
-    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
-  const auto measurement = message_to_transformed_measurement<StampedMeasurement2dPose64>(
-    *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id));
+  if (msg->header.frame_id != m_frame_id) {
+    throw std::runtime_error("Pose message frames don't match the expected ones.");
+  }
+  const auto measurement =
+    message_to_measurement<StampedMeasurement2dPose64>(*msg);
   if (m_ekf->is_initialized()) {
     if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
       throw std::runtime_error("Cannot add an odometry observation to history.");
@@ -223,48 +214,54 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
   } else {
     m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
   }
-  geometry_msgs::msg::QuaternionStamped orientation_in_expected_frame;
-  tf2::doTransform(
-    geometry_msgs::msg::QuaternionStamped{}.
-    set__quaternion(msg->pose.pose.orientation).
-    set__header(msg->header),
-    orientation_in_expected_frame, tf__m_frame_id__msg_frame_id);
-  update_latest_orientation_if_needed(orientation_in_expected_frame);
+  geometry_msgs::msg::QuaternionStamped orientation;
+  orientation.quaternion = msg->pose.pose.orientation;
+  orientation.header = msg->header;
+  update_latest_orientation_if_needed(orientation);
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
 }
 
+void StateEstimationNode::relative_pos_callback(const RelativePosMsgT::SharedPtr msg)
+{
+  // TODO(#1076): once a motion model with orientation is used, this function can be merged with the
+  // pose_callback.
+  if ((msg->header.frame_id != m_frame_id) || (msg->child_frame_id != m_child_frame_id)) {
+    throw std::runtime_error("RelativePosition message frames don't match the expected ones.");
+  }
+  const auto measurement = message_to_measurement<StampedMeasurement2dPose64>(*msg);
+  if (m_ekf->is_initialized()) {
+    if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
+      throw std::runtime_error("Cannot add an odometry observation to history.");
+    }
+  } else {
+    m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
+  }
+  if (m_publish_data_driven && m_ekf->is_initialized()) {
+    publish_current_state();
+  }
+}
+
+
 void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
 {
+  if (msg->header.frame_id != m_frame_id) {
+    throw std::runtime_error("Pose message frames don't match the expected ones.");
+  }
   if (!m_ekf->is_initialized()) {
     RCLCPP_WARN(
       get_logger(),
       "Received twist update, but ekf has not been initialized with any state yet. Skipping.");
     return;
   }
-  const auto tf__m_frame_id__msg_frame_id =
-    get_transform(m_frame_id, msg->header.frame_id, msg->header.stamp);
-
-  const auto measurement = message_to_transformed_measurement<StampedMeasurement2dSpeed64>(
-    *msg, tf2::transformToEigen(tf__m_frame_id__msg_frame_id));
+  const auto measurement = message_to_measurement<StampedMeasurement2dSpeed64>(*msg);
   if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
     throw std::runtime_error("Cannot add a twist observation to history.");
   }
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
-}
-
-geometry_msgs::msg::TransformStamped StateEstimationNode::get_transform(
-  const std_msgs::msg::Header::_frame_id_type & target_frame_id,
-  const std_msgs::msg::Header::_frame_id_type & source_frame_id,
-  const std_msgs::msg::Header::_stamp_type & timestamp)
-{
-  // Get the transform between the msg and the output frame. We treat the
-  // possible exceptions as unrecoverable and let them bubble up.
-  return m_tf_buffer.lookupTransform(
-    target_frame_id, source_frame_id, to_time_point(timestamp));
 }
 
 void StateEstimationNode::predict_and_publish_current_state()
@@ -283,14 +280,13 @@ void StateEstimationNode::publish_current_state()
     if (state.twist.twist.linear.x < m_min_speed_to_use_speed_orientation) {
       state.pose.pose.orientation = m_latest_orientation.quaternion;
     }
-    state.child_frame_id = m_child_frame_id;
     m_publisher->publish(state);
     if (m_tf_publisher) {
       TfMsgT tf_msg{};
       tf_msg.transforms.emplace_back();
       auto & tf = tf_msg.transforms.back();
       tf.header = state.header;
-      tf.child_frame_id = m_child_frame_id;
+      tf.child_frame_id = state.child_frame_id;
       tf.transform.translation.x = state.pose.pose.position.x;
       tf.transform.translation.y = state.pose.pose.position.y;
       tf.transform.translation.z = state.pose.pose.position.z;

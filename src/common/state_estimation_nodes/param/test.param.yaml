@@ -10,6 +10,9 @@
       input_twist:
         - /twist_topic_1
         - /twist_topic_2
+      input_relative_pos:
+        - /relative_pos_topic_1
+        - /relative_pos_topic_2
     data_driven: true
     frame_id: "map"
     child_frame_id: "base_link"
