@@ -97,8 +97,10 @@ autoware_auto_msgs::msg::DetectedObjects Scene::get_detected_objects_array(
     detected_object_msg.classification.push_back(classification);
     detected_object_msg.shape.polygon = polygon;
     detected_object_msg.shape.height = 1.5;
-    detected_object_msg.kinematics.has_pose = false;
-    detected_object_msg.kinematics.has_pose_covariance = false;
+    detected_object_msg.kinematics.centroid_position.x = bounding_box.centroid.x;
+    detected_object_msg.kinematics.centroid_position.y = bounding_box.centroid.y;
+    detected_object_msg.kinematics.centroid_position.z = bounding_box.centroid.z;
+    detected_object_msg.kinematics.has_position_covariance = false;
     detected_object_msg.kinematics.has_twist = false;
     detected_object_msg.kinematics.has_twist_covariance = false;
 

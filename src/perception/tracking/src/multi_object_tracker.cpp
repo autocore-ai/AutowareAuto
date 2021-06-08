@@ -129,9 +129,6 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   for (size_t new_detection_idx : association.unassigned_detection_indices) {
     const auto & detection = detections.objects[new_detection_idx];
-    if (!detection.kinematics.has_pose) {
-      continue;
-    }
     m_objects.push_back(
       TrackedObject(
         detection,
@@ -176,11 +173,6 @@ TrackerUpdateStatus MultiObjectTracker::validate(
   if (!is_gravity_aligned(detection_frame_odometry.pose.pose.orientation)) {
     return TrackerUpdateStatus::FrameNotGravityAligned;
   }
-  for (const auto & detection : detections.objects) {
-    if (!detection.kinematics.has_pose && !detection.kinematics.has_twist) {
-      return TrackerUpdateStatus::EmptyDetection;
-    }
-  }
   // Could also validate
   // * classes
   // * object shapes
@@ -200,8 +192,8 @@ void MultiObjectTracker::transform(
   const geometry_msgs::msg::TransformStamped tf_msg__tracking__detection = to_transform(
     detection_frame_odometry);
   // Hoisted outside the loop
-  Eigen::Isometry3d tf__detection__object = Eigen::Isometry3d::Identity();
-  Eigen::Isometry3d tf__tracking__object = Eigen::Isometry3d::Identity();
+  Eigen::Vector3d centroid_detection = Eigen::Vector3d::Zero();
+  Eigen::Vector3d centroid_tracking = Eigen::Vector3d::Zero();
 
   detections.header.frame_id = m_options.frame;
   for (auto & detection : detections.objects) {
@@ -210,19 +202,17 @@ void MultiObjectTracker::transform(
     // in each call.
     tf2::doTransform(detection.shape.polygon, detection.shape.polygon, tf_msg__tracking__detection);
     // Transform the pose.
-    if (detection.kinematics.has_pose) {
-      tf2::fromMsg(detection.kinematics.pose.pose, tf__detection__object);
-      tf__tracking__object = tf__tracking__detection * tf__detection__object;
-      detection.kinematics.pose.pose = tf2::toMsg(tf__tracking__object);
-      if (detection.kinematics.has_pose_covariance) {
-        // Doing this properly is difficult. We'll ignore the rotational part. This is a practical
-        // solution since only the yaw covariance is relevant, and the yaw covariance is
-        // unaffected by the transformation, which preserves the z axis.
-        // An even more accurate implementation could additionally include the odometry covariance.
-        Eigen::Map<Eigen::Matrix<double, 6, 6, Eigen::RowMajor>> cov(
-          detection.kinematics.pose.covariance.data());
-        cov.topLeftCorner<3, 3>() = rot_d * cov.topLeftCorner<3, 3>() * rot_d.transpose();
-      }
+    tf2::fromMsg(detection.kinematics.centroid_position, centroid_detection);
+    centroid_tracking = tf__tracking__detection * centroid_detection;
+    detection.kinematics.centroid_position = tf2::toMsg(centroid_tracking);
+    if (detection.kinematics.has_position_covariance) {
+      // Doing this properly is difficult. We'll ignore the rotational part. This is a practical
+      // solution since only the yaw covariance is relevant, and the yaw covariance is
+      // unaffected by the transformation, which preserves the z axis.
+      // An even more accurate implementation could additionally include the odometry covariance.
+      Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> cov(
+        detection.kinematics.position_covariance.data());
+      cov = rot_d * cov * rot_d.transpose();
     }
     // Transform the twist.
     if (detection.kinematics.has_twist) {

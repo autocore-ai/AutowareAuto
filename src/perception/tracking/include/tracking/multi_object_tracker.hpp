@@ -65,8 +65,6 @@ enum class TrackerUpdateStatus
   FrameNotGravityAligned,
   /// At least one of the provided detections has an invalid shape.
   InvalidShape,
-  /// The detection contains no pose or velocity data.
-  EmptyDetection,
 };
 
 

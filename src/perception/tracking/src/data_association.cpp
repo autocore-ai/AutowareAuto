@@ -83,17 +83,17 @@ void Associator::compute_weights(
 
       if (consider_associating(detection, track)) {
         Eigen::Matrix<float, NUM_OBJ_POSE_DIM, 1> sample;
-        sample(0, 0) = static_cast<float>(detection.kinematics.pose.pose.position.x);
-        sample(1, 0) = static_cast<float>(detection.kinematics.pose.pose.position.y);
+        sample(0, 0) = static_cast<float>(detection.kinematics.centroid_position.x);
+        sample(1, 0) = static_cast<float>(detection.kinematics.centroid_position.y);
 
         Eigen::Matrix<float, NUM_OBJ_POSE_DIM, 1> mean(NUM_OBJ_POSE_DIM, 1U);
-        mean(0, 0) = static_cast<float>(track.kinematics.pose.pose.position.x);
-        mean(1, 0) = static_cast<float>(track.kinematics.pose.pose.position.y);
+        mean(0, 0) = static_cast<float>(track.kinematics.centroid_position.x);
+        mean(1, 0) = static_cast<float>(track.kinematics.centroid_position.y);
 
         Eigen::Matrix<float, NUM_OBJ_POSE_DIM,
-          NUM_OBJ_POSE_DIM> cov = Eigen::Map<const Eigen::Matrix<double, 6, 6, Eigen::RowMajor>>(
+          NUM_OBJ_POSE_DIM> cov = Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(
           tracks.objects[track_idx]
-          .kinematics.pose.covariance.data()).cast<float>().topLeftCorner<2, 2>();
+          .kinematics.position_covariance.data()).cast<float>().topLeftCorner<2, 2>();
 
         const auto dist = autoware::common::helper_functions::calculate_mahalanobis_distance(
           sample, mean, cov);
@@ -108,13 +108,13 @@ bool Associator::consider_associating(
   const autoware_auto_msgs::msg::DetectedObject & detection,
   const autoware_auto_msgs::msg::TrackedObject & track) const
 {
-  const auto squared_distance_2d = [](const geometry_msgs::msg::Pose & p1, const
-      geometry_msgs::msg::Pose & p2) -> float {
+  const auto squared_distance_2d = [](const geometry_msgs::msg::Point & p1, const
+      geometry_msgs::msg::Point & p2) -> float {
       return static_cast<float>((
-               (p1.position.x - p2.position.x) *
-               (p1.position.x - p2.position.x)) + (
-               (p1.position.y - p2.position.y) *
-               (p1.position.y - p2.position.y)));
+               (p1.x - p2.x) *
+               (p1.x - p2.x)) + (
+               (p1.y - p2.y) *
+               (p1.y - p2.y)));
     };
 
   const float det_area = common::geometry::area_checked_2d(
@@ -132,7 +132,9 @@ bool Associator::consider_associating(
 
   const float area_ratio = det_area / track_area;
 
-  if (squared_distance_2d(detection.kinematics.pose.pose, track.kinematics.pose.pose) >
+  if (squared_distance_2d(
+      detection.kinematics.centroid_position,
+      track.kinematics.centroid_position) >
     m_association_cfg.get_max_distance_squared())
   {
     return false;

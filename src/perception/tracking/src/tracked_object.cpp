@@ -39,6 +39,11 @@ using autoware::common::state_vector::variable::Y_VELOCITY;
 using autoware::common::state_vector::variable::X_ACCELERATION;
 using autoware::common::state_vector::variable::Y_ACCELERATION;
 
+using autoware::common::state_estimation::Measurement2dPose64;
+using autoware::common::state_estimation::Measurement2dSpeed64;
+using autoware::common::state_estimation::Measurement2dPoseAndSpeed64;
+using autoware::common::state_estimation::StampedMeasurement2dPose64;
+
 using common::types::float64_t;
 
 using CA = autoware::common::state_vector::ConstAccelerationXY64;
@@ -48,20 +53,13 @@ using EKF = autoware::common::state_estimation::KalmanFilter<MotionModel, NoiseM
 using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedObject;
 using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedObject;
 
-using Measurement2dPose = autoware::common::state_estimation::Measurement2dPose64;
-using Measurement2dSpeed = autoware::common::state_estimation::Measurement2dSpeed64;
-using Measurement2dPoseAndSpeed = autoware::common::state_estimation::Measurement2dPoseAndSpeed64;
-
 EKF init_ekf(
   const DetectedObjectMsg & detection, float64_t default_variance,
   float64_t noise_variance)
 {
-  if (!detection.kinematics.has_pose) {
-    throw std::invalid_argument("A TrackedObject can only be created from a detection with pose.");
-  }
   auto state = MotionModel::State {};
-  state.at<X>() = detection.kinematics.pose.pose.position.x;
-  state.at<Y>() = detection.kinematics.pose.pose.position.y;
+  state.at<X>() = detection.kinematics.centroid_position.x;
+  state.at<Y>() = detection.kinematics.centroid_position.y;
   // When there is no twist available, velocity will be initialized to 0
   if (detection.kinematics.has_twist) {
     state.at<X_VELOCITY>() = detection.kinematics.twist.twist.linear.x;
@@ -69,19 +67,19 @@ EKF init_ekf(
   }
   using CovarianceMatrix = Eigen::Matrix<float64_t, state.size(), state.size()>;
   CovarianceMatrix cov = default_variance * CovarianceMatrix::Identity();
-  if (detection.kinematics.has_pose_covariance) {
+  if (detection.kinematics.has_position_covariance) {
     cov(
       state.index_of<X>(),
-      state.index_of<X>()) = detection.kinematics.pose.covariance[0];
+      state.index_of<X>()) = detection.kinematics.position_covariance[0];
     cov(
       state.index_of<X>(),
-      state.index_of<Y>()) = detection.kinematics.pose.covariance[1];
+      state.index_of<Y>()) = detection.kinematics.position_covariance[1];
     cov(
       state.index_of<Y>(),
-      state.index_of<X>()) = detection.kinematics.pose.covariance[6];
+      state.index_of<X>()) = detection.kinematics.position_covariance[3];
     cov(
       state.index_of<Y>(),
-      state.index_of<Y>()) = detection.kinematics.pose.covariance[7];
+      state.index_of<Y>()) = detection.kinematics.position_covariance[4];
   }
   if (detection.kinematics.has_twist_covariance) {
     cov(
@@ -140,43 +138,41 @@ void TrackedObject::update(const DetectedObjectMsg & detection)
 
   // It needs to be determined which parts of the DetectedObject message are set, and can be used
   // to update the state. Also, even if a variable is set, its covariance might not be set.
-
-  // Speculatively convert the message to measurement and fix up the covariance. "Speculatively"
-  // because the "has_pose" and "has_twist" fields are not checked yet. This is done to avoid
-  // repeating this conversion code.
+  autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped position;
+  position.position.x = detection.kinematics.centroid_position.x;
+  position.position.y = detection.kinematics.centroid_position.y;
+  position.position.z = detection.kinematics.centroid_position.z;
+  position.covariance = detection.kinematics.position_covariance;
   auto pose_measurement =
-    autoware::common::state_estimation::message_to_measurement<Measurement2dPose>(
-    detection.kinematics.pose);
-  if (!detection.kinematics.has_pose_covariance) {
+    autoware::common::state_estimation::message_to_measurement<StampedMeasurement2dPose64>(position)
+    .measurement;
+  if (!detection.kinematics.has_position_covariance) {
     pose_measurement.covariance() = m_default_variance *
-      Measurement2dPose::State::Matrix::Identity();
+      Measurement2dPose64::State::Matrix::Identity();
   }
   auto twist_measurement =
-    autoware::common::state_estimation::message_to_measurement<Measurement2dSpeed>(
+    autoware::common::state_estimation::message_to_measurement<Measurement2dSpeed64>(
     detection.kinematics.twist);
   if (!detection.kinematics.has_twist_covariance) {
     twist_measurement.covariance() = m_default_variance *
-      Measurement2dSpeed::State::Matrix::Identity();
+      Measurement2dSpeed64::State::Matrix::Identity();
   }
 
-  if (detection.kinematics.has_pose && detection.kinematics.has_twist) {
+  if (detection.kinematics.has_twist) {
     // Combine both into one measurement
     Eigen::Vector4d state{};
     state << pose_measurement.state().vector(), twist_measurement.state().vector();
     Eigen::Matrix4d covariance = Eigen::Matrix4d::Zero();
     covariance.topLeftCorner<2, 2>() = pose_measurement.covariance();
     covariance.bottomRightCorner<2, 2>() = twist_measurement.covariance();
-    Measurement2dPoseAndSpeed full_measurement = Measurement2dPoseAndSpeed{
+    Measurement2dPoseAndSpeed64 full_measurement = Measurement2dPoseAndSpeed64{
       state,
       covariance};
     m_ekf.correct(full_measurement);
-  } else if (detection.kinematics.has_pose) {
-    m_ekf.correct(pose_measurement);
   } else if (detection.kinematics.has_twist) {
     m_ekf.correct(twist_measurement);
   } else {
-    // Impossible, because validation checks this condition.
-    throw std::logic_error("DetectedObject with no pose and no twist encountered.");
+    m_ekf.correct(pose_measurement);
   }
 }
 
@@ -189,8 +185,8 @@ void TrackedObject::no_update()
 const TrackedObject::TrackedObjectMsg & TrackedObject::msg()
 {
   // Fill the message fields from the filter state
-  m_msg.kinematics.pose.pose.position.x = m_ekf.state().at<X>();
-  m_msg.kinematics.pose.pose.position.y = m_ekf.state().at<Y>();
+  m_msg.kinematics.centroid_position.x = m_ekf.state().at<X>();
+  m_msg.kinematics.centroid_position.y = m_ekf.state().at<Y>();
   m_msg.kinematics.twist.twist.linear.x = m_ekf.state().at<X_VELOCITY>();
   m_msg.kinematics.twist.twist.linear.y = m_ekf.state().at<Y_VELOCITY>();
   m_msg.kinematics.acceleration.accel.linear.x =
@@ -199,19 +195,19 @@ const TrackedObject::TrackedObjectMsg & TrackedObject::msg()
     m_ekf.state().at<Y_ACCELERATION>();
 
   // Set covariances
-  m_msg.kinematics.pose.covariance[0] =
+  m_msg.kinematics.position_covariance[0] =
     m_ekf.covariance()(
     m_ekf.state().index_of<X>(),
     m_ekf.state().index_of<X>());
-  m_msg.kinematics.pose.covariance[1] =
+  m_msg.kinematics.position_covariance[1] =
     m_ekf.covariance()(
     m_ekf.state().index_of<X>(),
     m_ekf.state().index_of<Y>());
-  m_msg.kinematics.pose.covariance[6] =
+  m_msg.kinematics.position_covariance[3] =
     m_ekf.covariance()(
     m_ekf.state().index_of<Y>(),
     m_ekf.state().index_of<X>());
-  m_msg.kinematics.pose.covariance[7] =
+  m_msg.kinematics.position_covariance[4] =
     m_ekf.covariance()(
     m_ekf.state().index_of<Y>(),
     m_ekf.state().index_of<Y>());
