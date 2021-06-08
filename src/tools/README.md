@@ -16,3 +16,4 @@ visualization tools and interfaces for debugging.
 - @subpage lidar-integration-design
 - @subpage gnss-conversion-nodes-design
 - @subpage test_trajectory_following-package-design
+- @subpage fake-test-node-design

@@ -15,6 +15,7 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
+#include <fake_test_node/fake_test_node.hpp>
 #include <gtest/gtest.h>
 #include <state_estimation_nodes/state_estimation_node.hpp>
 
@@ -115,74 +116,8 @@ struct ParameterBundle
 constexpr ParameterBundle kPublish{true};
 constexpr ParameterBundle kNoPublish{false};
 
-// TODO(niosus): Re-enable tests when #488 is solved.
-class DISABLED_StateEstimationNodeTest : public ::testing::TestWithParam<ParameterBundle>
-{
-protected:
-  void SetUp() override
-  {
-    ASSERT_FALSE(rclcpp::ok());
-    rclcpp::init(0, nullptr);
-    ASSERT_TRUE(rclcpp::ok());
-    m_mock_node = std::make_shared<rclcpp::Node>("mock_node");
-    const auto spin_thread = false;
-    m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
-      m_tf_buffer, m_mock_node, spin_thread);
-  }
-
-  void TearDown() override
-  {
-    (void)rclcpp::shutdown();
-  }
-
-  template<typename MsgT>
-  typename rclcpp::Publisher<MsgT>::SharedPtr create_publisher(
-    const std::string & topic,
-    const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL},
-    const std::int32_t history_size = 10)
-  {
-    typename rclcpp::Publisher<MsgT>::SharedPtr odometry_publisher =
-      m_mock_node->create_publisher<MsgT>(topic, history_size);
-
-    std::chrono::milliseconds spent_time{0LL};
-    std::chrono::milliseconds dt{100LL};
-    while (m_mock_node->count_subscribers(topic) < 1) {
-      spent_time += dt;
-      EXPECT_LT(spent_time, timeout) << "Nobody is listening to the mock topic we publish.";
-      std::this_thread::sleep_for(dt);
-    }
-    return odometry_publisher;
-  }
-
-  template<typename MsgT, typename NodeT>
-  typename rclcpp::Subscription<MsgT>::SharedPtr create_result_subscription(
-    const std::string & topic,
-    NodeT * node_under_test,
-    std::function<void(const typename MsgT::SharedPtr msg)> callback,
-    const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL})
-  {
-    EXPECT_NE(node_under_test, nullptr);
-    typename rclcpp::Subscription<MsgT>::SharedPtr subscription =
-      m_mock_node->create_subscription<MsgT>(topic, 10, callback);
-
-    std::chrono::milliseconds spent_time{0LL};
-    std::chrono::milliseconds dt{100LL};
-    while (node_under_test->count_publishers(topic) < 1) {
-      spent_time += dt;
-      EXPECT_LT(spent_time, timeout) << "The node under test is not publishing what we listen to.";
-      std::this_thread::sleep_for(dt);
-    }
-    return subscription;
-  }
-
-  rclcpp::Node::SharedPtr get_mock_node() {return m_mock_node;}
-  tf2::BufferCore & get_tf_buffer() {return m_tf_buffer;}
-
-private:
-  rclcpp::Node::SharedPtr m_mock_node{nullptr};
-  std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{nullptr};
-  tf2::BufferCore m_tf_buffer;
-};
+using DISABLED_StateEstimationNodeTest =
+  autoware::tools::testing::FakeTestNodeParametrized<ParameterBundle>;
 
 INSTANTIATE_TEST_CASE_P(
   StateEstimationNodeTests,
@@ -201,8 +136,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, PublishAndReceiveOdomMessage) {
 
   auto count_received_msgs{0};
   auto fake_odom_publisher = create_publisher<Odometry>("/odom_topic_1");
-  auto result_odom_subscription = create_result_subscription<Odometry>(
-    "/filtered_state", node.get(),
+  auto result_odom_subscription = create_subscription<Odometry>(
+    "/filtered_state", *node,
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;
@@ -215,7 +150,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, PublishAndReceiveOdomMessage) {
     msg.header.stamp = to_ros_time(std::chrono::system_clock::now());
     fake_odom_publisher->publish(msg);
     rclcpp::spin_some(node);
-    rclcpp::spin_some(get_mock_node());
+    rclcpp::spin_some(get_fake_node());
     std::this_thread::sleep_for(dt);
     time_passed += dt;
     if (time_passed > max_wait_time) {
@@ -260,8 +195,8 @@ TEST_P(DISABLED_StateEstimationNodeTest, TrackObjectStraightLine) {
   auto fake_pose_publisher = create_publisher<PoseWithCovarianceStamped>("/pose_topic_1");
   auto fake_relative_pose_publisher = create_publisher<RelativePositionWithCovarianceStamped>(
     "/relative_pos_topic_1");
-  auto result_odom_subscription = create_result_subscription<Odometry>(
-    "/filtered_state", node.get(),
+  auto result_odom_subscription = create_subscription<Odometry>(
+    "/filtered_state", *node,
     [&received_msgs](
       const Odometry::SharedPtr msg) {
       received_msgs.push_back(msg);
@@ -301,7 +236,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, TrackObjectStraightLine) {
       fake_relative_pose_publisher->publish(relative_pose_msg);
     }
     rclcpp::spin_some(node);
-    rclcpp::spin_some(get_mock_node());
+    rclcpp::spin_some(get_fake_node());
     std::this_thread::sleep_for(dt);
     messages_sent++;
   }
@@ -312,7 +247,7 @@ TEST_P(DISABLED_StateEstimationNodeTest, TrackObjectStraightLine) {
   while (received_msgs.size() < messages_sent) {
     time_passed += dt;
     rclcpp::spin_some(node);
-    rclcpp::spin_some(get_mock_node());
+    rclcpp::spin_some(get_fake_node());
     std::this_thread::sleep_for(dt);
     ASSERT_LT(time_passed, max_wait_time) <<
       "Some messages were dropped. Received: " << received_msgs.size();
@@ -361,8 +296,8 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
 
   auto count_received_msgs{0};
   auto fake_odom_publisher = create_publisher<Odometry>("/odom_topic_1");
-  auto result_odom_subscription = create_result_subscription<Odometry>(
-    "/filtered_state", node.get(),
+  auto result_odom_subscription = create_subscription<Odometry>(
+    "/filtered_state", *node,
     [&count_received_msgs](
       const Odometry::SharedPtr) {
       count_received_msgs++;
@@ -374,7 +309,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
   auto time_passed{std::chrono::milliseconds{0LL}};
   while (time_passed < max_wait_time) {
     rclcpp::spin_some(node);
-    rclcpp::spin_some(get_mock_node());
+    rclcpp::spin_some(get_fake_node());
     std::this_thread::sleep_for(dt);
     time_passed += dt;
     if (count_received_msgs > 0) {
@@ -394,7 +329,7 @@ TEST_F(DISABLED_StateEstimationNodeTest, publish_on_timer) {
       fake_odom_publisher->publish(msg);
     }
     rclcpp::spin_some(node);
-    rclcpp::spin_some(get_mock_node());
+    rclcpp::spin_some(get_fake_node());
     std::this_thread::sleep_for(dt);
     time_passed += dt;
     if (time_passed > max_wait_time) {

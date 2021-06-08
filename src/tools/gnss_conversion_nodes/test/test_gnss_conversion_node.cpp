@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fake_test_node/fake_test_node.hpp>
 #include <gnss_conversion_nodes/gnss_conversion_node.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -57,72 +58,7 @@ geometry_msgs::msg::TransformStamped get_tf__ecef__enu(
 
 }  // namespace
 
-class TestGnssConversionNode : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
-    ASSERT_FALSE(rclcpp::ok());
-    rclcpp::init(0, nullptr);
-    ASSERT_TRUE(rclcpp::ok());
-    m_fake_node = std::make_shared<rclcpp::Node>("fake_node");
-  }
-
-  void TearDown() override
-  {
-    m_fake_subscription.reset();
-    m_fake_publisher.reset();
-    m_fake_node.reset();
-    (void)rclcpp::shutdown();
-  }
-
-  template<typename MessageT>
-  std::shared_ptr<rclcpp::Publisher<MessageT>> create_fake_publisher(
-    const std::string & topic,
-    const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL})
-  {
-    auto publisher{m_fake_node->create_publisher<MessageT>(topic, 10)};
-    m_fake_publisher = publisher;
-
-    std::chrono::milliseconds spent_time{0LL};
-    std::chrono::milliseconds dt{100LL};
-    while (m_fake_node->count_subscribers(topic) < 1) {
-      spent_time += dt;
-      if (spent_time > timeout) {
-        throw std::runtime_error("Nobody is listening to the fake topic we publish.");
-      }
-      std::this_thread::sleep_for(dt);
-    }
-    return publisher;
-  }
-
-  template<typename NodeT, typename MessageT>
-  void create_result_subscription(
-    const std::string & topic,
-    NodeT * node_under_test,
-    std::function<void(const std::shared_ptr<MessageT> msg)> callback,
-    const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL})
-  {
-    ASSERT_NE(node_under_test, nullptr);
-    m_fake_subscription = m_fake_node->create_subscription<MessageT>(
-      topic, 10, callback);
-
-    std::chrono::milliseconds spent_time{0LL};
-    std::chrono::milliseconds dt{100LL};
-    while (node_under_test->count_publishers(topic) < 1) {
-      spent_time += dt;
-      ASSERT_LT(spent_time, timeout) << "The node under test is not publishing what we listen to.";
-      std::this_thread::sleep_for(dt);
-    }
-  }
-
-  rclcpp::Node::SharedPtr get_fake_node() {return m_fake_node;}
-
-private:
-  rclcpp::Node::SharedPtr m_fake_node{nullptr};
-  rclcpp::PublisherBase::SharedPtr m_fake_publisher{nullptr};
-  rclcpp::SubscriptionBase::SharedPtr m_fake_subscription{nullptr};
-};
+using TestGnssConversionNode = autoware::tools::testing::FakeTestNode;
 
 /// @test Test that we can convert a message from GNSS to ECEF frame coordinates.
 TEST_F(TestGnssConversionNode, PublishAndReceiveMsgWithNoTfConversion) {
@@ -142,9 +78,9 @@ TEST_F(TestGnssConversionNode, PublishAndReceiveMsgWithNoTfConversion) {
   const auto node{std::make_shared<GnssConversionNode>(node_options)};
 
   RelativePositionWithCovarianceStamped::SharedPtr last_msg{};
-  auto publisher = create_fake_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
-  create_result_subscription<GnssConversionNode, RelativePositionWithCovarianceStamped>(
-    "gnss_position", node.get(),
+  auto publisher = create_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
+  auto subscription = create_subscription<RelativePositionWithCovarianceStamped>(
+    "gnss_position", *node,
     [&last_msg](
       const RelativePositionWithCovarianceStamped::SharedPtr received_msg) {
       last_msg = received_msg;
@@ -207,9 +143,9 @@ TEST_F(TestGnssConversionNode, PublishAndReceiveMsgConvertToEnu) {
 
   // Check that the received messages are properly converted.
   RelativePositionWithCovarianceStamped::SharedPtr last_msg{};
-  auto publisher = create_fake_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
-  create_result_subscription<GnssConversionNode, RelativePositionWithCovarianceStamped>(
-    "gnss_position", node.get(),
+  auto publisher = create_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
+  auto subscription = create_subscription<RelativePositionWithCovarianceStamped>(
+    "gnss_position", *node,
     [&last_msg](
       const RelativePositionWithCovarianceStamped::SharedPtr received_msg) {
       last_msg = received_msg;
@@ -260,9 +196,9 @@ TEST_F(TestGnssConversionNode, NoConversionWhenNoGnssFix) {
   const auto node{std::make_shared<GnssConversionNode>(node_options)};
 
   std::int32_t number_of_received_msgs{};
-  auto publisher = create_fake_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
-  create_result_subscription<GnssConversionNode, RelativePositionWithCovarianceStamped>(
-    "gnss_position", node.get(),
+  auto publisher = create_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
+  auto subscription = create_subscription<RelativePositionWithCovarianceStamped>(
+    "gnss_position", *node,
     [&number_of_received_msgs](
       const RelativePositionWithCovarianceStamped::SharedPtr) {number_of_received_msgs++;});
 
@@ -295,9 +231,9 @@ TEST_F(TestGnssConversionNode, ConversionThrowsWhenNoTfAvailable) {
   const auto node{std::make_shared<GnssConversionNode>(node_options)};
 
   std::int32_t number_of_received_msgs{};
-  auto publisher = create_fake_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
-  create_result_subscription<GnssConversionNode, RelativePositionWithCovarianceStamped>(
-    "gnss_position", node.get(),
+  auto publisher = create_publisher<sensor_msgs::msg::NavSatFix>("wgs84_position");
+  auto subscription = create_subscription<RelativePositionWithCovarianceStamped>(
+    "gnss_position", *node,
     [&number_of_received_msgs](
       const RelativePositionWithCovarianceStamped::SharedPtr) {number_of_received_msgs++;});
 

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>state_estimation_nodes</name>
+    <name>fake_test_node</name>
     <version>1.0.0</version>
-    <description>A node for state estimation that can be used in place of robot_localization ros package.</description>
+    <description>A fake node that we can use in the integration-like cpp tests.</description>
     <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
     <license>Apache 2.0</license>
 
@@ -11,28 +11,15 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <depend>autoware_auto_common</depend>
-    <depend>geometry_msgs</depend>
-    <depend>measurement_conversion</depend>
-    <depend>motion_model</depend>
-    <depend>mpark_variant_vendor</depend>
-    <depend>nav_msgs</depend>
     <depend>rclcpp</depend>
     <depend>rclcpp_components</depend>
-    <depend>state_estimation</depend>
-    <depend>state_vector</depend>
+    <depend>ament_cmake_gtest</depend>
     <depend>tf2</depend>
-    <depend>tf2_geometry_msgs</depend>
     <depend>tf2_ros</depend>
-    <depend>fake_test_node</depend>
 
-    <test_depend>ament_cmake_gmock</test_depend>
-    <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_index_python</test_depend>
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
-    <test_depend>launch</test_depend>
-    <test_depend>launch_ros</test_depend>
-    <test_depend>ros_testing</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>
 </package>
