@@ -12,6 +12,7 @@
       rear_overhang_m: 0.5
     safety_factor: 1.1
     stop_margin: 12.5
+    min_obstacle_dimension_m: 0.0004
     trajectory_smoother:
       kernel_std: 5.0
       kernel_size: 25

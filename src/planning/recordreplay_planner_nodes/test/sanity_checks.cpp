@@ -1,4 +1,4 @@
-// Copyright 2020 Embotech AG, Zurich, Switzerland
+// Copyright 2020-2021 Embotech AG, Zurich, Switzerland, Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ TEST(mytest_base, basic)
   node_options_ob.append_parameter_override("vehicle.rear_overhang_m", 0.2);
   node_options_ob.append_parameter_override("safety_factor", 2.0);
   node_options_ob.append_parameter_override("stop_margin", 5.0);
+  node_options_ob.append_parameter_override("min_obstacle_dimension_m", 0.0004);
   node_options_ob.append_parameter_override("trajectory_smoother.kernel_std", 5.0);
   node_options_ob.append_parameter_override("trajectory_smoother.kernel_size", 25);
   node_options_ob.append_parameter_override("staleness_threshold_ms", 500);

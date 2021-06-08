@@ -1,4 +1,4 @@
-// Copyright 2020 Arm Limited
+// Copyright 2020-2021 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,6 +86,10 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     static_cast<float32_t>(declare_parameter(
       "stop_margin"
     ).get<float32_t>());
+  const auto min_obstacle_dimension_m =
+    static_cast<float32_t>(declare_parameter(
+      "min_obstacle_dimension_m"
+    ).get<float32_t>());
   const TrajectorySmootherConfig smoother_config {
     static_cast<float32_t>(declare_parameter(
       "trajectory_smoother.kernel_std"
@@ -109,7 +113,8 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     ).get<std::string>());
 
   // Create an object collision estimator
-  const ObjectCollisionEstimatorConfig config {vehicle_param, safety_factor, stop_margin};
+  const ObjectCollisionEstimatorConfig config {vehicle_param, safety_factor, stop_margin,
+    min_obstacle_dimension_m};
   const TrajectorySmoother smoother{smoother_config};
   m_estimator = std::make_unique<ObjectCollisionEstimator>(config, smoother);
 
@@ -136,12 +141,24 @@ ObjectCollisionEstimatorNode::ObjectCollisionEstimatorNode(const rclcpp::NodeOpt
     std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false);
 }
 
+void ObjectCollisionEstimatorNode::update_obstacles(const BoundingBoxArray & bbox_array)
+{
+  const auto modified_obstacles = m_estimator->updateObstacles(bbox_array);
+
+  for (const auto & modified_obstacle : modified_obstacles) {
+    RCLCPP_WARN(
+      this->get_logger(), "Obstacle was too small, increased to: %f x %fm.",
+      static_cast<float64_t>(modified_obstacle.size.x),
+      static_cast<float64_t>(modified_obstacle.size.y));
+  }
+}
+
 void ObjectCollisionEstimatorNode::on_bounding_box(const BoundingBoxArray::SharedPtr & msg)
 {
   // Update most recent bounding boxes internally
   if (msg->header.frame_id == m_target_frame_id) {
     // No transform needed, update bounding boxes directly
-    m_estimator->updateObstacles(*msg);
+    update_obstacles(*msg);
 
     // keep track of the timestamp of the lastest successful obstacle message
     m_last_obstacle_msg_time = msg->header.stamp;
@@ -173,7 +190,7 @@ void ObjectCollisionEstimatorNode::on_bounding_box(const BoundingBoxArray::Share
             this->m_wall_timer->cancel();
             this->m_wall_timer = nullptr;
             auto msg_transformed = this->m_tf_buffer->transform(*msg, m_target_frame_id);
-            this->m_estimator->updateObstacles(msg_transformed);
+            update_obstacles(msg_transformed);
 
             // keep track of the timestamp of the lastest successful obstacle message
             this->m_last_obstacle_msg_time = msg_transformed.header.stamp;

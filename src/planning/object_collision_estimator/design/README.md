@@ -31,6 +31,7 @@ Outputs:
 This is the workflow of the estimator:
 
 - Receive a list of obstacles.
+- Increase the size of the obstacles that are too small.
 - Receive a trajectory.
 - Loop trough the points on the trajectory.
 - For each point, create a bounding box representing the volume occupied by the ego vehicle at that point.
@@ -44,6 +45,8 @@ This is the workflow of the estimator:
 
 - The obstacles are in the same coordinate frame as the trajectory.
 - The bounding boxes are assumed to be parallel to the ground and is represented by the rectangle of the bottom surface and z = 0. Hence the collision detection only happens in 2d.
+- The corners of the bounding boxes are expected to be in counterclockwise order.
+- The x and y elements of the `size` object are expected to map to the length of the first and second edges respectively.
 
 ## Error detection and handling
 

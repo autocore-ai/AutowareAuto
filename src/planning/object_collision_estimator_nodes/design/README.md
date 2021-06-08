@@ -46,6 +46,13 @@ Outputs:
   - Pass this trajectory to ObjectCollisionEstimator who modifies it to avoid any collision.
   - Return the modified trajectory to caller of the service.
 
+## Error detection and handling
+
+Obstacles that have bounding-box edges too small for the geometry computations get their size
+increased to the minimum value defined by
+[min_obstacle_dimension_m](@ref motion::planning::object_collision_estimator::ObjectCollisionEstimatorConfig::min_obstacle_dimension_m).
+This node emits a warning each time such an obstacle is encountered.
+
 # Future extensions / Unimplemented parts
 
 - If a transform between bounding box and map does not exist, the estimator should return empty trajectory and the vehicle should stop.

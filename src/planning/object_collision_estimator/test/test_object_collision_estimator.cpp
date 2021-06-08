@@ -1,4 +1,4 @@
-// Copyright 2020 Arm Limited
+// Copyright 2020-2021 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,10 @@ const auto make_point(const float32_t x, const float32_t y)
   return p;
 }
 
-void object_collision_estimator_test(std::size_t trajectory_length, std::size_t obstacle_bbox_idx)
+void object_collision_estimator_test(
+  std::size_t trajectory_length,
+  std::size_t obstacle_bbox_idx,
+  float32_t generated_obstacle_size = 0.5)
 {
   // define dummy vehicle dimensions
   ObjectCollisionEstimatorConfig config{
@@ -55,7 +58,8 @@ void object_collision_estimator_test(std::size_t trajectory_length, std::size_t 
       0.5,  // rear_overhang_m);
     },
     1.1,  // safety factor
-    0.0  // stop_margin
+    0.0,  // stop_margin
+    0.0004,  // min_obstacle_dimension_m
   };
   TrajectorySmoother smoother{{5, 25}};
 
@@ -77,8 +81,9 @@ void object_collision_estimator_test(std::size_t trajectory_length, std::size_t 
 
     auto obstacle_point = trajectory.points[obstacle_bbox_idx];
     obstacle_bbox.centroid = make_point(obstacle_point.x, obstacle_point.y);
-    obstacle_bbox.size = make_point(0.5, 0.5);
-    obstacle_bbox.orientation.x = 1.0F;
+    obstacle_bbox.size = make_point(generated_obstacle_size, generated_obstacle_size);
+    obstacle_bbox.orientation.w = 1.0F / sqrtf(2.0F);
+    obstacle_bbox.orientation.z = 1.0F / sqrtf(2.0F);
     obstacle_bbox.corners = {
       make_point(
         obstacle_point.x - obstacle_bbox.size.x / 2,
@@ -98,7 +103,13 @@ void object_collision_estimator_test(std::size_t trajectory_length, std::size_t 
   }
 
   // call the estimator API
-  estimator.updateObstacles(bbox_array);
+  const auto modified_boxes = estimator.updateObstacles(bbox_array);
+  if (generated_obstacle_size < config.min_obstacle_dimension_m) {
+    // Check that the obstacle was modified
+    EXPECT_EQ(modified_boxes.size(), 1U);
+  } else {
+    EXPECT_TRUE(modified_boxes.empty());
+  }
   estimator.updatePlan(trajectory);
 
   if (obstacle_bbox_idx < trajectory_length) {
@@ -145,4 +156,8 @@ TEST(object_collision_estimator, emergency_stop) {
 
 TEST(object_collision_estimator, no_obstacle) {
   object_collision_estimator_test(100, 101);
+}
+
+TEST(object_collision_estimator, small_obstacle) {
+  object_collision_estimator_test(100, 40, 0.0003);
 }

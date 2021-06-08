@@ -1,4 +1,4 @@
-# Copyright 2020 Arm Limited
+# Copyright 2020-2021 Arm Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
   ros__parameters:
     safety_factor: 1.15
     stop_margin: 20.0  # distance between control point (e.g. CoG/base_link) and obstacle
+    min_obstacle_dimension_m: 0.0004  # small object limit
     trajectory_smoother:
       kernel_std: 5.0
       kernel_size: 25

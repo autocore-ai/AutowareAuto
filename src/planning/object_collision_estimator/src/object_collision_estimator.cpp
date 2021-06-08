@@ -1,4 +1,4 @@
-// Copyright 2020 Arm Limited
+// Copyright 2020-2021 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
 #include <geometry/intersection.hpp>
 #include <motion_common/config.hpp>
 #include <geometry_msgs/msg/point32.hpp>
+#include <geometry/bounding_box/bounding_box_common.hpp>
 #include <geometry/bounding_box/rotating_calipers.hpp>
 #include <common/types.hpp>
+#include <algorithm>
 #include <list>
+#include <vector>
 
 #include "object_collision_estimator/object_collision_estimator.hpp"
 
@@ -29,6 +32,11 @@ namespace object_collision_estimator
 {
 
 using autoware::common::geometry::bounding_box::minimum_perimeter_bounding_box;
+using autoware::common::geometry::get_normal;
+using autoware::common::geometry::minus_2d;
+using autoware::common::geometry::plus_2d;
+using autoware::common::geometry::rotate_2d;
+using autoware::common::geometry::times_2d;
 using autoware::common::types::float32_t;
 using motion::motion_common::to_angle;
 using motion::planning::trajectory_smoother::TrajectorySmoother;
@@ -42,7 +50,7 @@ using geometry_msgs::msg::Point32;
 ///                      to obstacles.
 /// \return BoundingBox The box bounding the ego vehicle at the waypoint.
 BoundingBox waypointToBox(
-  const TrajectoryPoint pt,
+  const TrajectoryPoint & pt,
   const VehicleConfig & vehicle_param,
   const float32_t safety_factor)
 {
@@ -97,13 +105,13 @@ BoundingBox waypointToBox(
 /// \return bool8_t Return true if the bounding box of the obstacle is at least distance_threshold
 ///         away from the way point.
 bool8_t isTooFarAway(
-  const TrajectoryPoint way_point, const BoundingBox obstacle_bbox,
+  const TrajectoryPoint & way_point, const BoundingBox & obstacle_bbox,
   const float32_t distance_threshold)
 {
   bool is_too_far_away{true};
   auto distance_threshold_squared = distance_threshold * distance_threshold;
 
-  for (auto corner : obstacle_bbox.corners) {
+  for (const auto & corner : obstacle_bbox.corners) {
     auto dx = corner.x - way_point.x;
     auto dy = corner.y - way_point.y;
     auto distance_squared = (dx * dx) + (dy * dy);
@@ -245,10 +253,42 @@ void ObjectCollisionEstimator::updatePlan(Trajectory & trajectory) noexcept
   }
 }
 
-void ObjectCollisionEstimator::updateObstacles(
+std::vector<BoundingBox> ObjectCollisionEstimator::updateObstacles(
   const BoundingBoxArray & bounding_boxes) noexcept
 {
   m_obstacles = bounding_boxes;
+
+  std::vector<BoundingBox> modified_obstacles;
+  for (auto & box : m_obstacles.boxes) {
+    if (std::min(box.size.x, box.size.y) < m_config.min_obstacle_dimension_m) {
+      Point32 heading;
+      heading.x = box.orientation.w;
+      heading.y = box.orientation.z;
+      // Double the quaternion's angle to get the heading, which is a unit vector colinear to the
+      // y-axis.
+      rotate_2d(heading, heading.x, heading.y);
+
+      // Compute base vectors of the new bounding box. Those vectors have the new desired length so
+      // that the corners are scaled at an equal distance on each side.
+      box.size.x = std::max(box.size.x, m_config.min_obstacle_dimension_m);
+      box.size.y = std::max(box.size.y, m_config.min_obstacle_dimension_m);
+      auto vect_x = times_2d(minus_2d(get_normal(heading)), box.size.x / 2);
+      auto vect_y = times_2d(heading, box.size.y / 2);
+
+      // Bottom left corner: -x-y
+      box.corners[0] = plus_2d(box.centroid, minus_2d(plus_2d(vect_x, vect_y)));
+      // Bottom right corner: x-y
+      box.corners[1] = plus_2d(box.centroid, minus_2d(vect_x, vect_y));
+      // Top right corner: x+y
+      box.corners[2] = plus_2d(box.centroid, plus_2d(vect_x, vect_y));
+      // Top left corner: -x+y
+      box.corners[3] = plus_2d(box.centroid, minus_2d(vect_y, vect_x));
+
+      modified_obstacles.push_back(box);
+    }
+  }
+
+  return modified_obstacles;
 }
 
 }  // namespace object_collision_estimator
