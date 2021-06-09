@@ -36,7 +36,10 @@ namespace state_estimation
 /// @tparam     StateT  A state vector type.
 ///
 template<typename StateT>
-struct number_of_acceleration_components : public std::integral_constant<std::size_t, 0UL> {};
+struct number_of_acceleration_components : public std::integral_constant<std::size_t, 0UL>
+{
+  static_assert(sizeof(StateT) == 0, "This class must be specialized to a specific state type.");
+};
 
 ///
 /// @brief      A class that describes the Wiener process noise.
@@ -80,12 +83,7 @@ protected:
   ///
   /// @return     A covariance of the noise process over given time.
   ///
-  typename State::Matrix crtp_covariance(const std::chrono::nanoseconds &) const
-  {
-    static_assert(
-      sizeof(StateT) == 0U,
-      "\n\nThis function must be specialized for specific states.\n\n");
-  }
+  typename State::Matrix crtp_covariance(const std::chrono::nanoseconds &) const;
 
 private:
   AccelerationArray m_acceleration_variances{};
@@ -112,31 +110,12 @@ struct number_of_acceleration_components<common::state_vector::ConstAcceleration
   : public std::integral_constant<std::size_t, 2UL> {};
 
 ///
-/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXY32
-///             state.
+/// @brief      A specialization of the number_of_acceleration_components trait for
+///             common::state_vector::ConstAccelerationXYZ.
 ///
-/// @param[in]  dt    Time step.
-///
-/// @return     Covariance matrix.
-///
-template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXY32::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXY32>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const;
-
-///
-/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXY64
-///             state.
-///
-/// @param[in]  dt    Time step.
-///
-/// @return     Covariance matrix.
-///
-template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXY64::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXY64>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const;
-
+template<typename ScalarT>
+struct number_of_acceleration_components<common::state_vector::ConstAccelerationXYZ<ScalarT>>
+  : public std::integral_constant<std::size_t, 3UL> {};
 
 ///
 /// @brief      A specialization of the number_of_acceleration_components trait for
@@ -147,30 +126,21 @@ struct number_of_acceleration_components<common::state_vector::ConstAcceleration
   : public std::integral_constant<std::size_t, 3UL> {};
 
 ///
-/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXYYaw32
-///             state.
+/// @brief      A specialization of the number_of_acceleration_components trait for
+///             common::state_vector::ConstAccelerationXYZYaw.
 ///
-/// @param[in]  dt    Time step.
-///
-/// @return     Covariance matrix.
-///
-template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXYYaw32::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXYYaw32>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const;
+template<typename ScalarT>
+struct number_of_acceleration_components<common::state_vector::ConstAccelerationXYZYaw<ScalarT>>
+  : public std::integral_constant<std::size_t, 4UL> {};
 
 ///
-/// @brief      A specialization of covariance matrix computation for the ConstAccelerationXYYaw64
-///             state.
+/// @brief      A specialization of the number_of_acceleration_components trait for
+///             common::state_vector::ConstAccelerationXYZRPY.
 ///
-/// @param[in]  dt    Time step.
-///
-/// @return     Covariance matrix.
-///
-template<>
-STATE_ESTIMATION_PUBLIC common::state_vector::ConstAccelerationXYYaw64::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXYYaw64>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const;
+template<typename ScalarT>
+struct number_of_acceleration_components<common::state_vector::ConstAccelerationXYZRPY<ScalarT>>
+  : public std::integral_constant<std::size_t, 6UL> {};
+
 
 }  // namespace state_estimation
 }  // namespace common

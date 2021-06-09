@@ -57,37 +57,34 @@ namespace state_estimation
 {
 
 
-template<>
-common::state_vector::ConstAccelerationXYYaw32::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXYYaw32>::crtp_covariance(
+template<typename StateT>
+typename StateT::Matrix WienerNoise<StateT>::crtp_covariance(
   const std::chrono::nanoseconds & dt) const
 {
-  return create_covariance<float32_t, 9, 3>(dt, m_acceleration_variances);
+  return create_covariance<
+    typename StateT::Scalar, StateT::size(),
+    number_of_acceleration_components<StateT>::value>(dt, m_acceleration_variances);
 }
 
-template<>
-common::state_vector::ConstAccelerationXYYaw64::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXYYaw64>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const
-{
-  return create_covariance<float64_t, 9, 3>(dt, m_acceleration_variances);
-}
 
-template<>
-common::state_vector::ConstAccelerationXY32::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXY32>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const
-{
-  return create_covariance<float32_t, 6, 2>(dt, m_acceleration_variances);
-}
+/// \cond DO_NOT_DOCUMENT
 
-template<>
-common::state_vector::ConstAccelerationXY64::Matrix
-WienerNoise<common::state_vector::ConstAccelerationXY64>::crtp_covariance(
-  const std::chrono::nanoseconds & dt) const
-{
-  return create_covariance<float64_t, 6, 2>(dt, m_acceleration_variances);
-}
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXY32>;
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXY64>;
+
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZ32>;
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZ64>;
+
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYYaw32>;
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYYaw64>;
+
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZYaw32>;
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZYaw64>;
+
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZRPY32>;
+template class STATE_ESTIMATION_PUBLIC WienerNoise<state_vector::ConstAccelerationXYZRPY64>;
+
+/// \endcond
 
 }  // namespace state_estimation
 }  // namespace common

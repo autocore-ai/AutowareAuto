@@ -37,8 +37,10 @@ Eigen::Matrix<ScalarT, 3, 3> create_single_variable_block(const std::chrono::nan
 template<typename ScalarT, int size>
 Eigen::Matrix<ScalarT, size, size> create_jacobian(const std::chrono::nanoseconds & dt)
 {
-  const Eigen::Matrix<ScalarT, 3,
-    3> single_variable_block{create_single_variable_block<ScalarT>(dt)};
+  // For now we just create a new matrix on every call. If this is too slow, we can create a new
+  // class that caches a certain number of results.
+  const Eigen::Matrix<ScalarT, 3, 3> single_variable_block{
+    create_single_variable_block<ScalarT>(dt)};
   Eigen::Matrix<ScalarT, size, size> m{Eigen::Matrix<ScalarT, size, size>::Zero()};
   for (int i = 0; i < size; i += 3) {
     m.template block<3, 3>(i, i) = single_variable_block;
@@ -55,37 +57,32 @@ namespace common
 namespace motion_model
 {
 
-template<>
-common::state_vector::ConstAccelerationXYYaw32::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXYYaw32>::crtp_jacobian(
+template<typename StateT>
+typename StateT::Matrix
+LinearMotionModel<StateT>::crtp_jacobian(
   const State &, const std::chrono::nanoseconds & dt) const
 {
-  return create_jacobian<float32_t, 9>(dt);
+  return create_jacobian<typename State::Scalar, State::size()>(dt);
 }
 
-template<>
-common::state_vector::ConstAccelerationXYYaw64::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXYYaw64>::crtp_jacobian(
-  const State &, const std::chrono::nanoseconds & dt) const
-{
-  return create_jacobian<float64_t, 9>(dt);
-}
+/// \cond DO_NOT_DOCUMENT
 
-template<>
-common::state_vector::ConstAccelerationXY32::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXY32>::crtp_jacobian(
-  const State &, const std::chrono::nanoseconds & dt) const
-{
-  return create_jacobian<float32_t, 6>(dt);
-}
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXY32>;
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXY64>;
 
-template<>
-common::state_vector::ConstAccelerationXY64::Matrix
-LinearMotionModel<common::state_vector::ConstAccelerationXY64>::crtp_jacobian(
-  const State &, const std::chrono::nanoseconds & dt) const
-{
-  return create_jacobian<float64_t, 6>(dt);
-}
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZ32>;
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZ64>;
+
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYYaw32>;
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYYaw64>;
+
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZYaw32>;
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZYaw64>;
+
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZRPY32>;
+template class MOTION_MODEL_PUBLIC LinearMotionModel<state_vector::ConstAccelerationXYZRPY64>;
+
+/// \endcond
 
 }  // namespace motion_model
 }  // namespace common
