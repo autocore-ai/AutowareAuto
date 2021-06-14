@@ -111,7 +111,7 @@ The rviz config has displays for all topics in this tutorial. As nodes are launc
   ```{bash}
   $ ade enter
   ade$ source /opt/AutowareAuto/setup.bash
-  ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe --ros-args --params-file /opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus.param.yaml --remap points_in:=/lidar_front/points_filtered
+  ade$ ros2 run ray_ground_classifier_nodes ray_ground_classifier_cloud_node_exe --ros-args --params-file /opt/AutowareAuto/share/ray_ground_classifier_nodes/param/vlp16_lexus_pcap.param.yaml --remap points_in:=/lidar_front/points_filtered
   ```
   ![Autoware.Auto ray ground filter snapshot](autoware-auto-ray-ground-filter-smaller.png)
 
