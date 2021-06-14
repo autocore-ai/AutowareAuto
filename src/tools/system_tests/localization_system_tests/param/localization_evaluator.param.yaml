@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    estimate_offset:
+      translation:
+        x: -58.22
+        y: -40.98
+        z: -1.9
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+    ground_truth_offset:
+      translation:
+        x: -0.00358963
+        y: -0.00601959
+        z: 0.0491562
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
