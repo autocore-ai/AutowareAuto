@@ -16,6 +16,8 @@
 
 #include <tracking/data_association.hpp>
 
+#include <vector>
+
 using TrackedObjects = autoware_auto_msgs::msg::TrackedObjects;
 using TrackedObject = autoware_auto_msgs::msg::TrackedObject;
 
@@ -71,16 +73,18 @@ protected:
 TEST_F(AssociationTester, basic)
 {
   TrackedObjects tracks_msg;
-  TrackedObject track1_obj;
-
-  track1_obj.shape.push_back(create_square(4.0F));
+  std::vector<tracking::TrackedObject> tracked_object_vec{};
+  DetectedObject track1_obj;
+  track1_obj.shape = create_square(4.0F);
   track1_obj.kinematics.centroid_position.x = 2.0;
   track1_obj.kinematics.centroid_position.y = 2.0;
   track1_obj.kinematics.position_covariance[0] = 0.5;
   track1_obj.kinematics.position_covariance[1] = -0.09;
   track1_obj.kinematics.position_covariance[3] = -0.09;
   track1_obj.kinematics.position_covariance[4] = 10.43;
-  tracks_msg.objects.push_back(track1_obj);
+  track1_obj.kinematics.has_position_covariance = true;
+
+  tracked_object_vec.emplace_back(track1_obj, 0.0, 0.0);
 
   DetectedObjects objects_msg;
   DetectedObject obj1;
@@ -99,7 +103,7 @@ TEST_F(AssociationTester, basic)
   obj2.kinematics.centroid_position.y = 3.0;
   objects_msg.objects.push_back(obj2);
 
-  const auto ret = m_associator.assign(objects_msg, tracks_msg);
+  const auto ret = m_associator.assign(objects_msg, tracked_object_vec);
   EXPECT_EQ(ret.track_assignments[0U], 1U);
   EXPECT_EQ(ret.unassigned_detection_indices.size(), 1U);
   EXPECT_EQ(ret.unassigned_detection_indices[0U], 0U);
@@ -112,17 +116,18 @@ TEST_F(AssociationTester, more_tracks_less_objects)
   auto num_associated_dets = 0U;
 
   TrackedObjects tracks_msg;
+  std::vector<tracking::TrackedObject> tracked_object_vec{};
   DetectedObjects detections_msg;
 
   for (size_t i = 0U; i < num_tracks; ++i) {
-    TrackedObject current_track;
+    DetectedObject current_track;
     const auto current_shape = create_square(4.0F);
-    current_track.shape.push_back(current_shape);
+    current_track.shape = current_shape;
     current_track.kinematics.centroid_position.x = 2.0 * static_cast<double>(i + 1U);
     current_track.kinematics.centroid_position.y = 2.0 * static_cast<double>(i + 1U);
     current_track.kinematics.position_covariance = m_some_covariance;
-
-    tracks_msg.objects.push_back(current_track);
+    current_track.kinematics.has_position_covariance = true;
+    tracked_object_vec.emplace_back(current_track, 0.0, 0.0);
 
     //  Create detections that can be associated with tracks
     if (i % 2 == 0) {
@@ -140,7 +145,7 @@ TEST_F(AssociationTester, more_tracks_less_objects)
     }
   }
 
-  const auto ret = m_associator.assign(detections_msg, tracks_msg);
+  const auto ret = m_associator.assign(detections_msg, tracked_object_vec);
 
   EXPECT_EQ(ret.unassigned_track_indices.size(), num_tracks - num_associated_dets);
   for (size_t i = 0U; i < ret.unassigned_track_indices.size(); ++i) {
@@ -157,20 +162,21 @@ TEST_F(AssociationTester, area_gating_fails)
   auto num_unassociated_dets = 0U;
 
   TrackedObjects tracks_msg;
+  std::vector<tracking::TrackedObject> tracked_object_vec{};
   DetectedObjects detections_msg;
 
   // toggle to set some detections to bigger size and some to smaller size
   bool toggle = true;
 
   for (size_t i = 0U; i < num_tracks; ++i) {
-    TrackedObject current_track;
+    DetectedObject current_track;
     const auto current_shape = create_square(4.0F);
-    current_track.shape.push_back(current_shape);
+    current_track.shape = current_shape;
     current_track.kinematics.centroid_position.x = 2.0 * static_cast<double>(i + 1U);
     current_track.kinematics.centroid_position.y = 2.0 * static_cast<double>(i + 1U);
     current_track.kinematics.position_covariance = m_some_covariance;
-
-    tracks_msg.objects.push_back(current_track);
+    current_track.kinematics.has_position_covariance = true;
+    tracked_object_vec.emplace_back(current_track, 0.0, 0.0);
 
     DetectedObject current_detection;
     if (i % 2 == 0) {
@@ -192,7 +198,7 @@ TEST_F(AssociationTester, area_gating_fails)
 
     detections_msg.objects.push_back(current_detection);
   }
-  const auto ret = m_associator.assign(detections_msg, tracks_msg);
+  const auto ret = m_associator.assign(detections_msg, tracked_object_vec);
 
   // Verify unassigned tracks
   ASSERT_EQ(ret.unassigned_track_indices.size(), num_unassociated_dets);

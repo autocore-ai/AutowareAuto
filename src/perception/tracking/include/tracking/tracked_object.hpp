@@ -24,8 +24,8 @@
 
 #include "autoware_auto_msgs/msg/detected_object.hpp"
 #include "autoware_auto_msgs/msg/detected_objects.hpp"
-#include "autoware_auto_msgs/msg/tracked_object.hpp"
 #include "autoware_auto_msgs/msg/tracked_objects.hpp"
+#include "autoware_auto_msgs/msg/shape.hpp"
 #include "common/types.hpp"
 #include "motion_model/linear_motion_model.hpp"
 #include "state_estimation/kalman_filter/kalman_filter.hpp"
@@ -51,6 +51,7 @@ public:
   using EKF = autoware::common::state_estimation::KalmanFilter<MotionModel, NoiseModel>;
   using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedObject;
   using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedObject;
+  using ShapeMsg = autoware_auto_msgs::msg::Shape;
 
   /// Constructor
   /// \param detection A detection from which to initialize this object. Must have a pose.
@@ -78,6 +79,25 @@ public:
 
   /// Getter for the message.
   const TrackedObjectMsg & msg();
+
+  /// Getter for position covariance array
+  inline Eigen::Matrix2d position_covariance() const
+  {
+    return m_ekf.covariance().topLeftCorner<2, 2>();
+  }
+
+  /// Getter for centroid position
+  inline Eigen::Vector2d centroid() const
+  {
+    return Eigen::Vector2d {m_ekf.state().at<autoware::common::state_vector::variable::X>(),
+      m_ekf.state().at<autoware::common::state_vector::variable::Y>()};
+  }
+
+  /// Getter for shape
+  inline const ShapeMsg & shape() const
+  {
+    return m_msg.shape[0];
+  }
 
 private:
   /// The final to-be-published object.

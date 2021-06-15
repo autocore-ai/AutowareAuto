@@ -28,6 +28,9 @@ namespace perception
 namespace tracking
 {
 
+using autoware::common::state_vector::variable::X;
+using autoware::common::state_vector::variable::Y;
+
 constexpr std::size_t AssociatorResult::UNASSIGNED;
 
 DataAssociationConfig::DataAssociationConfig(
@@ -41,20 +44,20 @@ Associator::Associator(const DataAssociationConfig & association_cfg)
 
 AssociatorResult Associator::assign(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
-  const autoware_auto_msgs::msg::TrackedObjects & tracks)
+  const std::vector<TrackedObject> & tracks)
 {
   reset();
   m_num_detections = detections.objects.size();
-  m_num_tracks = tracks.objects.size();
+  m_num_tracks = tracks.size();
   m_are_tracks_rows = (m_num_tracks <= m_num_detections);
   if (m_are_tracks_rows) {
     m_assigner.set_size(
-      static_cast<assigner_idx_t>(tracks.objects.size()),
+      static_cast<assigner_idx_t>(tracks.size()),
       static_cast<assigner_idx_t>(detections.objects.size()));
   } else {
     m_assigner.set_size(
       static_cast<assigner_idx_t>(detections.objects.size()),
-      static_cast<assigner_idx_t>(tracks.objects.size()));
+      static_cast<assigner_idx_t>(tracks.size()));
   }
   compute_weights(detections, tracks);
   // TODO(gowtham.ranganathan): Revisit this after #979 since till then assigner will always
@@ -74,11 +77,11 @@ void Associator::reset()
 
 void Associator::compute_weights(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
-  const autoware_auto_msgs::msg::TrackedObjects & tracks)
+  const std::vector<TrackedObject> & tracks)
 {
   for (size_t det_idx = 0U; det_idx < detections.objects.size(); ++det_idx) {
-    for (size_t track_idx = 0U; track_idx < tracks.objects.size(); ++track_idx) {
-      const auto & track = tracks.objects[track_idx];
+    for (size_t track_idx = 0U; track_idx < tracks.size(); ++track_idx) {
+      const auto & track = tracks[track_idx];
       const auto & detection = detections.objects[det_idx];
 
       if (consider_associating(detection, track)) {
@@ -87,13 +90,10 @@ void Associator::compute_weights(
         sample(1, 0) = static_cast<float>(detection.kinematics.centroid_position.y);
 
         Eigen::Matrix<float, NUM_OBJ_POSE_DIM, 1> mean(NUM_OBJ_POSE_DIM, 1U);
-        mean(0, 0) = static_cast<float>(track.kinematics.centroid_position.x);
-        mean(1, 0) = static_cast<float>(track.kinematics.centroid_position.y);
+        mean = track.centroid().cast<float>();
 
         Eigen::Matrix<float, NUM_OBJ_POSE_DIM,
-          NUM_OBJ_POSE_DIM> cov = Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(
-          tracks.objects[track_idx]
-          .kinematics.position_covariance.data()).cast<float>().topLeftCorner<2, 2>();
+          NUM_OBJ_POSE_DIM> cov = track.position_covariance().cast<float>();
 
         const auto dist = autoware::common::helper_functions::calculate_mahalanobis_distance(
           sample, mean, cov);
@@ -106,7 +106,7 @@ void Associator::compute_weights(
 
 bool Associator::consider_associating(
   const autoware_auto_msgs::msg::DetectedObject & detection,
-  const autoware_auto_msgs::msg::TrackedObject & track) const
+  const TrackedObject & track) const
 {
   const auto squared_distance_2d = [](const geometry_msgs::msg::Point & p1, const
       geometry_msgs::msg::Point & p2) -> float {
@@ -120,8 +120,9 @@ bool Associator::consider_associating(
   const float det_area = common::geometry::area_checked_2d(
     detection.shape.polygon.points.begin(), detection.shape.polygon.points.end());
   // TODO(gowtham.ranganathan): Add support for articulated objects
+
   const float track_area = common::geometry::area_checked_2d(
-    track.shape[0].polygon.points.begin(), track.shape[0].polygon.points.end());
+    track.shape().polygon.points.begin(), track.shape().polygon.points.end());
   static constexpr float kAreaEps = 1e-3F;
 
   if (common::helper_functions::comparisons::abs_eq_zero(det_area, kAreaEps) ||
@@ -132,9 +133,13 @@ bool Associator::consider_associating(
 
   const float area_ratio = det_area / track_area;
 
+  geometry_msgs::msg::Point track_centroid{};
+  track_centroid.x = track.centroid().x();
+  track_centroid.y = track.centroid().y();
+
   if (squared_distance_2d(
       detection.kinematics.centroid_position,
-      track.kinematics.centroid_position) >
+      track_centroid) >
     m_association_cfg.get_max_distance_squared())
   {
     return false;
