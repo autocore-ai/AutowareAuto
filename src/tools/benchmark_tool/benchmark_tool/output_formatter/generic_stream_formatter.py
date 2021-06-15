@@ -32,7 +32,6 @@ class GenericStreamFormatter(OutputFormatter):
         """
         Create a GenericStreamFormatter object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param result_path: The path on filesystem where to save the received stream
@@ -47,7 +46,6 @@ class GenericStreamFormatter(OutputFormatter):
         """
         Start the subscriber on the specified topic.
 
-        @param self: The object pointer
         @param topic: The topic to listen for the data
         @type  topic: str
         @param topic_datatype: The data type of the topic
@@ -82,7 +80,6 @@ class GenericStreamFormatter(OutputFormatter):
 
         Callback for the metric topic.
 
-        @param self: The object pointer
         @param msg: Message containing the int value
         @type  msg: Depends on the topic
         @return: None

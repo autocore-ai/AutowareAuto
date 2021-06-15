@@ -53,7 +53,6 @@ class Kitti3DBenchmarkDataset(Dataset):
         """
         Create a Kitti3DBenchmarkDataset object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param path: The path on filesystem for the kitti benchmark
@@ -65,7 +64,6 @@ class Kitti3DBenchmarkDataset(Dataset):
         """
         Load the data files composing the kitti benchmark.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         # Check filesystem folder structure
@@ -90,7 +88,6 @@ class Kitti3DBenchmarkDataset(Dataset):
         Return the path on filesystem of the ground truth of the kitti 3D.
 
         object detection benchmark
-        @param self: The object pointer
         @return: str
         """
         return self.get_root_path() + self.KITTI_3D_BENCH_FOLDER_STRUCTURE[
@@ -101,7 +98,6 @@ class Kitti3DBenchmarkDataset(Dataset):
         """
         Check if the provided folder has the required folder structure.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         for folder in self.KITTI_3D_BENCH_FOLDER_STRUCTURE:
@@ -126,7 +122,6 @@ class KittiPointCloud(DatasetElem):
         """
         Create a KittiPointCloud object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param folder: The path on filesystem of the point cloud data
@@ -139,7 +134,6 @@ class KittiPointCloud(DatasetElem):
         """
         Retrieve the point cloud binary data pointed by the cursor in PointCloud2 message format.
 
-        @param self: The object pointer
         @return: sensor_msgs.msg.PointCloud2 message on success, None on failure
         """
         pc2_frame = PointCloud2()

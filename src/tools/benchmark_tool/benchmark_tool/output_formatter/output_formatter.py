@@ -33,7 +33,6 @@ class OutputFormatter(metaclass=ABCMeta):
         """
         Create a OutputFormatter object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param result_path: The path on the filesystem for the result folder
@@ -49,7 +48,6 @@ class OutputFormatter(metaclass=ABCMeta):
         """
         Start the subscriber on the specified topic and initialize internal structures.
 
-        @param self: The object pointer
         @param topic: The topic to listen for the data
         @type  topic: str
         @return: True on success, False on failure

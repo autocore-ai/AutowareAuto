@@ -30,7 +30,6 @@ class BenchmarkTask(metaclass=ABCMeta):
         """
         Create a BenchmarkTask object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         """
@@ -44,7 +43,6 @@ class BenchmarkTask(metaclass=ABCMeta):
         """
         Initialize the task structure.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         pass
@@ -56,7 +54,6 @@ class BenchmarkTask(metaclass=ABCMeta):
 
         This function is called repeatedly in a loop until the task has finished its operations.
 
-        @param self: The object pointer
         @return: True if the task has not finished operation, False when the task has nothing more
             to do
         """
@@ -67,7 +64,6 @@ class BenchmarkTask(metaclass=ABCMeta):
         """
         Compute the final benchmark results.
 
-        @param self: The object pointer
         @return: None
         """
         pass

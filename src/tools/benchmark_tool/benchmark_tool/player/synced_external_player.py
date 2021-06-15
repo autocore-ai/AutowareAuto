@@ -45,7 +45,6 @@ class SyncedExternalPlayer(ExternalPlayer):
             """
             Create a SyncedReplayTrack object.
 
-            @param self: The object pointer
             @param node: ROS2 node
             @type  node: rclpy.node.Node
             @param listen_topic: The topic where to listen for data to be replayed
@@ -91,7 +90,6 @@ class SyncedExternalPlayer(ExternalPlayer):
 
             Callback for the synchronization topic.
 
-            @param self: The object pointer
             @param msg: The message from the synchronization topic
             @type  msg: Depends on the topic's data
             @return: None
@@ -109,7 +107,6 @@ class SyncedExternalPlayer(ExternalPlayer):
             The frame is moved forward in the _sync_topic_callback upon receiving data from sync
             topic.
 
-            @param self: The object pointer
             @return: None
             """
             # In this object this function shall do nothing
@@ -119,7 +116,6 @@ class SyncedExternalPlayer(ExternalPlayer):
         """
         Create a SyncedExternalPlayer object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         """
@@ -130,7 +126,6 @@ class SyncedExternalPlayer(ExternalPlayer):
         """
         Add a track to the player object.
 
-        @param self: The object pointer
         @param listen_topic: The topic where to listen for data to be replayed
         @type  listen_topic: str
         @param publish_topic: The name of the topic where publish the data
@@ -171,7 +166,6 @@ class SyncedExternalPlayer(ExternalPlayer):
 
         When all data is played from the track, it is removed from the list.
 
-        @param self: The object pointer
         @return: None
         """
         for track in list(self._tracks):
@@ -201,7 +195,6 @@ class SyncedExternalPlayer(ExternalPlayer):
         """
         Publish the given frame on the topic of the given track.
 
-        @param self: The object pointer
         @param track: The track related to the transmission
         @type  track: Track
         @param frame: The data to be transmitted

@@ -43,7 +43,6 @@ class GenericPlayer(object):
             """
             Create a Track object.
 
-            @param self: The object pointer
             @param node: ROS2 node
             @type  node: rclpy.node.Node
             @param track_index: The index of the data source in the Dataset
@@ -73,7 +72,6 @@ class GenericPlayer(object):
         """
         Create a GenericPlayer object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param dataset: The dataset object where to retrieve the data
@@ -91,7 +89,6 @@ class GenericPlayer(object):
         """
         Add a track to the player object.
 
-        @param self: The object pointer
         @param track_idx: The index of the data source in the Dataset
         @type  track_idx: int
         @param publish_topic: The name of the topic where publish the data
@@ -127,7 +124,6 @@ class GenericPlayer(object):
         """
         Append a track to the internal list and update the internal data counter.
 
-        @param self: The object pointer
         @param track: The track to append to the internal list
         @type  track: Track
         @param track_idx: The index of the data source in the Dataset
@@ -150,7 +146,6 @@ class GenericPlayer(object):
         """
         Print on the standard output a progress bar based on the played data.
 
-        @param self: The object pointer
         @return: None
         """
         bar_len = 50
@@ -172,7 +167,6 @@ class GenericPlayer(object):
         """
         Play all the track.
 
-        @param self: The object pointer
         @return: True when there are still tracks to be played, False when there is no more data to
         play
         """
@@ -194,7 +188,6 @@ class GenericPlayer(object):
 
         When all data is played from the track, it is removed from the list.
 
-        @param self: The object pointer
         @return: None
         """
         for track in list(self._tracks):
@@ -206,7 +199,6 @@ class GenericPlayer(object):
         """
         Play the given track.
 
-        @param self: The object pointer
         @param track: The track to be played
         @type  track: Track
         @param data: The data source of the dataset relative to this track
@@ -255,7 +247,6 @@ class GenericPlayer(object):
         """
         Publish the given frame on the topic of the given track.
 
-        @param self: The object pointer
         @param track: The track related to the transmission
         @type  track: Track
         @param frame: The data to be transmitted

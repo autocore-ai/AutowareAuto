@@ -78,9 +78,7 @@ static struct PyModuleDef kittiobjeval_module = {
   NULL,
 };
 
-
-PyMODINIT_FUNC
-PyInit_kittiobjeval(void)
+extern "C" KITTIOBJEVALMODULE_PUBLIC PyObject * PyInit_kittiobjeval(void)
 {
   return PyModule_Create(&kittiobjeval_module);
 }

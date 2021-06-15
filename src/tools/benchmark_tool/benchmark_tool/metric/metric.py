@@ -29,7 +29,6 @@ class Metric(metaclass=ABCMeta):
         """
         Create a Metric object.
 
-        @param self: The object pointer
         @param result_folder: The path on filesystem for the data to be analyzed
         @type  result_folder: str
         @param output_folder: The path on filesystem for the output files after the computation of
@@ -45,7 +44,6 @@ class Metric(metaclass=ABCMeta):
         """
         Start the computation of the metric.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         pass

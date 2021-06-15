@@ -25,7 +25,6 @@ class SyncedPlayerFrameSize(SyncedPlayer):
         """
         Create a SyncedPlayerFrameSize object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param dataset: The dataset object where to retrieve the data
@@ -54,7 +53,6 @@ class SyncedPlayerFrameSize(SyncedPlayer):
         """
         Publish the given frame on the topic of the given track.
 
-        @param self: The object pointer
         @param track: The track related to the transmission
         @type  track: SyncedTrack
         @param frame: The data to be transmitted
@@ -75,7 +73,6 @@ class SyncedPlayerFrameSize(SyncedPlayer):
 
         In this case, the frame is assumed to be a pointcloud.
 
-        @param self: The object pointer
         @param frame: The data to be sized
         @type  frame: Depends on the data source
         """

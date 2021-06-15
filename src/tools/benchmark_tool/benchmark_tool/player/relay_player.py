@@ -35,7 +35,6 @@ class RelayPlayer(object):
         """
         Create a GenericPlayer object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param input_topic: The topic where the preprocessing node sends the data
@@ -68,7 +67,6 @@ class RelayPlayer(object):
 
         Callback function triggered by the reception of a message from the preprocessing node.
 
-        @param self: The object pointer
         @param msg: The topic message
         @type  msg: The type can vary depending on the listened topic
         @return: None

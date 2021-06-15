@@ -36,7 +36,6 @@ class AverageMetric(Metric):
         """
         Create a AverageMetric object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param result_folder: The path on filesystem for the data to be analyzed
@@ -70,7 +69,6 @@ class AverageMetric(Metric):
         It reads the file that shall contain one value for each line, computes the average and
         creates a new file with the minimum value, the average and the maximum value in this order.
 
-        @param self: The object pointer
         @param reportMsg: The message to print. It must have three %f fields for min, average and
             max value, in this order.
         @return: True on success, False on failure
@@ -121,7 +119,6 @@ class AverageMetric(Metric):
         """
         Save the output files with the minimum value, the average and the maximum value.
 
-        @param self: The object pointer
         @param min_value: The minimum value to be saved in the output file
         @type  min_value: int
         @param average_value: The average value to be saved in the output file

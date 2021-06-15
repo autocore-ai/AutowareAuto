@@ -54,6 +54,11 @@ if(BUILD_TESTING)
     test/sys_info_node_launch.test.py
     TIMEOUT "30"
   )
+
+  add_ros_test(
+    test/benchmark_tool_node_launch.test.py
+    TIMEOUT "30"
+  )
 endif()
 
 ament_auto_package(

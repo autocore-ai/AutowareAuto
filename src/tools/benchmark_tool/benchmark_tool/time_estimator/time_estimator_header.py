@@ -47,7 +47,6 @@ class TimeEstimatorHeader(object):
         """
         Create a TimeEstimator object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         """
@@ -59,7 +58,6 @@ class TimeEstimatorHeader(object):
         """
         Start the time measurement.
 
-        @param self: The object pointer
         @param output_topic: Topic to be listened to measure the time
         @type  output_topic: str
         @param publish_topic: Topic where the measurement is published
@@ -99,7 +97,6 @@ class TimeEstimatorHeader(object):
         receiving time and the time of the message header.
         After the computation, the speed is published on the publish topic.
 
-        @param self: The object pointer
         @param msg: The topic message
         @type  msg: The type can vary depending on the listened topic
         @return: None

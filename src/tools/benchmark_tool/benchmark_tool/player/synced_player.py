@@ -44,7 +44,6 @@ class SyncedPlayer(GenericPlayer):
             """
             Create a SyncedTrack object.
 
-            @param self: The object pointer
             @param node: ROS2 node
             @type  node: rclpy.node.Node
             @param track_index: The index of the data source in the Dataset
@@ -86,7 +85,6 @@ class SyncedPlayer(GenericPlayer):
 
             Callback for the synchronization topic.
 
-            @param self: The object pointer
             @param msg: The message from the synchronization topic
             @type  msg: Depends on the topic's data
             @return: None
@@ -98,7 +96,6 @@ class SyncedPlayer(GenericPlayer):
         """
         Create a SyncedPlayer object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param dataset: The dataset object where to retrieve the data
@@ -111,7 +108,6 @@ class SyncedPlayer(GenericPlayer):
         """
         Add a track to the player object.
 
-        @param self: The object pointer
         @param track_idx: The index of the data source in the Dataset
         @type  track_idx: int
         @param publish_topic: The name of the topic where publish the data
@@ -154,7 +150,6 @@ class SyncedPlayer(GenericPlayer):
 
         When all data is played from the track, it is removed from the list.
 
-        @param self: The object pointer
         @return: None
         """
         for track in list(self._tracks):
@@ -181,7 +176,6 @@ class SyncedPlayer(GenericPlayer):
         """
         Publish the given frame on the topic of the given track.
 
-        @param self: The object pointer
         @param track: The track related to the transmission
         @type  track: SyncedTrack
         @param frame: The data to be transmitted

@@ -35,11 +35,7 @@ class KittiObjDetectionUtils:
         """
 
         def __init__(self):
-            """
-            Create a KittiDetection object.
-
-            @param self: The object pointer
-            """
+            """Create a KittiDetection object."""
             self.obj_type = ""
             self.truncated = float(-1.0)
             self.occlusion = int(-1)
@@ -63,7 +59,6 @@ class KittiObjDetectionUtils:
 
             It is properly formatted for kitti object detection benchmark.
 
-            @param self: The object pointer
             @return: str
             """
             kitti_entry = [

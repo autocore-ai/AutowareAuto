@@ -205,7 +205,7 @@ Depending on each node-specific launch file, there could be more parameters.
 |Parameter| Type| Description|Default|
 |----------|-----|--------|---|
 |`task`|*string*|The name of the benchmark task to start|depends on the launch file|
-|`data_path`|*string*|The path of the root folder of the dataset|`$(env HOME)/kitti_data/3d_bench/`|
+|`dataset_path`|*string*|The path of the root folder of the dataset|`$(env HOME)/kitti_data/3d_bench/`|
 |`input_topic`|*string*|The topic to publish the data|depends on the launch file|
 |`output_topic`|*string*|The topic to listen for output data|depends on the launch file|
 |`benchmarked_input_topic`|*string*|The input topic of the benchmarked node|depends on the launch file|

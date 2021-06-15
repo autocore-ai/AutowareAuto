@@ -33,7 +33,6 @@ class TimeEstimatorTopic(object):
         """
         Create a TimeEstimatorTopic object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         """
@@ -48,7 +47,6 @@ class TimeEstimatorTopic(object):
         """
         Start the time measurement.
 
-        @param self: The object pointer
         @param input_topic: Topic to be listened to start the time measurement
         @type  input_topic: str
         @param output_topic: Topic to be listened to stop the time measurement
@@ -96,7 +94,6 @@ class TimeEstimatorTopic(object):
 
         Callback function triggered by the reception of a message from the input topic.
 
-        @param self: The object pointer
         @param msg: The topic message
         @type  msg: The type can vary depending on the listened topic
         @return: None
@@ -115,7 +112,6 @@ class TimeEstimatorTopic(object):
 
         Callback function triggered by the reception of a message from the output topic.
 
-        @param self: The object pointer
         @param msg: The topic message
         @type  msg: The type can vary depending on the listened topic
         @return: None

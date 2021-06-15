@@ -43,7 +43,6 @@ class ExternalPlayer(GenericPlayer):
             """
             Create a ReplayTrack object.
 
-            @param self: The object pointer
             @param node: ROS2 node
             @type  node: rclpy.node.Node
             @param listen_topic: The topic where to listen for data to be replayed
@@ -87,7 +86,6 @@ class ExternalPlayer(GenericPlayer):
 
             Callback for the listened topic from the external node providing data.
 
-            @param self: The object pointer
             @param msg: The message from the synchronization topic
             @type  msg: Depends on the topic's data
             @return: None
@@ -98,7 +96,6 @@ class ExternalPlayer(GenericPlayer):
             """
             Check if the track has played the expected amount of frames.
 
-            @param self: The object pointer
             @return: True if the data is finished, False otherwise
             """
             return (self._trk_frame_played >= self._total_frame_number)
@@ -107,7 +104,6 @@ class ExternalPlayer(GenericPlayer):
             """
             Retrieve the first frame from the internal data structure.
 
-            @param self: The object pointer
             @return: Depends on the data
             """
             frame = None
@@ -120,7 +116,6 @@ class ExternalPlayer(GenericPlayer):
             """
             Remove the first entry of the internal data structure.
 
-            @param self: The object pointer
             @return: None
             """
             if len(self.replay_data) > 0:
@@ -131,7 +126,6 @@ class ExternalPlayer(GenericPlayer):
         """
         Create a ExternalPlayer object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         """
@@ -145,7 +139,6 @@ class ExternalPlayer(GenericPlayer):
         """
         Add a track to the player object.
 
-        @param self: The object pointer
         @param listen_topic: The topic where to listen for data to be replayed
         @type  listen_topic: str
         @param publish_topic: The name of the topic where publish the data
@@ -178,7 +171,6 @@ class ExternalPlayer(GenericPlayer):
         """
         Append a track to the internal list and update the internal data counter.
 
-        @param self: The object pointer
         @param track: The track to append to the internal list
         @type  track: Track
         @return: True on success, False on failure
@@ -197,7 +189,6 @@ class ExternalPlayer(GenericPlayer):
 
         When all data is played from the track, it is removed from the list.
 
-        @param self: The object pointer
         @return: None
         """
         for track in list(self._tracks):
@@ -208,7 +199,6 @@ class ExternalPlayer(GenericPlayer):
         """
         Play the given track.
 
-        @param self: The object pointer
         @param track: The track to be played
         @type  track: Track
         @return: False when the track is ended, True otherwise
@@ -253,7 +243,6 @@ class ExternalPlayer(GenericPlayer):
         """
         Publish the given frame on the topic of the given track.
 
-        @param self: The object pointer
         @param track: The track related to the transmission
         @type  track: Track
         @param frame: The data to be transmitted

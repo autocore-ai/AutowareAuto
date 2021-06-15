@@ -40,7 +40,6 @@ class Kitti3dObjectDetectionMetric(Metric):
         """
         Create a Kitti3dObjectDetectionMetric object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param result_folder: The path on filesystem for the data to be analyzed
@@ -64,7 +63,6 @@ class Kitti3dObjectDetectionMetric(Metric):
         It uses the official C++ kitti sdk code for the computation, the code is wrapped into a
         Python module.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         # Remove kitti sdk files from output folder to prevent errors
@@ -104,7 +102,6 @@ class Kitti3dObjectDetectionMetric(Metric):
 
         Extract the 41 precision/recall scores and compute the final metric.
 
-        @param self: The object pointer
         @param result_class: The type of the object: car, pedestrian, cyclist
         @type  result_class: str
         @return: True on success, False on failure
@@ -165,7 +162,6 @@ class Kitti3dObjectDetectionMetric(Metric):
         """
         Compute the precision score given the 41 values in the kitti sdk output file.
 
-        @param self: The object pointer
         @param precision_file_line: A string line with 41 values space separated
         @type  precision_file_line: str
         @return: int -1 on Failure, >=0 on successfully computed metric

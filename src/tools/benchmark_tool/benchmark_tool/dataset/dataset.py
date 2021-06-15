@@ -32,7 +32,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Create a Dataset object.
 
-        @param self: The object pointer
         @param node: ROS2 node
         @type  node: rclpy.node.Node
         @param path: The path on filesystem of the dataset used for the benchmark
@@ -49,7 +48,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Initialize the internal structure of the dataset.
 
-        @param self: The object pointer
         @return: True on success, False on failure
         """
         pass
@@ -58,7 +56,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Set a frame limitation to the sources of this dataset.
 
-        @param self: The object pointer
         @param end_frame: The limit number, negative if unlimited
         @return: None
         """
@@ -70,7 +67,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Return the path on filesystem of the dataset used for the benchmark.
 
-        @param self: The object pointer
         @return: str
         """
         return self._root_path
@@ -80,7 +76,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Return the path on filesystem of the ground truth for this dataset.
 
-        @param self: The object pointer
         @return: str
         """
         pass
@@ -89,7 +84,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Return a list of DatasetElem objects holding information about the data source.
 
-        @param self: The object pointer
         @param data_type: The data type of the pointed data sources
         @return: List of DatasetElem objects
         """
@@ -106,7 +100,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Return a list of DatasetElem objects holding information about the data sources.
 
-        @param self: The object pointer
         @return: List of DatasetElem objects
         """
         return self._pointcloud_sources
@@ -115,7 +108,6 @@ class Dataset(metaclass=ABCMeta):
         """
         Return the size in frames of the pointed data source.
 
-        @param self: The object pointer
         @param data_type: The data type of the pointed data sources
         @param sourceIndex: The index of the data source
         @return: Int
@@ -141,7 +133,6 @@ class DatasetElem(object):
 
         Reads a given folder and creates a list of the files.
 
-        @param self: The object pointer
         @param folder: The path on filesystem of the data source
         @type  folder: str
         @return: None
@@ -159,7 +150,6 @@ class DatasetElem(object):
         """
         Seek the beginning of the data source.
 
-        @param self: The object pointer
         @return: None
         """
         self._current_elem = 0
@@ -168,7 +158,6 @@ class DatasetElem(object):
         """
         Check if the data source reached its end.
 
-        @param self: The object pointer
         @return: True if the data is finished, False otherwise
         """
         return (self._current_elem >= self._max_frame_count)
@@ -179,7 +168,6 @@ class DatasetElem(object):
 
         It effectively limits the number of frames playable.
 
-        @param self: The object pointer
         @param max_frame_count: The new max frame count.
         @return: True if the new max_frame_count is valid, False otherwise
         """
@@ -193,7 +181,6 @@ class DatasetElem(object):
         """
         Make the cursor move forward of one position.
 
-        @param self: The object pointer
         @return: None
         """
         if not self.is_end():
@@ -203,7 +190,6 @@ class DatasetElem(object):
         """
         Make the cursor move backward of one position.
 
-        @param self: The object pointer
         @return: None
         """
         if self._current_elem > 0:
@@ -213,7 +199,6 @@ class DatasetElem(object):
         """
         Sort the files of this data source in alphabetical order.
 
-        @param self: The object pointer
         @return: None
         """
         self._folder_files.sort()
@@ -222,7 +207,6 @@ class DatasetElem(object):
         """
         Return the number of element composing this data source.
 
-        @param self: The object pointer
         @return: int representing the number of element of this data source
         """
         return self._max_frame_count
@@ -231,7 +215,6 @@ class DatasetElem(object):
         """
         Return the file name of the file currently pointed by this object.
 
-        @param self: The object pointer
         @return: str representing the file name or EOF if the data source reached its end
         """
         file_name = 'EOF'
@@ -245,7 +228,6 @@ class DatasetElem(object):
         """
         Retrieve the current data pointed by the cursor.
 
-        @param self: The object pointer
         @return: Depends on the data
         """
         pass
