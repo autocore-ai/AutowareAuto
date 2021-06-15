@@ -57,13 +57,13 @@ Optionally, to send a goal position/heading programmatically:
 *terminal 4*
 ```{bash}
 > ade enter
-ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -95.875, y: 57.707, z: -1.950}, orientation: {x: -0.021, y: 0.014,z: 0.901,w: 0.434}}'} --once
+ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -96.46856384277344, y: 58.39532775878906}, orientation: {z: 0.42554035782814026, w: 0.9049394130706787}}'} --once
 ```
 
 if you want to park in the backward direction, send:
 ```{bash}
 > ade enter
-ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -97.629, y: 59.872, z: 0.0}, orientation: {x: 0.0, y: 0.0,z: -0.43,w: 0.90283}}'} --once
+ade$ ros2 topic pub /planning/goal_pose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, pose: {position: {x: -98.56259155273438, y: 60.99168395996094}, orientation: {z: -0.42844402469653825, w: 0.9035683248663778}}'} --once
 ```
 
 ## Verify that Behavior Planner receives routes from Global Path
