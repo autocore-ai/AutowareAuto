@@ -47,6 +47,10 @@ TEST_F(EuclideanClusterNodesTest, instantiate)
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
 
+  params.emplace_back("use_detected_objects", false);
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
   params.emplace_back("use_cluster", true);
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
@@ -124,6 +128,10 @@ TEST_F(EuclideanClusterNodesTest, instantiate_downsample)
 
   std::vector<rclcpp::Parameter> params;
 
+  node_options.parameter_overrides(params);
+  ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
+
+  params.emplace_back("use_detected_objects", false);
   node_options.parameter_overrides(params);
   ASSERT_THROW(EuclideanClusterNode{node_options}, rclcpp::ParameterTypeException);
 

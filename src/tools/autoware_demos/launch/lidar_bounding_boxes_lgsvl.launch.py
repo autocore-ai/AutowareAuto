@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Launch all the necessary nodes to produce bounding boxes for obstacles
-   using lidar data from the lgsvl simulator"""
+"""Launch perception stack using lidar data from the SVL simulator."""
 
 import os
 
@@ -23,10 +22,10 @@ import launch.substitutions
 import launch_ros.actions
 
 
-# assumes the param file has the given file_name and is under 
-# "param" folder inside the given package_name
+# assumes the param file has the given file_name and is under
+# "param" folder inside the given package_name.
 def get_param_file(package_name, file_name):
-    """Helper function to get param file"""
+    """Get the specified param file."""
     file_path = os.path.join(
         get_package_share_directory(package_name),
         'param',
@@ -36,14 +35,15 @@ def get_param_file(package_name, file_name):
 
 
 def generate_launch_description():
-    """Launch all the needed perception nodes"""
+    """Launch all the needed perception nodes."""
     # euclidean cluster node execution definition.
     euclidean_cluster_node_runner = launch_ros.actions.Node(
         package='euclidean_cluster_nodes',
         executable='euclidean_cluster_node_exe',
         namespace='lidars',
-        parameters=[get_param_file('euclidean_cluster_nodes', 
-            'vlp16_sim_lexus_cluster.param.yaml')],
+        parameters=[
+            get_param_file('euclidean_cluster_nodes', 'vlp16_sim_lexus_cluster.param.yaml'),
+            {'use_detected_objects': True}],
         remappings=[
             ("points_in", "points_nonground"),
             ("points_clustered", "cluster_points")
@@ -55,7 +55,7 @@ def generate_launch_description():
         executable='ray_ground_classifier_cloud_node_exe',
         namespace='lidars',
         parameters=[get_param_file('ray_ground_classifier_nodes',
-            'vlp16_sim_lexus_ray_ground.param.yaml')],
+                                   'vlp16_sim_lexus_ray_ground.param.yaml')],
         remappings=[("points_in", "points_filtered")])
 
     # point cloud filter transform param file
@@ -70,7 +70,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_front',
         namespace='lidar_front',
         parameters=[filter_transform_param],
-        remappings=[("points_in", "points_xyzi")])
+        remappings=[("points_in", "points_raw")])
 
     # point cloud filter transform runner definition for rear lidar
     filter_transform_rear_runner = launch_ros.actions.Node(
@@ -79,7 +79,7 @@ def generate_launch_description():
         name='filter_transform_vlp16_rear',
         namespace='lidar_rear',
         parameters=[filter_transform_param],
-        remappings=[("points_in", "points_xyzi")])
+        remappings=[("points_in", "points_raw")])
 
     # point cloud fusion runner to fuse front and rear lidar
     fuser_runner = launch_ros.actions.Node(
@@ -87,18 +87,32 @@ def generate_launch_description():
         executable='pointcloud_fusion_node_exe',
         namespace='lidars',
         parameters=[get_param_file('point_cloud_fusion_nodes',
-            'vlp16_sim_lexus_pc_fusion.param.yaml')],
+                                   'vlp16_sim_lexus_pc_fusion.param.yaml')],
         remappings=[
             ("output_topic", "points_filtered"),
             ("input_topic1", "/lidar_front/points_filtered"),
             ("input_topic2", "/lidar_rear/points_filtered")
         ])
 
+    lgsvl_interface = launch_ros.actions.Node(
+        package='lgsvl_interface',
+        executable='lgsvl_interface_exe',
+        namespace='vehicle',
+        output='screen',
+        parameters=[get_param_file('autoware_demos', 'lgsvl_interface.param.yaml')],
+        remappings=[
+            ("gnss_odom", "/lgsvl/gnss_odom"),
+            ("vehicle_odom", "/lgsvl/vehicle_odom")
+        ])
+
     # Setup robot state publisher
     vehicle_description_pkg_path = get_package_share_directory(
         'lexus_rx_450h_description')
-    urdf_path = os.path.join(vehicle_description_pkg_path, 'urdf',
-        'lexus_rx_450h.urdf')
+    urdf_path = os.path.join(
+        vehicle_description_pkg_path,
+        'urdf',
+        'lexus_rx_450h.urdf'
+    )
     with open(urdf_path, 'r') as infp:
         urdf_file = infp.read()
     robot_state_publisher_runner = launch_ros.actions.Node(
@@ -111,8 +125,11 @@ def generate_launch_description():
     # Run rviz
     examples_pkg_path = get_package_share_directory(
         'autoware_demos')
-    rviz_cfg_path = os.path.join(examples_pkg_path, 'rviz2',
-        'lidar_bounding_boxes_lgsvl.rviz')
+    rviz_cfg_path = os.path.join(
+        examples_pkg_path,
+        'rviz2',
+        'lidar_bounding_boxes_lgsvl.rviz'
+    )
     rviz_runner = launch_ros.actions.Node(
         package='rviz2',
         executable='rviz2',
@@ -124,6 +141,7 @@ def generate_launch_description():
         filter_transform_rear_runner,
         fuser_runner,
         ray_ground_runner,
+        lgsvl_interface,
         euclidean_cluster_node_runner,
         robot_state_publisher_runner,
         rviz_runner

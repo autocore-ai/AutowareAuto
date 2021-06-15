@@ -1,4 +1,4 @@
-// Copyright 2019-2020 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <euclidean_cluster_nodes/visibility_control.hpp>
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp>
@@ -45,6 +46,7 @@ using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using BoundingBox = autoware_auto_msgs::msg::BoundingBox;
 using BoundingBoxArray = autoware_auto_msgs::msg::BoundingBoxArray;
+using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
 /// \brief Combined object detection node, primarily does clustering, can also do in-place
 ///        downsampling and bounding box formation
 class EUCLIDEAN_CLUSTER_NODES_PUBLIC EuclideanClusterNode : public rclcpp::Node
@@ -61,8 +63,6 @@ public:
 private:
   /// \brief Main callback function
   void EUCLIDEAN_CLUSTER_NODES_LOCAL handle(const PointCloud2::SharedPtr msg_ptr);
-  /// \brief Initialization function
-  void EUCLIDEAN_CLUSTER_NODES_LOCAL init(const euclidean_cluster::Config & cfg);
   /// \brief Insert directly into clustering algorithm
   void EUCLIDEAN_CLUSTER_NODES_LOCAL insert_plain(const PointCloud2 & cloud);
   /// \brief Pass points through a voxel grid before inserting into clustering algorithm
@@ -82,11 +82,11 @@ private:
   const rclcpp::Subscription<PointCloud2>::SharedPtr m_cloud_sub_ptr;
   const rclcpp::Publisher<Clusters>::SharedPtr m_cluster_pub_ptr;
   const rclcpp::Publisher<BoundingBoxArray>::SharedPtr m_box_pub_ptr;
+  const rclcpp::Publisher<DetectedObjects>::SharedPtr m_detected_objects_pub_ptr;
   const rclcpp::Publisher<MarkerArray>::SharedPtr m_marker_pub_ptr;
   // algorithms
   euclidean_cluster::EuclideanCluster m_cluster_alg;
   Clusters m_clusters;
-  BoundingBoxArray m_boxes;
   std::unique_ptr<VoxelAlgorithm> m_voxel_ptr;
   const bool8_t m_use_lfit;
   const bool8_t m_use_z;

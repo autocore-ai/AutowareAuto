@@ -1,4 +1,4 @@
-// Copyright 2019-2020 the Autoware Foundation
+// Copyright 2019-2021 the Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #define EUCLIDEAN_CLUSTER__EUCLIDEAN_CLUSTER_HPP_
 
 #include <autoware_auto_msgs/msg/bounding_box_array.hpp>
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <geometry/spatial_hash.hpp>
 #include <euclidean_cluster/visibility_control.hpp>
@@ -232,28 +233,27 @@ namespace details
 {
 using BoundingBox = autoware_auto_msgs::msg::BoundingBox;
 using BoundingBoxArray = autoware_auto_msgs::msg::BoundingBoxArray;
-///// \brief Compute lfit bounding boxes from clusters
-///// \param[out] boxes Message that gets filled with the resulting bounding boxes
-///// \param[inout] clusters A set of clusters for which to compute the bounding boxes. Individual
-/////                        clusters get their points shuffled
-EUCLIDEAN_CLUSTER_PUBLIC
-void compute_lfit_bounding_boxes(Clusters & clusters, BoundingBoxArray & boxes);
-/// \brief Compute lfit bounding boxes from clusters, including z coordinate
-/// \param[out] boxes Message that gets filled with the resulting bounding boxes
+using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
+
+enum class BboxMethod
+{
+  Eigenbox,
+  LFit,
+};
+/// \brief Compute bounding boxes from clusters
+/// \param[in] method Whether to use the eigenboxes or L-Fit algorithm.
+/// \param[in] compute_height Compute the height of the bounding box as well.
 /// \param[inout] clusters A set of clusters for which to compute the bounding boxes. Individual
-///                        clusters get their points shuffled
+///                        clusters may get their points shuffled.
+/// \returns Bounding boxes
 EUCLIDEAN_CLUSTER_PUBLIC
-void compute_lfit_bounding_boxes_with_z(Clusters & clusters, BoundingBoxArray & boxes);
-/// \brief Compute eigenboxes from clusters
-/// \param[out] boxes Message that gets filled with the resulting bounding boxes
-/// \param[in] clusters A set of clusters for which to compute the bounding boxes
+BoundingBoxArray compute_bounding_boxes(
+  Clusters & clusters, const BboxMethod method, const bool compute_height);
+/// \brief Convert this bounding box to a DetectedObjects message
+/// \param[in] boxes A bounding box array
+/// \returns A DetectedObjects message with the bounding boxes inside
 EUCLIDEAN_CLUSTER_PUBLIC
-void compute_eigenboxes(const Clusters & clusters, BoundingBoxArray & boxes);
-/// \brief Compute eigenboxes from clusters, including z coordinate
-/// \param[out] boxes Message that gets filled with the resulting bounding boxes
-/// \param[in] clusters A set of clusters for which to compute the bounding boxes
-EUCLIDEAN_CLUSTER_PUBLIC
-void compute_eigenboxes_with_z(const Clusters & clusters, BoundingBoxArray & boxes);
+DetectedObjects convert_to_detected_objects(const BoundingBoxArray & boxes);
 }  // namespace details
 }  // namespace euclidean_cluster
 }  // namespace segmentation

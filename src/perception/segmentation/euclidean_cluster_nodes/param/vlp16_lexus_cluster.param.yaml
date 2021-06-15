@@ -3,6 +3,7 @@
 
 /**:
   ros__parameters:
+    use_detected_objects: False
     use_cluster: True
     use_box: True
     max_cloud_size: 55000
