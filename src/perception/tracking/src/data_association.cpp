@@ -174,7 +174,7 @@ AssociatorResult Associator::extract_result() const
     for (size_t track_idx = 0U; track_idx < m_num_tracks; track_idx++) {
       const auto det_idx =
         static_cast<size_t>(m_assigner.get_assignment(static_cast<assigner_idx_t>(track_idx)));
-      if (det_idx != m_assigner.UNASSIGNED) {
+      if (det_idx != Assigner::UNASSIGNED) {
         ret.track_assignments[track_idx] = det_idx;
         detections_assigned[det_idx] = true;
       } else {
@@ -192,7 +192,7 @@ AssociatorResult Associator::extract_result() const
     for (size_t det_idx = 0U; det_idx < m_num_detections; det_idx++) {
       const auto track_idx =
         static_cast<size_t>(m_assigner.get_assignment(static_cast<assigner_idx_t>(det_idx)));
-      if (track_idx != AssociatorResult::UNASSIGNED) {
+      if (track_idx != Assigner::UNASSIGNED) {
         ret.track_assignments[track_idx] = det_idx;
         tracks_assigned[track_idx] = true;
       } else {

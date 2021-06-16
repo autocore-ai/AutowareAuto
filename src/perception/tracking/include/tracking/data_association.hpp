@@ -81,6 +81,7 @@ struct TRACKING_PUBLIC AssociatorResult
 class TRACKING_PUBLIC Associator
 {
 public:
+  using Assigner = autoware::fusion::hungarian_assigner::hungarian_assigner_c<MAX_NUM_TRACKS>;
   /// \brief Constructor
   /// \param association_cfg Config object containing parameters to be used
   explicit Associator(const DataAssociationConfig & association_cfg);
@@ -114,7 +115,7 @@ private:
   AssociatorResult extract_result() const;
 
   DataAssociationConfig m_association_cfg;
-  autoware::fusion::hungarian_assigner::hungarian_assigner_c<MAX_NUM_TRACKS> m_assigner;
+  Assigner m_assigner;
   // Hungarian assigner expects a fat matrix (not tall). Bool tracks if tracks are rows or cols
   bool m_are_tracks_rows;
   size_t m_num_tracks;

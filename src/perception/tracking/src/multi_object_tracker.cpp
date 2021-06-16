@@ -23,22 +23,24 @@
 #include "tf2_eigen/tf2_eigen.h"
 #include "time_utils/time_utils.hpp"
 
+using autoware::common::types::float64_t;
+
 namespace autoware
 {
 namespace perception
 {
 namespace tracking
 {
-
 namespace
 {
+
 bool is_gravity_aligned(const geometry_msgs::msg::Quaternion & quat)
 {
   // Check that the transformation is still roughly 2D, i.e. does not have substantial pitch and
   // roll. That means that either the rotation angle is small, or the rotation axis is
   // approximately equal to the z axis.
-  constexpr double kAngleThresh = 0.1;  // rad
-  constexpr double kAxisTiltThresh = 0.1;  // rad
+  constexpr float64_t kAngleThresh = 0.1;  // rad
+  constexpr float64_t kAxisTiltThresh = 0.1;  // rad
   // rotation angle small
   // ⇔ |θ| <= kAngleThresh  (angles are assumed to be between -π and π)
   // ⇔ cos(θ/2) => std::cos(kAngleThresh/2)
@@ -47,7 +49,8 @@ bool is_gravity_aligned(const geometry_msgs::msg::Quaternion & quat)
     // From Wikipedia: (x, y, z) = cos(θ/2) * (u_x, u_y, u_z), where u is the rotation axis.
     // The cosine of the angle α between the rotation axis and the z axis is the dot product of the
     // rotation axis u and the the z axis, so cos(α) = u_z.
-    const double u_z = quat.z / std::sqrt(quat.x * quat.x + quat.y * quat.y + quat.z * quat.z);
+    const float64_t u_z = std::abs(quat.z) / std::sqrt(
+      quat.x * quat.x + quat.y * quat.y + quat.z * quat.z);
     if (u_z < std::cos(kAxisTiltThresh)) {
       return false;
     }
@@ -100,7 +103,7 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Associate observations with tracks
   // ==================================
-  TrackedObjectsMsg tracked_objects_msg = this->convert_to_msg();
+  TrackedObjectsMsg tracked_objects_msg = this->convert_to_msg(detections.header.stamp);
   AssociatorResult association;
   try {
     association = m_associator.assign(detections, tracked_objects_msg);
@@ -149,7 +152,8 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Build result
   // ==================================
-  result.objects = std::make_unique<TrackedObjectsMsg>(this->convert_to_msg());
+  result.objects =
+    std::make_unique<TrackedObjectsMsg>(this->convert_to_msg(detections.header.stamp));
   result.status = TrackerUpdateStatus::Ok;
   m_last_update = target_time;
   return result;
@@ -230,9 +234,12 @@ void MultiObjectTracker::transform(
   }
 }
 
-MultiObjectTracker::TrackedObjectsMsg MultiObjectTracker::convert_to_msg() const
+MultiObjectTracker::TrackedObjectsMsg MultiObjectTracker::convert_to_msg(
+  const builtin_interfaces::msg::Time & stamp) const
 {
   TrackedObjectsMsg array;
+  array.header.stamp = stamp;
+  array.header.frame_id = m_options.frame;
   array.objects.reserve(m_objects.size());
   std::transform(
     m_objects.begin(), m_objects.end(), std::back_inserter(array.objects), [](

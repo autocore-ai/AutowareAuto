@@ -130,7 +130,7 @@ private:
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 
   /// Convert the internal tracked object representation to the ROS message type.
-  TrackedObjectsMsg convert_to_msg() const;
+  TrackedObjectsMsg convert_to_msg(const builtin_interfaces::msg::Time & stamp) const;
 
   /// The tracked objects, also called "tracks".
   std::vector<TrackedObject> m_objects;
