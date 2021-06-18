@@ -16,6 +16,7 @@
 
 #include <common/types.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
+#include <geometry_msgs/msg/point.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 #include <tf2/buffer_core.h>
@@ -72,6 +73,12 @@ Eigen::Matrix3d rotate_covariance(
   return tf__new__old.rotation() * covariance * tf__new__old.rotation().transpose();
 }
 
+geometry_msgs::msg::Point to_point(const Eigen::Vector3d & v)
+{
+  return geometry_msgs::build<geometry_msgs::msg::Point>().x(v[0]).y(v[1]).z(v[2]);
+}
+
+
 void switch_frames_if_needed(
   autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped & msg,
   const std_msgs::msg::Header::_frame_id_type & new_frame_id,
@@ -83,7 +90,7 @@ void switch_frames_if_needed(
       new_frame_id, msg.header.frame_id, tf2_ros::fromMsg(msg.header.stamp)));
   Eigen::Vector3d position;
   tf2::fromMsg(msg.position, position);
-  msg.position = tf2::toMsg2(tf__new_frame_id__msg_frame_id * position);
+  msg.position = to_point(tf__new_frame_id__msg_frame_id * position);
 
   // Update position covariance
   fill_covariance_from_eigen(
