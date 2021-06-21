@@ -57,6 +57,9 @@ def generate_launch_description():
     point_cloud_fusion_node_pkg_prefix = get_package_share_directory(
         'point_cloud_fusion_nodes')
 
+    point_type_adapter_pkg_prefix = get_package_share_directory(
+        'point_type_adapter')
+
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
     with open(urdf_path, 'r') as infp:
@@ -128,6 +131,11 @@ def generate_launch_description():
         'vehicle_characteristics_param_file',
         default_value=vehicle_characteristics_param_file,
         description='Path to config file for vehicle characteristics'
+    )
+    launch_description_point_type_adapter = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(point_type_adapter_pkg_prefix,
+                         'launch/point_type_adapter.launch.py'))
     )
 
     # Nodes
@@ -266,6 +274,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        launch_description_point_type_adapter,
         euclidean_cluster_param,
         lgsvl_interface_param,
         map_publisher_param,
