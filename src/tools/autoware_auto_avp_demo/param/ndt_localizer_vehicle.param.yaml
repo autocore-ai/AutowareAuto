@@ -20,18 +20,7 @@
       translation: 50.0
       # Rotation threshold in radians
       rotation: 3.15
-    load_initial_pose_from_parameters: true
-    initial_pose:
-      translation:
-        x: -57.6
-        y: -41.0
-        z: -2.01
-      quaternion:
-        x: 0.0
-        y: 0.0
-        z: 0.0
-        w: 1.0
-      enabled: false
+    load_initial_pose_from_parameters: false
     # localizer specific configuration
     localizer:
       # ndt scan representation config
