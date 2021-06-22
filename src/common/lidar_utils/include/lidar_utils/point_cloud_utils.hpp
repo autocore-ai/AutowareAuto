@@ -23,9 +23,9 @@
 
 #include <autoware_auto_msgs/msg/point_clusters.hpp>
 #include <common/types.hpp>
-#include <helper_functions/float_comparisons.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry/common_3d.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <helper_functions/float_comparisons.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
@@ -369,15 +369,14 @@ public:
     using common::geometry::point_adapter::xr_;
     using common::geometry::point_adapter::yr_;
     using common::geometry::point_adapter::zr_;
-    Eigen::Matrix<float32_t, 3U, 1U> ref_mat({x_(ref), y_(ref), z_(ref)});
-    Eigen::Vector3f out_mat = m_tf * ref_mat;
-    xr_(out) = out_mat(0U, 0U);
-    yr_(out) = out_mat(1U, 0U);
-    zr_(out) = out_mat(2U, 0U);
+    Eigen::Vector3f out_mat = m_tf * Eigen::Vector3f{x_(ref), y_(ref), z_(ref)};
+    xr_(out) = out_mat[0];
+    yr_(out) = out_mat[1];
+    zr_(out) = out_mat[2];
   }
 
 private:
-  Eigen::Transform<float32_t, 3U, Eigen::Affine, Eigen::ColMajor> m_tf;
+  Eigen::Affine3f m_tf;
 };
 
 /// \brief Filter class to check if a point's azimuth lies within a range defined by a start and

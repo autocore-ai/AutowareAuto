@@ -1,4 +1,4 @@
-// Copyright 2017-2020 the Autoware Foundation, Arm Limited
+// Copyright 2017-2021 the Autoware Foundation, Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include <common/types.hpp>
+#include <lidar_utils/lidar_utils.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
+
 #include <gtest/gtest.h>
+
 #include <string>
 #include <vector>
-#include "common/types.hpp"
-#include "lidar_utils/lidar_utils.hpp"
 
 using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
-TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
+TEST(TestPointCloudUtils, has_intensity_and_throw_if_no_xyz_test)
 {
   using autoware::common::lidar_utils::create_custom_pcl;
+  using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
   const uint32_t mini_cloud_size = 10U;
 
@@ -57,68 +62,25 @@ TEST(point_cloud_utils, has_intensity_and_throw_if_no_xyz_test)
   EXPECT_TRUE(has_intensity_and_throw_if_no_xyz(five_fields_pc));
 }
 
-TEST(point_cloud_utils, add_point_to_cloud_raw_is_correct)
+TEST(TestStaticTransformer, TransformPoint)
 {
-  // this test if add_point_to_cloud_raw's results are the same than the safer add_point_to_cloud
-  const uint32_t max_cloud_size = 10;
+  Eigen::Quaternionf rotation;
+  rotation = Eigen::AngleAxisf(M_PI_2f32, Eigen::Vector3f::UnitZ());
 
-  sensor_msgs::msg::PointCloud2 reference_msg;
-  sensor_msgs::msg::PointCloud2 test_msg;
-  init_pcl_msg(reference_msg, "dummy_frame", max_cloud_size);
-  init_pcl_msg(test_msg, "dummy_frame", max_cloud_size);
-
-  // fill the reference cloud
-  PointCloudIts reference_msg_it;
-  reference_msg_it.reset(reference_msg, 0, current_cloud_size);
-  for (uint32_t i = 0; i < max_cloud_size; i++) {
-    autoware::common::types::PointXYZIF pt{i, 256 * i, 0};
-    add_point_to_cloud(reference_msg_it, pt, current_cloud_size);
-  }
-
-  ASSERT_EQ(test_msg.data.size(), 10U);
-  // fill the tested cloud
-  for (uint32_t i = 0; i < max_cloud_size; i++) {
-    autoware::common::types::PointXYZIF pt{i, 256 * i, 0};
-    add_point_to_cloud_raw(test_msg, pt, current_cloud_size);
-  }
-
-  EXPECT_EQ(reference_msg.data, test_msg.data);
-  autoware::common::types::PointXYZIF pt{0, 0, 0};
-  EXPECT_FALSE(add_point_to_cloud_raw(test_msg, pt, current_cloud_size)) <<
-    "add_point_to_cloud_raw wrote a point outsize of the cloud's data bounds";
-}
-
-TEST(fast_atan2, max_error)
-{
-  float32_t max_error = 0;
-  for (float32_t f = 0; f < autoware::common::types::TAU; f += 0.00001f) {
-    float32_t x = cos(f);
-    float32_t y = sin(f);
-    max_error = ::std::max(
-      max_error,
-      fabsf(atan2f(y, x) - autoware::common::lidar_utils::fast_atan2(y, x)));
-  }
-
-  ASSERT_TRUE(max_error < FAST_ATAN2_MAX_ERROR);
-
-  ASSERT_TRUE(
-    fabsf(
-      autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
-      atan2f(0.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(
-    fabsf(
-      autoware::common::lidar_utils::fast_atan2(1.0f, 0.0f) -
-      atan2f(1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(
-    fabsf(
-      autoware::common::lidar_utils::fast_atan2(-1.0f, 0.0f) -
-      atan2f(-1.0f, 0.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(
-    fabsf(
-      autoware::common::lidar_utils::fast_atan2(0.0f, 1.0f) -
-      atan2f(0.0f, 1.0f)) < FAST_ATAN2_MAX_ERROR);
-  ASSERT_TRUE(
-    fabsf(
-      autoware::common::lidar_utils::fast_atan2(0.0f, -1.0f) -
-      atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
+  geometry_msgs::msg::Transform tf;
+  tf.translation.x = 1.0;
+  tf.translation.y = 2.0;
+  tf.translation.z = 3.0;
+  // Rotation around z axis by 90 degrees.
+  tf.rotation.x = static_cast<float64_t>(rotation.x());
+  tf.rotation.y = static_cast<float64_t>(rotation.y());
+  tf.rotation.z = static_cast<float64_t>(rotation.z());
+  tf.rotation.w = static_cast<float64_t>(rotation.w());
+  autoware::common::types::PointXYZF point{5.0F, 5.0F, 5.0F};
+  autoware::common::lidar_utils::StaticTransformer transformer{tf};
+  autoware::common::types::PointXYZF result_point{};
+  transformer.transform(point, result_point);
+  EXPECT_FLOAT_EQ(-4.0F, result_point.x);
+  EXPECT_FLOAT_EQ(7.0F, result_point.y);
+  EXPECT_FLOAT_EQ(8.0F, result_point.z);
 }

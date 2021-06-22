@@ -47,7 +47,7 @@ namespace lidar_utils
 ///         3pi/2
 ///
 ///
-float32_t fast_atan2(float32_t y, float32_t x)
+inline float32_t fast_atan2(float32_t y, float32_t x)
 {
   constexpr float32_t scaling_constant = 0.28086f;
 

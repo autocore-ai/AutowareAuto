@@ -24,15 +24,20 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  ament_add_gtest(test_fast_atan2
+  ament_add_gtest(test_lidar_utils
     test/src/test_fast_atan2.cpp
+    test/src/test_point_cloud_utils.cpp
   )
-  autoware_set_compile_options(test_fast_atan2)
-  target_include_directories(test_fast_atan2
+  autoware_set_compile_options(test_lidar_utils)
+  target_include_directories(test_lidar_utils
     PRIVATE "include"
   )
-  ament_target_dependencies(test_fast_atan2
-    "autoware_auto_common")
+  ament_target_dependencies(test_lidar_utils
+    "autoware_auto_common"
+    "autoware_auto_msgs"
+    "autoware_auto_geometry"
+  )
+  target_link_libraries(test_lidar_utils ${PROJECT_NAME})
 
   ament_add_google_benchmark(bench_point_cloud test/bench/bench_point_cloud.cpp)
   target_link_libraries(bench_point_cloud ${PROJECT_NAME})
