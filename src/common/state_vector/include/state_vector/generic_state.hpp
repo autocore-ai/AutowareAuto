@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -175,24 +175,19 @@ public:
   ///
   /// @brief      Copy values of this state into another state.
   ///
-  ///             This function copies (a subset of) variables from the current state into another
+  /// @details    This function copies (a subset of) variables from the current state into another
   ///             state. If `other_state` is provided, it is used as a "donor" state, i.e., the
   ///             values already in this `other_state` are unchanged unless overwritten by the ones
   ///             present in the current state. If no `other_state` is given, a new zero-initialized
   ///             instance of OtherStateT will be created and this state will be used for the
-  ///             further update using the variables from the current state.
+  ///             further update using the variables from the current state. Please see tests for
+  ///             examples of usage.
   ///
-  ///             This function can be used in a couple different situations:
-  ///             - when a smaller current state must be copied into a bigger other state,
-  ///               overwriting some of that bigger state's variables;
-  ///             - when a reduction of the current state onto a smaller state is required;
-  ///             - when a rearrangement of the variables is needed.
+  /// @note       This function also handles a rearrangement of the variables if the OtherStateT has
+  ///             the variables in a different order from the current state.
   ///
-  ///             Please see tests for examples of usage.
-  ///
-  /// @note       This function only is correctly compiled if either StateT is a subset of
-  ///             OtherStateT, or OtherStateT is a subset of the StateT. Otherwise, a compilation
-  ///             error will be issued.
+  /// @note       This function copies only variables that are present in both states. It silently
+  ///             does nothing if there are no common variables between the states.
   ///
   /// @param[in]  other_state  Other state.
   ///
@@ -209,9 +204,9 @@ public:
     auto copy_variables = [&other_state, this](auto variable) {
         other_state.at(variable) = this->at(variable);
       };
-    const auto & variables_tuple =
-      std::conditional_t<(OtherStateT::size() > kSize), GenericState, OtherStateT>::variables();
-    common::type_traits::visit(variables_tuple, copy_variables);
+    using CommonVariablesTuple = typename autoware::common::type_traits::intersect<
+      Variables, typename OtherStateT::Variables>::type;
+    common::type_traits::visit(CommonVariablesTuple{}, copy_variables);
     return other_state;
   }
 

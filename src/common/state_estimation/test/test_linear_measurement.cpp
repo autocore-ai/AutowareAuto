@@ -70,6 +70,7 @@ TEST(TestLinearMeasurement, CreateAndMapFromOtherState) {
 /// @test Test that a measurement is correctly mapped to another state.
 TEST(TestLinearMeasurement, CreateAndMapToOtherState) {
   using State = FloatState<X, X_VELOCITY, Y, Y_VELOCITY>;
+  using SmallerState = FloatState<X, X_VELOCITY>;
   using MeasurementState = FloatState<X, Y>;
   auto measurement =
     LinearMeasurement<MeasurementState>::create_with_stddev({42.0F, 23.0F}, {23.0F, 42.0F});
@@ -81,6 +82,14 @@ TEST(TestLinearMeasurement, CreateAndMapToOtherState) {
   EXPECT_FLOAT_EQ(filled_state[3], state[3]);
   EXPECT_FLOAT_EQ(filled_state.at<X>(), measurement.state().at<X>());
   EXPECT_FLOAT_EQ(filled_state.at<Y>(), measurement.state().at<Y>());
+  MeasurementState measurement_state{};
+  SmallerState smaller_state_temp{};
+  const auto temp = measurement_state.copy_into(smaller_state_temp);
+  ASSERT_EQ(temp.size(), SmallerState::size());
+  const auto smaller_state = measurement.map_into(SmallerState{});
+  ASSERT_EQ(smaller_state.size(), SmallerState::size());
+  EXPECT_FLOAT_EQ(smaller_state.at<X>(), measurement.state().at<X>());
+  EXPECT_FLOAT_EQ(smaller_state.at<X_VELOCITY>(), 0.0F);
 }
 
 /// @test Test equality operator.

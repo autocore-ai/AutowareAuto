@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -83,13 +83,16 @@ TEST(KalmanFilterGenericStateTest, Print) {
 /// @test We are able to copy the state into a bigger state.
 TEST(KalmanFilterGenericStateTest, CopyIntoAnotherState) {
   using StateXY = FloatState<X, Y>;
-  using StateXYYaw = FloatState<X, Y, YAW>;
+  using StateXYaw = FloatState<X, YAW>;
   StateXY state{{23.0F, 42.0F}};
+  const StateXY empty_state{};
   EXPECT_EQ(state.copy_into<StateXY>(), (StateXY{{23.0F, 42.0F}}));
-  StateXYYaw state_with_yaw{{42.0F, 23.0F, 42.23F}};
-  EXPECT_EQ(state.copy_into(state_with_yaw), (StateXYYaw{{23.0F, 42.0F, 42.23F}}));
-  EXPECT_EQ(state_with_yaw.copy_into<StateXY>(), (StateXY{{42.0F, 23.0F}}));
-  EXPECT_EQ(state_with_yaw.copy_into<StateXYYaw>(), state_with_yaw);
+  StateXYaw state_with_yaw{{42.0F, 42.23F}};
+  EXPECT_EQ(state.copy_into(state_with_yaw), (StateXYaw{{23.0F, 42.23F}}));
+  EXPECT_EQ(state.copy_into<StateXYaw>(), (StateXYaw{{23.0F, 0.0F}}));
+  EXPECT_EQ(state_with_yaw.copy_into<StateXY>(), (StateXY{{42.0F, 0.0F}}));
+  EXPECT_EQ(state_with_yaw.copy_into<StateXYaw>(), state_with_yaw);
+  EXPECT_EQ(state_with_yaw.copy_into(empty_state), (StateXY{{42.0F, 0.0F}}));
   using StateYX = FloatState<Y, X>;
   EXPECT_EQ(state.copy_into<StateYX>(), (StateYX{{42.0F, 23.0F}}));
 }
