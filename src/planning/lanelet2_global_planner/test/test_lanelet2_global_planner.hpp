@@ -18,6 +18,7 @@
 #define TEST_LANELET2_GLOBAL_PLANNER_HPP_
 
 #include <gtest/gtest.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <lanelet2_global_planner/lanelet2_global_planner.hpp>
 #include <common/types.hpp>
 #include <string>
@@ -43,7 +44,8 @@ public:
   TestGlobalPlannerBasicMap()
   {
     node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
-    std::string root_folder = std::string(fs::current_path());
+    std::string root_folder =
+      ament_index_cpp::get_package_share_directory("lanelet2_global_planner");
     std::string file_path = std::string("/test/map_data/mapping_example_pk.osm");
     std::string file = root_folder + file_path;
     float64_t lat = 51.502091;
@@ -61,13 +63,32 @@ public:
   TestGlobalPlannerFullMap()
   {
     node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
-    std::string root_folder = std::string(fs::current_path());
-    std::string file_path =
-      std::string("/test/map_data/AStuff_test_map.osm");
+    std::string root_folder =
+      ament_index_cpp::get_package_share_directory("lanelet2_global_planner");
+    std::string file_path = std::string("/test/map_data/AStuff_test_map.osm");
     std::string file = root_folder + file_path;
     float64_t lat = 37.380811523812845;
     float64_t lon = -121.90840595108715;
     float64_t alt = 11.0;
+    node_ptr->load_osm_map(file, lat, lon, alt);
+    node_ptr->parse_lanelet_element();
+  }
+  std::shared_ptr<Lanelet2GlobalPlanner> node_ptr;
+};
+
+class TestGlobalPlannerFullMapWithoutParkingSpots : public ::testing::Test
+{
+public:
+  TestGlobalPlannerFullMapWithoutParkingSpots()
+  {
+    node_ptr = std::make_shared<Lanelet2GlobalPlanner>();
+    std::string root_folder =
+      ament_index_cpp::get_package_share_directory("lanelet2_global_planner");
+    std::string file_path = std::string("/test/map_data/kashiwanoha_map.osm");
+    std::string file = root_folder + file_path;
+    float64_t lat = 35.238094905136874;
+    float64_t lon = 139.90095439549778;
+    float64_t alt = 1.0;
     node_ptr->load_osm_map(file, lat, lon, alt);
     node_ptr->parse_lanelet_element();
   }
@@ -282,6 +303,19 @@ TEST_F(TestGlobalPlannerFullMap, test_find_parking_from_point)
 TEST_F(TestGlobalPlannerFullMap, test_plan_full_route)
 {
   // take the parking spot from previous test
+  autoware_auto_msgs::msg::TrajectoryPoint from_point;
+  from_point.x = -25.97;
+  from_point.y = 102.12;
+  autoware_auto_msgs::msg::TrajectoryPoint to_point;
+  to_point.x = -12.53;
+  to_point.y = 67.69;
+  std::vector<lanelet::Id> route;
+  bool8_t result = node_ptr->plan_route(from_point, to_point, route);
+  EXPECT_TRUE(result);
+}
+
+TEST_F(TestGlobalPlannerFullMapWithoutParkingSpots, test_plan_full_route_without_parking_spots)
+{
   autoware_auto_msgs::msg::TrajectoryPoint from_point;
   from_point.x = -25.97;
   from_point.y = 102.12;

@@ -154,14 +154,18 @@ bool8_t Lanelet2GlobalPlanner::plan_route(
   std::vector<lanelet::Id> lane_end;
   lanelet::Id near_parking_start, near_parking_end;
   lanelet::Id parkingaccess_start, parkingaccess_end;
+  auto start_in_parking = false, end_in_parking = false;
 
-  // Find nearest parking spot IDs for start and end points
-  near_parking_start = find_nearparking_from_point(start);
-  near_parking_end = find_nearparking_from_point(end);
+  // Look for parking spot only when some exist
+  if (!parking_id_list.empty()) {
+    // Find nearest parking spot IDs for start and end points
+    near_parking_start = find_nearparking_from_point(start);
+    near_parking_end = find_nearparking_from_point(end);
 
-  // Determine if start/end position is in the closest parking spot
-  const auto start_in_parking = point_in_parking_spot(start, near_parking_start);
-  const auto end_in_parking = point_in_parking_spot(end, near_parking_end);
+    // Determine if start/end position is in the closest parking spot
+    start_in_parking = point_in_parking_spot(start, near_parking_start);
+    end_in_parking = point_in_parking_spot(end, near_parking_end);
+  }
 
   if (start_in_parking) {
     // find connecting parking access from a parking spot
