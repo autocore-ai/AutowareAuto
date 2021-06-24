@@ -34,7 +34,7 @@ def generate_launch_description():
     controller_testing_param_file = os.path.join(
         controller_testing_pkg_prefix, "param/defaults.param.yaml"
     )
-    rviz_cfg_path = os.path.join(controller_testing_pkg_prefix, 'config/pure_pursuit_cotrols.rviz')
+    rviz_cfg_path = os.path.join(controller_testing_pkg_prefix, 'config/pure_pursuit_control.rviz')
 
     pure_pursuit_pkg_prefix = get_package_share_directory("pure_pursuit_nodes")
     pure_pursuit_param_file = os.path.join(
