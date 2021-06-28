@@ -41,8 +41,6 @@ PurePursuit::PurePursuit(const Config & cfg)
   m_target_point{},
   m_command{},
   m_config(cfg),
-  m_is_traj_update(false),
-  m_reference_idx(0U),
   m_iterations(0U)
 {
 }
@@ -237,7 +235,7 @@ void PurePursuit::compute_interpolate_target_point(
 ////////////////////////////////////////////////////////////////////////////////
 bool8_t PurePursuit::compute_target_point(const TrajectoryPoint & current_point)
 {
-  uint32_t idx = m_reference_idx;
+  auto idx = static_cast<uint32_t>(get_current_state_spatial_index());
   bool8_t is_travel_direct = false;
   uint32_t last_idx_for_noupdate = 0U;
   const auto & traj = get_reference_trajectory();
@@ -269,7 +267,6 @@ bool8_t PurePursuit::compute_target_point(const TrajectoryPoint & current_point)
     if (is_travel_direct) {
       // use the farthest target index in the traveling direction
       m_target_point = traj.points[last_idx_for_noupdate];
-      m_reference_idx = last_idx_for_noupdate;
     } else {
       // If the trajectory was not updated and there is no point in the traveling direction
       is_success = false;

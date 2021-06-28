@@ -227,3 +227,29 @@ TEST_F(PurePursuitTest, interpolation)
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.0F * dist_front_rear_wheels));
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }
+
+TEST_F(PurePursuitTest, replace_short_trajectory)
+{
+  const Config cfg(100.0F, 100.0F, 0.2F, false, false, 2.0F, 0.1F, 2.0F);
+  PurePursuit controller(cfg);
+
+  create_traj(traj, 50);
+  create_current_pose(current_pose, 0.0F, 0.0F, PI / 4.0F, 1.0F, 0.0F, 0.0F);
+
+  EXPECT_NO_MEMORY_OPERATIONS_BEGIN();
+  controller.set_trajectory(traj);
+  command = controller.compute_command(current_pose);
+
+  EXPECT_NEAR(command.long_accel_mps2, 17.F, 1.F);
+  EXPECT_NEAR(command.front_wheel_angle_rad, 0.0F, 0.001F);
+
+  create_traj(traj, 49);
+  controller.set_trajectory(traj);
+
+  command = controller.compute_command(current_pose);
+
+  EXPECT_NEAR(command.long_accel_mps2, 17.F, 1.F);
+  EXPECT_NEAR(command.front_wheel_angle_rad, 0.0F, 0.001F);
+
+  EXPECT_NO_MEMORY_OPERATIONS_END();
+}

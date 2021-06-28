@@ -120,8 +120,6 @@ private:
   VehicleControlCommand m_command;
   Config m_config;
 
-  bool8_t m_is_traj_update;
-  uint32_t m_reference_idx;
   uint32_t m_iterations;
 };  // class PurePursuit
 }  // namespace pure_pursuit
