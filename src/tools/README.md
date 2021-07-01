@@ -11,10 +11,12 @@ visualization tools and interfaces for debugging.
 
 - @subpage autoware_auto_create_pkg-package-design
 - @subpage autoware-auto-launch-package-design
+- @subpage autoware_testing-package-design
 - @subpage avp_web_interface-package-design
 - @subpage benchmark-tool-nodes-design
+- @subpage fake-test-node-design
 - @subpage lidar-integration-design
+- @subpage point_type_adapter-package-design
 - @subpage simple_planning_simulator-package-design
 - @subpage gnss-conversion-nodes-design
 - @subpage test_trajectory_following-package-design
-- @subpage fake-test-node-design

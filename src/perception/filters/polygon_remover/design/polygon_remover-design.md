@@ -1,4 +1,4 @@
-polygon_remover {#polygon_remover-package-design}
+polygon_remover {#polygon-remover-package-design}
 ===========
 
 This is the design document for the `polygon_remover` package.

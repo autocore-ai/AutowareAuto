@@ -2,7 +2,7 @@ TVM Utility {#tvm-utility-design}
 ===========
 
 This is the design document for the `tvm_utility` package. For instructions on how to build the tests for YOLOv2 Tiny,
-see the @subpage tvm-utility-yolo-v2-tiny-tests
+see the @subpage tvm-utility-yolo-v2-tiny-tests. For information about where to store test artifacts see the @subpage tvm-utility-artifacts-readme.
 
 
 # Purpose / Use cases
