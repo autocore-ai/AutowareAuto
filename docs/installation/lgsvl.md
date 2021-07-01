@@ -46,7 +46,7 @@ $ cd ~/adehome/AutowareAuto
 $ ade --rc .aderc-lgsvl start --update --enter
 ```
 
-Pick a different `.aderc-*-lgsvl` file to manually choose a ROS version.
+Pick a different `.aderc-*-lgsvl` file to select a non-default ROS version.
 
 To start the LGSVL simulator, in the same terminal window:
 
@@ -63,7 +63,13 @@ If you have an account, log in. If you do not have an account, create one, then 
 
 ### Troubleshooting
 
-In case the simulator window opens up with a black screen and the application immediately terminates, remove conflicting graphics drivers from ADE with
+In case the simulator window opens up with a black screen and the application immediately terminates, have a look at the log file at
+
+```{bash}
+~/.config/unity3d/LG\ Silicon\ Valley\ Lab/LGSVL\ Simulator/Player.log
+```
+
+One possible fix is to remove conflicting graphics drivers from ADE with
 
 ```{bash}
 ade$ sudo apt remove mesa-vulkan-drivers
@@ -86,7 +92,7 @@ Once submitted, this will download the map automatically.
 
 @image html images/lgsvl-map.png "Choosing a map"
 
-### Configuring a vehicle
+### Configuring a vehicle {#lgsvl-configuring-vehicle}
 The goal is to create a vehicle configuration for the AutonomouStuff parking lot.
 
 Follow the [LGSVL instructions](https://www.lgsvlsimulator.com/docs/vehicles-tab/#how-to-add-a-vehicle),

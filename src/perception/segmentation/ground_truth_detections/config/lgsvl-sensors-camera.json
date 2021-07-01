@@ -1,0 +1,129 @@
+[
+  {
+    "type": "GPS Odometry",
+    "name": "GPS Odometry",
+    "params":
+    {
+      "Frequency": 30,
+      "Topic": "/lgsvl/gnss_odom",
+      "Frame": "odom",
+      "ChildFrame": "base_link",
+      "IgnoreMapOrigin": true
+    },
+    "transform":
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "Lidar",
+    "name": "LidarFront",
+    "params":
+    {
+      "LaserCount": 16,
+      "MinDistance": 2.0,
+      "MaxDistance": 100,
+      "RotationFrequency": 10,
+      "MeasurementsPerRotation": 360,
+      "FieldOfView": 20,
+      "CenterAngle": 0,
+      "Compensated": true,
+      "PointColor": "#ff000000",
+      "Topic": "/lidar_front/points_raw",
+      "Frame": "lidar_front"
+    },
+    "transform":
+    {
+      "x": 0.022,
+      "y": 1.49,
+      "z": 1.498,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "Lidar",
+    "name": "LidarRear",
+    "params":
+    {
+      "LaserCount": 16,
+      "MinDistance": 2.0,
+      "MaxDistance": 100,
+      "RotationFrequency": 10,
+      "MeasurementsPerRotation": 360,
+      "FieldOfView": 20,
+      "CenterAngle": 0,
+      "Compensated": true,
+      "PointColor": "#ff000000",
+      "Topic": "/lidar_rear/points_raw",
+      "Frame": "lidar_rear"
+    },
+    "transform":
+    {
+      "x": 0.022,
+      "y": 1.49,
+      "z": 0.308,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "Keyboard Control",
+    "name": "Keyboard Car Control"
+  },
+  {
+    "type": "Vehicle Control",
+    "name": "Autoware Car Control",
+    "params":
+    {
+      "Topic": "/lgsvl/vehicle_control_cmd"
+    }
+  },
+  {
+    "type": "Color Camera",
+    "name": "Main Camera",
+    "params": {
+      "Width": 1920,
+      "Height": 1080,
+      "Frequency": 15,
+      "JpegQuality": 75,
+      "FieldOfView": 50,
+      "MinDistance": 0.1,
+      "MaxDistance": 2000,
+      "Topic": "/simulator/main_camera",
+      "Frame": "camera"
+    },
+    "transform": {
+      "x": 0,
+      "y": 1.7,
+      "z": -0.2,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "2D Ground Truth",
+    "name": "2D Ground Truth",
+    "params": {
+      "Frequency": 10,
+      "DetectionRange": 100,
+      "Topic": "/simulator/ground_truth/detections2D"
+    },
+    "transform": {
+      "x": 0,
+      "y": 1.7,
+      "z": -0.2,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  }
+]
