@@ -45,14 +45,14 @@ def generate_launch_description():
     )
 
     ndt_localizer_init_hack_param = {
-        "init_hack.quaternion.x": 0.0,
-        "init_hack.quaternion.y": 0.0,
-        "init_hack.quaternion.z": 0.91,
-        "init_hack.quaternion.w": 0.41,
-        "init_hack.translation.x": -25.0,
-        "init_hack.translation.y": 102.5,
-        "init_hack.translation.z": 0.0,
-        "init_hack.enabled": True
+        "initial_pose.quaternion.x": 0.0,
+        "initial_pose.quaternion.y": 0.0,
+        "initial_pose.quaternion.z": 0.91,
+        "initial_pose.quaternion.w": 0.41,
+        "initial_pose.translation.x": -25.0,
+        "initial_pose.translation.y": 102.5,
+        "initial_pose.translation.z": 0.0,
+        "initial_pose.enabled": True
     }
 
     map_pcd_file = os.path.join(
@@ -140,7 +140,7 @@ def generate_launch_description():
             name='filter_transform_vlp16_front',
             namespace='lidar_front',
             parameters=[pc_filter_transform_param_file_path],
-            remappings=[("points_in", "points_xyzi")]
+            remappings=[("points_in", "points_raw")]
         ),
 
         launch_ros.actions.Node(
@@ -149,7 +149,7 @@ def generate_launch_description():
             name='filter_transform_vlp16_rear',
             namespace='lidar_rear',
             parameters=[pc_filter_transform_param_file_path],
-            remappings=[("points_in", "points_xyzi")]
+            remappings=[("points_in", "points_raw")]
         ),
 
         launch_ros.actions.Node(
@@ -172,7 +172,8 @@ def generate_launch_description():
             namespace='localization',
             name='p2d_ndt_localizer_node',
             parameters=[ndt_localizer_param_file_path,
-                        ndt_localizer_init_hack_param],
+                        ndt_localizer_init_hack_param,
+                        {"load_initial_pose_from_parameters": True}],
             remappings=[
                 ("points_in", "/lidars/points_fused_downsampled"),
                 ("observation_republish", "/lidars/points_fused_viz")

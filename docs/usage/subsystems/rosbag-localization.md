@@ -28,3 +28,7 @@ Localization Demo using rosbag {#rosbag-localization-howto}
    ```{bash}
    > ros2 launch -s autoware_demos localization_rosbag.launch.py
    ```
+
+5. The localization demo launch file uses the `load_initial_pose_from_parameters` parameter to set the initial pose in the NDT localization node. The vehicle should drive to the parking spot and then proceed to park. Once parked, the vehicle should exit the parking spot then proceed back towards the start point.
+
+@image html images/localization-rosbag-initialization-location.png "Rosbag Initialization Point" width=600px
