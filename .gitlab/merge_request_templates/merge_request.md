@@ -15,15 +15,15 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
    1. [ ] If the source branch is on a fork, MR is configured to *allow commits from developers with access to push to the target branch*
    1. [ ] Sensible notes for the reviewer added to the section above to facilitate review
    1. [ ] Target branch set correctly. Default: `master`
-   1. [ ] MR assigned to a capable reviewer. Default: JWhitleyWork
+   1. [ ] MR assigned to a capable reviewer. If in doubt, pick from this [list](https://docs.google.com/spreadsheets/d/1j0SeCbPr3Kh1dY1n0P96QFP-CJLfZcBFTEp1g9nXE2c/edit#gid=0)
    1. [ ] Splitting the MR into smaller, easier-to-review merge requests was considered
 1. Code and tests
    1. [ ] Code is properly [formatted](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-formatting)
-   1. [ ] [Tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-run-tests) affected by new code pass locally
+   1. [ ] [Tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/unit-testing.html#unit-testing-run-test) affected by new code pass locally
    1. [ ] Reasonable [coverage with unit tests](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-coverage) of 90+%; else create a follow-up ticket
    1. [ ] Review any `// TODO` item added in the MR that can be addressed without the reviewer's help
 1. Documentation
-   1. [ ] Any new and modified code has accurate [doxygen documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-source-code)
+   1. [ ] Any new and modified code has accurate [doxygen documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/writing-documentation.html#documentation-source-code)
    1. [ ] Any diagrams are committed
 
 ## Checklist for the reviewer
@@ -56,7 +56,7 @@ Mark all the items that are done.
 1. Documentation
    1. [ ] New classes, methods, functions in headers are documented with doxygen-style comments
    1. [ ] If implementation (of a function...) is modified, the doxygen documentation is updated accordingly
-   1. [ ] The [design article](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-package) is updated with the implementation
+   1. [ ] The [design article](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/writing-documentation.html#documentation-package) is updated with the implementation
    1. [ ] Drawings are created when needed and committed to `git`
    1. [ ] Modified files have a license that is [compatible](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/CONTRIBUTING.md) with AutowareAuto
 1. Testing
@@ -83,6 +83,7 @@ Mark all the items that are done.
    1. [ ] The files have a license header as per [CONTRIBUTING.md](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/CONTRIBUTING.md)
    1. [ ] Core functionality is separated from the ROS2-specific part where reasonable
    1. [ ] There is a design document that explains the package at a high level
+   1. [ ] The design document is linked in an `index.md` file
    1. [ ] All dependencies are explicitly included in [`package.xml`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/contributor-guidelines.html#contributors-guidelines-minimal-package-xml-example) with the proper `<*depend>` declaration
 
 When starting from scratch, new packages should be created with the [`autoware_auto_create_pkg`](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/autoware_auto_create_pkg-package-design.html) macro and they will automatically satisfy the following criteria.
@@ -99,7 +100,7 @@ When starting from scratch, new packages should be created with the [`autoware_a
 
 After receiving approval:
 
-1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/documentation.html#documentation-rendering) looks as expected
+1. [ ] [Rendered documentation](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/writing-documentation.html#documentation-rendering) is opened and checked to render as expected
 1. [ ] All checkboxes in the MR checklist are checked or crossed out. Syntax example: `1. [ ] ~~this item crossed out~~`
 1. [ ] Developers were informed about breaking changes on slack in the _committers-autoware-auto_ channel
 1. [ ] If there are multiple commits, the MR title has to contain the issue number as it's used for the squashed commit message; e.g. `[#928] Fix foo in bar`

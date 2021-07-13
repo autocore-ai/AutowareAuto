@@ -15,7 +15,7 @@ Every developer is encouraged to be familiar with our [contributor guidelines](h
 1. [ ] MR has a link to the original issue in the description, if it exists
 1. [ ] If the source branch is on a fork, MR is configured to *allow commits from developers with access to push to the target branch*
 1. [ ] Target branch set correctly. Default: `master`
-1. [ ] MR assigned to a capable reviewer. Default: JWhitleyWork
+1. [ ] MR assigned to a capable reviewer. If in doubt, pick from this [list](https://docs.google.com/spreadsheets/d/1j0SeCbPr3Kh1dY1n0P96QFP-CJLfZcBFTEp1g9nXE2c/edit#gid=0)
 
 <details>
 <summary markdown="span"><a name="general">What is meant by a "small change"?</a></summary>
