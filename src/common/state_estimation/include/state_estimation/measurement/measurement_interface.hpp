@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef STATE_ESTIMATION__MEASUREMENT__MEASUREMENT_INTERFACE_HPP_
 #define STATE_ESTIMATION__MEASUREMENT__MEASUREMENT_INTERFACE_HPP_

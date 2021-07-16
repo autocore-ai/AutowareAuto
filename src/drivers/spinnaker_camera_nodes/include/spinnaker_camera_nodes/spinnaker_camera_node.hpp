@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef SPINNAKER_CAMERA_NODES__SPINNAKER_CAMERA_NODE_HPP_
 #define SPINNAKER_CAMERA_NODES__SPINNAKER_CAMERA_NODE_HPP_

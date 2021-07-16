@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #ifndef STATE_ESTIMATION__KALMAN_FILTER__KALMAN_FILTER_HPP_
 #define STATE_ESTIMATION__KALMAN_FILTER__KALMAN_FILTER_HPP_
