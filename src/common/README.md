@@ -24,3 +24,4 @@ across the Autoware.Auto system.
 - @subpage state-estimation-design
 - @subpage state-estimation-nodes-design
 - @subpage tvm-utility-design
+- @subpage osqp_interface-package-design
