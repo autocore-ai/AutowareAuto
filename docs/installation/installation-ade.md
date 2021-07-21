@@ -66,7 +66,7 @@ $ cd AutowareAuto
 $ git checkout tags/1.0.0 -b release-1.0.0
 ```
 
-## Sharing files between the host system and ADE
+## Sharing files between the host system and ADE (Optional)
 It might come in handy to share files such as dotfiles or utility programs from your host machine
 with ADE. If you only have a single `adehome` directory, there is a way to do that without
 duplicating them: move them inside the `adehome` directory, then create a symlink in the host system
@@ -74,8 +74,9 @@ to their regular location. For instance,
 
 ```{bash}
 $ cd ~
-$ mv ~/.bashrc ~/ade-home/.bashrc
-$ ln -s ~/ade-home/.bashrc
+$ cp ~/.bashrc ~/.bashrc.bak
+$ mv ~/.bashrc ~/adehome/.bashrc
+$ ln -s ~/adehome/.bashrc
 ```
 
 It will then appear as `~/.bashrc` to the host system and to ADE.
@@ -85,6 +86,8 @@ direction will not work, files in a Docker container can not be symlinks to the 
 
 @note The programs have to be self-contained! They should not depend on loading libraries from e.g.
 `/usr/lib`.
+
+@note There is a risk of an error (symlink would be broken and .bashrc would not be loaded when your terminal is started). In this case, you should delete the symlink and move .bashrc back to the original directory.
 
 # Entering the development environment
 
