@@ -59,7 +59,7 @@ EigenStlVector<Eigen::Vector2f> Line::intersect_with_line(
   float32_t t2 = utils::cross_2d(this->m_line_direction, p_delta) / denominator;
 
   const bool8_t t1_out_of_bounds = (t1<0.0F || t1> this->m_line_length);
-  const bool8_t t2_out_of_bounds = (t2<0.0F || t2> this->m_line_length);
+  const bool8_t t2_out_of_bounds = (t2<0.0F || t2> line.m_line_length);
 
   if (t1_out_of_bounds || t2_out_of_bounds) {
     return EigenStlVector<Eigen::Vector2f>{};

@@ -204,3 +204,15 @@ TEST(test_tracking_test_framework, test_scene_with_multiple_lidar_beams_multiple
     intersections.objects[0].shape.polygon.points.end());
   EXPECT_GT(6.0F, bbox_area);
 }
+
+TEST(test_tracking_test_framework, test_1232_fix_scaling_factor) {
+  autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 720, 200.0};
+  std::vector<std::unique_ptr<autoware::tracking_test_framework::TrackedObject>> objects;
+// Tracked Car cluster
+  objects.emplace_back(
+    std::make_unique<autoware::tracking_test_framework::Car>(
+      Eigen::Vector2f{100.0, 100.0}, 3, 0.0, 0.0, Eigen::Vector2f{2.0, 3.0}));
+  autoware::tracking_test_framework::Scene scene{lidar, std::move(objects)};
+  auto detections_msg = scene.get_detected_objects_array(true);
+  ASSERT_EQ(detections_msg.objects.size(), 1U);
+}
