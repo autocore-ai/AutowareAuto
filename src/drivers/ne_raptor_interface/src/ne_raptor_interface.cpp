@@ -65,8 +65,6 @@ NERaptorInterface::NERaptorInterface(
   m_dbw_disable_cmd_pub = node.create_publisher<std_msgs::msg::Empty>("disable", 10);
 
   // Publishers (to Autoware)
-  m_vehicle_state_pub = node.create_publisher<VehicleStateReport>("vehicle_state_report", 10);
-  m_vehicle_odo_pub = node.create_publisher<VehicleOdometry>("vehicle_odometry", 10);
   m_vehicle_kin_state_pub = node.create_publisher<VehicleKinematicState>(
     "vehicle_kinematic_state",
     10);
@@ -336,9 +334,9 @@ bool8_t NERaptorInterface::send_control_command(const HighLevelControlCommand & 
   m_steer_cmd.angle_velocity = m_max_steer_angle;
 
   // Check for invalid changes in direction
-  if ( ( (m_vehicle_state_report.gear == VehicleStateReport::GEAR_DRIVE) &&
+  if ( ( (state_report().gear == VehicleStateReport::GEAR_DRIVE) &&
     (msg.velocity_mps < 0.0F) ) ||
-    ( (m_vehicle_state_report.gear == VehicleStateReport::GEAR_REVERSE) &&
+    ( (state_report().gear == VehicleStateReport::GEAR_REVERSE) &&
     (msg.velocity_mps > 0.0F) ) )
   {
     velocity_checked = 0.0F;
@@ -400,9 +398,9 @@ bool8_t NERaptorInterface::send_control_command(const VehicleControlCommand & ms
   }
 
   // Check for invalid changes in direction
-  if ( ( (m_vehicle_state_report.gear == VehicleStateReport::GEAR_DRIVE) &&
+  if ( ( (state_report().gear == VehicleStateReport::GEAR_DRIVE) &&
     (msg.velocity_mps < 0.0F) ) ||
-    ( (m_vehicle_state_report.gear == VehicleStateReport::GEAR_REVERSE) &&
+    ( (state_report().gear == VehicleStateReport::GEAR_REVERSE) &&
     (msg.velocity_mps > 0.0F) ) )
   {
     velocity_checked = 0.0F;
@@ -460,18 +458,17 @@ bool8_t NERaptorInterface::handle_mode_change_request(ModeChangeRequest::SharedP
 
 void NERaptorInterface::on_brake_report(const BrakeReport::SharedPtr & msg)
 {
-  std::lock_guard<std::mutex> guard_vsr(m_vehicle_state_report_mutex);
   switch (msg->parking_brake.status) {
     case ParkingBrake::OFF:
-      m_vehicle_state_report.hand_brake = false;
+      state_report().hand_brake = false;
       break;
     case ParkingBrake::ON:
-      m_vehicle_state_report.hand_brake = true;
+      state_report().hand_brake = true;
       break;
     case ParkingBrake::NO_REQUEST:
     case ParkingBrake::FAULT:
     default:
-      m_vehicle_state_report.hand_brake = false;
+      state_report().hand_brake = false;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid parking brake value from NE Raptor DBW.");
@@ -482,26 +479,25 @@ void NERaptorInterface::on_brake_report(const BrakeReport::SharedPtr & msg)
 
 void NERaptorInterface::on_gear_report(const GearReport::SharedPtr & msg)
 {
-  std::lock_guard<std::mutex> guard_vsr(m_vehicle_state_report_mutex);
   switch (msg->state.gear) {
     case Gear::PARK:
-      m_vehicle_state_report.gear = VehicleStateReport::GEAR_PARK;
+      state_report().gear = VehicleStateReport::GEAR_PARK;
       break;
     case Gear::REVERSE:
-      m_vehicle_state_report.gear = VehicleStateReport::GEAR_REVERSE;
+      state_report().gear = VehicleStateReport::GEAR_REVERSE;
       break;
     case Gear::NEUTRAL:
-      m_vehicle_state_report.gear = VehicleStateReport::GEAR_NEUTRAL;
+      state_report().gear = VehicleStateReport::GEAR_NEUTRAL;
       break;
     case Gear::DRIVE:
-      m_vehicle_state_report.gear = VehicleStateReport::GEAR_DRIVE;
+      state_report().gear = VehicleStateReport::GEAR_DRIVE;
       break;
     case Gear::LOW:
-      m_vehicle_state_report.gear = VehicleStateReport::GEAR_LOW;
+      state_report().gear = VehicleStateReport::GEAR_LOW;
       break;
     case Gear::NONE:
     default:
-      m_vehicle_state_report.gear = 0;
+      state_report().gear = 0;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid gear value from NE Raptor DBW.");
@@ -519,16 +515,14 @@ void NERaptorInterface::on_misc_report(const MiscReport::SharedPtr & msg)
   float32_t prev_speed_mps{0.0F};
   float32_t dT{0.0F};
 
-  std::lock_guard<std::mutex> guard_vo(m_vehicle_odometry_mutex);
-  m_vehicle_odometry.velocity_mps = speed_mps;
+  odometry().velocity_mps = speed_mps;
 
-  std::lock_guard<std::mutex> guard_vsr(m_vehicle_state_report_mutex);
-  m_vehicle_state_report.fuel = static_cast<uint8_t>(msg->fuel_level);
+  state_report().fuel = static_cast<uint8_t>(msg->fuel_level);
 
   if (msg->drive_by_wire_enabled) {
-    m_vehicle_state_report.mode = VehicleStateReport::MODE_AUTONOMOUS;
+    state_report().mode = VehicleStateReport::MODE_AUTONOMOUS;
   } else {
-    m_vehicle_state_report.mode = VehicleStateReport::MODE_MANUAL;
+    state_report().mode = VehicleStateReport::MODE_MANUAL;
   }
   m_dbw_state_machine->dbw_feedback(msg->by_wire_ready && !msg->general_driver_activity);
 
@@ -596,18 +590,16 @@ void NERaptorInterface::on_misc_report(const MiscReport::SharedPtr & msg)
 
 void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::SharedPtr & msg)
 {
-  std::lock_guard<std::mutex> guard_vsr(m_vehicle_state_report_mutex);
-
   switch (msg->horn_state.status) {
     case HornState::OFF:
-      m_vehicle_state_report.horn = false;
+      state_report().horn = false;
       break;
     case HornState::ON:
-      m_vehicle_state_report.horn = true;
+      state_report().horn = true;
       break;
     case HornState::SNA:
     default:
-      m_vehicle_state_report.horn = false;
+      state_report().horn = false;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid horn value from NE Raptor DBW.");
@@ -616,20 +608,20 @@ void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::Sh
 
   switch (msg->turn_signal_state.value) {
     case TurnSignal::NONE:
-      m_vehicle_state_report.blinker = VehicleStateReport::BLINKER_OFF;
+      state_report().blinker = VehicleStateReport::BLINKER_OFF;
       break;
     case TurnSignal::LEFT:
-      m_vehicle_state_report.blinker = VehicleStateReport::BLINKER_LEFT;
+      state_report().blinker = VehicleStateReport::BLINKER_LEFT;
       break;
     case TurnSignal::RIGHT:
-      m_vehicle_state_report.blinker = VehicleStateReport::BLINKER_RIGHT;
+      state_report().blinker = VehicleStateReport::BLINKER_RIGHT;
       break;
     case TurnSignal::HAZARDS:
-      m_vehicle_state_report.blinker = VehicleStateReport::BLINKER_HAZARD;
+      state_report().blinker = VehicleStateReport::BLINKER_HAZARD;
       break;
     case TurnSignal::SNA:
     default:
-      m_vehicle_state_report.blinker = 0;
+      state_report().blinker = 0;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid turn signal value from NE Raptor DBW.");
@@ -638,15 +630,15 @@ void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::Sh
 
   switch (msg->high_beam_state.value) {
     case HighBeamState::OFF:
-      m_vehicle_state_report.headlight = VehicleStateReport::HEADLIGHT_OFF;
+      state_report().headlight = VehicleStateReport::HEADLIGHT_OFF;
       break;
     case HighBeamState::ON:
-      m_vehicle_state_report.headlight = VehicleStateReport::HEADLIGHT_HIGH;
+      state_report().headlight = VehicleStateReport::HEADLIGHT_HIGH;
       break;
     case HighBeamState::RESERVED:
     case HighBeamState::SNA:
     default:
-      m_vehicle_state_report.headlight = 0;
+      state_report().headlight = 0;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid headlight value from NE Raptor DBW.");
@@ -655,33 +647,27 @@ void NERaptorInterface::on_other_actuators_report(const OtherActuatorsReport::Sh
 
   switch (msg->front_wiper_state.status) {
     case WiperFront::OFF:
-      m_vehicle_state_report.wiper = VehicleStateReport::WIPER_OFF;
+      state_report().wiper = VehicleStateReport::WIPER_OFF;
       break;
     case WiperFront::CONSTANT_LOW:
-      m_vehicle_state_report.wiper = VehicleStateReport::WIPER_LOW;
+      state_report().wiper = VehicleStateReport::WIPER_LOW;
       break;
     case WiperFront::CONSTANT_HIGH:
-      m_vehicle_state_report.wiper = VehicleStateReport::WIPER_HIGH;
+      state_report().wiper = VehicleStateReport::WIPER_HIGH;
       break;
     case WiperFront::WASH_BRIEF:
-      m_vehicle_state_report.wiper = VehicleStateReport::WIPER_CLEAN;
+      state_report().wiper = VehicleStateReport::WIPER_CLEAN;
       break;
     case WiperFront::SNA:
     default:
-      m_vehicle_state_report.wiper = 0;
+      state_report().wiper = 0;
       RCLCPP_WARN_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received invalid wiper value from NE Raptor DBW.");
       break;
   }
 
-  if (m_seen_brake_rpt &&
-    m_seen_gear_rpt &&
-    m_seen_misc_rpt)
-  {
-    m_vehicle_state_report.stamp = msg->header.stamp;
-    m_vehicle_state_pub->publish(m_vehicle_state_report);
-  }
+  state_report().stamp = msg->header.stamp;
 }
 
 void NERaptorInterface::on_steering_report(const SteeringReport::SharedPtr & msg)
@@ -690,22 +676,15 @@ void NERaptorInterface::on_steering_report(const SteeringReport::SharedPtr & msg
   const float32_t f_wheel_angle_rad = (msg->steering_wheel_angle * DEGREES_TO_RADIANS) /
     m_steer_to_tire_ratio;
 
-  std::lock_guard<std::mutex> guard_vo(m_vehicle_odometry_mutex);
-  m_vehicle_odometry.front_wheel_angle_rad = f_wheel_angle_rad;
-  m_vehicle_odometry.rear_wheel_angle_rad = 0.0F;
+  odometry().front_wheel_angle_rad = f_wheel_angle_rad;
+  odometry().rear_wheel_angle_rad = 0.0F;
 
   std::lock_guard<std::mutex> guard_vks(m_vehicle_kin_state_mutex);
   m_vehicle_kin_state.state.front_wheel_angle_rad = f_wheel_angle_rad;
   m_vehicle_kin_state.state.rear_wheel_angle_rad = 0.0F;
 
   m_seen_steering_rpt = true;
-
-  if (m_seen_misc_rpt &&
-    m_seen_wheel_spd_rpt)
-  {
-    m_vehicle_odometry.stamp = msg->header.stamp;
-    m_vehicle_odo_pub->publish(m_vehicle_odometry);
-  }
+  odometry().stamp = msg->header.stamp;
 }
 
 void NERaptorInterface::on_wheel_spd_report(const WheelSpeedReport::SharedPtr & msg)

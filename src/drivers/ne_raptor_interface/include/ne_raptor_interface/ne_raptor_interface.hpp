@@ -58,8 +58,6 @@
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
 
-#include <autoware_auto_msgs/msg/vehicle_state_report.hpp>
-#include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 
 #include <autoware_auto_msgs/srv/autonomy_mode_change.hpp>
@@ -223,8 +221,6 @@ private:
   rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr m_dbw_disable_cmd_pub;
 
   // Publishers (to Autoware)
-  rclcpp::Publisher<VehicleStateReport>::SharedPtr m_vehicle_state_pub;
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr m_vehicle_odo_pub;
   rclcpp::Publisher<VehicleKinematicState>::SharedPtr m_vehicle_kin_state_pub;
 
   // Subscribers (from Raptor DBW)
@@ -248,15 +244,12 @@ private:
   rclcpp::Clock m_clock;
   rclcpp::TimerBase::SharedPtr m_timer;
 
-  /* Vehicle Odometry, Vehicle State, &
-   * Vehicle Kinematic State are stored
-   * because they need data from multiple reports.
+  /* Vehicle Kinematic State is stored
+   * because it needs data from multiple reports.
    *
    * All commands are stored because they need
    * to be sent periodically, whether or not the data changes.
    */
-  VehicleOdometry m_vehicle_odometry{};
-  VehicleStateReport m_vehicle_state_report{};
   VehicleKinematicState m_vehicle_kin_state{};
 
   AcceleratorPedalCmd m_accel_cmd{};
@@ -275,8 +268,6 @@ private:
   float32_t m_travel_direction{0.0F};
 
   // In case multiple signals arrive at the same time
-  std::mutex m_vehicle_odometry_mutex;
-  std::mutex m_vehicle_state_report_mutex;
   std::mutex m_vehicle_kin_state_mutex;
   std::mutex m_accel_cmd_mutex;
   std::mutex m_brake_cmd_mutex;
