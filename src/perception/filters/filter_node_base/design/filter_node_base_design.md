@@ -34,9 +34,15 @@ These virtual functions are called by the parent class in the following methods:
  * `pointcloud_callback` - calls `filter`
  * `param_callback` - calls `get_node_parameters`
 
+### Constructor of Child Class
+
+The constructor of child classes inheriting from the FilterNodeBase will need to call
+`set_param_callback()` after declaring all parameters to enable dynamic parameters in the node.
+See `MockFilterNodeBase` in `test/test_filter_node_base.cpp` for an example.
+
 ### pointcloud_callback
 
-The `pointcloud_callback` method is bound to a subscriber object at during the construction of the
+The `pointcloud_callback` method is bound to a subscriber object during the construction of the
 class. This method determines the validity of the point cloud then calls the `filter` method to
 process the point cloud.
 

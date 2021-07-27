@@ -48,7 +48,10 @@ FilterNodeBase::FilterNodeBase(
     &FilterNodeBase::pointcloud_callback, this, std::placeholders::_1);
   sub_input_ = create_subscription<PointCloud2>(
     "input", rclcpp::SensorDataQoS().keep_last(max_queue_size_), cb);
+}
 
+void FilterNodeBase::set_param_callback()
+{
   // Set parameter service callback
   set_param_res_filter_ = this->add_on_set_parameters_callback(
     std::bind(&FilterNodeBase::param_callback, this, std::placeholders::_1));

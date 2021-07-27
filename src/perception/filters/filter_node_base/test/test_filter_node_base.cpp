@@ -14,6 +14,7 @@
 
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "filter_node_base/filter_node_base.hpp"
@@ -23,10 +24,16 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "lidar_utils/point_cloud_utils.hpp"
 
-
+namespace
+{
 using float32_t = autoware::common::types::float32_t;
 using FilterNodeBase = autoware::perception::filters::filter_node_base::FilterNodeBase;
 using PointCloud2 = sensor_msgs::msg::PointCloud2;
+
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Eq;
+using ::testing::Invoke;
 
 /* \class MockFilterNodeBase
  * \brief This class implements the FilterNodeBase to test for correct inheritence
@@ -35,7 +42,13 @@ class MockFilterNodeBase : public FilterNodeBase
 {
 public:
   explicit MockFilterNodeBase(const rclcpp::NodeOptions & options)
-  : FilterNodeBase("test_filter_node", options) {}
+  : FilterNodeBase("test_filter_node", options)
+  {
+    test_param_1_ = declare_parameter("test_param_1").get<double>();
+    test_param_2_ = declare_parameter("test_param_2").get<std::string>();
+
+    this->set_param_callback();
+  }
 
   ~MockFilterNodeBase() {}
 
@@ -43,9 +56,40 @@ public:
     void, filter,
     (const sensor_msgs::msg::PointCloud2 & input, sensor_msgs::msg::PointCloud2 & output),
     (override));
+
   MOCK_METHOD(
     rcl_interfaces::msg::SetParametersResult, get_node_parameters,
     (const std::vector<rclcpp::Parameter>&p), (override));
+
+  void DelegateToFake()
+  {
+    ON_CALL(*this, get_node_parameters(_))
+    .WillByDefault(Invoke(this, &MockFilterNodeBase::mock_get_node_parameters));
+  }
+
+  // Parameters used by the class
+  double test_param_1_;
+  std::string test_param_2_;
+
+private:
+  // Implement the mock_get_node_parameters method to be called instead of the virtual
+  // get_node_parameters method
+  rcl_interfaces::msg::SetParametersResult mock_get_node_parameters(
+    const std::vector<rclcpp::Parameter> & p)
+  {
+    rcl_interfaces::msg::SetParametersResult result;
+    result.successful = true;
+    result.reason = "success";
+
+    {
+      using namespace autoware::perception::filters::filter_node_base; // NOLINT
+
+      get_param(p, "test_param_1", test_param_1_);
+      get_param(p, "test_param_2", test_param_2_);
+    }
+
+    return result;
+  }
 };
 
 /* \class TestFilterNodeBase
@@ -69,22 +113,23 @@ protected:
     // Generate parameters
     std::vector<rclcpp::Parameter> params;
     params.emplace_back("max_queue_size", 5);
+    params.emplace_back("test_param_1", 0.5);
+    params.emplace_back("test_param_2", "frame_2");
 
     rclcpp::NodeOptions node_options;
     node_options.parameter_overrides(params);
 
     // Create instance of the TestFilter child class
     mock_filter_node_base = std::make_shared<MockFilterNodeBase>(node_options);
+    // Enables the fake for delegation.
+    mock_filter_node_base->DelegateToFake();
   }
 
   std::shared_ptr<MockFilterNodeBase> mock_filter_node_base;
 };
 
-using ::testing::_;
-using ::testing::AtLeast;
-
 /* \brief Create a dummy point cloud for publishing */
-inline void create_dummy_cloud(sensor_msgs::msg::PointCloud2 & cloud)
+void create_dummy_cloud(sensor_msgs::msg::PointCloud2 & cloud)
 {
   std::vector<float32_t> seeds = {0.0, 0.0, 0.0};
   autoware::common::lidar_utils::init_pcl_msg(cloud, "base_link", seeds.size());
@@ -100,6 +145,7 @@ inline void create_dummy_cloud(sensor_msgs::msg::PointCloud2 & cloud)
   }
 }
 
+// cppcheck-suppress syntaxError
 TEST_F(TestFilterNodeBase, DISABLED_test_filter) {
   // Create dummy point cloud
   sensor_msgs::msg::PointCloud2 cloud;
@@ -117,6 +163,10 @@ TEST_F(TestFilterNodeBase, DISABLED_test_filter) {
 }
 
 TEST_F(TestFilterNodeBase, test_parameters) {
+  // Check that upon set up the parameters are set correctly
+  EXPECT_THAT(mock_filter_node_base->test_param_1_, Eq(0.5));
+  EXPECT_THAT(mock_filter_node_base->test_param_2_, Eq("frame_2"));
+
   // Set up parameter client
   auto client = std::make_shared<rclcpp::SyncParametersClient>(mock_filter_node_base);
   ASSERT_TRUE(client->wait_for_service(std::chrono::seconds(1)));
@@ -124,10 +174,24 @@ TEST_F(TestFilterNodeBase, test_parameters) {
     rclcpp::Parameter("max_queue_size", 10),
   };
 
-  // Check that the get_node_parameters method in the MockFilterNodeBase class has been called at
-  // least once
-  EXPECT_CALL(*mock_filter_node_base, get_node_parameters(_));
+  // Check that the get_node_parameters method in the MockFilterNodeBase class has been called
+  // Since three parameters are changing the get_node_parameters will be called 3 times.
+  EXPECT_CALL(*mock_filter_node_base, get_node_parameters(_)).Times(3);
   // Set new parameters
   client->set_parameters(parameters);
   rclcpp::spin_some(mock_filter_node_base);
+
+  // Now change the child class specific parameters
+  const std::vector<rclcpp::Parameter> child_class_parameters = {
+    rclcpp::Parameter("test_param_1", 1.5),
+    rclcpp::Parameter("test_param_2", "new_frame_2")
+  };
+  // Set new parameters
+  client->set_parameters(child_class_parameters);
+  rclcpp::spin_some(mock_filter_node_base);
+
+  // Check that upon update the parameters are set correctly
+  EXPECT_THAT(mock_filter_node_base->test_param_1_, Eq(1.5));
+  EXPECT_THAT(mock_filter_node_base->test_param_2_, Eq("new_frame_2"));
 }
+}  // namespace

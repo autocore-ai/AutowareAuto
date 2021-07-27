@@ -137,6 +137,14 @@ protected:
     return true;
   }
 
+  /** \brief Binds the param_callback to the OnSetParametersCallbackHandle object
+   *
+   * Due to the nature of the OnSetParametersCallbackHandle, this needs to be called after all
+   * parameters used by this node have been declared. Therefore this method needs to be called at
+   * the end of the constructor in child classes inheriting from FilterNodeBase.
+   */
+  FILTER_NODE_BASE_PUBLIC void set_param_callback();
+
 private:
   /** \brief Callback handler for parameter services */
   OnSetParametersCallbackHandle::SharedPtr set_param_res_filter_;
