@@ -35,9 +35,9 @@ protected:
     ASSERT_EQ(VSR::WIPER_HIGH, VSC::WIPER_HIGH);
     ASSERT_EQ(VSR::WIPER_OFF, VSC::WIPER_OFF);
     // headlight
-    ASSERT_EQ(VSR::HEADLIGHT_OFF, VSC::HEADLIGHT_OFF);
-    ASSERT_EQ(VSR::HEADLIGHT_ON, VSC::HEADLIGHT_ON);
-    ASSERT_EQ(VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH);
+    ASSERT_EQ(VSR::HEADLIGHT_OFF, HeadlightsCommand::DISABLE);
+    ASSERT_EQ(VSR::HEADLIGHT_ON, HeadlightsCommand::ENABLE_LOW);
+    ASSERT_EQ(VSR::HEADLIGHT_HIGH, HeadlightsCommand::ENABLE_HIGH);
   }
 };
 
@@ -71,14 +71,14 @@ INSTANTIATE_TEST_CASE_P(
   test,
   wipers_on_headlights_on,
   ::testing::Values(
-    WiperHeadlight{VSC::WIPER_LOW, VSC::HEADLIGHT_NO_COMMAND, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_LOW, VSC::HEADLIGHT_OFF, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_LOW, VSC::HEADLIGHT_ON, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_LOW, VSC::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH},
-    WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_NO_COMMAND, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_OFF, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_ON, VSC::HEADLIGHT_ON},
-    WiperHeadlight{VSC::WIPER_HIGH, VSC::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH}
+    WiperHeadlight{VSC::WIPER_LOW, HeadlightsCommand::NO_COMMAND, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_LOW, HeadlightsCommand::DISABLE, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_LOW, HeadlightsCommand::ENABLE_LOW, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_LOW, HeadlightsCommand::ENABLE_HIGH, HeadlightsCommand::ENABLE_HIGH},
+    WiperHeadlight{VSC::WIPER_HIGH, HeadlightsCommand::NO_COMMAND, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_HIGH, HeadlightsCommand::DISABLE, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_HIGH, HeadlightsCommand::ENABLE_LOW, HeadlightsCommand::ENABLE_LOW},
+    WiperHeadlight{VSC::WIPER_HIGH, HeadlightsCommand::ENABLE_HIGH, HeadlightsCommand::ENABLE_HIGH}
     // cppcheck-suppress syntaxError
   ),
 );
@@ -107,21 +107,21 @@ INSTANTIATE_TEST_CASE_P(
   test,
   wipers_off_headlight_no_change,
   ::testing::Values(
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_NO_COMMAND},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_HIGH},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_NO_COMMAND},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_NO_COMMAND},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, VSC::HEADLIGHT_HIGH},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_NO_COMMAND},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_OFF},
-    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, VSC::HEADLIGHT_HIGH}
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::NO_COMMAND},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::ENABLE_HIGH},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, HeadlightsCommand::NO_COMMAND},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_HIGH, HeadlightsCommand::ENABLE_HIGH},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, HeadlightsCommand::NO_COMMAND},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_ON, HeadlightsCommand::ENABLE_HIGH},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, HeadlightsCommand::NO_COMMAND},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, HeadlightsCommand::DISABLE},
+    WiperHeadlight{VSR::WIPER_HIGH, VSR::HEADLIGHT_HIGH, HeadlightsCommand::ENABLE_HIGH}
   ),
 );

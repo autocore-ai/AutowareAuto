@@ -19,14 +19,20 @@
 
 #include <memory>
 #include <string>
-
-using autoware::common::types::float32_t;
+#include <unordered_set>
 
 namespace ssc_interface
 {
 
+using autoware::common::types::float32_t;
+using autoware::drivers::vehicle_interface::ViFeature;
+
 SscInterfaceNode::SscInterfaceNode(const rclcpp::NodeOptions & options)
-: VehicleInterfaceNode{"ssc_interface", options}
+: VehicleInterfaceNode{
+    "ssc_interface",
+    std::unordered_set<ViFeature> {},
+    options
+}
 {
   set_interface(
     std::make_unique<SscInterface>(

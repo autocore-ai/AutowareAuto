@@ -233,16 +233,20 @@ INSTANTIATE_TEST_CASE_P(
     StateChange{VSR{}.set__gear(VSR::GEAR_LOW), VSC{}.set__gear(VSC::GEAR_NEUTRAL)},
     //// Headlight //// 16-21
     // off -> *
-    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_OFF), VSC{}.set__headlight(VSC::HEADLIGHT_ON)},
+    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_OFF),
+      VSC{}.set__headlight(HeadlightsCommand::ENABLE_LOW)},
     StateChange{
-  VSR{}.set__headlight(VSR::HEADLIGHT_OFF), VSC{}.set__headlight(VSC::HEADLIGHT_HIGH)},
+  VSR{}.set__headlight(VSR::HEADLIGHT_OFF), VSC{}.set__headlight(HeadlightsCommand::ENABLE_HIGH)},
     // on -> *
-    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_ON), VSC{}.set__headlight(VSC::HEADLIGHT_OFF)},
-    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_ON), VSC{}.set__headlight(VSC::HEADLIGHT_HIGH)},
+    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_ON),
+      VSC{}.set__headlight(HeadlightsCommand::DISABLE)},
+    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_ON),
+      VSC{}.set__headlight(HeadlightsCommand::ENABLE_HIGH)},
     // high -> *
-    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_HIGH), VSC{}.set__headlight(VSC::HEADLIGHT_ON)},
+    StateChange{VSR{}.set__headlight(VSR::HEADLIGHT_HIGH),
+      VSC{}.set__headlight(HeadlightsCommand::ENABLE_LOW)},
     StateChange{
-  VSR{}.set__headlight(VSR::HEADLIGHT_HIGH), VSC{}.set__headlight(VSC::HEADLIGHT_OFF)},
+  VSR{}.set__headlight(VSR::HEADLIGHT_HIGH), VSC{}.set__headlight(HeadlightsCommand::DISABLE)},
     //// Blinker //// 22-33
     // off -> *
     StateChange{VSR{}.set__blinker(VSR::BLINKER_OFF), VSC{}.set__blinker(VSC::BLINKER_LEFT)},
@@ -282,7 +286,7 @@ INSTANTIATE_TEST_CASE_P(
   VSR{}.set__wiper(VSR::WIPER_CLEAN).set__blinker(VSR::BLINKER_HAZARD).
   set__headlight(VSR::HEADLIGHT_HIGH).set__gear(VSR::GEAR_DRIVE),
   VSC{}.set__wiper(VSC::WIPER_OFF).set__blinker(VSC::BLINKER_OFF).
-  set__headlight(VSC::HEADLIGHT_OFF).set__gear(VSC::GEAR_LOW)
+  set__headlight(HeadlightsCommand::DISABLE).set__gear(VSC::GEAR_LOW)
 }
     // TODO(c.ho) more combinatorial tests
   ),

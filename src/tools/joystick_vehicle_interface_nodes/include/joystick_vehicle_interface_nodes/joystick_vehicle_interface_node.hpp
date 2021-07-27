@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 
+#include "autoware_auto_msgs/msg/headlights_command.hpp"
+
 using autoware::common::types::bool8_t;
 
 using joystick_vehicle_interface::Axes;
@@ -69,6 +71,7 @@ private:
 
   ControlPub m_cmd_pub{};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_cmd_pub{};
+  rclcpp::Publisher<autoware_auto_msgs::msg::HeadlightsCommand>::SharedPtr m_headlights_cmd_pub{};
   rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr m_recordreplay_cmd_pub{};
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr m_joy_sub{nullptr};
 };  // class JoystickVehicleInterfaceNode

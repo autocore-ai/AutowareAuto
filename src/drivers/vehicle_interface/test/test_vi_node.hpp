@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+#include "autoware_auto_msgs/msg/headlights_command.hpp"
+
 #include "vehicle_interface/vehicle_interface_node.hpp"
 
 using autoware::common::types::bool8_t;
@@ -37,7 +39,9 @@ using autoware::drivers::vehicle_interface::VehicleInterfaceNode;
 using autoware::drivers::vehicle_interface::PlatformInterface;
 using autoware::drivers::vehicle_interface::FilterConfig;
 using autoware::drivers::vehicle_interface::TopicNumMatches;
+using autoware::drivers::vehicle_interface::ViFeature;
 
+using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::RawControlCommand;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
@@ -134,6 +138,7 @@ public:
     bool8_t fail = false)
   : VehicleInterfaceNode{
       node_name,
+      {ViFeature::HEADLIGHTS},
       rclcpp::NodeOptions(options)
       .append_parameter_override("cycle_time_ms", static_cast<int64_t>(30LL))
       .append_parameter_override("state_machine.gear_shift_velocity_threshold_mps", 0.5F)
@@ -148,6 +153,7 @@ public:
       .append_parameter_override("state_machine.state_transition_timeout_ms",
         static_cast<int64_t>(3000LL))
       .append_parameter_override("state_machine.gear_shift_accel_deadzone_mps2", 0.5F)
+      .append_parameter_override("features", std::vector<std::string> {"headlights"})
   }
   {
     // sketchy, but this is because the PlatformInterface generally shouldn't be exposed

@@ -527,7 +527,7 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_mode_change_client_no_msg_check
   test_hlcc.curvature = 0.0F;
 
   test_vsc.blinker = VehicleStateCommand::BLINKER_NO_COMMAND;
-  test_vsc.headlight = VehicleStateCommand::HEADLIGHT_NO_COMMAND;
+  test_vsc.headlight = HeadlightsCommand::NO_COMMAND;
   test_vsc.wiper = VehicleStateCommand::WIPER_NO_COMMAND;
   test_vsc.gear = VehicleStateCommand::GEAR_NO_COMMAND;
   test_vsc.hand_brake = false;
@@ -699,7 +699,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   // Init test values to valid
   for (i = 0; i < kNumTests_VSC; i++) {
     myTests[i].in_vsc.blinker = VehicleStateCommand::BLINKER_HAZARD;
-    myTests[i].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH;
+    myTests[i].in_vsc.headlight = HeadlightsCommand::ENABLE_HIGH;
     myTests[i].in_vsc.wiper = VehicleStateCommand::WIPER_HIGH;
     myTests[i].in_vsc.gear = VehicleStateCommand::GEAR_DRIVE;
     myTests[i].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS;
@@ -726,7 +726,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   /** Test valid inputs **/
   // Test valid: no commands
   myTests[0].in_vsc.blinker = VehicleStateCommand::BLINKER_NO_COMMAND;
-  myTests[0].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_NO_COMMAND;
+  myTests[0].in_vsc.headlight = HeadlightsCommand::NO_COMMAND;
   myTests[0].in_vsc.wiper = VehicleStateCommand::WIPER_NO_COMMAND;
   myTests[0].in_vsc.gear = VehicleStateCommand::GEAR_NO_COMMAND;
   myTests[0].in_mcr = ModeChangeRequest::MODE_MANUAL;
@@ -749,7 +749,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
 
   // Test valid: all off
   myTests[1].in_vsc.blinker = VehicleStateCommand::BLINKER_OFF;
-  myTests[1].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_OFF;
+  myTests[1].in_vsc.headlight = HeadlightsCommand::DISABLE;
   myTests[1].in_vsc.wiper = VehicleStateCommand::WIPER_OFF;
   myTests[1].in_vsc.gear = VehicleStateCommand::GEAR_PARK;
   myTests[1].in_mcr = ModeChangeRequest::MODE_MANUAL;
@@ -782,7 +782,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[3].in_vsc.gear = VehicleStateCommand::GEAR_LOW;
   myTests[3].in_vsc.blinker = VehicleStateCommand::BLINKER_LEFT;
   myTests[3].in_vsc.wiper = VehicleStateCommand::WIPER_LOW;
-  myTests[3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
+  myTests[3].in_vsc.headlight = HeadlightsCommand::ENABLE_LOW;
   myTests[3].exp_gc.cmd.gear = Gear::LOW;
   myTests[3].exp_mc.cmd.value = TurnSignal::LEFT;
   myTests[3].exp_mc.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
@@ -794,7 +794,7 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[4].in_vsc.gear = VehicleStateCommand::GEAR_NEUTRAL;
   myTests[4].in_vsc.blinker = VehicleStateCommand::BLINKER_RIGHT;
   myTests[4].in_vsc.wiper = VehicleStateCommand::WIPER_CLEAN;
-  myTests[4].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH;
+  myTests[4].in_vsc.headlight = HeadlightsCommand::ENABLE_HIGH;
   myTests[4].exp_gc.cmd.gear = Gear::NEUTRAL;
   myTests[4].exp_mc.cmd.value = TurnSignal::RIGHT;
   myTests[4].exp_mc.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
@@ -810,13 +810,13 @@ TEST_F(DISABLED_NERaptorInterface_test, DISABLED_test_cmd_vehicle_state)
   myTests[kTestValid_VSC + 1].exp_mc.cmd.value = TurnSignal::SNA;
 
   // Test invalid: headlight (keep previous: high)
-  myTests[kTestValid_VSC + 2].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH + 1;
+  myTests[kTestValid_VSC + 2].in_vsc.headlight = HeadlightsCommand::ENABLE_HIGH + 1;
   myTests[kTestValid_VSC + 2].exp_mc.low_beam_cmd.status = LowBeam::OFF;
   myTests[kTestValid_VSC + 2].exp_mc.high_beam_cmd.status = HighBeam::ON;
 
   // Regular headlights ON
   myTests[kTestValid_VSC + 3].exp_success = true;
-  myTests[kTestValid_VSC + 3].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_ON;
+  myTests[kTestValid_VSC + 3].in_vsc.headlight = HeadlightsCommand::ENABLE_LOW;
   myTests[kTestValid_VSC + 3].exp_mc.low_beam_cmd.status = LowBeam::ON;
   myTests[kTestValid_VSC + 3].exp_mc.high_beam_cmd.status = HighBeam::OFF;
 
@@ -1064,7 +1064,7 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_vehicle_state_no_msg_check)
   // Init test values to valid
   for (i = 0; i < kNumTests_VSC; i++) {
     myTests[i].in_vsc.blinker = VehicleStateCommand::BLINKER_HAZARD;
-    myTests[i].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_HIGH;
+    myTests[i].in_vsc.headlight = HeadlightsCommand::ENABLE_HIGH;
     myTests[i].in_vsc.wiper = VehicleStateCommand::WIPER_HIGH;
     myTests[i].in_vsc.gear = VehicleStateCommand::GEAR_DRIVE;
     myTests[i].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS;
@@ -1612,7 +1612,7 @@ TEST_F(DISABLED_NERaptorInterface_test, test_cmd_high_level_control_no_msg_check
   // Set all gear == DRIVE && mode == AUTONOMOUS
   for (i = 0; i < kNumTests_HLCC; i++) {
     myTests[i].in_vsc.blinker = VehicleStateCommand::BLINKER_OFF;
-    myTests[i].in_vsc.headlight = VehicleStateCommand::HEADLIGHT_OFF;
+    myTests[i].in_vsc.headlight = HeadlightsCommand::DISABLE;
     myTests[i].in_vsc.wiper = VehicleStateCommand::WIPER_OFF;
     myTests[i].in_vsc.gear = VehicleStateCommand::GEAR_DRIVE;
     myTests[i].in_mcr = ModeChangeRequest::MODE_AUTONOMOUS;

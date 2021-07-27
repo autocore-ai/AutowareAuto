@@ -29,6 +29,9 @@
 
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
+#include "autoware_auto_msgs/msg/headlights_command.hpp"
+#include "autoware_auto_msgs/msg/headlights_report.hpp"
+
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 namespace comp = autoware::common::helper_functions::comparisons;
@@ -36,6 +39,9 @@ using namespace std::chrono_literals;
 
 namespace lgsvl_interface
 {
+
+using autoware_auto_msgs::msg::HeadlightsCommand;
+using autoware_auto_msgs::msg::HeadlightsReport;
 
 const std::unordered_map<WIPER_TYPE, WIPER_TYPE> LgsvlInterface::autoware_to_lgsvl_wiper {
   {VSC::WIPER_NO_COMMAND, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
@@ -160,12 +166,16 @@ LgsvlInterface::LgsvlInterface(
       } else {
         state_report.set__blinker(autoware_auto_msgs::msg::VehicleStateReport::BLINKER_OFF);
       }
+
       if (msg->low_beams_active) {
         state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_ON);
+        headlights_report().report = HeadlightsReport::ENABLE_LOW;
       } else if (msg->high_beams_active) {
         state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_HIGH);
+        headlights_report().report = HeadlightsReport::ENABLE_HIGH;
       } else {
         state_report.set__headlight(autoware_auto_msgs::msg::VehicleStateReport::HEADLIGHT_OFF);
+        headlights_report().report = HeadlightsReport::DISABLE;
       }
 
       if (msg->wipers_active) {
@@ -242,17 +252,12 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
 {
   auto msg_corrected = msg;
 
-  // Correcting blinker and headlights, they are shifted down by one,
-  // as the first value [BLINKER/HEADLIGHT]_NO_COMMAND does not exisit in LGSVL
+  // Correcting blinker: it is shifted down by one,
+  // as the first value BLINKER_NO_COMMAND does not exisit in LGSVL
   if (msg.blinker == VSC::BLINKER_NO_COMMAND) {
     msg_corrected.blinker = get_state_report().blinker;
   }
   msg_corrected.blinker--;
-
-  if (msg.headlight == VSC::HEADLIGHT_NO_COMMAND) {
-    msg_corrected.headlight = get_state_report().headlight;
-  }
-  msg_corrected.headlight--;
 
   // Correcting gears
   auto const gear_iter = autoware_to_lgsvl_gear.find(msg.gear);
@@ -284,20 +289,19 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
     RCLCPP_WARN(m_logger, "Unsupported mode value in state command, defaulting to COMPLETE MANUAL");
   }
 
-  lgsvl_msgs::msg::VehicleStateData state_data;
-  state_data.header.set__stamp(msg_corrected.stamp);
-  state_data.set__blinker_state(msg_corrected.blinker);
-  state_data.set__headlight_state(msg_corrected.headlight);
-  state_data.set__wiper_state(msg_corrected.wiper);
-  state_data.set__current_gear(msg_corrected.gear);
-  state_data.set__vehicle_mode(msg_corrected.mode);
-  state_data.set__hand_brake_active(msg_corrected.hand_brake);
-  state_data.set__horn_active(msg_corrected.horn);
-  state_data.set__autonomous_mode_active(
+  m_lgsvl_state.header.set__stamp(msg_corrected.stamp);
+  m_lgsvl_state.set__blinker_state(msg_corrected.blinker);
+  m_lgsvl_state.set__wiper_state(msg_corrected.wiper);
+  m_lgsvl_state.set__current_gear(msg_corrected.gear);
+  m_lgsvl_state.set__vehicle_mode(msg_corrected.mode);
+  m_lgsvl_state.set__hand_brake_active(msg_corrected.hand_brake);
+  m_lgsvl_state.set__horn_active(msg_corrected.horn);
+  m_lgsvl_state.set__autonomous_mode_active(
     msg_corrected.mode ==
     VSD::VEHICLE_MODE_COMPLETE_AUTO_DRIVE ? true : false);
 
-  m_state_pub->publish(state_data);
+  m_state_pub->publish(m_lgsvl_state);
+
   return true;
 }
 
@@ -350,6 +354,19 @@ bool8_t LgsvlInterface::handle_mode_change_request(
   // mimic a real vehicle and allow commanding the vehicle to be disabled
   (void)request;
   return true;
+}
+
+void LgsvlInterface::send_headlights_command(const autoware_auto_msgs::msg::HeadlightsCommand & msg)
+{
+  /// lgsvl_msgs values are shifted down one from autoware_auto_msgs values
+  /// However, lgsvl_msgs values have no "NO_COMMAND" option so 0 is ignored
+  auto shifted_command = msg.command;
+
+  if (shifted_command > 0U) {
+    shifted_command--;
+  }
+
+  m_lgsvl_state.set__headlight_state(shifted_command);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,6 +18,7 @@
 #ifndef JOYSTICK_VEHICLE_INTERFACE__JOYSTICK_VEHICLE_INTERFACE_HPP_
 #define JOYSTICK_VEHICLE_INTERFACE__JOYSTICK_VEHICLE_INTERFACE_HPP_
 
+#include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/high_level_control_command.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
@@ -85,6 +86,7 @@ static constexpr AxisValue DEFAULT_SCALE = 100.0F;
 static constexpr AxisValue DEFAULT_OFFSET = 0.0F;
 static constexpr AxisValue VELOCITY_INCREMENT = 1.0F;
 
+using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
 
 /// A core class which performs all basic functions which are not ROS-related for
@@ -104,7 +106,10 @@ public:
   T compute_command(const sensor_msgs::msg::Joy & msg);
   void reset_recordplay();
   const VehicleStateCommand & get_state_command();
+  const VehicleStateCommand & get_previous_state_command();
   const std_msgs::msg::UInt8 & get_recordreplay_command();
+  void update_headlights_state(
+    const autoware_auto_msgs::msg::HeadlightsCommand & headlights_cmd);
 
 private:
   /// Given an active button, update the state command
@@ -131,6 +136,7 @@ private:
   decltype(HighLevelControl::velocity_mps) m_velocity{};
 
   VehicleStateCommand m_state_command{};
+  VehicleStateCommand m_previous_state_command{};
   std_msgs::msg::UInt8 m_recordreplay_command{};
 };  // class JoystickVehicleInterface
 }  // namespace joystick_vehicle_interface

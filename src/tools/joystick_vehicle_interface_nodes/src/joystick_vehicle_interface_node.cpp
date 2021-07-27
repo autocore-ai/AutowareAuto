@@ -21,6 +21,8 @@
 #include <string>
 #include <type_traits>
 
+#include "autoware_auto_msgs/msg/headlights_command.hpp"
+
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 
@@ -115,6 +117,12 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
     "state_command",
     rclcpp::QoS{10U}.reliable().durability_volatile());
 
+  // Headlights commands
+  m_headlights_cmd_pub =
+    create_publisher<autoware_auto_msgs::msg::HeadlightsCommand>(
+    "headlights_command",
+    rclcpp::QoS{10U}.reliable().durability_volatile());
+
   // Recordreplay command
   if (recordreplay_command_enabled) {
     m_recordreplay_cmd_pub = create_publisher<std_msgs::msg::UInt8>("recordreplay_cmd", 10);
@@ -138,7 +146,10 @@ void JoystickVehicleInterfaceNode::on_joy(const sensor_msgs::msg::Joy::SharedPtr
 {
   // State command: modify state first
   if (m_core->update_state_command(*msg)) {
-    auto state_command = m_core->get_state_command();
+    auto & state_command = m_core->get_state_command();
+    autoware_auto_msgs::msg::HeadlightsCommand headlights_cmd;
+    headlights_cmd.command = state_command.headlight;
+    m_headlights_cmd_pub->publish(headlights_cmd);
     m_state_cmd_pub->publish(state_command);
   }
   // Command publish

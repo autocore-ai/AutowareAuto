@@ -45,6 +45,7 @@ protected:
     rclcpp::init(0, nullptr);
 
     node_ = std::make_shared<rclcpp::Node>("lgsvl_interface_test_node", "/gtest");
+
     lgsvl_interface_ = std::make_unique<lgsvl_interface::LgsvlInterface>(
       *node_,
       sim_ctrl_cmd_topic,

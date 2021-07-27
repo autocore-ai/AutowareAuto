@@ -130,7 +130,8 @@ bool8_t JoystickVehicleInterface::handle_active_button(Buttons button)
       m_autonomous = !m_autonomous;
       break;
     case Buttons::HEADLIGHTS_TOGGLE:
-      m_state_command.headlight = m_headlights_on ? VSC::HEADLIGHT_OFF : VSC::HEADLIGHT_ON;
+      m_state_command.headlight =
+        m_headlights_on ? HeadlightsCommand::DISABLE : HeadlightsCommand::ENABLE_LOW;
       m_headlights_on = !m_headlights_on;
       break;
     case Buttons::WIPER_TOGGLE:
@@ -194,6 +195,17 @@ void JoystickVehicleInterface::reset_recordplay()
 const VehicleStateCommand & JoystickVehicleInterface::get_state_command()
 {
   return m_state_command;
+}
+
+const VehicleStateCommand & JoystickVehicleInterface::get_previous_state_command()
+{
+  return m_previous_state_command;
+}
+
+void JoystickVehicleInterface::update_headlights_state(
+  const autoware_auto_msgs::msg::HeadlightsCommand & headlights_cmd)
+{
+  m_state_command.headlight = headlights_cmd.command;
 }
 
 const std_msgs::msg::UInt8 & JoystickVehicleInterface::get_recordreplay_command()

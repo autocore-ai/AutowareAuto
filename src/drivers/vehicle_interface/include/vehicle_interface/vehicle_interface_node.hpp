@@ -39,7 +39,9 @@
 #include <chrono>
 #include <exception>
 #include <memory>
+#include <map>
 #include <string>
+#include <unordered_set>
 
 namespace autoware
 {
@@ -47,7 +49,10 @@ namespace drivers
 {
 namespace vehicle_interface
 {
+
 using Real = decltype(BasicControlCommand::long_accel_mps2);
+using autoware_auto_msgs::msg::HeadlightsCommand;
+using autoware_auto_msgs::msg::HeadlightsReport;
 
 /// Convenience struct for construction
 struct TopicNumMatches
@@ -62,6 +67,11 @@ struct FilterConfig
   Real cutoff_frequency;
 };  // struct FilterConfig
 
+enum class ViFeature
+{
+  HEADLIGHTS
+};
+
 /// A node which receives commands and sends them to the vehicle platform, and publishes
 /// reports from the vehicle platform
 class VEHICLE_INTERFACE_PUBLIC VehicleInterfaceNode : public ::rclcpp::Node
@@ -69,9 +79,11 @@ class VEHICLE_INTERFACE_PUBLIC VehicleInterfaceNode : public ::rclcpp::Node
 public:
   /// ROS 2 parameter constructor
   /// \param[in] node_name The name for the node
+  /// \param[in] features Vector of features supported by this vehicle interface
   /// \param[in] options An rclcpp::NodeOptions object
   VehicleInterfaceNode(
     const std::string & node_name,
+    const std::unordered_set<ViFeature> & features,
     const rclcpp::NodeOptions & options);
 
 protected:
@@ -150,7 +162,10 @@ private:
   rclcpp::TimerBase::SharedPtr m_read_timer{nullptr};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleOdometry>::SharedPtr m_odom_pub{nullptr};
   rclcpp::Publisher<autoware_auto_msgs::msg::VehicleStateReport>::SharedPtr m_state_pub{nullptr};
-  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr m_state_sub{};
+  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleStateCommand>::SharedPtr
+    m_state_sub{nullptr};
+  rclcpp::Publisher<HeadlightsReport>::SharedPtr m_headlights_rpt_pub{nullptr};
+  rclcpp::Subscription<HeadlightsCommand>::SharedPtr m_headlights_cmd_sub{nullptr};
   rclcpp::Service<autoware_auto_msgs::srv::AutonomyModeChange>::SharedPtr m_mode_service{nullptr};
 
   using BasicSub = rclcpp::Subscription<BasicControlCommand>::SharedPtr;
@@ -167,6 +182,12 @@ private:
   std::chrono::system_clock::time_point m_last_command_stamp{};
   std::chrono::nanoseconds m_cycle_time{};
   MaybeStateCommand m_last_state_command{};
+
+  std::map<std::string, ViFeature> m_avail_features =
+  {
+    {"headlights", ViFeature::HEADLIGHTS}
+  };
+  std::unordered_set<ViFeature> m_enabled_features{};
 };  // class VehicleInterfaceNode
 
 }  // namespace vehicle_interface

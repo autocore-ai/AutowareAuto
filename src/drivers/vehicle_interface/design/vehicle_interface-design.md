@@ -170,7 +170,19 @@ As a node, the inputs are:
   - `HighLevelControlCommand`
 2. `VehicleStateCommand`
 
-The inputs are then:
+Additionally, each vehicle interface or specific vehile may support features which other vehicle
+interfaces or specific vehicles do not. To accommodate this, a list of features of type
+[autoware::drivers::vehicle_interface::ViFeature](@ref autoware::drivers::vehicle_interface::ViFeature)
+must be passed to the [VehicleInterfaceNode](@ref autoware::drivers::vehicle_interface::VehicleInterfaceNode)
+class. Adding a feature to this list indicates that the drive-by-wire or simulator interface
+supports this feature but doing so does not automatically enable the feature. To enable a feature,
+it must also be added to a `features` parameter when the node is configured. Adding a feature
+to the `features` parameter indicates that it is supported by the specific vehicle being used.
+A feature must be added to both the VehicleInterfaceNode child class and the `features` parameter
+for the publisher and subscriber for that feature to be enabled. See the [ViFeature](@ref autoware::drivers::vehicle_interface::ViFeature)
+enum for available features.
+
+The outputs are then:
 
 1. `VehicleOdometry`
 2. `VehicleStateReport`

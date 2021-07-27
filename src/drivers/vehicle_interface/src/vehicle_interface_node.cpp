@@ -21,6 +21,8 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <unordered_set>
+#include <vector>
 #include <utility>
 
 #include "vehicle_interface/vehicle_interface_node.hpp"
@@ -40,6 +42,7 @@ namespace vehicle_interface
 ////////////////////////////////////////////////////////////////////////////////
 VehicleInterfaceNode::VehicleInterfaceNode(
   const std::string & node_name,
+  const std::unordered_set<ViFeature> & features,
   const rclcpp::NodeOptions & options)
 : Node{node_name, options}
 {
@@ -92,6 +95,27 @@ VehicleInterfaceNode::VehicleInterfaceNode(
         get<float32_t>());
       return FilterConfig{type.template get<std::string>(), cutoff};
     };
+  // Check for enabled features
+  const auto feature_list_string = declare_parameter("features");
+
+  if (feature_list_string.get_type() != rclcpp::PARAMETER_NOT_SET) {
+    for (const auto & feature : feature_list_string.template get<std::vector<std::string>>()) {
+      const auto found_feature = m_avail_features.find(feature);
+
+      if (found_feature == m_avail_features.end()) {
+        throw std::domain_error{"Provided feature not found in list of available features"};
+      }
+
+      const auto supported_feature = features.find(found_feature->second);
+
+      if (supported_feature == features.end()) {
+        throw std::domain_error{"Provided feature not found in list of supported features"};
+      }
+
+      m_enabled_features.insert(*supported_feature);
+    }
+  }
+
   // Actually init
   init(
     topic_num_matches_from_param("control_command"),
@@ -253,6 +277,17 @@ void VehicleInterfaceNode::init(
   m_state_sub = create_subscription<VSC>(
     state_command.topic, rclcpp::QoS{10U},
     [this](VSC::SharedPtr msg) {m_last_state_command = *msg;});
+
+  // Feature subscriptions/publishers
+  if (m_enabled_features.find(ViFeature::HEADLIGHTS) != m_enabled_features.end()) {
+    m_headlights_rpt_pub = create_publisher<autoware_auto_msgs::msg::HeadlightsReport>(
+      "headlights_report", rclcpp::QoS{10U});
+    m_headlights_cmd_sub = create_subscription<autoware_auto_msgs::msg::HeadlightsCommand>(
+      "headlights_command", rclcpp::QoS{10U},
+      [this](autoware_auto_msgs::msg::HeadlightsCommand::SharedPtr msg)
+      {m_interface->send_headlights_command(*msg);});
+  }
+
   // State machine boilerplate for better errors
   const auto state_machine = [&state_machine_config]() -> auto {
       if (!state_machine_config) {
@@ -370,6 +405,12 @@ void VehicleInterfaceNode::read_and_publish()
   // Publish data from interface
   m_odom_pub->publish(m_interface->get_odometry());
   m_state_pub->publish(m_interface->get_state_report());
+
+  // Publish feature reports
+  if (m_headlights_rpt_pub) {
+    m_headlights_rpt_pub->publish(m_interface->get_headlights_report());
+  }
+
   // Update
   if (m_state_machine) {
     m_state_machine->update(m_interface->get_odometry(), m_interface->get_state_report());

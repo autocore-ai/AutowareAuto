@@ -20,6 +20,7 @@
 
 #include <lgsvl_interface/visibility_control.hpp>
 
+#include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
@@ -118,6 +119,8 @@ public:
   /// Respond to request for changing autonomy mode. For LGSVL, this means nothing.
   bool handle_mode_change_request(
     autoware_auto_msgs::srv::AutonomyModeChange_Request::SharedPtr request) override;
+  /// Send headlights command data.
+  void send_headlights_command(const autoware_auto_msgs::msg::HeadlightsCommand & msg) override;
 
 private:
   // Mappings from Autoware to LGSVL values
@@ -137,6 +140,7 @@ private:
     m_kinematic_state_pub{};
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_pub{};
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr m_pose_pub{};
+
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_nav_odom_sub{};
   rclcpp::Subscription<lgsvl_msgs::msg::CanBusData>::SharedPtr m_state_sub{};
   rclcpp::Subscription<lgsvl_msgs::msg::VehicleOdometry>::SharedPtr m_veh_odom_sub{};
@@ -155,6 +159,8 @@ private:
 
   bool m_odom_set{false};  // TODO(c.ho) this should be optional<Vector3>
   geometry_msgs::msg::Vector3 m_odom_zero{};
+
+  lgsvl_msgs::msg::VehicleStateData m_lgsvl_state{};
 
   rclcpp::Logger m_logger;
 };  // class LgsvlInterface

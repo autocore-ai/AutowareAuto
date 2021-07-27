@@ -19,6 +19,7 @@
 #define VEHICLE_INTERFACE__SAFETY_STATE_MACHINE_HPP_
 
 #include <common/types.hpp>
+#include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
@@ -38,6 +39,7 @@ namespace drivers
 {
 namespace vehicle_interface
 {
+using autoware_auto_msgs::msg::HeadlightsCommand;
 using MaybeStateCommand = std::experimental::optional<autoware_auto_msgs::msg::VehicleStateCommand>;
 using BasicControlCommand = autoware_auto_msgs::msg::VehicleControlCommand;
 using Odometry = autoware_auto_msgs::msg::VehicleOdometry;
@@ -208,7 +210,7 @@ private:
     ValueStamp<decltype(VSC::gear)> gear;
     ValueStamp<decltype(VSC::blinker)> blinker;
     ValueStamp<decltype(VSC::wiper)> wiper;
-    ValueStamp<decltype(VSC::headlight)> headlight;
+    ValueStamp<decltype(HeadlightsCommand::command)> headlight;
     ValueStamp<decltype(VSC::mode)> mode;
     ValueStamp<decltype(VSC::hand_brake)> hand_brake;
     ValueStamp<decltype(VSC::horn)> horn;

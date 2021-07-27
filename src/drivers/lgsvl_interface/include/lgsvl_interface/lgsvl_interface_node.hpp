@@ -25,6 +25,8 @@
 #include <chrono>
 #include <string>
 
+#include "autoware_auto_msgs/msg/headlights_report.hpp"
+
 namespace lgsvl_interface
 {
 

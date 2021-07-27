@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "lgsvl_interface/lgsvl_interface_node.hpp"
@@ -25,13 +26,18 @@
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
+using autoware::drivers::vehicle_interface::ViFeature;
 
 namespace lgsvl_interface
 {
 
 LgsvlInterfaceNode::LgsvlInterfaceNode(
   const rclcpp::NodeOptions & options)
-: VehicleInterfaceNode{"lgsvl_interface", options}
+: VehicleInterfaceNode{
+    "lgsvl_interface",
+    std::unordered_set<ViFeature> {ViFeature::HEADLIGHTS},
+    options
+}
 {
   const auto sim_ctrl_cmd_topic = "vehicle_control_cmd";
   const auto sim_state_cmd_topic = "vehicle_state_cmd";

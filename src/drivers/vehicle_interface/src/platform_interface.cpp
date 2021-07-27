@@ -15,6 +15,8 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 #include "vehicle_interface/platform_interface.hpp"
 
+#include "autoware_auto_msgs/msg/headlights_command.hpp"
+
 namespace autoware
 {
 namespace drivers
@@ -34,15 +36,33 @@ const autoware_auto_msgs::msg::VehicleOdometry & PlatformInterface::get_odometry
 
 autoware_auto_msgs::msg::VehicleStateReport & PlatformInterface::state_report() noexcept
 {
-  //lint -e{1536} This is an active design choice to not make getters and setters pure virtual NOLINT
   return m_state_report;
+}
+
+const autoware_auto_msgs::msg::HeadlightsReport &
+PlatformInterface::get_headlights_report() const noexcept
+{
+  return m_headlights_report;
 }
 
 autoware_auto_msgs::msg::VehicleOdometry & PlatformInterface::odometry() noexcept
 {
-  //lint -e{1536} This is an active design choice to not make getters and setters pure virtual NOLINT
   return m_odometry;
 }
+
+autoware_auto_msgs::msg::HeadlightsReport & PlatformInterface::headlights_report() noexcept
+{
+  return m_headlights_report;
+}
+
+
+void PlatformInterface::send_headlights_command(
+  const autoware_auto_msgs::msg::HeadlightsCommand & msg)
+{
+  (void)msg;
+  throw std::runtime_error("HeadlightsCommand not supported by this vehicle interface");
+}
+
 }  // namespace vehicle_interface
 }  // namespace drivers
 }  // namespace autoware

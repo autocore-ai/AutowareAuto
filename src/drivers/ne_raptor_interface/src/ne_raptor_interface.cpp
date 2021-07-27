@@ -255,31 +255,6 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       break;
   }
 
-  switch (msg.headlight) {
-    case VehicleStateCommand::HEADLIGHT_NO_COMMAND:
-      // Keep previous
-      break;
-    case VehicleStateCommand::HEADLIGHT_OFF:
-      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
-      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
-      break;
-    case VehicleStateCommand::HEADLIGHT_ON:
-      m_misc_cmd.low_beam_cmd.status = LowBeam::ON;
-      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
-      break;
-    case VehicleStateCommand::HEADLIGHT_HIGH:
-      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
-      m_misc_cmd.high_beam_cmd.status = HighBeam::ON;
-      break;
-    default:
-      // Keep previous
-      RCLCPP_ERROR_THROTTLE(
-        m_logger, m_clock, CLOCK_1_SEC,
-        "Received command for invalid headlight state.");
-      ret = false;
-      break;
-  }
-
   switch (msg.wiper) {
     case VehicleStateCommand::WIPER_NO_COMMAND:
       // Keep previous
@@ -454,6 +429,33 @@ bool8_t NERaptorInterface::handle_mode_change_request(ModeChangeRequest::SharedP
     ret = false;
   }
   return ret;
+}
+
+void NERaptorInterface::send_headlights_command(const HeadlightsCommand & msg)
+{
+  switch (msg.command) {
+    case HeadlightsCommand::NO_COMMAND:
+      // Keep previous
+      break;
+    case HeadlightsCommand::DISABLE:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
+      break;
+    case HeadlightsCommand::ENABLE_LOW:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::ON;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::OFF;
+      break;
+    case HeadlightsCommand::ENABLE_HIGH:
+      m_misc_cmd.low_beam_cmd.status = LowBeam::OFF;
+      m_misc_cmd.high_beam_cmd.status = HighBeam::ON;
+      break;
+    default:
+      // Keep previous
+      RCLCPP_ERROR_THROTTLE(
+        m_logger, m_clock, CLOCK_1_SEC,
+        "Received command for invalid headlight state.");
+      break;
+  }
 }
 
 void NERaptorInterface::on_brake_report(const BrakeReport::SharedPtr & msg)

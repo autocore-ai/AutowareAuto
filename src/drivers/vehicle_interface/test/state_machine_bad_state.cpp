@@ -61,7 +61,7 @@ protected:
           break;
         case State::HEADLIGHT:
           ret.headlight = bad_val;
-          // ASSERT_GT(bad_val, VSC::HEADLIGHT_HIGH);
+          // ASSERT_GT(bad_val, HeadlightsCommand::ENABLE_HIGH);
           break;
         case State::MODE:
           ret.mode = bad_val;
@@ -103,7 +103,7 @@ TEST_P(bad_state_command, basic)
   EXPECT_TRUE(check(cmd.state()->wiper, state.wiper, VSC::WIPER_CLEAN));
   EXPECT_TRUE(check(cmd.state()->mode, state.mode, VSC::MODE_MANUAL));
   EXPECT_TRUE(check(cmd.state()->blinker, state.blinker, VSC::BLINKER_HAZARD));
-  EXPECT_TRUE(check(cmd.state()->headlight, state.headlight, VSC::HEADLIGHT_HIGH));
+  EXPECT_TRUE(check(cmd.state()->headlight, state.headlight, HeadlightsCommand::ENABLE_HIGH));
   EXPECT_TRUE(check(cmd.state()->gear, state.gear, VSC::GEAR_NEUTRAL));
 }
 

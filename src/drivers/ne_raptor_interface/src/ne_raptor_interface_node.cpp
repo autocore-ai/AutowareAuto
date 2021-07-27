@@ -19,16 +19,22 @@
 
 #include <memory>
 #include <string>
-
-using autoware::common::types::float32_t;
+#include <unordered_set>
 
 namespace autoware
 {
 namespace ne_raptor_interface
 {
 
+using autoware::common::types::float32_t;
+using autoware::drivers::vehicle_interface::ViFeature;
+
 NERaptorInterfaceNode::NERaptorInterfaceNode(const rclcpp::NodeOptions & options)
-: VehicleInterfaceNode{"ne_raptor_interface", options}
+: VehicleInterfaceNode{
+    "ne_raptor_interface",
+    std::unordered_set<ViFeature> {ViFeature::HEADLIGHTS},
+    options
+}
 {
   set_interface(
     std::make_unique<NERaptorInterface>(
