@@ -16,7 +16,7 @@ Start simulation as described in @ref lgsvl.
 Additionally, to configure LGSVL for this demonstration:
 
 1. Maps: use this [map link](https://assets.dev.lgsvlsimulator.com/d5b8bb0b7f49875a8a4bbf83c50b3a4fe53779c7/environment_AutonomouStuff)
-2. Vehicles: Select `ROS2 native` bridge type and paste the content of `AutowareAuto/lgsvl-sensors.json` into the `Sensors` text box
+2. Vehicles: Select `ROS2 native` bridge type and paste the content of `AutowareAuto/src/tools/autoware_demos/config/svl/avp-sensors.json` into the `Sensors` text box
 3. Simulations: In `General` tab, `Select Cluster = Local Machine` and untick any boxes.
 In `Map & Vehicles` tab, ensure to untick `Run simulation in interactive mode`.
 In `Traffic` tab, untick all selection.

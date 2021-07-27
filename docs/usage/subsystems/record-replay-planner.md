@@ -22,7 +22,7 @@ If running outside of ADE, replace `source /opt/AutowareAuto/setup.bash` with `s
 - In a new terminal:
 ```{bash}
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo recordreplay_planner_demo.launch.py
+ade$ ros2 launch autoware_demos recordreplay_planner_demo.launch.py
 ```
 
 In `rviz`, locate the spawn point of the vehicle in the AutonomouStuff parking lot map using the point cloud as a reference.
@@ -54,6 +54,6 @@ ade$ ros2 action send_goal /planning/replaytrajectory autoware_auto_msgs/action/
 ```
 
 When the vehicle reaches to the goal of the replayed trajectory, the planner stops automatically and outputs `status::SUCCEED` to the terminal in which you ran the `ros2 action send_goal` command.
-You can modify end conditions by tuning parameters in [recordreplay_planner.param.yaml](src/tools/autoware_auto_avp_demo/param/recordreplay_planner.param.yaml). The planner terminates planning when both of the following conditions are satisfied:
+You can modify end conditions by tuning parameters in [recordreplay_planner.param.yaml](src/tools/autoware_demos/param/recordreplay_planner.param.yaml). The planner terminates planning when both of the following conditions are satisfied:
 * goal_distance_threshold_m: threshold for the distance between `nav_base` frame and the last point in the replayed trajectory
 * goal_angle_threshold_rad: threshold for the heading angle between `nav_base` frame and the last point in the replayed trajectory

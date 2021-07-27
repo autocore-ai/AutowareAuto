@@ -33,7 +33,7 @@ To run this demo, the following inputs are needed:
 - A point-cloud map of a car park, for localization.
 - An [HDMap (vector map)](@ref lanelet2-map-for-autoware-auto) of a car park, for navigation.
 
-If @ref lgsvl is set up as explained, these two components should be available out of the box in simulation under `/opt/AutowareAuto/share/autoware_auto_avp_demo/data`.
+If @ref lgsvl is set up as explained, these two components should be available out of the box in simulation under `/opt/AutowareAuto/share/autoware_demos/data`.
 
 # Simulation {#avpdemo-simulation}
 
@@ -74,15 +74,15 @@ Open a new **terminal 2**, either in the same ADE instance or in a new ADE insta
 ```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
+ade$ ros2 launch autoware_demos avp_sim.launch.py
 ```
 Alternatively, if the source code has been modified locally, first build, then launch:
 ```{bash}
 $ ade enter
 ade$ cd AutowareAuto
-ade$ colcon build --packages-up-to autoware_auto_avp_demo
+ade$ colcon build --packages-up-to autoware_demos
 ade$ source install/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms3_sim.launch.py
+ade$ ros2 launch autoware_demos avp_sim.launch.py
 ```
 
 To interrupt the launched processes, hit `Ctrl c`. Turning the simulation off while building can save compute resources to accelerate the build.
@@ -254,8 +254,8 @@ Using the hardware that is defined in the Physical Demo section above, the demon
 
 To run the demonstration on a physical vehicle using your own maps:
 
-1. Replace the paths to the `.pcd` and `.yaml` files for the PCD map in the `src/tools/autoware_auto_avp_demo/param/map_publisher_vehicle.param.yaml` with paths to your own map files.
-2. Replace the path to the `.osm` file for the Lanelet2 map in the `src/tools/autoware_auto_avp_demo/param/lanelet2_map_provider.param.yaml` with the path to your own map file.
+1. Replace the paths to the `.pcd` and `.yaml` files for the PCD map in the `src/tools/autoware_demos/param/map_publisher_vehicle.param.yaml` with paths to your own map files.
+2. Replace the path to the `.osm` file for the Lanelet2 map in the `src/tools/autoware_demos/param/lanelet2_map_provider.param.yaml` with the path to your own map file.
 
 Whether using your own maps or the existing ones:
 
@@ -264,7 +264,7 @@ Whether using your own maps or the existing ones:
 ```{bash}
 $ ade enter
 ade$ source /opt/AutowareAuto/setup.bash
-ade$ ros2 launch autoware_auto_avp_demo ms3_vehicle.launch.py
+ade$ ros2 launch autoware_demos avp_vehicle.launch.py
 ```
 3. In another terminal, Launch RViz2 for visualization.
 ```{bash}
@@ -277,8 +277,3 @@ ade$ ros2 launch autoware_auto_launch autoware_auto_visualization.launch.py
 The system architecture that was developed to address the AVP ODD in Autoware.Auto is given below:
 
 ![Autoware.Auto AVP Architecture](images/AVP_Architecture.png)
-
-
-# Related packages
-
-- @subpage avp-demo-package-design

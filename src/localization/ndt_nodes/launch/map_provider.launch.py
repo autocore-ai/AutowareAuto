@@ -25,11 +25,11 @@ import launch_ros.actions
 
 def generate_launch_description():
 
-    map_data_prefix = get_package_share_directory('autoware_auto_avp_demo')
+    map_data_prefix = get_package_share_directory('autoware_demos')
 
     # map_provider parameter file definition
     ndt_map_provider_file_path = os.path.join(
-        map_data_prefix,
+        get_package_share_directory('autoware_auto_launch'),
         "param",
         "map_publisher.param.yaml")
     map_provider_param_file = LaunchConfiguration(

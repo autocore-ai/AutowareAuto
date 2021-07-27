@@ -44,9 +44,9 @@ def generate_launch_description():
         package_name='point_cloud_filter_transform_nodes',
         file_name='param/vlp16_sim_lexus_filter_transform.param.yaml')
     ray_ground_classifier_param_file = get_share_file(
-        package_name='autoware_auto_avp_demo', file_name='param/ray_ground_classifier.param.yaml')
+        package_name='autoware_auto_launch', file_name='param/ray_ground_classifier.param.yaml')
     euclidean_cluster_param_file = get_share_file(
-        package_name='autoware_auto_avp_demo', file_name='param/euclidean_cluster.param.yaml')
+        package_name='autoware_auto_launch', file_name='param/euclidean_cluster.param.yaml')
     mpc_controller_param_file = get_share_file(
         package_name='test_trajectory_following', file_name='param/mpc_controller.param.yaml')
     rviz_cfg_path = get_share_file(

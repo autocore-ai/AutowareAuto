@@ -11,6 +11,7 @@ visualization tools and interfaces for debugging.
 
 - @subpage autoware_auto_create_pkg-package-design
 - @subpage autoware-auto-launch-package-design
+- @subpage autoware-demos-package-design
 - @subpage autoware_testing-package-design
 - @subpage avp_web_interface-package-design
 - @subpage benchmark-tool-nodes-design
