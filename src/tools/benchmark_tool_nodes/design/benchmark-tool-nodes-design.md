@@ -161,6 +161,8 @@ List of supported nodes and how to launch them:
   - `ros2 launch benchmark_tool_nodes euclidean_cluster_node_benchmark.launch.py`
 - ray_ground_classifier_nodes
   - `ros2 launch benchmark_tool_nodes ray_ground_classifier_benchmark.launch.py`
+- ray_ground_classifier_euclidean_cluster_nodes
+  - `ros2 launch benchmark_tool_nodes ray_ground_classifier_euclidean_cluster_node_benchmark.launch.py`
 - ndt_matching [1]
   - `ros2 launch benchmark_tool_nodes lidar_localization_benchmark.launch.py`
 
