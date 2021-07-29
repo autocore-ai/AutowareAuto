@@ -34,6 +34,7 @@ set(TRACKING_LIB_SRC
   src/data_association.cpp
   src/multi_object_tracker.cpp
   src/tracked_object.cpp
+  src/projection.cpp
 )
 
 set(TRACKING_LIB_HEADERS
@@ -61,6 +62,7 @@ if(BUILD_TESTING)
   # Unit tests
   set(TEST_SOURCES
     test/test_data_association.cpp
+    test/test_projection.cpp
     test/test_multi_object_tracker.cpp
     test/test_tracked_object.cpp
   )
