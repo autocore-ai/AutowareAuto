@@ -32,7 +32,7 @@ class AssociationTester : public testing::Test
 {
 protected:
   AssociationTester()
-  : m_association_cfg(10.0F, 2.0F),
+  : m_association_cfg(10.0F, 2.0F, true),
     m_associator(m_association_cfg)
   {
     // just set x and y fields of the covariance since only that is used in the associator

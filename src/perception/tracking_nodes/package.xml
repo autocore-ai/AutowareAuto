@@ -13,8 +13,11 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>autoware_auto_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>message_filters</depend>
+  <depend>mpark_variant_vendor</depend>
+  <depend>time_utils</depend>
 
   <!-- TODO(nikolai.morin): See #1059 -->
   <build_depend>eigen</build_depend>

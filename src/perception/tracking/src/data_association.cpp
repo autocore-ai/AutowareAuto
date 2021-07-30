@@ -20,6 +20,7 @@
 #include <geometry/common_2d.hpp>
 #include <helper_functions/mahalanobis_distance.hpp>
 
+#include <algorithm>
 #include <limits>
 #include <vector>
 
@@ -32,14 +33,17 @@ namespace tracking
 
 using autoware::common::state_vector::variable::X;
 using autoware::common::state_vector::variable::Y;
+using autoware::common::types::float32_t;
 
 constexpr std::size_t AssociatorResult::UNASSIGNED;
 
 DataAssociationConfig::DataAssociationConfig(
-  const float max_distance,
-  const float max_area_ratio)
+  const float32_t max_distance,
+  const float32_t max_area_ratio,
+  const bool consider_edge_for_big_detections)
 : m_max_distance(max_distance), m_max_distance_squared(max_distance * max_distance),
-  m_max_area_ratio(max_area_ratio), m_max_area_ratio_inv(1.F / max_area_ratio) {}
+  m_max_area_ratio(max_area_ratio), m_max_area_ratio_inv(1.F / max_area_ratio),
+  m_consider_edge_for_big_detections(consider_edge_for_big_detections) {}
 
 Associator::Associator(const DataAssociationConfig & association_cfg)
 : m_association_cfg(association_cfg) {}
@@ -75,6 +79,8 @@ void Associator::reset()
 
   m_num_tracks = 0U;
   m_num_detections = 0U;
+
+  m_had_errors = false;
 }
 
 void Associator::compute_weights(
@@ -86,21 +92,27 @@ void Associator::compute_weights(
       const auto & track = tracks[track_idx];
       const auto & detection = detections.objects[det_idx];
 
-      if (consider_associating(detection, track)) {
-        Eigen::Matrix<float, NUM_OBJ_POSE_DIM, 1> sample;
-        sample(0, 0) = static_cast<float>(detection.kinematics.centroid_position.x);
-        sample(1, 0) = static_cast<float>(detection.kinematics.centroid_position.y);
+      try {
+        if (consider_associating(detection, track)) {
+          Eigen::Matrix<float32_t, NUM_OBJ_POSE_DIM, 1> sample;
+          sample(0, 0) = static_cast<float32_t>(detection.kinematics.centroid_position.x);
+          sample(1, 0) = static_cast<float32_t>(detection.kinematics.centroid_position.y);
 
-        Eigen::Matrix<float, NUM_OBJ_POSE_DIM, 1> mean(NUM_OBJ_POSE_DIM, 1U);
-        mean = track.centroid().cast<float>();
+          Eigen::Matrix<float32_t, NUM_OBJ_POSE_DIM,
+            1> mean{track.centroid().cast<float32_t>()};
 
-        Eigen::Matrix<float, NUM_OBJ_POSE_DIM,
-          NUM_OBJ_POSE_DIM> cov = track.position_covariance().cast<float>();
+          Eigen::Matrix<float32_t, NUM_OBJ_POSE_DIM,
+            NUM_OBJ_POSE_DIM> cov = track.position_covariance().cast<float32_t>();
 
-        const auto dist = autoware::common::helper_functions::calculate_mahalanobis_distance(
-          sample, mean, cov);
+          const auto dist = autoware::common::helper_functions::calculate_mahalanobis_distance(
+            sample, mean, cov);
 
-        set_weight(dist, det_idx, track_idx);
+          set_weight(dist, det_idx, track_idx);
+        }
+      } catch (const std::runtime_error & e) {
+        m_had_errors = true;
+      } catch (const std::domain_error & e) {
+        m_had_errors = true;
       }
     }
   }
@@ -110,22 +122,25 @@ bool Associator::consider_associating(
   const autoware_auto_msgs::msg::DetectedObject & detection,
   const TrackedObject & track) const
 {
-  const auto squared_distance_2d = [](const geometry_msgs::msg::Point & p1, const
-      geometry_msgs::msg::Point & p2) -> float {
-      return static_cast<float>((
-               (p1.x - p2.x) *
-               (p1.x - p2.x)) + (
-               (p1.y - p2.y) *
-               (p1.y - p2.y)));
+  const auto get_shortest_edge_size_squared = [&]() -> float32_t {
+      float32_t retval = std::numeric_limits<float32_t>::max();
+      for (auto current = detection.shape.polygon.points.begin();
+        current != detection.shape.polygon.points.end(); ++current)
+      {
+        auto next = common::geometry::details::circular_next(
+          detection.shape.polygon.points.begin(), detection.shape.polygon.points.end(), current);
+        retval = std::min(retval, common::geometry::squared_distance_2d(*current, *next));
+      }
+      return retval;
     };
 
-  const float det_area = common::geometry::area_checked_2d(
+  const float32_t det_area = common::geometry::area_checked_2d(
     detection.shape.polygon.points.begin(), detection.shape.polygon.points.end());
-  // TODO(gowtham.ranganathan): Add support for articulated objects
 
-  const float track_area = common::geometry::area_checked_2d(
+  // TODO(gowtham.ranganathan): Add support for articulated objects
+  const float32_t track_area = common::geometry::area_checked_2d(
     track.shape().polygon.points.begin(), track.shape().polygon.points.end());
-  static constexpr float kAreaEps = 1e-3F;
+  static constexpr float32_t kAreaEps = 1e-3F;
 
   if (common::helper_functions::comparisons::abs_eq_zero(det_area, kAreaEps) ||
     common::helper_functions::comparisons::abs_eq_zero(track_area, kAreaEps))
@@ -133,16 +148,25 @@ bool Associator::consider_associating(
     throw std::runtime_error("Detection or track area is zero");
   }
 
-  const float area_ratio = det_area / track_area;
+  const float32_t area_ratio = det_area / track_area;
 
   geometry_msgs::msg::Point track_centroid{};
   track_centroid.x = track.centroid().x();
   track_centroid.y = track.centroid().y();
 
-  if (squared_distance_2d(
+  const auto compute_distance_threshold = [&get_shortest_edge_size_squared, this]() -> float32_t {
+      if (m_association_cfg.consider_edge_for_big_detections()) {
+        return std::max(
+          m_association_cfg.get_max_distance_squared(),
+          get_shortest_edge_size_squared());
+      } else {
+        return m_association_cfg.get_max_distance_squared();
+      }
+    };
+
+  if (common::geometry::squared_distance_2d(
       detection.kinematics.centroid_position,
-      track_centroid) >
-    m_association_cfg.get_max_distance_squared())
+      track_centroid) > compute_distance_threshold())
   {
     return false;
   }
@@ -155,7 +179,7 @@ bool Associator::consider_associating(
   return false;
 }
 
-void Associator::set_weight(const float weight, const size_t det_idx, const size_t track_idx)
+void Associator::set_weight(const float32_t weight, const size_t det_idx, const size_t track_idx)
 {
   if (m_are_tracks_rows) {
     m_assigner.set_weight(

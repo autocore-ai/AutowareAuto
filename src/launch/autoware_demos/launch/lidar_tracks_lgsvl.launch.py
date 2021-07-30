@@ -19,7 +19,11 @@ import os
 from ament_index_python import get_package_share_directory
 import launch.substitutions
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
 from launch.actions import Shutdown
+from launch.conditions import IfCondition
+from launch.conditions import LaunchConfigurationEquals
+from launch.substitutions import LaunchConfiguration
 
 
 def get_param_file(package_name, file_name):
@@ -33,6 +37,13 @@ def get_param_file(package_name, file_name):
 
 
 def generate_launch_description():
+    use_ndt = DeclareLaunchArgument(
+        'use_ndt',
+        default_value='True',
+        description='Set this to "False" to use Ground truth odometry instead of odom from NDT.'
+                    ' Note the option is case sensitive. Use only "True" or "False"'
+    )
+
     covariance_insertion = Node(
         executable='covariance_insertion_node_exe',
         name='covariance_insertion',
@@ -45,7 +56,9 @@ def generate_launch_description():
         remappings=[
             ("messages", "/localization/ndt_pose"),
             ("messages_with_overriden_covariance", "ndt_pose_with_covariance")
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
     euclidean_clustering = Node(
         executable='euclidean_cluster_node_exe',
@@ -98,6 +111,10 @@ def generate_launch_description():
             {"lgsvl.publish_tf": True}  # Needed for RViz and NDT initialization
         ],
         remappings=[
+            ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
+            ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
+            ("state_report", "/lgsvl/state_report"),
+            ("state_report_out", "/vehicle/state_report"),
             ("gnss_odom", "/lgsvl/gnss_odom"),
             ("vehicle_odom", "/lgsvl/vehicle_odom")
         ])
@@ -111,20 +128,49 @@ def generate_launch_description():
         parameters=[
             get_param_file('autoware_demos',
                            'autoware_academy_demo/map_publisher.param.yaml')
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
-    multi_object_tracker = Node(
+    multi_object_tracker_using_lgsvl = Node(
         executable='multi_object_tracker_node_exe',
         name='multi_object_tracker',
         namespace='perception',
         on_exit=Shutdown(),
         package='tracking_nodes',
-        parameters=[get_param_file('autoware_demos',
-                                   'multi_object_tracker.param.yaml')],
+        parameters=[
+            get_param_file('autoware_demos', 'multi_object_tracker.param.yaml'),
+            {
+                'use_ndt': False,
+                'track_frame_id': "odom",
+            }
+        ],
+        remappings=[
+            ("detected_objects", "/lidars/lidar_detected_objects"),
+            ("odometry", "/vehicle/odom_pose")
+        ],
+        condition=LaunchConfigurationEquals('use_ndt', 'False')
+    )
+
+    multi_object_tracker_using_ndt = Node(
+        executable='multi_object_tracker_node_exe',
+        name='multi_object_tracker',
+        namespace='perception',
+        on_exit=Shutdown(),
+        package='tracking_nodes',
+        parameters=[
+            get_param_file('autoware_demos', 'multi_object_tracker.param.yaml'),
+            {
+                'use_ndt': True,
+                'track_frame_id': "map",
+            }
+        ],
         remappings=[
             ("detected_objects", "/lidars/lidar_detected_objects"),
             ("odometry", "/localization/odometry")
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
     ndt_localization = Node(
         executable='p2d_ndt_localizer_exe',
@@ -136,7 +182,9 @@ def generate_launch_description():
                                    'autoware_academy_demo/ndt_localizer.param.yaml')],
         remappings=[
             ("points_in", "/lidar_front/points_filtered_downsampled")
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
     pointcloud_fusion = Node(
         executable='pointcloud_fusion_node_exe',
@@ -150,7 +198,8 @@ def generate_launch_description():
             ("output_topic", "points_filtered"),
             ("input_topic1", "/lidar_front/points_filtered"),
             ("input_topic2", "/lidar_rear/points_filtered")
-        ])
+        ]
+    )
 
     ray_ground_classifier = Node(
         executable='ray_ground_classifier_cloud_node_exe',
@@ -162,7 +211,8 @@ def generate_launch_description():
                                    'vlp16_sim_lexus_ray_ground.param.yaml')],
         remappings=[
             ("points_in", "points_filtered")
-        ])
+        ]
+    )
 
     state_estimation = Node(
         executable='state_estimation_node_exe',
@@ -175,7 +225,9 @@ def generate_launch_description():
                                    'ndt_smoothing/tracking.param.yaml')],
         remappings=[
             ("filtered_state", "/localization/odometry"),
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
     # only the front lidar is used for localization and thus needs downsampling
     voxel_grid_downsampling = Node(
@@ -189,7 +241,9 @@ def generate_launch_description():
         remappings=[
             ("points_in", "points_filtered"),
             ("points_downsampled", "points_filtered_downsampled")
-        ])
+        ],
+        condition=IfCondition(LaunchConfiguration('use_ndt'))
+    )
 
     # Setup robot state publisher
     vehicle_description_pkg_path = get_package_share_directory(
@@ -217,13 +271,15 @@ def generate_launch_description():
         arguments=['-d', str(rviz_cfg_path)])
 
     return launch.LaunchDescription([
+        use_ndt,
         covariance_insertion,
         euclidean_clustering,
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
         lgsvl_interface,
         map_publisher,
-        multi_object_tracker,
+        multi_object_tracker_using_lgsvl,
+        multi_object_tracker_using_ndt,
         ndt_localization,
         pointcloud_fusion,
         ray_ground_classifier,

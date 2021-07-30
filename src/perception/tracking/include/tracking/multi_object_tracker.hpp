@@ -32,6 +32,7 @@
 #include "autoware_auto_msgs/msg/tracked_object.hpp"
 #include "autoware_auto_msgs/msg/tracked_objects.hpp"
 #include "common/types.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tracking/data_association.hpp"
 #include "tracking/tracked_object.hpp"

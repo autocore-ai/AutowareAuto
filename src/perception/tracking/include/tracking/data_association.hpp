@@ -17,6 +17,7 @@
 #include <tracking/visibility_control.hpp>
 
 #include <autoware_auto_msgs/msg/detected_objects.hpp>
+#include <common/types.hpp>
 #include <hungarian_assigner/hungarian_assigner.hpp>
 #include <tracking/tracker_types.hpp>
 #include <tracking/tracked_object.hpp>
@@ -44,21 +45,29 @@ public:
   ///                     considered for association with each other
   /// \param max_area_ratio Max ratio between a track and detection area beyond which they wont be
   ///                       considered for association with each other
-  DataAssociationConfig(const float max_distance, const float max_area_ratio);
+  /// \param consider_edge_for_big_detections When true, the shortest edge of the detection will
+  ///                                         be used as the max distance threshold if it is
+  ///                                         greater than the configured threshold
+  DataAssociationConfig(
+    const float32_t max_distance, const float32_t max_area_ratio,
+    const bool consider_edge_for_big_detections);
 
-  inline float get_max_distance() const {return m_max_distance;}
+  inline float32_t get_max_distance() const {return m_max_distance;}
 
-  inline float get_max_distance_squared() const {return m_max_distance_squared;}
+  inline float32_t get_max_distance_squared() const {return m_max_distance_squared;}
 
-  inline float get_max_area_ratio() const {return m_max_area_ratio;}
+  inline float32_t get_max_area_ratio() const {return m_max_area_ratio;}
 
-  inline float get_max_area_ratio_inv() const {return m_max_area_ratio_inv;}
+  inline float32_t get_max_area_ratio_inv() const {return m_max_area_ratio_inv;}
+
+  inline bool consider_edge_for_big_detections() const {return m_consider_edge_for_big_detections;}
 
 private:
-  float m_max_distance;
-  float m_max_distance_squared;
-  float m_max_area_ratio;
-  float m_max_area_ratio_inv;
+  float32_t m_max_distance;
+  float32_t m_max_distance_squared;
+  float32_t m_max_area_ratio;
+  float32_t m_max_area_ratio_inv;
+  bool m_consider_edge_for_big_detections;
 };
 
 /// \brief Struct to store results after the assignment is done
@@ -73,6 +82,8 @@ struct TRACKING_PUBLIC AssociatorResult
   std::vector<std::size_t> unassigned_detection_indices;
   /// \brief Indices of tracks that are not associated to any detections
   std::vector<std::size_t> unassigned_track_indices;
+  /// \brief Indicates if there were errors in the data during association
+  bool had_errors;
 };
 
 
@@ -108,7 +119,7 @@ private:
     const autoware_auto_msgs::msg::DetectedObject & detection, const TrackedObject & track) const;
 
   /// Set weight in the assigner (Has to determine which idx is row and which is column)
-  void set_weight(const float weight, const size_t det_idx, const size_t track_idx);
+  void set_weight(const float32_t weight, const size_t det_idx, const size_t track_idx);
 
   /// \brief Extract result from the assigner and populate the AssociatorResult container
   AssociatorResult extract_result() const;
@@ -119,6 +130,7 @@ private:
   bool m_are_tracks_rows;
   size_t m_num_tracks;
   size_t m_num_detections;
+  bool m_had_errors = false;
 };
 
 

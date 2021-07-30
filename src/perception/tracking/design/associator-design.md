@@ -37,6 +37,7 @@ have any corresponding association.
 ### Parameters:
 - Max area ratio between a track and its associated detection
 - Max euclidean distance allowed between a track and its associated detection
+- Boolean to control whether to use smallest side of detection as the threshold distance in cases where it is greater than the configured threshold distance
 
 ### Output
 - Associations between track and detections  

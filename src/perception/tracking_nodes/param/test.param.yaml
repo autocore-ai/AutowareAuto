@@ -8,6 +8,8 @@
     association_max_distance: 2.0
     # Gate parameter: Objects whose size differs by more than this factor are not matched.
     association_max_area_ratio: 2.5
+    # When true, the shortest edge of the detection will be used as the max distance threshold if it is greater than the configured threshold
+    association_consider_edge_for_big_detection: True
     # Time after which to remove unseen tracks.
     # Note also the pruning_ticks_threshold – only one threshold is necessary for removal.
     pruning_time_threshold_ms: 500

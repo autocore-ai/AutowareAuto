@@ -106,11 +106,9 @@ TrackerUpdateResult MultiObjectTracker::update(
   // Associate observations with tracks
   // ==================================
   AssociatorResult association;
-  try {
-    association = m_associator.assign(detections, this->m_objects);
-  } catch (const std::runtime_error & e) {
+  association = m_associator.assign(detections, this->m_objects);
+  if (association.had_errors) {
     result.status = TrackerUpdateStatus::InvalidShape;
-    return result;
   }
 
   // ==================================
@@ -157,6 +155,7 @@ TrackerUpdateResult MultiObjectTracker::update(
     std::make_unique<TrackedObjectsMsg>(this->convert_to_msg(detections.header.stamp));
   result.status = TrackerUpdateStatus::Ok;
   m_last_update = target_time;
+
   return result;
 }
 
