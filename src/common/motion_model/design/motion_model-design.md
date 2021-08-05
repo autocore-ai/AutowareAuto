@@ -37,6 +37,14 @@ would need to be specialized for a specific state.
 
 ## Inner-workings / Algorithm
 
+### Stationary Motion Model
+A stationary motion model implemented in `autoware::common::motion_model::StationaryMotionModel`
+class is a motion model that ensures that the state remains stationary, i.e., there is no change to
+the state.
+
+The Jacobian of this motion model is therefore a simple identity matrix of the size matching the
+state vector dimensionality.
+
 ### Linear Motion Model
 A linear motion model implemented in `autoware::common::motion_model::LinearMotionModel` class is a motion
 model that expects that all dimensions (e.g., variables `X`, `Y`, `Z`, see `common_variables.hpp`)

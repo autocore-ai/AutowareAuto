@@ -37,8 +37,9 @@ if(BUILD_TESTING)
 
   # gtest
   ament_add_gtest(${MOTION_MODEL_GTEST}
+                  test/test_differential_motion_model.cpp
                   test/test_linear_motion_model.cpp
-                  test/test_differential_motion_model.cpp)
+                  test/test_stationary_motion_model.cpp)
   autoware_set_compile_options(${MOTION_MODEL_GTEST})
   target_include_directories(${MOTION_MODEL_GTEST} PRIVATE "test/include" "include")
   target_link_libraries(${MOTION_MODEL_GTEST} ${PROJECT_NAME})
