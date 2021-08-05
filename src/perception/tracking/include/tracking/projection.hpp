@@ -38,7 +38,8 @@ namespace tracking
 {
 struct TRACKING_PUBLIC Projection
 {
-  std::list<Eigen::Vector3f> shape;
+  using Point = Eigen::Vector3f;
+  std::list<Point> shape{};
 };
 
 /// \brief Camera intrinsic parameters
@@ -58,9 +59,9 @@ struct CameraIntrinsics
 class TRACKING_PUBLIC CameraModel
 {
 public:
-  using Shape = autoware_auto_msgs::msg::Shape;
   using float32_t = common::types::float32_t;
   using Interval = common::geometry::Interval<float32_t>;
+  using Point = Eigen::Vector3f;
 
   /// \brief Cnstructor
   /// \param intrinsics Camera intrinsics
@@ -90,12 +91,12 @@ public:
 private:
   /// \brief Project a 3D point and return the value if the projection is valid (in fron of the
   // camera)
-  std::experimental::optional<Eigen::Vector3f> project_point(const Eigen::Vector3f & pt_3d);
+  std::experimental::optional<Point> project_point(const Point & pt_3d);
 
   Eigen::Transform<float32_t, 3, Eigen::Affine, Eigen::ColMajor> m_projector;
   Interval m_height_interval;
   Interval m_width_interval;
-  std::list<Eigen::Vector3f> m_corners;
+  std::list<Point> m_corners;
 };
 
 }  // namespace tracking

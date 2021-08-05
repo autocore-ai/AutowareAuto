@@ -16,6 +16,7 @@
 
 #include <tracking/projection.hpp>
 #include <tf2_eigen/tf2_eigen.h>
+#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <geometry/intersection.hpp>
 #include <geometry/common_2d.hpp>
 #include <algorithm>
@@ -55,8 +56,8 @@ CameraModel::CameraModel(
   m_projector = intrinsic_matrix * tf_camera_from_ego;
 }
 
-std::experimental::optional<Eigen::Vector3f>
-CameraModel::project_point(const Eigen::Vector3f & pt_3d)
+std::experimental::optional<CameraModel::Point>
+CameraModel::project_point(const Point & pt_3d)
 {
   // `m_projector * p_3d = p_2d * depth`
   const auto pt_2d = m_projector * pt_3d;
