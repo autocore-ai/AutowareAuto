@@ -47,7 +47,7 @@ def generate_launch_description():
     pc_filter_transform_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/avp/pc_filter_transform.param.yaml')
     vehicle_characteristics_param_file = os.path.join(
-        avp_demo_pkg_prefix, 'param/avp/vehicle_characteristics_sim.param.yaml')
+        avp_demo_pkg_prefix, 'param/vehicle_characteristics.param.yaml')
 
     urdf_pkg_prefix = get_package_share_directory('lexus_rx_450h_description')
     urdf_path = os.path.join(urdf_pkg_prefix, 'urdf/lexus_rx_450h.urdf')
