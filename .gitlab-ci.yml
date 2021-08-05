@@ -92,12 +92,6 @@ stages:
       '
     - 'source /opt/ros/$ROS_DISTRO/setup.bash'
     - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
-# Temporary Hack for Improving Build Speed
-# Remove when #1165 is complete
-    - 'rm -r src/external/tvm_vendor'
-    - 'curl -o ros-foxy-tvm-vendor_0.7.3-1focal_$ARCH.deb https://autoware-auto.s3.us-east-2.amazonaws.com/tmp/ros-foxy-tvm-vendor_0.7.3-1focal_$ARCH.deb'
-    - 'apt install -y ./ros-foxy-tvm-vendor*.deb'
-# End Temporary Hack for Improving BUild Speed
     - 'rosdep init && rosdep update'
     - 'rosdep install -y --from . --ignore-src --rosdistro $ROS_DISTRO'
     - 'source /opt/ros/$ROS_DISTRO/setup.bash'
@@ -123,12 +117,6 @@ stages:
     - 'git lfs install'
     - 'git lfs pull --include="*" --exclude=""'
     - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
-# Temporary Hack for Improving Build Speed
-# Remove when #1165 is complete
-    - 'rm -r src/external/tvm_vendor'
-    - 'curl -o ros-foxy-tvm-vendor_0.7.3-1focal_$ARCH.deb https://autoware-auto.s3.us-east-2.amazonaws.com/tmp/ros-foxy-tvm-vendor_0.7.3-1focal_$ARCH.deb'
-    - 'apt install -y ./ros-foxy-tvm-vendor*.deb'
-# End Temporary Hack for Improving BUild Speed
     # build and test
     - 'colcon build
            --merge-install
@@ -320,12 +308,6 @@ coverage:
     - 'git lfs install'
     - 'git lfs pull --include="*" --exclude=""'
     - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
-# Temporary Hack for Improving Build Speed
-# Remove when #1165 is complete
-    - 'rm -r src/external/tvm_vendor'
-    - 'curl -o ros-foxy-tvm-vendor_0.7.3-1focal_amd64.deb https://autoware-auto.s3.us-east-2.amazonaws.com/tmp/ros-foxy-tvm-vendor_0.7.3-1focal_amd64.deb'
-    - 'apt install -y ./ros-foxy-tvm-vendor*.deb'
-# End Temporary Hack for Improving BUild Speed
     - './tools/coverage/coverage.sh -u'
   after_script:
     - colcon test-result --verbose

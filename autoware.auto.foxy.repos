@@ -7,15 +7,3 @@ repositories:
     type: git
     url: https://github.com/RobotWebTools/rosbridge_suite.git
     version: 1a2c386455067b00a9e67fb70cc711add38c3582
-  src/external/point_cloud_msg_wrapper:
-    type: git
-    url: https://gitlab.com/ApexAI/point_cloud_msg_wrapper
-    version: 1.0.7
-  src/external/new_eagle_raptor:
-    type: git
-    url: https://github.com/NewEagleRaptor/raptor-dbw-ros2.git
-    version: foxy-1.1.1
-  src/external/tvm_vendor:
-    type: git
-    url: https://github.com/autowarefoundation/tvm_vendor/
-    version: fef2b164240720b0452d8a9524aaa1e8316eaf91
