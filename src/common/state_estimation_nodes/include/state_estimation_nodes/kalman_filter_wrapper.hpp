@@ -60,9 +60,8 @@ class STATE_ESTIMATION_NODES_PUBLIC KalmanFilterWrapper
     FilterT,
     PredictionEvent,
     ResetEvent<FilterT>,
-    Measurement2dPose32,
-    Measurement2dSpeed32,
-    Measurement2dPoseAndSpeed32>;
+    PoseMeasurementXYZ32,
+    PoseMeasurementXYZRPY32>;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -181,14 +180,7 @@ public:
   }
 
   /// Get the current state of the system as an odometry message.
-  inline nav_msgs::msg::Odometry get_state() const
-  {
-    static_assert(
-      sizeof(FilterT) == 0U,
-      "You have to have a specialization for get_state() function!");
-    // We only throw here because otherwise the linter complaints there is no return value.
-    throw std::runtime_error("You have to have a specialization for get_state() function!");
-  }
+  nav_msgs::msg::Odometry get_state() const;
 
 private:
   /// Initial covariance of the filter.
@@ -207,13 +199,11 @@ private:
   HistoryT m_history{};
 };
 
-using ConstantAccelerationFilterWrapper =
+using ConstantAccelerationFilterWrapperXY =
   KalmanFilterWrapper<ConstAccelerationKalmanFilterXY>;
 
-
-template<>
-nav_msgs::msg::Odometry STATE_ESTIMATION_NODES_PUBLIC
-ConstantAccelerationFilterWrapper::get_state() const;
+using ConstantAccelerationFilterWrapperXYZRPY =
+  KalmanFilterWrapper<ConstAccelerationKalmanFilterXYZRPY>;
 
 }  // namespace state_estimation
 }  // namespace common

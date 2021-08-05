@@ -25,8 +25,8 @@
 #include <mpark_variant_vendor/variant.hpp>
 #include <state_estimation_nodes/steady_time_grid.hpp>
 
-#include <Eigen/Core>
 #include <Eigen/Cholesky>
+#include <Eigen/Core>
 
 #include <chrono>
 #include <map>
@@ -109,7 +109,7 @@ class History
   ///
   class HistoryEntry;
   ///
-  /// @brief      A functor that handles upading the state. It is used with the variant stored
+  /// @brief      A functor that handles updating the state. It is used with the variant stored
   ///             within the HistoryEntry.
   ///
   class EkfStateUpdater;
@@ -198,15 +198,15 @@ public:
   }
   /// @brief      Get the stored state.
   const typename FilterT::State & stored_state() const noexcept {return m_stored_state;}
-  /// @brief      Set the covariance left factor to be stored there.
-  void update_stored_covariance_factor(const typename FilterT::State::Matrix & factor) noexcept
+  /// @brief      Set the stored covariance.
+  void update_stored_covariance(const typename FilterT::State::Matrix & covariance) noexcept
   {
-    m_stored_covariance_factor = factor;
+    m_stored_covariance = covariance;
   }
-  /// @brief      Get the stored covariance in the form of its left factor.
-  const typename FilterT::State::Matrix & stored_covariance_factor() const noexcept
+  /// @brief      Get the stored covariance.
+  const typename FilterT::State::Matrix & stored_covariance() const noexcept
   {
-    return m_stored_covariance_factor;
+    return m_stored_covariance;
   }
   /// @brief      Get the event stored in this history entry.
   const mpark::variant<EventT...> & event() const {return m_event;}
@@ -214,8 +214,8 @@ public:
 private:
   /// State stored in this entry.
   typename FilterT::State m_stored_state{};
-  /// Left covariance factor stored in this entry.
-  typename FilterT::State::Matrix m_stored_covariance_factor{FilterT::State::Matrix::Zero()};
+  /// Covariance stored in this entry.
+  typename FilterT::State::Matrix m_stored_covariance{FilterT::State::Matrix::Zero()};
   /// Event stored in this history entry.
   mpark::variant<EventT...> m_event;
 };
@@ -302,7 +302,7 @@ void History<FilterT, EventT...>::update_impacted_events(
     const auto & prev_entry = prev_iter->second;
     m_filter.reset(
       typename FilterT::State{prev_entry.stored_state()},
-      prev_entry.stored_covariance_factor());
+      prev_entry.stored_covariance());
   }
   for (auto iter = start_iter; iter != m_history.end(); ++iter) {
     const auto current_timestamp = iter->first;
@@ -311,7 +311,7 @@ void History<FilterT, EventT...>::update_impacted_events(
       EkfStateUpdater{m_filter, m_mahalanobis_threshold, current_timestamp - previous_timestamp},
       entry.event());
     entry.update_stored_state(m_filter.state());
-    entry.update_stored_covariance_factor(m_filter.covariance());
+    entry.update_stored_covariance(m_filter.covariance());
     previous_timestamp = iter->first;
   }
 }

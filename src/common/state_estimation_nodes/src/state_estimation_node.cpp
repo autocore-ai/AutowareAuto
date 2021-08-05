@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,14 +45,6 @@ constexpr float64_t kInvalidFrequency{-1.0};  // Frames per second.
 constexpr std::chrono::milliseconds kDefaultTimeBetweenUpdates{100LL};
 constexpr std::chrono::milliseconds kDefaultHistoryLength{5000LL};
 const char kDefaultOutputTopic[]{"filtered_state"};
-constexpr auto kCovarianceMatrixRows{6U};
-constexpr auto kIndexX{0U};
-constexpr auto kIndexY{kCovarianceMatrixRows + 1U};
-constexpr auto kCovarianceMatrixRowsSquared{kCovarianceMatrixRows * kCovarianceMatrixRows};
-static_assert(
-  std::tuple_size<
-    geometry_msgs::msg::PoseWithCovariance::_covariance_type>::value ==
-  kCovarianceMatrixRowsSquared, "We expect the covariance matrix to have 36 entries.");
 
 void assert_all_entries_positive(const std::vector<float64_t> & entries, const std::string & tag)
 {
@@ -90,17 +82,16 @@ Eigen::Matrix<float32_t, kStateDim, kStateDim> create_state_variances(
   const std::vector<float64_t> & state_variances)
 {
   if (state_variances.size() != static_cast<size_t>(kStateDim)) {
-    throw std::logic_error("State variances are of wrong size.");
+    throw std::logic_error(
+            "State variances are of wrong size. Read " +
+            std::to_string(state_variances.size()) + " values, but " +
+            std::to_string(kStateDim) + " values expected.");
   }
   assert_all_entries_positive(state_variances, "state_variances");
-  Eigen::Matrix<float32_t, kStateDim, 1> diagonal;
-  diagonal <<
-    static_cast<float32_t>(state_variances[0]),
-    static_cast<float32_t>(state_variances[1]),
-    static_cast<float32_t>(state_variances[2]),
-    static_cast<float32_t>(state_variances[3]),
-    static_cast<float32_t>(state_variances[4]),
-    static_cast<float32_t>(state_variances[5]);
+  Eigen::Matrix<float32_t, kStateDim, 1> diagonal = Eigen::Matrix<float32_t, kStateDim, 1>::Zero();
+  for (int i = 0; i < diagonal.size(); ++i) {
+    diagonal[i] = static_cast<float32_t>(state_variances[static_cast<std::size_t>(i)]);
+  }
   return diagonal.asDiagonal();
 }
 
@@ -137,11 +128,11 @@ StateEstimationNode::StateEstimationNode(
   const auto mahalanobis_threshold{
     declare_parameter("mahalanobis_threshold", std::numeric_limits<float32_t>::max())};
 
-  using State = ConstantAccelerationFilterWrapper::State;
-  m_ekf = std::make_unique<ConstantAccelerationFilterWrapper>(
+  using State = typename FilterWrapperT::State;
+  m_ekf = std::make_unique<FilterWrapperT>(
     common::motion_model::LinearMotionModel<State>{},
     common::state_estimation::make_wiener_noise<State>(acceleration_variances),
-    create_state_variances<6>(state_variances),
+    create_state_variances<State::size()>(state_variances),
     time_between_publish_requests,
     m_frame_id,
     kDefaultHistoryLength,
@@ -149,20 +140,14 @@ StateEstimationNode::StateEstimationNode(
 
 
   const std::vector<std::string> empty_vector{};
-  const auto input_odom_topics{declare_parameter("topics.input_odom", empty_vector)};
   const auto input_pose_topics{declare_parameter("topics.input_pose", empty_vector)};
-  const auto input_twist_topics{declare_parameter("topics.input_twist", empty_vector)};
   const auto input_relative_pos_topics{
     declare_parameter("topics.input_relative_pos", empty_vector)};
-  if (input_odom_topics.empty() && input_pose_topics.empty() && input_twist_topics.empty()) {
+  if (input_pose_topics.empty() && input_relative_pos_topics.empty()) {
     throw std::runtime_error("No input topics provided. Make sure to set these in the param file.");
   }
-  create_subscriptions<OdomMsgT>(
-    input_odom_topics, &m_odom_subscribers, &StateEstimationNode::odom_callback);
   create_subscriptions<PoseMsgT>(
     input_pose_topics, &m_pose_subscribers, &StateEstimationNode::pose_callback);
-  create_subscriptions<TwistMsgT>(
-    input_twist_topics, &m_twist_subscribers, &StateEstimationNode::twist_callback);
   create_subscriptions<RelativePosMsgT>(
     input_relative_pos_topics,
     &m_relative_pos_subscribers,
@@ -174,32 +159,6 @@ StateEstimationNode::StateEstimationNode(
   if (publish_ft) {
     m_tf_publisher = create_publisher<tf2_msgs::msg::TFMessage>("/tf", kDefaultHistory);
   }
-
-  m_min_speed_to_use_speed_orientation = declare_parameter(
-    "min_speed_to_use_speed_orientation", 0.0);
-}
-
-void StateEstimationNode::odom_callback(const OdomMsgT::SharedPtr msg)
-{
-  if ((msg->header.frame_id != m_frame_id) || (msg->child_frame_id != m_child_frame_id)) {
-    throw std::runtime_error("Odometry message frames don't match the expected ones.");
-  }
-  const auto measurement =
-    message_to_measurement<StampedMeasurement2dPoseAndSpeed64>(*msg);
-  if (m_ekf->is_initialized()) {
-    if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
-      throw std::runtime_error("Cannot add an odometry observation to history.");
-    }
-  } else {
-    m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
-  }
-  geometry_msgs::msg::QuaternionStamped orientation;
-  orientation.quaternion = msg->pose.pose.orientation;
-  orientation.header = msg->header;
-  update_latest_orientation_if_needed(orientation);
-  if (m_publish_data_driven && m_ekf->is_initialized()) {
-    publish_current_state();
-  }
 }
 
 void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
@@ -208,18 +167,14 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
     throw std::runtime_error("Pose message frames don't match the expected ones.");
   }
   const auto measurement =
-    message_to_measurement<StampedMeasurement2dPose64>(*msg);
+    convert_to<Stamped<PoseMeasurementXYZRPY64>>::from(*msg).cast<float32_t>();
   if (m_ekf->is_initialized()) {
-    if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
-      throw std::runtime_error("Cannot add an odometry observation to history.");
+    if (!m_ekf->add_observation_to_history(measurement)) {
+      throw std::runtime_error("Cannot add a pose observation to history.");
     }
   } else {
-    m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
+    m_ekf->add_reset_event_to_history(measurement);
   }
-  geometry_msgs::msg::QuaternionStamped orientation;
-  orientation.quaternion = msg->pose.pose.orientation;
-  orientation.header = msg->header;
-  update_latest_orientation_if_needed(orientation);
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
   }
@@ -227,39 +182,16 @@ void StateEstimationNode::pose_callback(const PoseMsgT::SharedPtr msg)
 
 void StateEstimationNode::relative_pos_callback(const RelativePosMsgT::SharedPtr msg)
 {
-  // TODO(#1076): once a motion model with orientation is used, this function can be merged with the
-  // pose_callback.
   if ((msg->header.frame_id != m_frame_id) || (msg->child_frame_id != m_child_frame_id)) {
     throw std::runtime_error("RelativePosition message frames don't match the expected ones.");
   }
-  const auto measurement = message_to_measurement<StampedMeasurement2dPose64>(*msg);
+  const auto measurement = convert_to<Stamped<PoseMeasurementXYZ64>>::from(*msg).cast<float32_t>();
   if (m_ekf->is_initialized()) {
-    if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
-      throw std::runtime_error("Cannot add an odometry observation to history.");
+    if (!m_ekf->add_observation_to_history(measurement)) {
+      throw std::runtime_error("Cannot add a relative pose observation to history.");
     }
   } else {
-    m_ekf->add_reset_event_to_history(measurement.cast<float32_t>());
-  }
-  if (m_publish_data_driven && m_ekf->is_initialized()) {
-    publish_current_state();
-  }
-}
-
-
-void StateEstimationNode::twist_callback(const TwistMsgT::SharedPtr msg)
-{
-  if (msg->header.frame_id != m_frame_id) {
-    throw std::runtime_error("Pose message frames don't match the expected ones.");
-  }
-  if (!m_ekf->is_initialized()) {
-    RCLCPP_WARN(
-      get_logger(),
-      "Received twist update, but ekf has not been initialized with any state yet. Skipping.");
-    return;
-  }
-  const auto measurement = message_to_measurement<StampedMeasurement2dSpeed64>(*msg);
-  if (!m_ekf->add_observation_to_history(measurement.cast<float32_t>())) {
-    throw std::runtime_error("Cannot add a twist observation to history.");
+    m_ekf->add_reset_event_to_history(measurement);
   }
   if (m_publish_data_driven && m_ekf->is_initialized()) {
     publish_current_state();
@@ -279,9 +211,6 @@ void StateEstimationNode::publish_current_state()
 {
   if (m_ekf->is_initialized() && m_publisher) {
     auto state = m_ekf->get_state();
-    if (state.twist.twist.linear.x < m_min_speed_to_use_speed_orientation) {
-      state.pose.pose.orientation = m_latest_orientation.quaternion;
-    }
     m_publisher->publish(state);
     if (m_tf_publisher) {
       TfMsgT tf_msg{};
@@ -298,16 +227,6 @@ void StateEstimationNode::publish_current_state()
   }
 }
 
-void StateEstimationNode::update_latest_orientation_if_needed(
-  const geometry_msgs::msg::QuaternionStamped & rotation)
-{
-  if (m_latest_orientation.header.stamp.sec > rotation.header.stamp.sec) {return;}
-  if (m_latest_orientation.header.stamp.sec == rotation.header.stamp.sec) {
-    if (m_latest_orientation.header.stamp.nanosec > rotation.header.stamp.nanosec) {return;}
-  }
-  m_latest_orientation = rotation;
-}
-
 template<typename MessageT>
 void StateEstimationNode::create_subscriptions(
   const std::vector<std::string> & input_topics,
@@ -322,18 +241,14 @@ void StateEstimationNode::create_subscriptions(
   }
 }
 
-template void StateEstimationNode::create_subscriptions<StateEstimationNode::OdomMsgT>(
-  const std::vector<std::string> &,
-  std::vector<rclcpp::Subscription<OdomMsgT>::SharedPtr> *,
-  CallbackFnT<StateEstimationNode::OdomMsgT>);
 template void StateEstimationNode::create_subscriptions<StateEstimationNode::PoseMsgT>(
   const std::vector<std::string> &,
   std::vector<rclcpp::Subscription<PoseMsgT>::SharedPtr> *,
   CallbackFnT<StateEstimationNode::PoseMsgT>);
-template void StateEstimationNode::create_subscriptions<StateEstimationNode::TwistMsgT>(
+template void StateEstimationNode::create_subscriptions<StateEstimationNode::RelativePosMsgT>(
   const std::vector<std::string> &,
-  std::vector<rclcpp::Subscription<TwistMsgT>::SharedPtr> *,
-  CallbackFnT<StateEstimationNode::TwistMsgT>);
+  std::vector<rclcpp::Subscription<RelativePosMsgT>::SharedPtr> *,
+  CallbackFnT<StateEstimationNode::RelativePosMsgT>);
 
 
 }  // namespace state_estimation

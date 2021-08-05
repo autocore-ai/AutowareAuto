@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Co-developed by Tier IV, Inc. and Apex.AI, Inc.
+# Co-developed by Tier IV, Inc., Robotec.ai, and Apex.AI, Inc.
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
@@ -50,5 +50,5 @@ def generate_test_description():
 class TestProcessOutput(unittest.TestCase):
 
     def test_exit_code(self, proc_output, proc_info, state_estimation_node):
-        # Check that process exits with code -15 code: termination request, sent to the program
-        launch_testing.asserts.assertExitCodes(proc_info, [-15], process=state_estimation_node)
+        # Check that process exits with expected codes: either SIGINT or SIGTERM codes are fine
+        launch_testing.asserts.assertExitCodes(proc_info, [-2, -15], process=state_estimation_node)

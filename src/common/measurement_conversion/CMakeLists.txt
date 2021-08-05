@@ -55,7 +55,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   # Unit tests
-  set(TEST_SOURCES test/test_measurement_conversion.cpp test/test_measurement_transformation.cpp)
+  set(TEST_SOURCES test/test_measurement_conversion.cpp test/test_eigen_utils.cpp)
   set(TEST_MEASUREMENT_CONVERSION_EXE test_measurement_conversion)
   ament_add_gtest(${TEST_MEASUREMENT_CONVERSION_EXE} ${TEST_SOURCES})
   autoware_set_compile_options(${TEST_MEASUREMENT_CONVERSION_EXE})

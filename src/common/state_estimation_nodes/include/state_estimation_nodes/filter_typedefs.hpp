@@ -35,6 +35,10 @@ namespace state_estimation
 using ConstAccelerationKalmanFilterXY = KalmanFilter<
   motion_model::LinearMotionModel<state_vector::ConstAccelerationXY32>,
   WienerNoise<common::state_vector::ConstAccelerationXY32>>;
+
+using ConstAccelerationKalmanFilterXYZRPY = KalmanFilter<
+  motion_model::LinearMotionModel<state_vector::ConstAccelerationXYZRPY32>,
+  WienerNoise<common::state_vector::ConstAccelerationXYZRPY32>>;
 }  // namespace state_estimation
 }  // namespace common
 }  // namespace autoware

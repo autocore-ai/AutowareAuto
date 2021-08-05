@@ -11,7 +11,11 @@
     publish_tf: true
 
     process_noise_variances:
-      acceleration: [2.0, 2.0]
+      acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 
-    state_variances: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    state_variances: [
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  # position variances
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  # velocity variances
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0   # acceleration variances
+    ]
     min_speed_to_use_speed_orientation: 10.0

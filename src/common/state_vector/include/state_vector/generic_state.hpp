@@ -50,6 +50,7 @@ namespace state_vector
 template<typename StateT>
 struct is_state;
 
+
 ///
 /// @brief      A representation of a generic state vectors with specified variables.
 ///

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,15 +30,11 @@
 using autoware::common::types::float64_t;
 using autoware::common::types::float32_t;
 
-using autoware::common::state_estimation::ConstantAccelerationFilterWrapper;
+using autoware::common::state_estimation::ConstantAccelerationFilterWrapperXY;
 using autoware::common::motion_model::LinearMotionModel;
 using autoware::common::state_estimation::WienerNoise;
-using autoware::common::state_estimation::StampedMeasurement2dPose32;
-using autoware::common::state_estimation::StampedMeasurement2dSpeed32;
-using autoware::common::state_estimation::StampedMeasurement2dPoseAndSpeed32;
-using autoware::common::state_estimation::Measurement2dPose32;
-using autoware::common::state_estimation::Measurement2dSpeed32;
-using autoware::common::state_estimation::Measurement2dPoseAndSpeed32;
+using autoware::common::state_estimation::PoseMeasurementXYZ32;
+using autoware::common::state_estimation::Stamped;
 using autoware::common::state_vector::variable::X;
 using autoware::common::state_vector::variable::Y;
 using autoware::common::state_vector::variable::X_VELOCITY;
@@ -81,8 +77,8 @@ const auto kNoiseIdentity{(Eigen::Matrix<float32_t, 6, 2>{} <<
 
 /// \test Creating an empty filter and checking that everything is zero.
 TEST(KalmanFilterWrapperTest, create_empty) {
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -94,18 +90,17 @@ TEST(KalmanFilterWrapperTest, create_empty) {
 
 /// \test Before the filter is initialized we don't want to accept any updates.
 TEST(KalmanFilterWrapperTest, ignore_everything_before_initialization) {
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
     std::chrono::milliseconds{100LL},
     "map"};
   const auto now = std::chrono::system_clock::time_point{std::chrono::system_clock::now()};
-  const StampedMeasurement2dPoseAndSpeed32 measurement{
+  const Stamped<PoseMeasurementXYZ32> measurement{
     now,
-    Measurement2dPoseAndSpeed32{Vector<4U>{42.0F, 42.0F, 42.0F, 42.0F},
-      Eigen::Matrix4f::Identity()}};
+    PoseMeasurementXYZ32{Eigen::Vector3f{42.0F, 42.0F, 42.0F}, Eigen::Matrix3f::Identity()}};
   EXPECT_FALSE(filter.is_initialized());
   EXPECT_FALSE(filter.add_next_temporal_update_to_history());
   EXPECT_FALSE(filter.add_observation_to_history(measurement));
@@ -113,8 +108,8 @@ TEST(KalmanFilterWrapperTest, ignore_everything_before_initialization) {
 
 /// \test Initialize filter with a measurement.
 TEST(KalmanFilterWrapperTest, initialize) {
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -125,23 +120,15 @@ TEST(KalmanFilterWrapperTest, initialize) {
   EXPECT_FALSE(filter.is_initialized());
   const auto x = 1.0F;
   const auto y = 2.0F;
-  const auto x_speed = 3.0F;
-  const auto y_speed = 4.0F;
-  const StampedMeasurement2dPoseAndSpeed32 measurement{
+  const Stamped<PoseMeasurementXYZ32> measurement{
     now_measurement,
-    Measurement2dPoseAndSpeed32{
-      Vector<4U>{x, y, x_speed, y_speed},
-      Eigen::Matrix4f::Identity()}};
+    PoseMeasurementXYZ32{Eigen::Vector3f{x, y, 0.0F}, Eigen::Matrix3f::Identity()}};
   EXPECT_FALSE(filter.add_observation_to_history(measurement));
   filter.add_reset_event_to_history(measurement);
   ASSERT_TRUE(filter.is_initialized());
   const auto odom_msg = filter.get_state();
   EXPECT_NEAR(odom_msg.pose.pose.position.x, x, kEpsilon);
   EXPECT_NEAR(odom_msg.pose.pose.position.y, y, kEpsilon);
-  EXPECT_NEAR(
-    odom_msg.twist.twist.linear.x,
-    static_cast<float64_t>(std::sqrt(x_speed * x_speed + y_speed * y_speed)),
-    kEpsilon);
   EXPECT_NEAR(odom_msg.twist.twist.linear.y, 0.0, kEpsilon);
   EXPECT_NEAR(odom_msg.twist.twist.linear.z, 0.0, kEpsilon);
 
@@ -153,8 +140,8 @@ TEST(KalmanFilterWrapperTest, initialize) {
 
 /// \test Initialize filter with a measurement and ignore the ones coming from the past.
 TEST(KalmanFilterWrapperTest, ignore_measurements_from_the_past) {
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -163,38 +150,38 @@ TEST(KalmanFilterWrapperTest, ignore_measurements_from_the_past) {
   const auto now_measurement_time =
     std::chrono::system_clock::time_point{std::chrono::system_clock::now()};
   const auto dt = std::chrono::milliseconds{2LL};
-  const auto state = Vector<4U>{42.0F, 42.0F, 0.0F, 0.0F};
-  const auto variance = Eigen::Matrix4f::Identity();
+  const auto measurement_state = Eigen::Vector3f{42.0F, 42.0F, 42.0F};
+  const auto variance = Eigen::Matrix3f::Identity();
   EXPECT_FALSE(filter.is_initialized());
-  StampedMeasurement2dPoseAndSpeed32 measurement_now{
+  Stamped<PoseMeasurementXYZ32> measurement_now{
     now_measurement_time,
-    Measurement2dPoseAndSpeed32{state, variance}};
-  StampedMeasurement2dPoseAndSpeed32 measurement_later{
+    PoseMeasurementXYZ32{measurement_state, variance}};
+  Stamped<PoseMeasurementXYZ32> measurement_later{
     now_measurement_time + dt,
-    Measurement2dPoseAndSpeed32{state, variance}};
+    PoseMeasurementXYZ32{measurement_state, variance}};
   filter.add_reset_event_to_history(measurement_now);
   ASSERT_TRUE(filter.is_initialized());
   EXPECT_TRUE(filter.add_observation_to_history(measurement_later));
   const auto mid_measurement_time{now_measurement_time + dt / 2};
-  StampedMeasurement2dPoseAndSpeed32 mid_measurement{
+  Stamped<PoseMeasurementXYZ32> mid_measurement{
     mid_measurement_time,
-    Measurement2dPoseAndSpeed32{state, variance}};
+    PoseMeasurementXYZ32{measurement_state, variance}};
   // Update that comes in the future bt carries a measurement after the first one, but before the
   // last one, so it should land in the middle of history.
   EXPECT_TRUE(filter.add_observation_to_history(mid_measurement));
   const auto odom_msg = filter.get_state();
-  EXPECT_NEAR(odom_msg.pose.pose.position.x, state.x(), kEpsilon);
-  EXPECT_NEAR(odom_msg.pose.pose.position.y, state.y(), kEpsilon);
-  EXPECT_NEAR(odom_msg.twist.twist.linear.x, state[2], kEpsilon);
-  EXPECT_NEAR(odom_msg.twist.twist.linear.y, state[3], kEpsilon);
+  EXPECT_NEAR(odom_msg.pose.pose.position.x, measurement_state.x(), kEpsilon);
+  EXPECT_NEAR(odom_msg.pose.pose.position.y, measurement_state.y(), kEpsilon);
+  // The z coordinate is zero as we are using a 2D EKF in this test.
+  EXPECT_NEAR(odom_msg.pose.pose.position.z, 0.0F, kEpsilon);
 }
 
 /// \test Ignore measurements that don't pass the Mahalanobis threshold.
 TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
-  using State = ConstantAccelerationFilterWrapper::State;
+  using State = ConstantAccelerationFilterWrapperXY::State;
   using namespace std::chrono_literals;
   const float32_t mahalanobis_threshold = 1.0F;
-  ConstantAccelerationFilterWrapper filter{
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -212,15 +199,15 @@ TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
   // Check that nothing else forbids us from updating the state.
   timestamp += 10ms;
   filter.add_observation_to_history(
-    StampedMeasurement2dPose32{timestamp, Measurement2dPose32{Vector2f{0.0F, 0.0F},
-        Eigen::Matrix2f::Identity()}});
+    Stamped<PoseMeasurementXYZ32>{timestamp, PoseMeasurementXYZ32{Eigen::Vector3f{0.0F, 0.0F, 0.0F},
+        Eigen::Matrix3f::Identity()}});
   const auto odom_msg_before = filter.get_state();
   timestamp += 10ms;
   // Try to add a very precise measurement that should be ignored due to the mahalanobis gate.
   filter.add_observation_to_history(
-    StampedMeasurement2dPose32{
+    Stamped<PoseMeasurementXYZ32>{
     timestamp,
-    Measurement2dPose32{Vector2f{10.0F, 0.0F}, 0.01F * Eigen::Matrix2f::Identity()}});
+    PoseMeasurementXYZ32{Eigen::Vector3f{10.0F, 0.0F, 0.0F}, 0.01F * Eigen::Matrix3f::Identity()}});
   const auto odom_msg_after = filter.get_state();
   EXPECT_NEAR(odom_msg_after.pose.pose.position.x, 0.0, kEpsilon);
   EXPECT_NEAR(odom_msg_after.pose.pose.position.y, 0.0, kEpsilon);
@@ -232,8 +219,8 @@ TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
 
 /// \test Covariance of a static object grows without new observations.
 TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -241,9 +228,9 @@ TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
     "map"};
   EXPECT_FALSE(filter.is_initialized());
   const auto timestamp = std::chrono::system_clock::time_point{std::chrono::system_clock::now()};
-  const StampedMeasurement2dPoseAndSpeed32 measurement{
+  const Stamped<PoseMeasurementXYZ32> measurement{
     timestamp,
-    Measurement2dPoseAndSpeed32{Vector<4U>{42.0F, 42.0F, 0.0F, 0.0F}, Eigen::Matrix4f::Ones()}};
+    PoseMeasurementXYZ32{Eigen::Vector3f{42.0F, 42.0F, 42.0F}, Eigen::Matrix3f::Identity()}};
   filter.add_reset_event_to_history(measurement);
   ASSERT_TRUE(filter.is_initialized());
   const auto odom_msg = filter.get_state();
@@ -272,8 +259,8 @@ TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
 /// \test Track a static object.
 TEST(KalmanFilterWrapperTest, track_static_object) {
   using namespace std::chrono_literals;
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -282,22 +269,24 @@ TEST(KalmanFilterWrapperTest, track_static_object) {
   EXPECT_FALSE(filter.is_initialized());
   std::chrono::system_clock::time_point timestamp{std::chrono::system_clock::now()};
   filter.add_reset_event_to_history(
-    StampedMeasurement2dPose32{timestamp,
-      Measurement2dPose32{Vector2f{42.0F, 42.0F}, Eigen::Matrix2f::Identity()}});
+    Stamped<PoseMeasurementXYZ32>{timestamp,
+      PoseMeasurementXYZ32{Eigen::Vector3f{42.0F, 42.0F, 0.0F}, Eigen::Matrix3f::Identity()}});
   ASSERT_TRUE(filter.is_initialized());
   const auto initial_state = filter.get_state();
   for (int i = 0; i < 10; ++i) {
     timestamp += 100ms;
     EXPECT_TRUE(
       filter.add_observation_to_history(
-        StampedMeasurement2dPose32{timestamp,
-          Measurement2dPose32{Vector2f{42.0F, 42.0F}, 0.01F * Eigen::Matrix2f::Identity()}}));
-    auto odom_msg = filter.get_state();
-    EXPECT_NEAR(odom_msg.pose.pose.position.x, initial_state.pose.pose.position.x, kEpsilon);
-    EXPECT_NEAR(odom_msg.pose.pose.position.y, initial_state.pose.pose.position.y, kEpsilon);
+        Stamped<PoseMeasurementXYZ32>{timestamp,
+          PoseMeasurementXYZ32{
+            Eigen::Vector3f{42.0F, 42.0F, 0.0F},
+            0.01F * Eigen::Matrix3f::Identity()}}));
+    const auto filtered_state = filter.get_state();
+    EXPECT_NEAR(filtered_state.pose.pose.position.x, initial_state.pose.pose.position.x, kEpsilon);
+    EXPECT_NEAR(filtered_state.pose.pose.position.y, initial_state.pose.pose.position.y, kEpsilon);
     // Check that the covariance of observed state is dropping.
-    EXPECT_LT(odom_msg.pose.covariance[0], 1.0 - kEpsilon);
-    EXPECT_LT(odom_msg.pose.covariance[7], 1.0 - kEpsilon);
+    EXPECT_LT(filtered_state.pose.covariance[0], 1.0 - kEpsilon);
+    EXPECT_LT(filtered_state.pose.covariance[7], 1.0 - kEpsilon);
   }
 }
 
@@ -318,8 +307,8 @@ TEST(KalmanFilterWrapperTest, track_thrown_ball) {
   const float32_t g = -9.80665F;  // m/s^2.
   const float32_t initial_speed = 9.80665F;  // m/s
 
-  using State = ConstantAccelerationFilterWrapper::State;
-  ConstantAccelerationFilterWrapper filter{
+  using State = ConstantAccelerationFilterWrapperXY::State;
+  ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
     WienerNoise<State>{{1.0F, 1.0F}},
     kCovarianceIdentity,
@@ -351,9 +340,9 @@ TEST(KalmanFilterWrapperTest, track_thrown_ball) {
     if (current_cycle_milliseconds >= observation_interval) {
       EXPECT_TRUE(
         filter.add_observation_to_history(
-          StampedMeasurement2dPose32{timestamp,
-            Measurement2dPose32{Vector2f{state.at<X>(), state.at<Y>()},
-              Eigen::Matrix2f::Identity()}}));
+          Stamped<PoseMeasurementXYZ32>{timestamp,
+            PoseMeasurementXYZ32{Eigen::Vector3f{state.at<X>(), state.at<Y>(), 0.0F},
+              Eigen::Matrix3f::Identity()}}));
       current_cycle_milliseconds = 0ms;
     }
   }

@@ -7,9 +7,12 @@
     data_driven: true
     frame_id: "map"
     child_frame_id: "base_link"
-    mahalanobis_threshold: 2.0
+    mahalanobis_threshold: 3.0
 
     process_noise_variances:
-      acceleration: [2.0, 2.0]
+      acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 
-    state_variances: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    state_variances: [
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

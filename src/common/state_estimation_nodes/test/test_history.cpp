@@ -111,7 +111,7 @@ TEST(HistoryTest, add_reset_event) {
   EXPECT_NO_THROW(
     history.emplace_event(timestamp, ResetEvent<MockFilter>{expected_state, expected_covariance}));
   EXPECT_EQ(history.get_last_event().stored_state(), expected_state);
-  EXPECT_EQ(history.get_last_event().stored_covariance_factor(), expected_covariance);
+  EXPECT_EQ(history.get_last_event().stored_covariance(), expected_covariance);
 }
 
 /// @test Test that measurements can be added to the history correctly.
@@ -131,7 +131,7 @@ TEST(HistoryTest, add_measurement_events) {
   const std::chrono::system_clock::time_point timestamp{};
   history.emplace_event(timestamp, ResetEvent<MockFilter>{reset_state, reset_covariance});
   EXPECT_EQ(history.get_last_event().stored_state(), reset_state);
-  EXPECT_EQ(history.get_last_event().stored_covariance_factor(), reset_covariance);
+  EXPECT_EQ(history.get_last_event().stored_covariance(), reset_covariance);
 
   const MeasurementState latest_observed_state{MeasurementState::Vector{42.0F}};
   const auto latest_observed_covariance = 42.0F * MeasurementState::Matrix::Identity();
@@ -154,7 +154,7 @@ TEST(HistoryTest, add_measurement_events) {
       timestamp + dt,
       Measurement{latest_observed_state.vector(), latest_observed_covariance}));
   EXPECT_EQ(history.get_last_event().stored_state(), latest_observed_state);
-  EXPECT_EQ(history.get_last_event().stored_covariance_factor(), latest_observed_covariance);
+  EXPECT_EQ(history.get_last_event().stored_covariance(), latest_observed_covariance);
 
   // Check that we cannot insert a non-reset event to the beginning of history.
   EXPECT_THROW(history.emplace_event(timestamp - dt, PredictionEvent{}), std::runtime_error);

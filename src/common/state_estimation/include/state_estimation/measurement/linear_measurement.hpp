@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -173,7 +173,9 @@ protected:
         constexpr auto index_in_other_state = OtherStateT::template index_of<VariableT>();
         m(index_in_this_state, index_in_other_state) = 1;
       };
-    common::type_traits::visit(StateT::variables(), fill_mapping_matrix);
+    using CommonVariablesTuple = typename autoware::common::type_traits::intersect<
+      typename StateT::Variables, typename OtherStateT::Variables>::type;
+    common::type_traits::visit(CommonVariablesTuple{}, fill_mapping_matrix);
     return m;
   }
 

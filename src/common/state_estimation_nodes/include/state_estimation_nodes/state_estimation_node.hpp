@@ -76,27 +76,16 @@ private:
   using TwistMsgT = geometry_msgs::msg::TwistWithCovarianceStamped;
   using RelativePosMsgT = autoware_auto_msgs::msg::RelativePositionWithCovarianceStamped;
   using TfMsgT = tf2_msgs::msg::TFMessage;
+  using FilterWrapperT = ConstantAccelerationFilterWrapperXYZRPY;
 
   template<std::int32_t kDim>
   using VectorT = Eigen::Matrix<autoware::common::types::float32_t, kDim, 1>;
-
-  /// Gets called when a new odometry message arrives.
-  ///
-  /// @param[in]  msg   Odometry message.
-  ///
-  void STATE_ESTIMATION_NODES_LOCAL odom_callback(const OdomMsgT::SharedPtr msg);
 
   /// Gets called when a new pose message arrives.
   ///
   /// @param[in]  msg   Pose message.
   ///
   void STATE_ESTIMATION_NODES_LOCAL pose_callback(const PoseMsgT::SharedPtr msg);
-
-  /// Gets called when a new twist message arrives.
-  ///
-  /// @param[in]  msg   The twist message that holds speed measurement.
-  ///
-  void STATE_ESTIMATION_NODES_LOCAL twist_callback(const TwistMsgT::SharedPtr msg);
 
   /// Gets called when a new relative position measurement arrives.
   ///
@@ -110,10 +99,6 @@ private:
   /// Publish the currently estimated state.
   void STATE_ESTIMATION_NODES_LOCAL publish_current_state();
 
-  /// Update the latest orientation with newer one.
-  void STATE_ESTIMATION_NODES_LOCAL update_latest_orientation_if_needed(
-    const geometry_msgs::msg::QuaternionStamped & rotation);
-
   template<typename MessageT>
   using CallbackFnT = void (StateEstimationNode::*)(const typename MessageT::SharedPtr);
 
@@ -123,9 +108,7 @@ private:
     std::vector<typename rclcpp::Subscription<MessageT>::SharedPtr> * subscribers,
     CallbackFnT<MessageT> callback);
 
-  std::vector<rclcpp::Subscription<OdomMsgT>::SharedPtr> m_odom_subscribers;
   std::vector<rclcpp::Subscription<PoseMsgT>::SharedPtr> m_pose_subscribers;
-  std::vector<rclcpp::Subscription<TwistMsgT>::SharedPtr> m_twist_subscribers;
   std::vector<rclcpp::Subscription<RelativePosMsgT>::SharedPtr> m_relative_pos_subscribers;
 
   std::shared_ptr<rclcpp::Publisher<OdomMsgT>> m_publisher{};
@@ -147,13 +130,10 @@ private:
 
   // TODO(igor): we can replace the unique_ptr here with std::variant or alike at a later time to
   // allow configuring which filter to use at runtime.
-  std::unique_ptr<ConstantAccelerationFilterWrapper> m_ekf{};
+  std::unique_ptr<FilterWrapperT> m_ekf{};
 
   tf2::BufferCore m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;
-
-  geometry_msgs::msg::QuaternionStamped m_latest_orientation{};
-  common::types::float64_t m_min_speed_to_use_speed_orientation{};
 };
 
 }  // namespace state_estimation

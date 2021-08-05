@@ -19,6 +19,7 @@
   <depend>state_vector</depend>
   <depend>state_estimation</depend>
   <depend>tf2</depend>
+  <depend>time_utils</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

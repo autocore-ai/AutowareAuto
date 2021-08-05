@@ -19,11 +19,13 @@
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from pathlib import Path
 
 import os
+
 
 def generate_launch_description():
     # Boilerplate to fetch the necessary parameter files:
@@ -172,6 +174,15 @@ def generate_launch_description():
         arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"]
     )
 
+    point_type_adapter_pkg_prefix = get_package_share_directory(
+        'point_type_adapter')
+
+    adapter_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(point_type_adapter_pkg_prefix,
+                         'launch/point_type_adapter.launch.py'))
+    )
+
     return LaunchDescription([
         map_publisher_param,
         pc_filter_transform_param,
@@ -186,5 +197,6 @@ def generate_launch_description():
         ekf_smoother_node,
         odom_bl_publisher,
         ndt_localizer,
-        rviz2
+        rviz2,
+        adapter_launch
     ])
