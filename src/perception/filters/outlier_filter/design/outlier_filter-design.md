@@ -111,7 +111,7 @@ Depending on the filtering method the point type used in the input may differ. T
 cloud is stored in `output`.
 
 
-## Inner-workings / Algorithms
+## Inner-workings / Algorithms {#outlier-filter-algorithm}
 <!-- If applicable -->
 ### radius_search_2d_filter
 

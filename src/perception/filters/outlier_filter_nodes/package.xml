@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>outlier_filter_nodes</name>
+  <version>1.0.0</version>
+  <description>Outlier Filter Nodes</description>
+  <maintainer email="jilada.eccleston@tier4.jp">Jilada Eccleston</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+
+  <depend>autoware_auto_common</depend>
+  <depend>filter_node_base</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>outlier_filter</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
