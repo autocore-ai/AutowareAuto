@@ -16,6 +16,7 @@
 
 #include <common/types.hpp>
 #include <motion_model/linear_motion_model.hpp>
+#include <motion_model/stationary_motion_model.hpp>
 #include <state_estimation/kalman_filter/kalman_filter.hpp>
 #include <state_estimation/measurement/linear_measurement.hpp>
 #include <state_estimation/noise_model/wiener_noise.hpp>
@@ -35,11 +36,16 @@ using autoware::common::state_vector::variable::YAW_CHANGE_RATE;
 using autoware::common::state_vector::variable::X_ACCELERATION;
 using autoware::common::state_vector::variable::Y_ACCELERATION;
 using autoware::common::state_vector::variable::YAW_CHANGE_ACCELERATION;
+using autoware::common::state_vector::Variable;
 using autoware::common::state_vector::FloatState;
 using autoware::common::state_estimation::LinearMeasurement;
 using autoware::common::state_estimation::KalmanFilter;
+using autoware::common::state_estimation::NoiseInterface;
 using autoware::common::state_estimation::WienerNoise;
+using autoware::common::state_estimation::make_kalman_filter;
+using autoware::common::state_estimation::make_correction_only_kalman_filter;
 using autoware::common::motion_model::LinearMotionModel;
+using autoware::common::motion_model::StationaryMotionModel;
 using autoware::common::state_vector::ConstAccelerationXY32;
 using autoware::common::state_vector::ConstAccelerationXYYaw32;
 using autoware::common::types::float32_t;
@@ -239,4 +245,47 @@ TEST(TestKalmanFilter, TrackThrownBall) {
   EXPECT_NEAR(expected_state.at<Y_VELOCITY>(), kf.state().at<Y_VELOCITY>(), kRelaxedEpsilon);
   EXPECT_NEAR(expected_state.at<X_ACCELERATION>(), 0.0F, kRelaxedEpsilon);
   EXPECT_NEAR(expected_state.at<Y_ACCELERATION>(), g, kRelaxedEpsilon);
+}
+
+/// \test Check that Kalman Filter can be used for classification. In this example of a traffic
+/// light state.
+TEST(KalmanFilterWrapperTest, TrafficLightState) {
+  struct RED : public Variable {};
+  struct GREEN : public Variable {};
+  struct ORANGE : public Variable {};
+
+  using TrafficLightState = FloatState<RED, GREEN, ORANGE>;
+  const auto uniform_probability = 1.0F / TrafficLightState::size();
+  const auto uniform_vector = TrafficLightState::Vector::Constant(uniform_probability);
+  TrafficLightState traffic_light_state{uniform_vector};
+  EXPECT_FLOAT_EQ(traffic_light_state.at<RED>(), uniform_probability);
+  EXPECT_FLOAT_EQ(traffic_light_state.at<GREEN>(), uniform_probability);
+  EXPECT_FLOAT_EQ(traffic_light_state.at<ORANGE>(), uniform_probability);
+
+  auto filter = make_correction_only_kalman_filter(
+    traffic_light_state, TrafficLightState::Matrix::Identity());
+
+  // Observe a red light.
+  const auto red_light_measurement = LinearMeasurement<TrafficLightState>::create_with_stddev(
+    {1.0F, 0.0F, 0.0F},
+    {0.1F, 0.1F, 0.1F});
+  EXPECT_FLOAT_EQ(filter.state().at<RED>(), uniform_probability);
+  EXPECT_FLOAT_EQ(filter.state().at<GREEN>(), uniform_probability);
+  EXPECT_FLOAT_EQ(filter.state().at<ORANGE>(), uniform_probability);
+  filter.correct(red_light_measurement);
+  const auto epsilon = 0.1F;  // An epsilon chosen to match the observation covariance.
+  EXPECT_GT(filter.state().at<RED>(), uniform_probability + epsilon);
+  EXPECT_LT(filter.state().at<GREEN>(), uniform_probability - epsilon);
+  EXPECT_LT(filter.state().at<ORANGE>(), uniform_probability - epsilon);
+
+  // Observe a green light.
+  const auto green_light_measurement = LinearMeasurement<TrafficLightState>::create_with_stddev(
+    {0.0F, 1.0F, 0.0F},
+    {0.1F, 0.1F, 0.1F});
+  filter.correct(green_light_measurement);
+  // We have now seen both green and red once, so it should be roughly 50/50 probability for either
+  // of these states of the traffic light, but definitely not orange.
+  EXPECT_NEAR(filter.state().at<RED>(), 0.5F, epsilon);
+  EXPECT_NEAR(filter.state().at<GREEN>(), 0.5F, epsilon);
+  EXPECT_NEAR(filter.state().at<ORANGE>(), 0.0F, epsilon);
 }

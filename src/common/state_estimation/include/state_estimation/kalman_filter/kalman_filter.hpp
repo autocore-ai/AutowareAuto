@@ -19,6 +19,7 @@
 
 #include <helper_functions/float_comparisons.hpp>
 #include <motion_model/motion_model_interface.hpp>
+#include <motion_model/stationary_motion_model.hpp>
 #include <state_estimation/noise_model/noise_interface.hpp>
 #include <state_estimation/state_estimation_interface.hpp>
 #include <state_estimation/visibility_control.hpp>
@@ -180,6 +181,43 @@ auto make_kalman_filter(
 {
   return KalmanFilter<MotionModelT, NoiseModelT>{
     motion_model, noise_model, initial_state, initial_covariance};
+}
+
+///
+/// @brief      A utility function that creates a Kalman filter that is to be used for correction
+///             only, i.e., this Kalman filter cannot predict the state forward in time.
+///
+/// @details    Mostly this is needed to avoid passing the template parameters explicitly and let
+///             the compiler infer them from the objects passed into this function.
+///
+/// @param[in]  initial_state       The initial state
+/// @param[in]  initial_covariance  The initial covariance
+///
+/// @tparam     StateT              { description }
+/// @tparam     MotionModelT  Type of the motion model.
+/// @tparam     NoiseModelT   Type of the noise model.
+///
+/// @return     Returns a valid KalmanFilter instance.
+///
+template<typename StateT>
+auto make_correction_only_kalman_filter(
+  const StateT & initial_state,
+  const typename StateT::Matrix & initial_covariance)
+{
+  struct DummyNoise : public NoiseInterface<DummyNoise>
+  {
+    using State = StateT;
+    typename State::Matrix crtp_covariance(const std::chrono::nanoseconds &) const
+    {
+      throw std::runtime_error(
+              "Trying to use a correction-only Kalman filter to predict the state.");
+    }
+  };
+
+  using MotionModel = common::motion_model::StationaryMotionModel<StateT>;
+
+  return make_kalman_filter(
+    MotionModel{}, DummyNoise{}, initial_state, initial_covariance);
 }
 
 ///
