@@ -35,6 +35,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tracking/data_association.hpp"
+#include "tracking/track_creator.hpp"
 #include "tracking/tracked_object.hpp"
 #include "state_vector/common_states.hpp"
 #include "state_estimation/kalman_filter/kalman_filter.hpp"
@@ -87,11 +88,8 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
 {
   /// Data association parameters.
   DataAssociationConfig association_config;
-  /// When initializing a new track, this value is used for the variance when none is provided by
-  /// the detection.
-  float32_t default_variance = -1.0F;  // Invalid, to make sure it is set.
-  /// The magnitude of the noise in the Kalman filter.
-  float32_t noise_variance = -1.0F;  // Invalid, to make sure it is set.
+  /// Track creator parameters.
+  TrackCreatorConfig track_creator_config;
   /// Time after which unseen tracks should be pruned.
   std::chrono::nanoseconds pruning_time_threshold = std::chrono::nanoseconds::max();
   /// Number of updates after which unseen tracks should be pruned.
@@ -146,6 +144,9 @@ private:
 
   /// Associator for matching observations to tracks.
   Associator m_associator;
+
+  /// Creator for creating tracks based on unassociated observations
+  TrackCreator m_track_creator;
 };
 
 }  // namespace tracking

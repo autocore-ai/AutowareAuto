@@ -75,7 +75,8 @@ geometry_msgs::msg::TransformStamped to_transform(const nav_msgs::msg::Odometry 
 
 
 MultiObjectTracker::MultiObjectTracker(MultiObjectTrackerOptions options)
-: m_options(options), m_associator(options.association_config) {}
+: m_options(options), m_associator(options.association_config),
+  m_track_creator(options.track_creator_config) {}
 
 TrackerUpdateResult MultiObjectTracker::update(
   DetectedObjectsMsg detections,
@@ -129,12 +130,13 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Initialize new tracks
   // ==================================
-  for (size_t new_detection_idx : association.unassigned_detection_indices) {
-    const auto & detection = detections.objects[new_detection_idx];
-    m_objects.push_back(
-      TrackedObject(
-        detection,
-        m_options.default_variance, m_options.noise_variance));
+  m_track_creator.add_unassigned_lidar_clusters(detections, association);
+  {
+    auto && new_tracks = m_track_creator.create_tracks();
+    m_objects.insert(
+      m_objects.end(),
+      std::make_move_iterator(new_tracks.begin()),
+      std::make_move_iterator(new_tracks.end()));
   }
 
   // ==================================

@@ -56,6 +56,7 @@ MultiObjectTracker init_tracker(rclcpp::Node & node)
       "association_max_area_ratio").get<float64_t>());
   const bool consider_edge_for_big_detections = node.declare_parameter(
     "association_consider_edge_for_big_detection").get<bool>();
+  const auto creation_policy = perception::tracking::TrackCreationPolicy::LidarClusterOnly;
   const float32_t default_variance =
     static_cast<float32_t>(node.declare_parameter(
       "ekf_default_variance").get<float64_t>());
@@ -71,9 +72,10 @@ MultiObjectTracker init_tracker(rclcpp::Node & node)
       "pruning_ticks_threshold").get<int64_t>());
   const std::string frame = node.declare_parameter("track_frame_id", "odom");
 
-  MultiObjectTrackerOptions options{{max_distance, max_area_ratio,
-    consider_edge_for_big_detections},
-    default_variance, noise_variance, pruning_time_threshold, pruning_ticks_threshold, frame};
+  MultiObjectTrackerOptions options{
+    {max_distance, max_area_ratio, consider_edge_for_big_detections},
+    {creation_policy, default_variance, noise_variance},
+    pruning_time_threshold, pruning_ticks_threshold, frame};
   return MultiObjectTracker{options};
 }
 

@@ -23,7 +23,6 @@
 #include <tracking/tracked_object.hpp>
 
 #include <experimental/optional>
-#include <limits>
 #include <map>
 #include <vector>
 
@@ -69,23 +68,6 @@ private:
   float32_t m_max_area_ratio_inv;
   bool m_consider_edge_for_big_detections;
 };
-
-/// \brief Struct to store results after the assignment is done
-struct TRACKING_PUBLIC AssociatorResult
-{
-  static constexpr std::size_t UNASSIGNED = std::numeric_limits<std::size_t>::max();
-  /// \brief This vector stores the detection index associated with each track idx.
-  ///        So, it should have Associator::m_num_tracks elements with each element having a value
-  ///        between 0 to Association::m_num_detections or AssociatorResult::UNASSIGNED.
-  std::vector<std::size_t> track_assignments;
-  /// \brief Indices of detections that are not associated to any tracks
-  std::vector<std::size_t> unassigned_detection_indices;
-  /// \brief Indices of tracks that are not associated to any detections
-  std::vector<std::size_t> unassigned_track_indices;
-  /// \brief Indicates if there were errors in the data during association
-  bool had_errors;
-};
-
 
 /// \brief Class to perform data association between existing tracks and new detections using
 ///        mahalanobis distance and hungarian assigner

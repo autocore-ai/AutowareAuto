@@ -33,6 +33,7 @@ ament_auto_find_build_dependencies(REQUIRED
 set(TRACKING_LIB_SRC
   src/data_association.cpp
   src/multi_object_tracker.cpp
+  src/track_creator.cpp
   src/tracked_object.cpp
   src/projection.cpp
 )
@@ -40,6 +41,7 @@ set(TRACKING_LIB_SRC
 set(TRACKING_LIB_HEADERS
   include/tracking/data_association.hpp
   include/tracking/multi_object_tracker.hpp
+  include/tracking/track_creator.hpp
   include/tracking/tracked_object.hpp
   include/tracking/tracker_types.hpp
   include/tracking/visibility_control.hpp
@@ -65,6 +67,7 @@ if(BUILD_TESTING)
     test/test_data_association.cpp
     test/test_projection.cpp
     test/test_multi_object_tracker.cpp
+    test/test_track_creation.cpp
     test/test_tracked_object.cpp
   )
   set(TEST_TRACKING_EXE test_multi_object_tracker)

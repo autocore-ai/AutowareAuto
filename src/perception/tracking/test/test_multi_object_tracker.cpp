@@ -20,6 +20,7 @@
 #include "tracking/multi_object_tracker.hpp"
 
 using Tracker = autoware::perception::tracking::MultiObjectTracker;
+using CreationPolicies = autoware::perception::tracking::TrackCreationPolicy;
 using Options = autoware::perception::tracking::MultiObjectTrackerOptions;
 using Status = autoware::perception::tracking::TrackerUpdateStatus;
 using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
@@ -29,7 +30,7 @@ class MultiObjectTrackerTest : public ::testing::Test
 {
 public:
   MultiObjectTrackerTest()
-  : m_tracker{Options{{2.0F, 2.5F, true}, 1.0F, 1.0F}}
+  : m_tracker{Options{{2.0F, 2.5F, true}, {CreationPolicies::LidarClusterOnly, 1.0F, 1.0F}}}
   {
     m_detections.header.frame_id = "base_link";
     m_detections.header.stamp.sec = 1000;
