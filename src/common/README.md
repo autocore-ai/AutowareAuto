@@ -22,6 +22,7 @@ across the Autoware.Auto system.
 - @subpage motion-model-design
 - @subpage measurement-conversion-design
 - @subpage state-estimation-design
+- @subpage noise-model-design
 - @subpage state-estimation-nodes-design
 - @subpage tvm-utility-design
 - @subpage osqp_interface-package-design

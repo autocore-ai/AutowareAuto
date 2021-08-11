@@ -46,10 +46,7 @@ struct number_of_acceleration_components : public std::integral_constant<std::si
 ///
 /// @brief      A class that describes the Wiener process noise.
 ///
-///             For more details see notebook here:
-///             https://nbviewer.jupyter.org/github/rlabbe/Kalman-and-Bayesian-Filters-in-Python/
-///             blob/master/07-Kalman-Filter-Math.ipynb#Piecewise-White-Noise-Model (combine into
-///             one line)
+/// @details    For more details see notebook here: @ref noise-model-design
 ///
 /// @tparam     StateT  A given state type.
 ///

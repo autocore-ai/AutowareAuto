@@ -25,6 +25,7 @@ ament_auto_find_build_dependencies()
 ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/wiener_noise.cpp
+  src/uniform_noise.cpp
 )
 autoware_set_compile_options(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
@@ -39,6 +40,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${STATE_ESTIMATION_GTEST}
                   test/test_kalman_filter.cpp
                   test/test_linear_measurement.cpp
+                  test/test_uniform_noise.cpp
                   test/test_wiener_noise.cpp)
   autoware_set_compile_options(${STATE_ESTIMATION_GTEST})
   target_include_directories(${STATE_ESTIMATION_GTEST} PRIVATE "test/include" "include")
