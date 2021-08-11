@@ -57,3 +57,13 @@ When the vehicle reaches to the goal of the replayed trajectory, the planner sto
 You can modify end conditions by tuning parameters in [recordreplay_planner.param.yaml](src/tools/autoware_demos/param/recordreplay_planner.param.yaml). The planner terminates planning when both of the following conditions are satisfied:
 * goal_distance_threshold_m: threshold for the distance between `nav_base` frame and the last point in the replayed trajectory
 * goal_angle_threshold_rad: threshold for the heading angle between `nav_base` frame and the last point in the replayed trajectory
+
+### Controller option
+
+By default the above launch command will run the planner with the MPC controller. You can run the pure pursuit controller instead of the MPC controller by running the following command,
+```{bash}
+ade$ source /opt/AutowareAuto/setup.bash
+ade$ ros2 launch autoware_demos recordreplay_planner_demo.launch.py run_pure_pursuit:=True
+```
+
+Note that the pure pursuit controller is more primitive and does not stop for objects on the path that could cause collision

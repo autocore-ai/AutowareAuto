@@ -20,6 +20,7 @@ from launch.actions import IncludeLaunchDescription
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
+from launch.conditions import LaunchConfigurationEquals
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -48,6 +49,8 @@ def generate_launch_description():
 
     mpc_param_file = os.path.join(
         demos_pkg_prefix, 'param/mpc_controller.param.yaml')
+    pure_pursuit_param_file = os.path.join(
+        demos_pkg_prefix, 'param/pure_pursuit.param.yaml')
     object_collision_estimator_param_file = os.path.join(
         demos_pkg_prefix, 'param/object_collision_estimator.param.yaml')
     recordreplay_planner_param_file = os.path.join(
@@ -69,7 +72,7 @@ def generate_launch_description():
     with open(urdf_path, 'r') as infp:
         urdf_file = infp.read()
 
-    rviz_cfg_path = os.path.join(demos_pkg_prefix, 'config/rviz2/recordreplay_planner_demo.rviz')
+    rviz_cfg_path = os.path.join(demos_pkg_prefix, 'rviz2/recordreplay_planner_demo.rviz')
 
     # Arguments
 
@@ -128,6 +131,11 @@ def generate_launch_description():
         default_value=mpc_param_file,
         description='Path to config file for MPC'
     )
+    pure_pursuit_param = DeclareLaunchArgument(
+        'pure_pursuit_param_file',
+        default_value=pure_pursuit_param_file,
+        description='Path to config file for pure pursuit controller'
+    )
     recordreplay_planner_param = DeclareLaunchArgument(
         'recordreplay_planner_param_file',
         default_value=recordreplay_planner_param_file,
@@ -137,6 +145,11 @@ def generate_launch_description():
         'vehicle_characteristics_param_file',
         default_value=vehicle_characteristics_param_file,
         description='Path to config file for vehicle characteristics'
+    )
+    run_pure_pursuit_arg = DeclareLaunchArgument(
+        'run_pure_pursuit',
+        default_value='False',
+        description='Set this to true to run pure pursuit controller instead of MPC'
     )
     launch_description_point_type_adapter = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -249,6 +262,23 @@ def generate_launch_description():
             LaunchConfiguration('mpc_param_file'),
             LaunchConfiguration('vehicle_characteristics_param_file'),
         ],
+        condition=LaunchConfigurationEquals('run_pure_pursuit', 'False')
+    )
+    pure_pursuit = Node(
+        package='pure_pursuit_nodes',
+        executable='pure_pursuit_node_exe',
+        name='pure_pursuit_node',
+        output="screen",
+        parameters=[
+            LaunchConfiguration('pure_pursuit_param_file'),
+        ],
+        remappings=[
+            ("current_pose", "/vehicle/vehicle_kinematic_state"),
+            ("trajectory", "/planning/trajectory"),
+            ("ctrl_cmd", "/vehicle/vehicle_command"),
+            ("ctrl_diag", "/control/control_diagnostic"),
+        ],
+        condition=IfCondition(LaunchConfiguration('run_pure_pursuit'))
     )
     recordreplay_planner = Node(
         package='recordreplay_planner_nodes',
@@ -291,9 +321,11 @@ def generate_launch_description():
         ndt_localizer_param,
         with_rviz_param,
         with_obstacle_detection_param,
+        pure_pursuit_param,
         mpc_param,
         recordreplay_planner_param,
         vehicle_characteristics_param,
+        run_pure_pursuit_arg,
         urdf_publisher,
         euclidean_clustering,
         filter_transform_vlp16_front,
@@ -305,6 +337,7 @@ def generate_launch_description():
         scan_downsampler,
         ndt_localizer,
         mpc,
+        pure_pursuit,
         recordreplay_planner,
         object_collision_estimator,
         rviz2

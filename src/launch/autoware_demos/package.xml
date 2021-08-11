@@ -27,6 +27,7 @@
   <exec_depend>point_cloud_filter_transform_nodes</exec_depend>
   <exec_depend>point_cloud_fusion_nodes</exec_depend>
   <exec_depend>point_type_adapter</exec_depend>
+  <exec_depend>pure_pursuit_nodes</exec_depend>
   <exec_depend>ray_ground_classifier_nodes</exec_depend>
   <exec_depend>recordreplay_planner_nodes</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>

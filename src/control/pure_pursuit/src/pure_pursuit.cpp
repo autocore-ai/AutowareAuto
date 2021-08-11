@@ -63,6 +63,9 @@ VehicleControlCommand PurePursuit::compute_command_impl(const TrajectoryPointSta
     m_command.long_accel_mps2 = compute_command_accel_mps(current_point, false);
     m_command.front_wheel_angle_rad = compute_steering_rad(current_point);
     m_command.rear_wheel_angle_rad = 0.0F;
+    // Use velocity of the next immediate trajectory point as the target velocity
+    m_command.velocity_mps = get_reference_trajectory().points[get_current_state_spatial_index()
+      ].longitudinal_velocity_mps;
   } else {
     m_command = compute_stop_command(current_pose);
   }

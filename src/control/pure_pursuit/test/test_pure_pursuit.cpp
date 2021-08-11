@@ -135,6 +135,7 @@ TEST_F(PurePursuitTest, simple)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, atanf(1.0F * dist_front_rear_wheels));
 
@@ -142,6 +143,7 @@ TEST_F(PurePursuitTest, simple)
 
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -21.0F / (std::pow(1.25F, 0.5F) * 2.0F));
   // 1.25/2.0
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, std::atan(1.6F * dist_front_rear_wheels));
@@ -151,6 +153,7 @@ TEST_F(PurePursuitTest, simple)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -24.0F / (std::pow(1.25F, 0.5F) * 2.0F));
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.6F * dist_front_rear_wheels));
 
@@ -170,6 +173,7 @@ TEST_F(PurePursuitTest, reverse)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -atanf(1.0F * dist_front_rear_wheels));
 
@@ -177,6 +181,7 @@ TEST_F(PurePursuitTest, reverse)
 
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 21.0F / (std::pow(1.25F, 0.5F) * 2.0F));
   // 2.0/1.25
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.6F * dist_front_rear_wheels));
@@ -208,6 +213,7 @@ TEST_F(PurePursuitTest, interpolation)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, 0.0F);
   EXPECT_FLOAT_EQ(
     command.front_wheel_angle_rad,
@@ -223,6 +229,9 @@ TEST_F(PurePursuitTest, interpolation)
 
   command = controller.compute_command(current_pose);
 
+  // current pose (2, 4) is just past the second traj point. So, the command velocity should be
+  // the velocity at the 3rd traj point
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[2U].longitudinal_velocity_mps);
   EXPECT_FLOAT_EQ(command.long_accel_mps2, -41.0F / (std::pow(2.0F, 0.5F) * 2.0F));
   EXPECT_FLOAT_EQ(command.front_wheel_angle_rad, -std::atan(1.0F * dist_front_rear_wheels));
   EXPECT_NO_MEMORY_OPERATIONS_END();
@@ -240,6 +249,7 @@ TEST_F(PurePursuitTest, replace_short_trajectory)
   controller.set_trajectory(traj);
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_NEAR(command.long_accel_mps2, 17.F, 1.F);
   EXPECT_NEAR(command.front_wheel_angle_rad, 0.0F, 0.001F);
 
@@ -248,6 +258,7 @@ TEST_F(PurePursuitTest, replace_short_trajectory)
 
   command = controller.compute_command(current_pose);
 
+  EXPECT_FLOAT_EQ(command.velocity_mps, traj.points[0U].longitudinal_velocity_mps);
   EXPECT_NEAR(command.long_accel_mps2, 17.F, 1.F);
   EXPECT_NEAR(command.front_wheel_angle_rad, 0.0F, 0.001F);
 
