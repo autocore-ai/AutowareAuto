@@ -16,5 +16,5 @@ objects of interest which can provide downstream procsses more information about
 - @subpage autoware-perception-filters-design
 - @subpage autoware-perception-segmentation-design
 - @subpage tracking-architecture
-- @subpage tracking-associator-design
+- @subpage #tracking-detected-object-associator-design
 - @subpage tracking-nodes-design

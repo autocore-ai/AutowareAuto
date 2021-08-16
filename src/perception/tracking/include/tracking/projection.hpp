@@ -38,7 +38,7 @@ namespace tracking
 {
 struct TRACKING_PUBLIC Projection
 {
-  using Point = Eigen::Vector3f;
+  using Point = geometry_msgs::msg::Point32;
   std::list<Point> shape{};
 };
 
@@ -61,7 +61,8 @@ class TRACKING_PUBLIC CameraModel
 public:
   using float32_t = common::types::float32_t;
   using Interval = common::geometry::Interval<float32_t>;
-  using Point = Eigen::Vector3f;
+  using Point = geometry_msgs::msg::Point32;
+  using EigPoint = Eigen::Vector3f;
 
   /// \brief Cnstructor
   /// \param intrinsics Camera intrinsics
@@ -86,12 +87,15 @@ public:
   /// `K * p_3d = p_2d * depth` where K is the projection matrix.
   /// \param shape 3D shape to be projected.
   /// \return List of points on the camera frame that outline the given 3D object.
-  Projection project(const autoware_auto_msgs::msg::Shape & shape);
+  std::experimental::optional<Projection>
+  project(const autoware_auto_msgs::msg::Shape & shape) const;
 
 private:
   /// \brief Project a 3D point and return the value if the projection is valid (in fron of the
   // camera)
-  std::experimental::optional<Point> project_point(const Point & pt_3d);
+  std::experimental::optional<EigPoint> project_point(const EigPoint & pt_3d) const;
+
+  bool is_projection_valid(const Projection & projection) const noexcept;
 
   Eigen::Transform<float32_t, 3, Eigen::Affine, Eigen::ColMajor> m_projector;
   Interval m_height_interval;
@@ -101,57 +105,6 @@ private:
 
 }  // namespace tracking
 }  // namespace perception
-
-// These point adapters are needed to make sure Eigen points work with autoware_auto_geometry
-// TODO(yunus.caliskan) Move these adapters to a common package #1207
-namespace common
-{
-namespace geometry
-{
-namespace point_adapter
-{
-/// Point adapters for eigen vector
-/// These adapters are necessary for the VoxelGrid to know how to access
-/// the coordinates from an eigen vector.
-template<>
-inline TRACKING_PUBLIC auto x_(const Eigen::Vector3f & pt)
-{
-  return pt.x();
-}
-
-template<>
-inline TRACKING_PUBLIC auto y_(const Eigen::Vector3f & pt)
-{
-  return pt.y();
-}
-
-template<>
-inline TRACKING_PUBLIC auto z_(const Eigen::Vector3f & pt)
-{
-  return pt.z();
-}
-
-template<>
-inline TRACKING_PUBLIC auto & xr_(Eigen::Vector3f & pt)
-{
-  return pt.x();
-}
-
-template<>
-inline TRACKING_PUBLIC auto & yr_(Eigen::Vector3f & pt)
-{
-  return pt.y();
-}
-
-template<>
-inline TRACKING_PUBLIC auto & zr_(Eigen::Vector3f & pt)
-{
-  return pt.z();
-}
-}  // namespace point_adapter
-}  // namespace geometry
-}  // namespace common
-
 }  // namespace autoware
 
 

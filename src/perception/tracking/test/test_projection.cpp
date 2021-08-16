@@ -118,7 +118,8 @@ TEST_F(PrismProjectionTest, camera_frame_projection_test) {
   identity.rotation.set__w(1.0);
   CameraModel model{intrinsics, identity};
   auto projection = model.project(rectangular_prism);
-  compare_shapes(rectangular_prism.polygon, projection, intrinsics);
+  EXPECT_TRUE(projection);
+  compare_shapes(rectangular_prism.polygon, projection.value(), intrinsics);
 }
 
 /// \brief Project the prism's face on positive X direciton to the image plane of a camera that
@@ -157,6 +158,7 @@ TEST_F(PrismProjectionTest, transformed_camera_frame_test) {
 
   CameraModel model{intrinsics, transform};
   auto projection = model.project(rectangular_prism);
+  EXPECT_TRUE(projection);
 
   // Manually construct the side face of the rectangle on the camera frame.
   geometry_msgs::msg::Polygon x_facade_on_camera_frame;
@@ -171,7 +173,7 @@ TEST_F(PrismProjectionTest, transformed_camera_frame_test) {
   x_facade_on_camera_frame.points.push_back(
     Point32{}.set__x(-half_height).set__y(-half_length).set__z(x_facade_depth));
 
-  compare_shapes(x_facade_on_camera_frame, projection, intrinsics);
+  compare_shapes(x_facade_on_camera_frame, projection.value(), intrinsics);
 }
 
 /// \brief Test to validate that objects behind the camera are not captured.
@@ -187,7 +189,7 @@ TEST_F(PrismProjectionTest, behind_the_image_plane_test) {
       return pt;
     });
   auto projection = model.project(rectangular_prism);
-  EXPECT_EQ(projection.shape.size(), 0U);
+  EXPECT_FALSE(projection);
 }
 
 /// \brief Test to validate that points outside the FoV of the camera are clamped
@@ -208,26 +210,26 @@ TEST_F(PrismProjectionTest, out_of_plane_test) {
   // Set the height to 0 to simplify the problem and not handle the rear corners of the prism.
   rectangular_prism.height = 0.0F;
   auto projection = model.project(rectangular_prism);
-
+  EXPECT_TRUE(projection);
   const auto check_pt = [&projection](auto x, auto y) {
       const auto res_it = std::find_if(
-        projection.shape.begin(), projection.shape.end(),
+        projection->shape.begin(), projection->shape.end(),
         [x, y](const auto & pt) {
           return autoware::common::helper_functions::comparisons::abs_eq(
-            (x - pt.x()), 0.0F, std::numeric_limits<decltype(x)>::epsilon()) &&
+            (x - pt.x), 0.0F, std::numeric_limits<decltype(x)>::epsilon()) &&
           autoware::common::helper_functions::comparisons::abs_eq(
-            (y - pt.y()), 0.0F, std::numeric_limits<decltype(y)>::epsilon());
+            (y - pt.y), 0.0F, std::numeric_limits<decltype(y)>::epsilon());
         });
-      if (res_it == projection.shape.end()) {
+      if (res_it == projection->shape.end()) {
         std::stringstream projected_pts{};
-        for (const auto & pt : projection.shape) {
-          projected_pts << "(" << pt.x() << ", " << pt.y() << ") ";
+        for (const auto & pt : projection->shape) {
+          projected_pts << "(" << pt.x << ", " << pt.y << ") ";
         }
         FAIL() << "Point (" << x << ", " << y << ") is not found in projections:" << std::endl <<
           projected_pts.str();
       }
-      ASSERT_NE(res_it, projection.shape.end());
-      projection.shape.erase(res_it);
+      ASSERT_NE(res_it, projection->shape.end());
+      projection->shape.erase(res_it);
     };
   // Check that one of the projected points is clamped to the edge of the image plane as expected
   const auto depth = rectangular_prism.polygon.points.front().z;
@@ -238,5 +240,5 @@ TEST_F(PrismProjectionTest, out_of_plane_test) {
     rectangular_prism.polygon.points.begin(),
     rectangular_prism.polygon.points.begin() + 2U);
 
-  compare_shapes(rectangular_prism.polygon, projection, intrinsics);
+  compare_shapes(rectangular_prism.polygon, projection.value(), intrinsics);
 }

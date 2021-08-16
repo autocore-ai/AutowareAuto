@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include <tracking/data_association.hpp>
+#include <tracking/detected_object_associator.hpp>
 
 #include <vector>
 
@@ -65,7 +65,7 @@ protected:
 
   std::array<double, 9> m_some_covariance;
   tracking::DataAssociationConfig m_association_cfg;
-  tracking::Associator m_associator;
+  tracking::DetectedObjectAssociator m_associator;
 };
 
 

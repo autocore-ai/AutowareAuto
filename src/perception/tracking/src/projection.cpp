@@ -42,10 +42,14 @@ CameraModel::CameraModel(
   m_width_interval{-static_cast<float32_t>(intrinsics.width) / 2.0F,
     static_cast<float32_t>(intrinsics.width) / 2.0F},
   m_corners{
-    Eigen::Vector3f{Interval::min(m_width_interval), Interval::max(m_height_interval), 0.0F},
-    Eigen::Vector3f{Interval::max(m_width_interval), Interval::max(m_height_interval), 0.0F},
-    Eigen::Vector3f{Interval::max(m_width_interval), Interval::min(m_height_interval), 0.0F},
-    Eigen::Vector3f{Interval::min(m_width_interval), Interval::min(m_height_interval), 0.0F}
+    Point{}.set__x(Interval::min(m_width_interval))
+    .set__y(Interval::max(m_height_interval)).set__z(0.0F),
+    Point{}.set__x(Interval::max(m_width_interval))
+    .set__y(Interval::max(m_height_interval)).set__z(0.0F),
+    Point{}.set__x(Interval::max(m_width_interval))
+    .set__y(Interval::min(m_height_interval)).set__z(0.0F),
+    Point{}.set__x(Interval::min(m_width_interval))
+    .set__y(Interval::min(m_height_interval)).set__z(0.0F)
   }
 {
   Eigen::Matrix3f intrinsic_matrix{};
@@ -56,8 +60,8 @@ CameraModel::CameraModel(
   m_projector = intrinsic_matrix * tf_camera_from_ego;
 }
 
-std::experimental::optional<CameraModel::Point>
-CameraModel::project_point(const Point & pt_3d)
+std::experimental::optional<CameraModel::EigPoint>
+CameraModel::project_point(const EigPoint & pt_3d) const
 {
   // `m_projector * p_3d = p_2d * depth`
   const auto pt_2d = m_projector * pt_3d;
@@ -69,7 +73,8 @@ CameraModel::project_point(const Point & pt_3d)
   return std::experimental::nullopt;
 }
 
-Projection CameraModel::project(const autoware_auto_msgs::msg::Shape & shape)
+std::experimental::optional<Projection> CameraModel::project(
+  const autoware_auto_msgs::msg::Shape & shape) const
 {
   Projection result;
   const auto & points_3d = shape.polygon.points;
@@ -78,7 +83,9 @@ Projection CameraModel::project(const autoware_auto_msgs::msg::Shape & shape)
   const auto project_and_append = [&points2d, this](auto x, auto y, auto z) {
       const auto projected_pt = project_point(Eigen::Vector3f{x, y, z});
       if (projected_pt) {
-        points2d.emplace_back(*projected_pt);
+        points2d.emplace_back(
+          Point{}.set__x(projected_pt->x()).
+          set__y(projected_pt->y()).set__z(projected_pt->z()));
       }
     };
 
@@ -93,8 +100,16 @@ Projection CameraModel::project(const autoware_auto_msgs::msg::Shape & shape)
   points2d.resize(static_cast<uint32_t>(std::distance(points2d.cbegin(), end_of_shape_it)));
 
   result.shape = common::geometry::convex_polygon_intersection2d(m_corners, points2d);
-  return result;
+  return is_projection_valid(result) ?
+         std::experimental::make_optional(result) :
+         std::experimental::nullopt;
 }
+
+bool CameraModel::is_projection_valid(const Projection & projection) const noexcept
+{
+  return projection.shape.size() >= 3U;
+}
+
 
 }  // namespace tracking
 }  // namespace perception

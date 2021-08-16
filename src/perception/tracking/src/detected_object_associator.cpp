@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <tracking/data_association.hpp>
+#include <tracking/detected_object_associator.hpp>
 
 #include <common/types.hpp>
 #include <geometry/common_2d.hpp>
@@ -45,10 +45,10 @@ DataAssociationConfig::DataAssociationConfig(
   m_max_area_ratio(max_area_ratio), m_max_area_ratio_inv(1.F / max_area_ratio),
   m_consider_edge_for_big_detections(consider_edge_for_big_detections) {}
 
-Associator::Associator(const DataAssociationConfig & association_cfg)
+DetectedObjectAssociator::DetectedObjectAssociator(const DataAssociationConfig & association_cfg)
 : m_association_cfg(association_cfg) {}
 
-AssociatorResult Associator::assign(
+AssociatorResult DetectedObjectAssociator::assign(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
   const std::vector<TrackedObject> & tracks)
 {
@@ -73,7 +73,7 @@ AssociatorResult Associator::assign(
   return extract_result();
 }
 
-void Associator::reset()
+void DetectedObjectAssociator::reset()
 {
   m_assigner.reset();
 
@@ -83,7 +83,7 @@ void Associator::reset()
   m_had_errors = false;
 }
 
-void Associator::compute_weights(
+void DetectedObjectAssociator::compute_weights(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
   const std::vector<TrackedObject> & tracks)
 {
@@ -118,7 +118,7 @@ void Associator::compute_weights(
   }
 }
 
-bool Associator::consider_associating(
+bool DetectedObjectAssociator::consider_associating(
   const autoware_auto_msgs::msg::DetectedObject & detection,
   const TrackedObject & track) const
 {
@@ -179,7 +179,9 @@ bool Associator::consider_associating(
   return false;
 }
 
-void Associator::set_weight(const float32_t weight, const size_t det_idx, const size_t track_idx)
+void DetectedObjectAssociator::set_weight(
+  const float32_t weight,
+  const size_t det_idx, const size_t track_idx)
 {
   if (m_are_tracks_rows) {
     m_assigner.set_weight(
@@ -192,7 +194,7 @@ void Associator::set_weight(const float32_t weight, const size_t det_idx, const 
   }
 }
 
-AssociatorResult Associator::extract_result() const
+AssociatorResult DetectedObjectAssociator::extract_result() const
 {
   AssociatorResult ret;
   ret.track_assignments.resize(m_num_tracks);

@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef TRACKING__DATA_ASSOCIATION_HPP_
-#define TRACKING__DATA_ASSOCIATION_HPP_
+#ifndef TRACKING__DETECTED_OBJECT_ASSOCIATOR_HPP_
+#define TRACKING__DETECTED_OBJECT_ASSOCIATOR_HPP_
 
 #include <tracking/visibility_control.hpp>
 
@@ -71,13 +71,13 @@ private:
 
 /// \brief Class to perform data association between existing tracks and new detections using
 ///        mahalanobis distance and hungarian assigner
-class TRACKING_PUBLIC Associator
+class TRACKING_PUBLIC DetectedObjectAssociator
 {
 public:
   using Assigner = autoware::fusion::hungarian_assigner::hungarian_assigner_c<MAX_NUM_TRACKS>;
   /// \brief Constructor
   /// \param association_cfg Config object containing parameters to be used
-  explicit Associator(const DataAssociationConfig & association_cfg);
+  explicit DetectedObjectAssociator(const DataAssociationConfig & association_cfg);
 
   /// \brief Run assigner for the given list of detections and tracks
   /// \param detections List of detections
@@ -120,4 +120,4 @@ private:
 }  // namespace perception
 }  // namespace autoware
 
-#endif  // TRACKING__DATA_ASSOCIATION_HPP_
+#endif  // TRACKING__DETECTED_OBJECT_ASSOCIATOR_HPP_

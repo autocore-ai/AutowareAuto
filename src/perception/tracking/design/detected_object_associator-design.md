@@ -1,23 +1,24 @@
-Associator {#tracking-associator-design}
+Detected Object Associator {#tracking-detected-object-associator-design}
 ===========
-This is the design document of the Data association part of the object tracking node
+This is the design document of the detected object associator that is used in the object tracking 
+node
 
 
 # Purpose / Use cases
 <!-- Required -->
 <!-- Things to consider:
     - Why did we implement this feature? -->
-The data association module pairs up detections with tracks that are similar so that the new 
-state of the tracks can be better estimated or new tracks can be created or existing tracks can 
-be pruned.
+The detected object associator module pairs up detections with tracks that are similar so that 
+the new state of the tracks can be better estimated or new tracks can be created or existing  
+tracks can be pruned.
 
 # Design
 <!-- Required -->
 <!-- Things to consider:
     - How does it work? -->
-The data association module uses Mahalanobis distance to compute how "similar" a track is to a 
-detection. This cost is used to solve a hungarian assigner problem which returns a one to one 
-association between detections and tracks. It is possible that some tracks/detection do not 
+The detected object associator module uses Mahalanobis distance to compute how "similar" a track 
+is to a detection. This cost is used to solve a hungarian assigner problem which returns a one to 
+one association between detections and tracks. It is possible that some tracks/detection do not 
 have any corresponding association.
 
 ## Assumptions / Known limits

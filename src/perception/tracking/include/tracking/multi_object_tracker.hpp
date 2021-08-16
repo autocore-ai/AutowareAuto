@@ -34,7 +34,7 @@
 #include "common/types.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "tracking/data_association.hpp"
+#include "tracking/detected_object_associator.hpp"
 #include "tracking/track_creator.hpp"
 #include "tracking/tracked_object.hpp"
 #include "state_vector/common_states.hpp"
@@ -143,7 +143,7 @@ private:
   MultiObjectTrackerOptions m_options;
 
   /// Associator for matching observations to tracks.
-  Associator m_associator;
+  DetectedObjectAssociator m_associator;
 
   /// Creator for creating tracks based on unassociated observations
   TrackCreator m_track_creator;
