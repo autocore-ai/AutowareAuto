@@ -21,6 +21,7 @@
 #include <tracking/visibility_control.hpp>
 
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 namespace autoware
@@ -45,9 +46,9 @@ struct TRACKING_PUBLIC AssociatorResult
   ///        between 0 to Association::m_num_detections or AssociatorResult::UNASSIGNED.
   std::vector<std::size_t> track_assignments;
   /// \brief Indices of detections that are not associated to any tracks
-  std::vector<std::size_t> unassigned_detection_indices;
+  std::unordered_set<std::size_t> unassigned_detection_indices;
   /// \brief Indices of tracks that are not associated to any detections
-  std::vector<std::size_t> unassigned_track_indices;
+  std::unordered_set<std::size_t> unassigned_track_indices;
   /// \brief Indicates if there were errors in the data during association
   bool had_errors;
 };

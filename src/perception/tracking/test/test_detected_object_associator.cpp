@@ -108,7 +108,7 @@ TEST_F(AssociationTester, basic)
   const auto ret = m_associator.assign(objects_msg, tracked_object_vec);
   EXPECT_EQ(ret.track_assignments[0U], 1U);
   EXPECT_EQ(ret.unassigned_detection_indices.size(), 1U);
-  EXPECT_EQ(ret.unassigned_detection_indices[0U], 0U);
+  EXPECT_TRUE(ret.unassigned_detection_indices.find(0U) != ret.unassigned_detection_indices.end());
 }
 
 // 10 tracks, 5 detections. Make sure 5 tracks are unassigned
@@ -151,7 +151,8 @@ TEST_F(AssociationTester, more_tracks_less_objects)
 
   EXPECT_EQ(ret.unassigned_track_indices.size(), num_tracks - num_associated_dets);
   for (size_t i = 0U; i < ret.unassigned_track_indices.size(); ++i) {
-    EXPECT_EQ(ret.unassigned_track_indices[i], (i * 2U) + 1U);
+    EXPECT_TRUE(
+      ret.unassigned_track_indices.find((i * 2U) + 1U) != ret.unassigned_track_indices.end());
   }
 }
 
@@ -207,7 +208,7 @@ TEST_F(AssociationTester, area_gating_fails)
   for (size_t i = 0U, track_idx = 0U; i < ret.unassigned_track_indices.size();
     ++i, track_idx += 2)
   {
-    EXPECT_EQ(ret.unassigned_track_indices[i], track_idx);
+    EXPECT_TRUE(ret.unassigned_track_indices.find(track_idx) != ret.unassigned_track_indices.end());
   }
 
   // Verify unassigned detections
@@ -215,7 +216,8 @@ TEST_F(AssociationTester, area_gating_fails)
   for (size_t i = 0U, det_idx = 0U; i < ret.unassigned_detection_indices.size();
     ++i, det_idx += 2)
   {
-    EXPECT_EQ(ret.unassigned_detection_indices[i], det_idx);
+    EXPECT_TRUE(
+      ret.unassigned_detection_indices.find(det_idx) != ret.unassigned_detection_indices.end());
   }
 
   // Verify assignments

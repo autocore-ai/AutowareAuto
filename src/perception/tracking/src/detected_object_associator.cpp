@@ -211,13 +211,13 @@ AssociatorResult DetectedObjectAssociator::extract_result() const
         ret.track_assignments[track_idx] = det_idx;
         detections_assigned[det_idx] = true;
       } else {
-        ret.unassigned_track_indices.push_back(track_idx);
+        ret.unassigned_track_indices.insert(track_idx);
       }
     }
 
     for (size_t i = 0U; i < detections_assigned.size(); ++i) {
       if (!detections_assigned[i]) {
-        ret.unassigned_detection_indices.push_back(i);
+        ret.unassigned_detection_indices.insert(i);
       }
     }
   } else {
@@ -229,13 +229,13 @@ AssociatorResult DetectedObjectAssociator::extract_result() const
         ret.track_assignments[track_idx] = det_idx;
         tracks_assigned[track_idx] = true;
       } else {
-        ret.unassigned_detection_indices.push_back(det_idx);
+        ret.unassigned_detection_indices.insert(det_idx);
       }
     }
 
     for (size_t i = 0U; i < tracks_assigned.size(); ++i) {
       if (!tracks_assigned[i]) {
-        ret.unassigned_track_indices.push_back(i);
+        ret.unassigned_track_indices.insert(i);
       }
     }
   }

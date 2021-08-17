@@ -76,6 +76,7 @@ if(BUILD_TESTING)
   set(TEST_TRACKING_EXE test_multi_object_tracker)
   ament_add_gtest(${TEST_TRACKING_EXE} ${TEST_SOURCES})
   autoware_set_compile_options(${TEST_TRACKING_EXE})
+  target_compile_options(${TEST_TRACKING_EXE} PRIVATE -Wno-conversion -Wno-sign-conversion)
   target_link_libraries(${TEST_TRACKING_EXE} ${PROJECT_NAME})
 endif()
 

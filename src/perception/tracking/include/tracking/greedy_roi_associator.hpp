@@ -15,6 +15,7 @@
 #define TRACKING__GREEDY_ROI_ASSOCIATOR_HPP_
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <helper_functions/template_utils.hpp>
 #include <geometry/intersection.hpp>
 #include <tracking/tracker_types.hpp>
@@ -51,7 +52,8 @@ struct TRACKING_PUBLIC IOUHeuristic
   }
 };
 
-/// \brief Class to associate the tracks to ROIs on a first-come-first-serve manner.
+/// \brief Class to associate the detections and tracks in euclidean space to ROIs in image space
+///        on a first-come-first-serve manner.
 class TRACKING_PUBLIC GreedyRoiAssociator
 {
 public:
@@ -60,8 +62,7 @@ public:
   /// \brief Constructor
   /// \param intrinsics Camera intrinsics of the ROI
   /// \param tf_camera_from_ego ego->camera transform
-  /// \param iou_threshold Minimum score result for a track and ROI to be considered a
-  // match
+  /// \param iou_threshold Minimum score result for a track and ROI to be considered a match
   GreedyRoiAssociator(
     const CameraIntrinsics & intrinsics,
     const geometry_msgs::msg::Transform & tf_camera_from_ego,
@@ -77,12 +78,34 @@ public:
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
     const std::vector<TrackedObject> & tracks) const;
 
+  /// \brief Assign the objects to the ROIs. The assignment is done by first projecting the
+  /// detections, then assigning each detection to a ROI according to the IoU metric in a
+  /// greedy fashion.
+  /// \param rois Regions of Interest in camera frame from vision subsystem
+  /// \param objects DetectedObjects from lidar or radar
+  /// \return The association between the objects and the rois. In this case, "tracks" in the
+  ///         return struct refers to the 3D objects and "detections" refer to the ROIs
+  AssociatorResult assign(
+    const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
+    const autoware_auto_msgs::msg::DetectedObjects & objects) const;
+
 private:
-  // Scan the ROIs to find the best matching roi for a given track projection
-  std::size_t match_detection(
-    const Projection & projection,
+  // Create result struct and initialize data to expected default values
+  AssociatorResult create_and_init_result(
+    const std::size_t rois_size,
+    const std::size_t objects_size) const;
+
+  // Scan the ROIs to find the best matching roi for a given shape by projecting it onto image
+  // frame
+  std::size_t project_and_match_detection(
+    const autoware_auto_msgs::msg::Shape & object_shape,
     const std::unordered_set<std::size_t> & available_roi_indices,
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois) const;
+
+  // Uses the given matched_detection_idx to assign to appropriate containers in result
+  void handle_matching_output(
+    const std::size_t matched_detection_idx,
+    const std::size_t object_idx, AssociatorResult & result) const;
 
   CameraModel m_camera;
   IOUHeuristic m_iou_func{};
