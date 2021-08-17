@@ -26,13 +26,14 @@
 
 #include "autoware_auto_msgs/msg/detected_object.hpp"
 #include "autoware_auto_msgs/msg/detected_objects.hpp"
-#include "autoware_auto_msgs/msg/tracked_objects.hpp"
 #include "autoware_auto_msgs/msg/shape.hpp"
+#include "autoware_auto_msgs/msg/tracked_objects.hpp"
 #include "common/types.hpp"
 #include "motion_model/linear_motion_model.hpp"
 #include "state_estimation/kalman_filter/kalman_filter.hpp"
 #include "state_estimation/noise_model/wiener_noise.hpp"
 #include "state_vector/common_states.hpp"
+#include "tracking/classification_tracker.hpp"
 #include "tracking/visibility_control.hpp"
 
 namespace autoware
@@ -115,6 +116,8 @@ private:
   /// All variables will initially have this variance where the detection
   /// does not contain one.
   common::types::float64_t m_default_variance = -1.0;
+  /// Track class classifier.
+  ClassificationTracker m_classifier;
 };
 
 }  // namespace tracking

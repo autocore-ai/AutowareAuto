@@ -69,6 +69,7 @@ if(BUILD_TESTING)
     test/test_greedy_roi_associator.cpp
     test/test_multi_object_tracker.cpp
     test/test_projection.cpp
+    test/test_classification_tracker.cpp
     test/test_track_creation.cpp
     test/test_tracked_object.cpp
   )

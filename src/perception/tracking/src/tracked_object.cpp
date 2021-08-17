@@ -121,6 +121,7 @@ TrackedObject::TrackedObject(
   m_msg.classification = detection.classification;
   m_msg.shape.push_back(detection.shape);
   // Kinematics are owned by the EKF and only filled in in the msg() getter
+  m_classifier.update(detection.classification);
 }
 
 void TrackedObject::predict(std::chrono::nanoseconds dt)
@@ -151,6 +152,7 @@ void TrackedObject::update(const DetectedObjectMsg & detection)
       PoseMeasurementXYZ64::State::Matrix::Identity();
   }
   m_ekf.correct(pose_measurement);
+  m_classifier.update(detection.classification);
 }
 
 void TrackedObject::no_update()
@@ -204,7 +206,8 @@ const TrackedObject::TrackedObjectMsg & TrackedObject::msg()
     m_ekf.covariance()(
     m_ekf.state().index_of<Y_VELOCITY>(),
     m_ekf.state().index_of<Y_VELOCITY>());
-  // TODO(nikolai.morin): Set is_stationary, classification etc.
+  m_msg.classification = m_classifier.object_classification_vector();
+  // TODO(nikolai.morin): Set is_stationary etc.
   return m_msg;
 }
 
