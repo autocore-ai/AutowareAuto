@@ -19,6 +19,7 @@
 #define JOYSTICK_VEHICLE_INTERFACE__JOYSTICK_VEHICLE_INTERFACE_HPP_
 
 #include <autoware_auto_msgs/msg/headlights_command.hpp>
+#include <autoware_auto_msgs/msg/wipers_command.hpp>
 #include <autoware_auto_msgs/msg/high_level_control_command.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
@@ -87,6 +88,7 @@ static constexpr AxisValue DEFAULT_OFFSET = 0.0F;
 static constexpr AxisValue VELOCITY_INCREMENT = 1.0F;
 
 using autoware_auto_msgs::msg::HeadlightsCommand;
+using autoware_auto_msgs::msg::WipersCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
 
 /// A core class which performs all basic functions which are not ROS-related for

@@ -26,6 +26,7 @@
 #include <string>
 
 #include "autoware_auto_msgs/msg/headlights_report.hpp"
+#include "autoware_auto_msgs/msg/wipers_report.hpp"
 
 namespace lgsvl_interface
 {

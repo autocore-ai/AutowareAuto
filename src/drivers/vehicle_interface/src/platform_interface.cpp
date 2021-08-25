@@ -45,6 +45,12 @@ PlatformInterface::get_headlights_report() const noexcept
   return m_headlights_report;
 }
 
+const autoware_auto_msgs::msg::WipersReport &
+PlatformInterface::get_wipers_report() const noexcept
+{
+  return m_wipers_report;
+}
+
 autoware_auto_msgs::msg::VehicleOdometry & PlatformInterface::odometry() noexcept
 {
   return m_odometry;
@@ -55,12 +61,23 @@ autoware_auto_msgs::msg::HeadlightsReport & PlatformInterface::headlights_report
   return m_headlights_report;
 }
 
+autoware_auto_msgs::msg::WipersReport & PlatformInterface::wipers_report() noexcept
+{
+  return m_wipers_report;
+}
 
 void PlatformInterface::send_headlights_command(
   const autoware_auto_msgs::msg::HeadlightsCommand & msg)
 {
   (void)msg;
   throw std::runtime_error("HeadlightsCommand not supported by this vehicle interface");
+}
+
+void PlatformInterface::send_wipers_command(
+  const autoware_auto_msgs::msg::WipersCommand & msg)
+{
+  (void)msg;
+  throw std::runtime_error("WipersCommand not supported by this vehicle interface");
 }
 
 }  // namespace vehicle_interface

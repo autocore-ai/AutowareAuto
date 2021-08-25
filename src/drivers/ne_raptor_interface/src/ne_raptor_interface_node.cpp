@@ -32,7 +32,10 @@ using autoware::drivers::vehicle_interface::ViFeature;
 NERaptorInterfaceNode::NERaptorInterfaceNode(const rclcpp::NodeOptions & options)
 : VehicleInterfaceNode{
     "ne_raptor_interface",
-    std::unordered_set<ViFeature> {ViFeature::HEADLIGHTS},
+    std::unordered_set<ViFeature> {
+        ViFeature::HEADLIGHTS,
+        ViFeature::WIPERS,
+      },
     options
 }
 {

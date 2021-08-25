@@ -21,6 +21,8 @@
 #include <common/types.hpp>
 #include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/headlights_report.hpp>
+#include <autoware_auto_msgs/msg/wipers_command.hpp>
+#include <autoware_auto_msgs/msg/wipers_report.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
@@ -35,6 +37,8 @@ using autoware::common::types::bool8_t;
 
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
+using autoware_auto_msgs::msg::WipersCommand;
+using autoware_auto_msgs::msg::WipersReport;
 using autoware_auto_msgs::msg::RawControlCommand;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
@@ -106,12 +110,21 @@ public:
   /// \brief Get the most recent state of the headlights feature.
   /// \return A HeadlightsReport message intended to be published.
   const HeadlightsReport & get_headlights_report() const noexcept;
+  /// \brief Get the most recent state of the wipers feature.
+  /// \return A WipersReport message intended to be published.
+  const WipersReport & get_wipers_report() const noexcept;
 
   /// \brief Send the headlight control command to the vehicle platform.
   /// If this is not implemented for a specific vehicle but is called,
   /// a runtime error will be thrown.
   /// \param[in] msg The control command to send to the vehicle.
   virtual void send_headlights_command(const HeadlightsCommand & msg);
+
+  /// \brief Send the wipers control command to the vehicle platform.
+  /// If this is not implemented for a specific vehicle but is called,
+  /// a runtime error will be thrown.
+  /// \param[in] msg The control command to send to the vehicle.
+  virtual void send_wipers_command(const WipersCommand & msg);
 
 protected:
   /// Get the underlying state report for modification
@@ -120,9 +133,12 @@ protected:
   VehicleOdometry & odometry() noexcept;
   /// Get the underlying headlight state for modification
   HeadlightsReport & headlights_report() noexcept;
+  /// Get the underlying wiper state for modification
+  WipersReport & wipers_report() noexcept;
 
 private:
   HeadlightsReport m_headlights_report{};
+  WipersReport m_wipers_report{};
   VehicleStateReport m_state_report{};
   VehicleOdometry m_odometry{};
 };  // class PlatformInterface

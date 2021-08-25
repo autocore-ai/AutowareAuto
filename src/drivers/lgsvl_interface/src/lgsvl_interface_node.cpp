@@ -35,7 +35,10 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
   const rclcpp::NodeOptions & options)
 : VehicleInterfaceNode{
     "lgsvl_interface",
-    std::unordered_set<ViFeature> {ViFeature::HEADLIGHTS},
+    std::unordered_set<ViFeature> {
+      ViFeature::HEADLIGHTS,
+      ViFeature::WIPERS,
+    },
     options
 }
 {

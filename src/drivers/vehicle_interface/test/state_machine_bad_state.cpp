@@ -34,7 +34,7 @@ enum class State
 struct BadStateCommand
 {
   std::vector<State> bad_states;
-  decltype(VSC::WIPER_CLEAN) bad_value;
+  decltype(WipersCommand::ENABLE_CLEAN) bad_value;
 };
 
 class bad_state_command
@@ -49,7 +49,7 @@ protected:
       switch (state) {
         case State::WIPER:
           ret.wiper = bad_val;
-          // ASSERT_GT(bad_val, VSC::WIPER_CLEAN);
+          // ASSERT_GT(bad_val, WipersCommand::ENABLE_CLEAN);
           break;
         case State::BLINKER:
           ret.blinker = bad_val;
@@ -100,7 +100,7 @@ TEST_P(bad_state_command, basic)
   }
   // Actual ones with possible bad stuff
   // Unfortunately hardcoded--no way to enumerate over static variables
-  EXPECT_TRUE(check(cmd.state()->wiper, state.wiper, VSC::WIPER_CLEAN));
+  EXPECT_TRUE(check(cmd.state()->wiper, state.wiper, WipersCommand::ENABLE_CLEAN));
   EXPECT_TRUE(check(cmd.state()->mode, state.mode, VSC::MODE_MANUAL));
   EXPECT_TRUE(check(cmd.state()->blinker, state.blinker, VSC::BLINKER_HAZARD));
   EXPECT_TRUE(check(cmd.state()->headlight, state.headlight, HeadlightsCommand::ENABLE_HIGH));

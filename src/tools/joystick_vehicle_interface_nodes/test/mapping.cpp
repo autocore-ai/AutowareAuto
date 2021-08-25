@@ -94,6 +94,7 @@ struct SubAndMsg
 TEST_P(joy_vi_test, basic_mapping)
 {
   using autoware_auto_msgs::msg::HeadlightsCommand;
+  using autoware_auto_msgs::msg::WipersCommand;
 
   const auto param = GetParam();
   const std::string control_command =
@@ -351,14 +352,14 @@ TEST_P(joy_vi_test, basic_mapping)
       (button_check_fn(Buttons::AUTONOMOUS_TOGGLE) == (state.msg_->mode == VSC::MODE_AUTONOMOUS)) &&
       (button_check_fn(Buttons::HEADLIGHTS_TOGGLE) ==
       (state.msg_->headlight == HeadlightsCommand::ENABLE_LOW)) &&
-      (button_check_fn(Buttons::WIPER_TOGGLE) == (state.msg_->wiper == VSC::WIPER_LOW));
+      (button_check_fn(Buttons::WIPER_TOGGLE) == (state.msg_->wiper == WipersCommand::ENABLE_LOW));
     const auto toggle_case2 =
       (!button_check_fn(Buttons::HORN_TOGGLE) || !state.msg_->horn) &&
       (!button_check_fn(Buttons::HAND_BRAKE_TOGGLE) || !state.msg_->hand_brake) &&
       (button_check_fn(Buttons::AUTONOMOUS_TOGGLE) == (state.msg_->mode == VSC::MODE_MANUAL)) &&
       (button_check_fn(Buttons::HEADLIGHTS_TOGGLE) ==
       (state.msg_->headlight == HeadlightsCommand::DISABLE)) &&
-      (button_check_fn(Buttons::WIPER_TOGGLE) == (state.msg_->wiper == VSC::WIPER_OFF));
+      (button_check_fn(Buttons::WIPER_TOGGLE) == (state.msg_->wiper == WipersCommand::DISABLE));
     if (toggle_case1 || toggle_case2) {
       EXPECT_TRUE(true);  // Pushed logic into conditional for printing purposes
     } else {
@@ -379,7 +380,9 @@ TEST_P(joy_vi_test, basic_mapping)
       err_print(
         "headlight", state.msg_->headlight, HeadlightsCommand::ENABLE_LOW,
         HeadlightsCommand::DISABLE, Buttons::HEADLIGHTS_TOGGLE);
-      err_print("wiper", state.msg_->wiper, VSC::WIPER_LOW, VSC::WIPER_OFF, Buttons::WIPER_TOGGLE);
+      err_print(
+        "wiper", state.msg_->wiper, WipersCommand::ENABLE_LOW, WipersCommand::DISABLE,
+        Buttons::WIPER_TOGGLE);
       EXPECT_TRUE(false);
     }
     // Easy checks w/o state

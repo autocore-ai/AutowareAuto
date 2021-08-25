@@ -52,9 +52,9 @@ static_assert(VSC::BLINKER_HAZARD == VSR::BLINKER_HAZARD, "BLINKER_HAZARD !=");
 static_assert(HeadlightsCommand::DISABLE == VSR::HEADLIGHT_OFF, "HEADLIGHT_OFF !=");
 static_assert(HeadlightsCommand::ENABLE_LOW == VSR::HEADLIGHT_ON, "HEADLIGHT_ON !=");
 static_assert(HeadlightsCommand::ENABLE_HIGH == VSR::HEADLIGHT_HIGH, "HEADLIGHT_HIGH !=");
-static_assert(VSC::WIPER_OFF == VSR::WIPER_OFF, "WIPER_OFF !=");
-static_assert(VSC::WIPER_LOW == VSR::WIPER_LOW, "WIPER_LOW !=");
-static_assert(VSC::WIPER_HIGH == VSR::WIPER_HIGH, "WIPER_HIGH !=");
+static_assert(WipersCommand::DISABLE == WipersReport::DISABLE, "DISABLE !=");
+static_assert(WipersCommand::ENABLE_LOW == WipersReport::ENABLE_LOW, "ENABLE_LOW !=");
+static_assert(WipersCommand::ENABLE_HIGH == WipersReport::ENABLE_HIGH, "ENABLE_HIGH !=");
 static_assert(WipersCommand::ENABLE_CLEAN == WipersReport::ENABLE_CLEAN, "ENABLE_CLEAN !=");
 static_assert(VSC::GEAR_DRIVE == VSR::GEAR_DRIVE, "GEAR_DRIVE !=");
 static_assert(VSC::GEAR_REVERSE == VSR::GEAR_REVERSE, "GEAR_REVERSE !=");
@@ -236,8 +236,8 @@ SafetyStateMachine::MaybeEnum SafetyStateMachine::headlights_on_if_wipers_on(con
 {
   MaybeEnum ret{};
   switch (in.wiper) {
-    case VSC::WIPER_LOW:
-    case VSC::WIPER_HIGH:
+    case WipersCommand::ENABLE_LOW:
+    case WipersCommand::ENABLE_HIGH:
       switch (in.headlight) {
         case HeadlightsCommand::DISABLE:
         case HeadlightsCommand::NO_COMMAND:
@@ -249,9 +249,9 @@ SafetyStateMachine::MaybeEnum SafetyStateMachine::headlights_on_if_wipers_on(con
           break;
       }
       break;
-    case VSC::WIPER_OFF:
-    case VSC::WIPER_CLEAN:
-    case VSC::WIPER_NO_COMMAND:
+    case WipersCommand::DISABLE:
+    case WipersCommand::ENABLE_CLEAN:
+    case WipersCommand::NO_COMMAND:
     default:  // Throw on other cases?
       break;
   }
@@ -348,7 +348,7 @@ void SafetyStateMachine::cache_state_change_request(const VSC & in)
         request = {command, stamp};
       }
     };
-  update_request(VSC::WIPER_NO_COMMAND, in.wiper, m_state.wiper, m_requests.wiper);
+  update_request(WipersCommand::NO_COMMAND, in.wiper, m_state.wiper, m_requests.wiper);
   update_request(VSC::BLINKER_NO_COMMAND, in.blinker, m_state.blinker, m_requests.blinker);
   update_request(VSC::GEAR_NO_COMMAND, in.gear, m_state.gear, m_requests.gear);
   update_request(
@@ -384,7 +384,7 @@ void SafetyStateMachine::check_state_change(const StateReport & in)
     };
   check_state(m_requests.gear, in.gear, VSC::GEAR_NO_COMMAND);
   check_state(m_requests.blinker, in.blinker, VSC::BLINKER_NO_COMMAND);
-  check_state(m_requests.wiper, in.wiper, VSC::WIPER_NO_COMMAND);
+  check_state(m_requests.wiper, in.wiper, WipersCommand::NO_COMMAND);
   check_state(m_requests.headlight, in.headlight, HeadlightsCommand::NO_COMMAND);
   check_state(m_requests.mode, in.mode, VSC::MODE_NO_COMMAND);
   // Check flags
@@ -438,15 +438,15 @@ SafetyStateMachine::VSC SafetyStateMachine::sanitize(const VSC & msg) const
   }
   // Wipers
   switch (msg.wiper) {
-    case VSC::WIPER_LOW:
-    case VSC::WIPER_HIGH:
-    case VSC::WIPER_OFF:
-    case VSC::WIPER_CLEAN:
-    case VSC::WIPER_NO_COMMAND:
+    case WipersCommand::ENABLE_LOW:
+    case WipersCommand::ENABLE_HIGH:
+    case WipersCommand::DISABLE:
+    case WipersCommand::ENABLE_CLEAN:
+    case WipersCommand::NO_COMMAND:
       break;
     default:
       did_sanitize = true;
-      ret.wiper = VSC::WIPER_NO_COMMAND;
+      ret.wiper = WipersCommand::NO_COMMAND;
       break;
   }
   // Gear

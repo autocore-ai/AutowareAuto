@@ -255,31 +255,6 @@ bool8_t NERaptorInterface::send_state_command(const VehicleStateCommand & msg)
       break;
   }
 
-  switch (msg.wiper) {
-    case VehicleStateCommand::WIPER_NO_COMMAND:
-      // Keep previous
-      break;
-    case VehicleStateCommand::WIPER_OFF:
-      m_misc_cmd.front_wiper_cmd.status = WiperFront::OFF;
-      break;
-    case VehicleStateCommand::WIPER_LOW:
-      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
-      break;
-    case VehicleStateCommand::WIPER_HIGH:
-      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
-      break;
-    case VehicleStateCommand::WIPER_CLEAN:
-      m_misc_cmd.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
-      break;
-    default:
-      m_misc_cmd.front_wiper_cmd.status = WiperFront::SNA;
-      RCLCPP_ERROR_THROTTLE(
-        m_logger, m_clock, CLOCK_1_SEC,
-        "Received command for invalid wiper state.");
-      ret = false;
-      break;
-  }
-
   std::lock_guard<std::mutex> guard_bc(m_brake_cmd_mutex);
   m_brake_cmd.park_brake_cmd.status =
     (msg.hand_brake) ? ParkingBrake::ON : ParkingBrake::OFF;
@@ -454,6 +429,37 @@ void NERaptorInterface::send_headlights_command(const HeadlightsCommand & msg)
       RCLCPP_ERROR_THROTTLE(
         m_logger, m_clock, CLOCK_1_SEC,
         "Received command for invalid headlight state.");
+      break;
+  }
+}
+
+void NERaptorInterface::send_wipers_command(const WipersCommand & msg)
+{
+  switch (msg.command) {
+    case WipersCommand::NO_COMMAND:
+      // Keep previous
+      break;
+    case WipersCommand::DISABLE:
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::OFF;
+      m_misc_cmd.rear_wiper_cmd.status = WiperRear::OFF;
+      break;
+    case WipersCommand::ENABLE_LOW:
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_LOW;
+      m_misc_cmd.rear_wiper_cmd.status = WiperRear::CONSTANT_LOW;
+      break;
+    case WipersCommand::ENABLE_HIGH:
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::CONSTANT_HIGH;
+      m_misc_cmd.rear_wiper_cmd.status = WiperRear::CONSTANT_HIGH;
+      break;
+    case WipersCommand::ENABLE_CLEAN:
+      m_misc_cmd.front_wiper_cmd.status = WiperFront::WASH_BRIEF;
+      m_misc_cmd.rear_wiper_cmd.status = WiperRear::WASH_BRIEF;
+      break;
+    default:
+      // Keep previous
+      RCLCPP_ERROR_THROTTLE(
+        m_logger, m_clock, CLOCK_1_SEC,
+        "Received command for invalid wiper state.");
       break;
   }
 }

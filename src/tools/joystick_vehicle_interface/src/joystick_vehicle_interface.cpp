@@ -135,7 +135,7 @@ bool8_t JoystickVehicleInterface::handle_active_button(Buttons button)
       m_headlights_on = !m_headlights_on;
       break;
     case Buttons::WIPER_TOGGLE:
-      m_state_command.wiper = m_wipers_on ? VSC::WIPER_OFF : VSC::WIPER_LOW;
+      m_state_command.wiper = m_wipers_on ? WipersCommand::DISABLE : WipersCommand::ENABLE_LOW;
       m_wipers_on = !m_wipers_on;
       break;
     case Buttons::HAND_BRAKE_TOGGLE:

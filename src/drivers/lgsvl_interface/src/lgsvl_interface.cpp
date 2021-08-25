@@ -31,6 +31,8 @@
 
 #include "autoware_auto_msgs/msg/headlights_command.hpp"
 #include "autoware_auto_msgs/msg/headlights_report.hpp"
+#include "autoware_auto_msgs/msg/wipers_command.hpp"
+#include "autoware_auto_msgs/msg/wipers_report.hpp"
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
@@ -39,16 +41,17 @@ using namespace std::chrono_literals;
 
 namespace lgsvl_interface
 {
-
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
+using autoware_auto_msgs::msg::WipersCommand;
+using autoware_auto_msgs::msg::WipersReport;
 
 const std::unordered_map<WIPER_TYPE, WIPER_TYPE> LgsvlInterface::autoware_to_lgsvl_wiper {
-  {VSC::WIPER_NO_COMMAND, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
-  {VSC::WIPER_OFF, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
-  {VSC::WIPER_LOW, static_cast<WIPER_TYPE>(VSD::WIPERS_LOW)},
-  {VSC::WIPER_HIGH, static_cast<WIPER_TYPE>(VSD::WIPERS_HIGH)},
-  {VSC::WIPER_CLEAN, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+  {WipersCommand::NO_COMMAND, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+  {WipersCommand::DISABLE, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
+  {WipersCommand::ENABLE_LOW, static_cast<WIPER_TYPE>(VSD::WIPERS_LOW)},
+  {WipersCommand::ENABLE_HIGH, static_cast<WIPER_TYPE>(VSD::WIPERS_HIGH)},
+  {WipersCommand::ENABLE_CLEAN, static_cast<WIPER_TYPE>(VSD::WIPERS_OFF)},
 };
 
 const std::unordered_map<GEAR_TYPE, GEAR_TYPE> LgsvlInterface::autoware_to_lgsvl_gear {
@@ -180,8 +183,10 @@ LgsvlInterface::LgsvlInterface(
 
       if (msg->wipers_active) {
         state_report.set__wiper(autoware_auto_msgs::msg::VehicleStateReport::WIPER_LOW);
+        wipers_report().report = WipersReport::ENABLE_LOW;
       } else {
         state_report.set__wiper(autoware_auto_msgs::msg::VehicleStateReport::WIPER_OFF);
+        wipers_report().report = WipersReport::DISABLE;
       }
 
       state_report.set__gear(static_cast<uint8_t>(msg->selected_gear));
@@ -291,7 +296,6 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
 
   m_lgsvl_state.header.set__stamp(msg_corrected.stamp);
   m_lgsvl_state.set__blinker_state(msg_corrected.blinker);
-  m_lgsvl_state.set__wiper_state(msg_corrected.wiper);
   m_lgsvl_state.set__current_gear(msg_corrected.gear);
   m_lgsvl_state.set__vehicle_mode(msg_corrected.mode);
   m_lgsvl_state.set__hand_brake_active(msg_corrected.hand_brake);
@@ -367,6 +371,19 @@ void LgsvlInterface::send_headlights_command(const autoware_auto_msgs::msg::Head
   }
 
   m_lgsvl_state.set__headlight_state(shifted_command);
+}
+
+void LgsvlInterface::send_wipers_command(const autoware_auto_msgs::msg::WipersCommand & msg)
+{
+  /// lgsvl_msgs values are shifted down one from autoware_auto_msgs values
+  /// However, lgsvl_msgs values have no "NO_COMMAND" option so 0 is ignored
+  auto shifted_command = msg.command;
+
+  if (shifted_command > 0U) {
+    shifted_command--;
+  }
+
+  m_lgsvl_state.set__wiper_state(shifted_command);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

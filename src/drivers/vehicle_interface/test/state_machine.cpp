@@ -266,26 +266,26 @@ INSTANTIATE_TEST_CASE_P(
     StateChange{VSR{}.set__blinker(VSR::BLINKER_HAZARD), VSC{}.set__blinker(VSC::BLINKER_OFF)},
     //// Wiper //// 34-45
     // off -> *
-    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(VSC::WIPER_LOW)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(VSC::WIPER_HIGH)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(VSC::WIPER_CLEAN)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(WipersCommand::ENABLE_LOW)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(WipersCommand::ENABLE_HIGH)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_OFF), VSC{}.set__wiper(WipersCommand::ENABLE_CLEAN)},
     // low -> *
-    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(VSC::WIPER_OFF)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(VSC::WIPER_HIGH)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(VSC::WIPER_CLEAN)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(WipersCommand::DISABLE)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(WipersCommand::ENABLE_HIGH)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_LOW), VSC{}.set__wiper(WipersCommand::ENABLE_CLEAN)},
     // high -> *
-    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(VSC::WIPER_LOW)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(VSC::WIPER_OFF)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(VSC::WIPER_CLEAN)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(WipersCommand::ENABLE_LOW)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(WipersCommand::DISABLE)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_HIGH), VSC{}.set__wiper(WipersCommand::ENABLE_CLEAN)},
     // clean -> *
-    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(VSC::WIPER_LOW)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(VSC::WIPER_HIGH)},
-    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(VSC::WIPER_OFF)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(WipersCommand::ENABLE_LOW)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(WipersCommand::ENABLE_HIGH)},
+    StateChange{VSR{}.set__wiper(VSR::WIPER_CLEAN), VSC{}.set__wiper(WipersCommand::DISABLE)},
     // Everything 46
     StateChange{
   VSR{}.set__wiper(VSR::WIPER_CLEAN).set__blinker(VSR::BLINKER_HAZARD).
   set__headlight(VSR::HEADLIGHT_HIGH).set__gear(VSR::GEAR_DRIVE),
-  VSC{}.set__wiper(VSC::WIPER_OFF).set__blinker(VSC::BLINKER_OFF).
+  VSC{}.set__wiper(WipersCommand::DISABLE).set__blinker(VSC::BLINKER_OFF).
   set__headlight(HeadlightsCommand::DISABLE).set__gear(VSC::GEAR_LOW)
 }
     // TODO(c.ho) more combinatorial tests

@@ -30,6 +30,7 @@ using autoware::drivers::vehicle_interface::SafetyStateMachine;
 using autoware::drivers::vehicle_interface::StateMachineConfig;
 using autoware::drivers::vehicle_interface::StateMachineReport;
 
+using autoware_auto_msgs::msg::WipersCommand;
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using VO = autoware_auto_msgs::msg::VehicleOdometry;
 using VSR = autoware_auto_msgs::msg::VehicleStateReport;

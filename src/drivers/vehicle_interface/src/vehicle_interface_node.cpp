@@ -288,6 +288,15 @@ void VehicleInterfaceNode::init(
       {m_interface->send_headlights_command(*msg);});
   }
 
+  if (m_enabled_features.find(ViFeature::WIPERS) != m_enabled_features.end()) {
+    m_wipers_rpt_pub = create_publisher<autoware_auto_msgs::msg::WipersReport>(
+      "wipers_report", rclcpp::QoS{10U});
+    m_wipers_cmd_sub = create_subscription<autoware_auto_msgs::msg::WipersCommand>(
+      "wipers_command", rclcpp::QoS{10U},
+      [this](autoware_auto_msgs::msg::WipersCommand::SharedPtr msg)
+      {m_interface->send_wipers_command(*msg);});
+  }
+
   // State machine boilerplate for better errors
   const auto state_machine = [&state_machine_config]() -> auto {
       if (!state_machine_config) {
@@ -409,6 +418,10 @@ void VehicleInterfaceNode::read_and_publish()
   // Publish feature reports
   if (m_headlights_rpt_pub) {
     m_headlights_rpt_pub->publish(m_interface->get_headlights_report());
+  }
+
+  if (m_wipers_rpt_pub) {
+    m_wipers_rpt_pub->publish(m_interface->get_wipers_report());
   }
 
   // Update
