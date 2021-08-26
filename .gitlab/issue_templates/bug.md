@@ -25,5 +25,5 @@ cd my_dir
 
 
 <!-- Please do not edit anything below this comment -->
-/label ~bug
+/label ~"Type::Bug" 
 /milestone %"Long-Term Backlog"

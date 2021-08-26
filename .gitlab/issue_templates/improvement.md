@@ -1,13 +1,5 @@
 ## Description
-
-
-
-
-### Expected behavior
-<!-- Required -->
-
-
-
+<!-- What and why needs to be improved -->
 
 ### Definition of Done
 <!-- Required -->
@@ -17,5 +9,5 @@
 
 
 <!-- Please do not edit anything below this comment -->
-/label ~improvement
+/label ~"Type::Improvement" 
 /milestone %"Long-Term Backlog"

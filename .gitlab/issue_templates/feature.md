@@ -23,5 +23,5 @@
 
 
 <!-- Please do not edit anything below this comment -->
-/label ~feature
+/label ~"Type::Feature" 
 /milestone %"Long-Term Backlog"
