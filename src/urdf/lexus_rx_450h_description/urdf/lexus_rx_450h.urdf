@@ -115,4 +115,31 @@
     <child link="lidar_rear"/>
     <origin xyz="0.308 -0.022 1.49" rpy="0 0 0"/>
   </joint>
+
+  <link name="camera">
+    <visual>
+      <geometry>
+        <box size="0.05 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.05 0.1 0.1"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- TODO: Get or calculate inertia values -->
+      <mass value="0.1"/>
+      <inertia ixx="1.02083e-5" ixy="0" ixz="0"
+        iyy="1.02083e-5" iyz="0"
+        izz="2e-5"/>
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera"/>
+    <origin xyz="-0.2 0 1.7" rpy="1.571 1.571 0"/>
+  </joint>
 </robot>
