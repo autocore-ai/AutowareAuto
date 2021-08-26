@@ -85,6 +85,7 @@ JoystickVehicleInterface::compute_command(const sensor_msgs::msg::Joy & msg)
   {
     ret.stamp = msg.header.stamp;
     axis_value(msg, Axes::ACCELERATION, ret.long_accel_mps2);
+    axis_value(msg, Axes::VELOCITY, ret.velocity_mps);
     axis_value(msg, Axes::FRONT_STEER, ret.front_wheel_angle_rad);
     axis_value(msg, Axes::REAR_STEER, ret.rear_wheel_angle_rad);
   }

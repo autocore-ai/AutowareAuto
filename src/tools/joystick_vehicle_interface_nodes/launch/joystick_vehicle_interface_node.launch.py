@@ -42,7 +42,7 @@ def generate_launch_description():
     joy_translator_param = DeclareLaunchArgument(
         'joy_translator_param',
         default_value=[
-            get_param('joystick_vehicle_interface_nodes', 'param/logitech_f310.default.param.yaml')
+            get_param('joystick_vehicle_interface_nodes', 'param/logitech_f310_raw.param.yaml')
         ],
         description='Path to config file for joystick translator')
 

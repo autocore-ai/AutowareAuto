@@ -58,6 +58,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(axis_map, Axes::REAR_STEER, "axes.rear_steer");
   check_set(axis_map, Axes::CURVATURE, "axes.curvature");
   check_set(axis_map, Axes::ACCELERATION, "axes.acceleration");
+  check_set(axis_map, Axes::VELOCITY, "axes.velocity");
   // axis scale map
   AxisScaleMap axis_scale_map{};
   check_set(axis_scale_map, Axes::THROTTLE, "axis_scale.throttle");
@@ -66,6 +67,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(axis_scale_map, Axes::REAR_STEER, "axis_scale.rear_steer");
   check_set(axis_scale_map, Axes::CURVATURE, "axis_scale.curvature");
   check_set(axis_scale_map, Axes::ACCELERATION, "axis_scale.acceleration");
+  check_set(axis_scale_map, Axes::VELOCITY, "axis_scale.velocity");
   // axis offset map
   AxisScaleMap axis_offset_map{};
   check_set(axis_offset_map, Axes::THROTTLE, "axis_offset.throttle");
@@ -74,6 +76,7 @@ JoystickVehicleInterfaceNode::JoystickVehicleInterfaceNode(
   check_set(axis_offset_map, Axes::REAR_STEER, "axis_offset.rear_steer");
   check_set(axis_offset_map, Axes::CURVATURE, "axis_offset.curvature");
   check_set(axis_offset_map, Axes::ACCELERATION, "axis_offset.acceleration");
+  check_set(axis_offset_map, Axes::VELOCITY, "axis_offset.velocity");
   // button map
   ButtonMap button_map{};
   check_set(button_map, Buttons::AUTONOMOUS_TOGGLE, "buttons.autonomous");
