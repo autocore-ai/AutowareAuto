@@ -26,9 +26,10 @@
 #include <Eigen/Geometry>
 #include <geometry/interval.hpp>
 #include <experimental/optional>
+#include <tracking/visibility_control.hpp>
 #include <list>
 #include <algorithm>
-#include "visibility_control.hpp"
+#include <vector>
 
 namespace autoware
 {
@@ -66,18 +67,8 @@ public:
 
   /// \brief Cnstructor
   /// \param intrinsics Camera intrinsics
-  /// \param tf_camera_from_ego ego->camera transform.
-  CameraModel(
-    const CameraIntrinsics & intrinsics,
-    const geometry_msgs::msg::Transform & tf_camera_from_ego
-  );
-
-  /// \brief Cnstructor
-  /// \param intrinsics Camera intrinsics
-  /// \param tf_camera_from_ego ego->camera transform.
-  CameraModel(
-    const CameraIntrinsics & intrinsics,
-    const Eigen::Transform<float32_t, 3U, Eigen::Affine> & tf_camera_from_ego
+  explicit CameraModel(
+    const CameraIntrinsics & intrinsics
   );
 
   /// \brief Bring 3D points in ego frame to the camera frame and project onto the image plane.
@@ -85,19 +76,17 @@ public:
   // the image of the camera model. The resulting list of points are then outlined using the
   // `convex_hull` algorithm and then the outline of points are returned.
   /// `K * p_3d = p_2d * depth` where K is the projection matrix.
-  /// \param shape 3D shape to be projected.
+  /// \param points 3D set of points in the camera frame.
   /// \return List of points on the camera frame that outline the given 3D object.
   std::experimental::optional<Projection>
-  project(const autoware_auto_msgs::msg::Shape & shape) const;
+  project(const std::vector<Point> & points) const;
 
 private:
   /// \brief Project a 3D point and return the value if the projection is valid (in fron of the
   // camera)
   std::experimental::optional<EigPoint> project_point(const EigPoint & pt_3d) const;
 
-  bool is_projection_valid(const Projection & projection) const noexcept;
-
-  Eigen::Transform<float32_t, 3, Eigen::Affine, Eigen::ColMajor> m_projector;
+  Eigen::Matrix3f m_intrinsics;
   Interval m_height_interval;
   Interval m_width_interval;
   std::list<Point> m_corners;

@@ -31,21 +31,22 @@ using autoware::common::types::float32_t;
 
 GreedyRoiAssociator::GreedyRoiAssociator(
   const CameraIntrinsics & intrinsics,
-  const geometry_msgs::msg::Transform & tf_camera_from_ego,
   const float32_t iou_threshold)
-: m_camera{intrinsics, tf_camera_from_ego}, m_iou_threshold{iou_threshold}
+: m_camera{intrinsics}, m_iou_threshold{iou_threshold}
 {
 }
 
 AssociatorResult GreedyRoiAssociator::assign(
   const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-  const std::vector<TrackedObject> & tracks) const
+  const std::vector<TrackedObject> & tracks,
+  const geometry_msgs::msg::Transform & tf_camera_from_track
+) const
 {
   AssociatorResult result = create_and_init_result(rois.rois.size(), tracks.size());
-
+  const details::ShapeTransformer transformer{tf_camera_from_track};
   for (auto track_idx = 0U; track_idx < tracks.size(); ++track_idx) {
     const auto matched_detection_idx = project_and_match_detection(
-      tracks[track_idx].shape(), result.unassigned_detection_indices, rois);
+      transformer(tracks[track_idx].shape()), result.unassigned_detection_indices, rois);
 
     handle_matching_output(matched_detection_idx, track_idx, result);
   }
@@ -55,13 +56,16 @@ AssociatorResult GreedyRoiAssociator::assign(
 
 AssociatorResult GreedyRoiAssociator::assign(
   const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-  const autoware_auto_msgs::msg::DetectedObjects & objects) const
+  const autoware_auto_msgs::msg::DetectedObjects & objects,
+  const geometry_msgs::msg::Transform & tf_camera_from_object
+) const
 {
   AssociatorResult result = create_and_init_result(rois.rois.size(), objects.objects.size());
+  const details::ShapeTransformer transformer{tf_camera_from_object};
 
   for (auto object_idx = 0U; object_idx < objects.objects.size(); ++object_idx) {
     auto detection_idx = project_and_match_detection(
-      objects.objects[object_idx].shape, result.unassigned_detection_indices, rois);
+      transformer(objects.objects[object_idx].shape), result.unassigned_detection_indices, rois);
 
     handle_matching_output(detection_idx, object_idx, result);
   }
@@ -88,11 +92,11 @@ AssociatorResult GreedyRoiAssociator::create_and_init_result(
 }
 
 std::size_t GreedyRoiAssociator::project_and_match_detection(
-  const autoware_auto_msgs::msg::Shape & object_shape,
+  const std::vector<geometry_msgs::msg::Point32> & object_shape_in_camera_frame,
   const std::unordered_set<std::size_t> & available_roi_indices,
   const autoware_auto_msgs::msg::ClassifiedRoiArray & rois) const
 {
-  const auto & maybe_projection = m_camera.project(object_shape);
+  const auto & maybe_projection = m_camera.project(object_shape_in_camera_frame);
 
   // There is no projection or the projection is collinear
   if (!maybe_projection) {
@@ -123,6 +127,34 @@ void GreedyRoiAssociator::handle_matching_output(
   result.track_assignments[object_idx] = matched_detection_idx;
   result.unassigned_detection_indices.erase(matched_detection_idx);
 }
+
+namespace details
+{
+ShapeTransformer::ShapeTransformer(const geometry_msgs::msg::Transform & tf)
+: m_transformer{tf}
+{
+}
+
+std::vector<geometry_msgs::msg::Point32> ShapeTransformer::operator()(
+  const autoware_auto_msgs::msg::Shape & shape) const
+{
+  std::vector<Point32> result;
+  result.reserve(2U * shape.polygon.points.size());
+
+  for (const auto & pt : shape.polygon.points) {
+    Point32 pt_transformed{};
+    // Transform the vertices on the bottom face
+    m_transformer.transform(pt, pt_transformed);
+    result.emplace_back(pt_transformed);
+
+    // Transform the vertices on the top face
+    m_transformer.transform(Point32{pt}.set__z(pt.z + shape.height), pt_transformed);
+    result.emplace_back(pt_transformed);
+  }
+
+  return result;
+}
+}  // namespace details
 }  // namespace tracking
 }  // namespace perception
 }  // namespace autoware

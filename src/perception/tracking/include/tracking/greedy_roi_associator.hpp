@@ -18,6 +18,8 @@
 #include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <helper_functions/template_utils.hpp>
 #include <geometry/intersection.hpp>
+#include <geometry/common_2d.hpp>
+#include <lidar_utils/point_cloud_utils.hpp>
 #include <tracking/tracker_types.hpp>
 #include <tracking/tracked_object.hpp>
 #include <tracking/projection.hpp>
@@ -31,7 +33,6 @@ namespace perception
 {
 namespace tracking
 {
-
 /// \brief Simple heuristic functor that returns the IoU between two shapes.
 struct TRACKING_PUBLIC IOUHeuristic
 {
@@ -61,11 +62,9 @@ public:
 
   /// \brief Constructor
   /// \param intrinsics Camera intrinsics of the ROI
-  /// \param tf_camera_from_ego ego->camera transform
   /// \param iou_threshold Minimum score result for a track and ROI to be considered a match
   GreedyRoiAssociator(
     const CameraIntrinsics & intrinsics,
-    const geometry_msgs::msg::Transform & tf_camera_from_ego,
     float32_t iou_threshold = 0.1F
   );
 
@@ -73,21 +72,27 @@ public:
   /// Then assigning each track to a detection according to the IoU metric in a greedy fashion.
   /// \param rois ROI detections
   /// \param tracks Tracks
+  /// \param tf_camera_from_track Transform from the track frame to the camera frame
   /// \return The association between the tracks and the rois
   AssociatorResult assign(
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-    const std::vector<TrackedObject> & tracks) const;
+    const std::vector<TrackedObject> & tracks,
+    const geometry_msgs::msg::Transform & tf_camera_from_track
+  ) const;
 
   /// \brief Assign the objects to the ROIs. The assignment is done by first projecting the
   /// detections, then assigning each detection to a ROI according to the IoU metric in a
   /// greedy fashion.
   /// \param rois Regions of Interest in camera frame from vision subsystem
   /// \param objects DetectedObjects from lidar or radar
+  /// \param tf_camera_from_object Transform from the track frame to the camera frame
   /// \return The association between the objects and the rois. In this case, "tracks" in the
   ///         return struct refers to the 3D objects and "detections" refer to the ROIs
   AssociatorResult assign(
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-    const autoware_auto_msgs::msg::DetectedObjects & objects) const;
+    const autoware_auto_msgs::msg::DetectedObjects & objects,
+    const geometry_msgs::msg::Transform & tf_camera_from_object
+  ) const;
 
 private:
   // Create result struct and initialize data to expected default values
@@ -98,7 +103,7 @@ private:
   // Scan the ROIs to find the best matching roi for a given shape by projecting it onto image
   // frame
   std::size_t project_and_match_detection(
-    const autoware_auto_msgs::msg::Shape & object_shape,
+    const std::vector<geometry_msgs::msg::Point32> & object_shape_in_camera_frame,
     const std::unordered_set<std::size_t> & available_roi_indices,
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois) const;
 
@@ -112,6 +117,23 @@ private:
   float32_t m_iou_threshold{0.1F};
 };
 
+namespace details
+{
+/// \brief Transform a 3D prism shape msg into a transformed vector points.
+class TRACKING_PUBLIC ShapeTransformer
+{
+public:
+  explicit ShapeTransformer(const geometry_msgs::msg::Transform & tf);
+  using Point32 = geometry_msgs::msg::Point32;
+  /// \brief Transform the bottom and top face vertices of the given shape. No order is preserved.
+  /// \param shape Shape msg.
+  /// \return Transformed vertices of the bottom and the top face.
+  std::vector<Point32> operator()(const autoware_auto_msgs::msg::Shape & shape) const;
+
+private:
+  common::lidar_utils::StaticTransformer m_transformer;
+};
+}  // namespace details
 }  // namespace tracking
 }  // namespace perception
 }  // namespace autoware

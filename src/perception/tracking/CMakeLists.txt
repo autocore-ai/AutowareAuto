@@ -65,18 +65,22 @@ if(BUILD_TESTING)
 
   # Unit tests
   set(TEST_SOURCES
-    test/test_detected_object_associator.cpp
-    test/test_greedy_roi_associator.cpp
-    test/test_multi_object_tracker.cpp
-    test/test_projection.cpp
-    test/test_classification_tracker.cpp
-    test/test_track_creation.cpp
-    test/test_tracked_object.cpp
+      test/src/test_detected_object_associator.cpp
+      test/src/test_greedy_roi_associator.cpp
+      test/src/test_multi_object_tracker.cpp
+      test/src/test_projection.cpp
+      test/src/test_classification_tracker.cpp
+      test/src/test_track_creation.cpp
+      test/src/test_tracked_object.cpp
+      test/include/tracking/test_utils.hpp
+      test/src/test_utils.cpp
   )
+
   set(TEST_TRACKING_EXE test_multi_object_tracker)
   ament_add_gtest(${TEST_TRACKING_EXE} ${TEST_SOURCES})
   autoware_set_compile_options(${TEST_TRACKING_EXE})
   target_compile_options(${TEST_TRACKING_EXE} PRIVATE -Wno-conversion -Wno-sign-conversion)
+  target_include_directories(${TEST_TRACKING_EXE} PRIVATE "test/include" "include")
   target_link_libraries(${TEST_TRACKING_EXE} ${PROJECT_NAME})
 endif()
 

@@ -15,11 +15,10 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <tracking/projection.hpp>
-#include <tf2_eigen/tf2_eigen.h>
-#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <geometry/intersection.hpp>
 #include <geometry/common_2d.hpp>
 #include <algorithm>
+#include <vector>
 
 namespace autoware
 {
@@ -27,15 +26,16 @@ namespace perception
 {
 namespace tracking
 {
-CameraModel::CameraModel(
-  const CameraIntrinsics & intrinsics,
-  const geometry_msgs::msg::Transform & tf_camera_from_ego
-)
-: CameraModel(intrinsics, tf2::transformToEigen(tf_camera_from_ego).cast<float32_t>()) {}
+namespace
+{
+bool is_projection_valid(const Projection & projection) noexcept
+{
+  return projection.shape.size() >= 3U;
+}
+}
 
 CameraModel::CameraModel(
-  const CameraIntrinsics & intrinsics,
-  const Eigen::Transform<float32_t, 3U, Eigen::Affine> & tf_camera_from_ego
+  const CameraIntrinsics & intrinsics
 )
 : m_height_interval{-static_cast<float32_t>(intrinsics.height) / 2.0F,
     static_cast<float32_t>(intrinsics.height) / 2.0F},
@@ -52,19 +52,17 @@ CameraModel::CameraModel(
     .set__y(Interval::min(m_height_interval)).set__z(0.0F)
   }
 {
-  Eigen::Matrix3f intrinsic_matrix{};
-  intrinsic_matrix <<
+  m_intrinsics <<
     intrinsics.fx, intrinsics.skew, intrinsics.ox,
     0.0, intrinsics.fy, intrinsics.oy,
     0.0, 0.0, 1.0;
-  m_projector = intrinsic_matrix * tf_camera_from_ego;
 }
 
 std::experimental::optional<CameraModel::EigPoint>
 CameraModel::project_point(const EigPoint & pt_3d) const
 {
-  // `m_projector * p_3d = p_2d * depth`
-  const auto pt_2d = m_projector * pt_3d;
+  // `m_intrinsics * p_3d = p_2d * depth`
+  const auto pt_2d = m_intrinsics * pt_3d;
   const auto depth = pt_2d.z();
   // Only accept points are in front of the camera lens
   if (depth > 0.0F) {
@@ -74,10 +72,9 @@ CameraModel::project_point(const EigPoint & pt_3d) const
 }
 
 std::experimental::optional<Projection> CameraModel::project(
-  const autoware_auto_msgs::msg::Shape & shape) const
+  const std::vector<Point> & points) const
 {
   Projection result;
-  const auto & points_3d = shape.polygon.points;
   auto & points2d = result.shape;
 
   const auto project_and_append = [&points2d, this](auto x, auto y, auto z) {
@@ -89,9 +86,8 @@ std::experimental::optional<Projection> CameraModel::project(
       }
     };
 
-  for (const auto & pt : points_3d) {
+  for (const auto & pt : points) {
     project_and_append(pt.x, pt.y, pt.z);
-    project_and_append(pt.x, pt.y, pt.z + shape.height);
   }
 
   // Outline the shape of the projected points in the image
@@ -104,12 +100,6 @@ std::experimental::optional<Projection> CameraModel::project(
          std::experimental::make_optional(result) :
          std::experimental::nullopt;
 }
-
-bool CameraModel::is_projection_valid(const Projection & projection) const noexcept
-{
-  return projection.shape.size() >= 3U;
-}
-
 
 }  // namespace tracking
 }  // namespace perception

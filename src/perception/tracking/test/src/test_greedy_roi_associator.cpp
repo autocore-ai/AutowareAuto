@@ -18,6 +18,7 @@
 #include <tracking/greedy_roi_associator.hpp>
 #include <tracking/projection.hpp>
 #include <vector>
+#include "tracking/test_utils.hpp"
 
 using TrackedObject = autoware::perception::tracking::TrackedObject;
 using TrackedObjects = std::vector<TrackedObject>;
@@ -75,14 +76,21 @@ ClassifiedRoi projection_to_roi(const Projection & projection)
   return roi;
 }
 
+geometry_msgs::msg::Transform make_identity()
+{
+  geometry_msgs::msg::Transform identity{};
+  identity.rotation.set__w(1.0);
+  return identity;
+}
+
 template<typename ObjType>
 class TestRoiAssociation : public testing::Test
 {
 public:
   TestRoiAssociation()
   : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
-    camera{intrinsics, make_identity()},
-    associator{intrinsics, make_identity()} {}
+    camera{intrinsics},
+    associator{intrinsics} {}
 
   void add_object(
     const Point32 & base_face_origin,
@@ -94,14 +102,6 @@ public:
   CameraModel camera;
   RoiAssociator associator;
   ObjType objects;
-
-private:
-  geometry_msgs::msg::Transform make_identity()
-  {
-    geometry_msgs::msg::Transform identity{};
-    identity.rotation.set__w(1.0);
-    return identity;
-  }
 };
 
 template<>
@@ -113,7 +113,7 @@ void TestRoiAssociation<TrackedObjects>::add_object(
 {
   DetectedObject object;
   object.shape = make_rectangular_shape(base_face_origin, half_width, half_length, shape_height);
-  objects.push_back(TrackedObject{object, 0.0, 0.0});
+  objects.emplace_back(object, 0.0, 0.0);
 }
 
 template<>
@@ -150,10 +150,10 @@ TYPED_TEST(TestRoiAssociation, correct_association) {
   ClassifiedRoiArray rois;
 
   this->add_object(make_pt(10.0F, 10.0F, 10), 5.0F, 5.0F, 2.0F);
-  const auto projection = this->camera.project(this->get_ith_shape(0U));
+  const auto projection = this->camera.project(expand_shape_to_vector(this->get_ith_shape(0U)));
   ASSERT_TRUE(projection);
   rois.rois.push_back(projection_to_roi(projection.value()));
-  const auto result = this->associator.assign(rois, this->objects);
+  const auto result = this->associator.assign(rois, this->objects, make_identity());
   ASSERT_EQ(result.track_assignments.front(), 0U);
   ASSERT_EQ(result.unassigned_detection_indices.size(), 0U);
   ASSERT_EQ(result.unassigned_track_indices.size(), 0U);
@@ -164,9 +164,9 @@ TYPED_TEST(TestRoiAssociation, out_of_image_test) {
 
   // Create a track behind the camera
   this->add_object(make_pt(10.0F, 10.0F, -10), 5.0F, 5.0F, 2.0F);
-  const auto projection = this->camera.project(this->get_ith_shape(0U));
+  const auto projection = this->camera.project(expand_shape_to_vector(this->get_ith_shape(0U)));
   ASSERT_FALSE(projection);
-  const auto result = this->associator.assign(rois, this->objects);
+  const auto result = this->associator.assign(rois, this->objects, make_identity());
   ASSERT_EQ(result.track_assignments.front(), AssociatorResult::UNASSIGNED);
   ASSERT_EQ(result.unassigned_detection_indices.size(), 0U);
   ASSERT_TRUE(result.unassigned_track_indices.find(0U) != result.unassigned_track_indices.end());
@@ -185,10 +185,10 @@ TYPED_TEST(TestRoiAssociation, non_associated_track_roi) {
     phantom_tracks.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
   }
 
-  const auto projection = this->camera.project(phantom_tracks[0].shape());
+  const auto projection = this->camera.project(expand_shape_to_vector(phantom_tracks[0].shape()));
   ASSERT_TRUE(projection);
   rois.rois.push_back(projection_to_roi(projection.value()));
-  const auto result = this->associator.assign(rois, this->objects);
+  const auto result = this->associator.assign(rois, this->objects, make_identity());
   ASSERT_EQ(result.track_assignments.front(), AssociatorResult::UNASSIGNED);
   ASSERT_TRUE(
     result.unassigned_detection_indices.find(0U) != result.unassigned_detection_indices.end());
@@ -220,7 +220,7 @@ TYPED_TEST(TestRoiAssociation, combined_association_test) {
 
   // Push the correct projections to the roi array
   for (auto i = 0U; i < num_captured_tracks + num_noncaptured_tracks; ++i) {
-    const auto projection = this->camera.project(this->get_ith_shape(i));
+    const auto projection = this->camera.project(expand_shape_to_vector(this->get_ith_shape(i)));
     if (i < num_noncaptured_tracks) {
       ASSERT_FALSE(projection);
     } else {
@@ -244,12 +244,13 @@ TYPED_TEST(TestRoiAssociation, combined_association_test) {
 
   // Push the false positive projections to the roi array
   for (const auto & phantom_track : phantom_tracks) {
-    const auto maybe_projection = this->camera.project(phantom_track.shape());
+    const auto maybe_projection =
+      this->camera.project(expand_shape_to_vector(phantom_track.shape()));
     ASSERT_TRUE(maybe_projection);
     rois.rois.push_back(projection_to_roi(maybe_projection.value()));
   }
 
-  auto result = this->associator.assign(rois, this->objects);
+  auto result = this->associator.assign(rois, this->objects, make_identity());
 
   for (auto i = 0U; i < result.track_assignments.size(); ++i) {
     if (i < num_noncaptured_tracks) {

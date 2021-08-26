@@ -16,6 +16,7 @@
   <depend>autoware_auto_tf2</depend>
   <depend>geometry_msgs</depend>
   <depend>hungarian_assigner</depend>
+  <depend>lidar_utils</depend>
   <depend>motion_model</depend>
   <depend>nav_msgs</depend>
   <depend>state_estimation</depend>
