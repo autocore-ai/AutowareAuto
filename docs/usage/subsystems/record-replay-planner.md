@@ -43,9 +43,12 @@ ade$ ros2 action send_goal /planning/recordtrajectory autoware_auto_msgs/action/
 ```
 
 In LGSVL, drive the vehicle around to record the path.
-When finished recording, go to the terminal in which you ran the `ros2 action send_goal` command and hit `CTRL+C` to stop recording.
-In LGSVL, hit F12 to re-center the vehicle at the default spawn point.
-You will then need to re-initialize localization at the new location with the 2D Pose Estimate tool in `rviz`.
+When finished recording, go to the terminal in which you ran the `ros2 action send_goal` command and hit `CTRL+C` to stop recording.  
+In LGSVL, hit F12 to re-center the vehicle at the default spawn point.  
+Stop the Autoware Stack by pressing `CTRL+C` in terminal where `ros2 launch autoware_auto_avp_demo recordreplay_planner_demo.launch.py` is running.  
+Start the Autoware stack by running `ros2 launch autoware_auto_avp_demo recordreplay_planner_demo.launch.py`.  
+You will then need to re-initialize localization at the new location with the 2D Pose Estimate tool in `rviz` or by publishing the predefined pose as given in this [link](https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/ndt-initialization.html).  
+
 To replay the recorded path:
 
 ```{bash}
