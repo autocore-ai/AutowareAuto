@@ -18,7 +18,7 @@
 
 #include <rclcpp_components/register_node_macro.hpp>
 #include <time_utils/time_utils.hpp>
-
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -38,6 +38,8 @@ using autoware::perception::tracking::MultiObjectTracker;
 using autoware::perception::tracking::MultiObjectTrackerOptions;
 using autoware::perception::tracking::TrackerUpdateResult;
 using autoware::perception::tracking::TrackerUpdateStatus;
+using autoware::perception::tracking::GreedyRoiAssociatorConfig;
+using autoware::perception::tracking::CameraIntrinsics;
 using autoware_auto_msgs::msg::DetectedObjects;
 using autoware_auto_msgs::msg::TrackedObjects;
 using nav_msgs::msg::Odometry;
@@ -46,16 +48,17 @@ using std::placeholders::_2;
 
 namespace
 {
-MultiObjectTracker init_tracker(rclcpp::Node & node)
+MultiObjectTracker init_tracker(rclcpp::Node & node, const bool8_t use_vision)
 {
   const float32_t max_distance =
     static_cast<float32_t>(node.declare_parameter(
-      "association_max_distance").get<float64_t>());
+      "object_association.max_distance").get<float64_t>());
   const float32_t max_area_ratio =
     static_cast<float32_t>(node.declare_parameter(
-      "association_max_area_ratio").get<float64_t>());
+      "object_association.max_area_ratio").get<float64_t>());
   const bool consider_edge_for_big_detections = node.declare_parameter(
-    "association_consider_edge_for_big_detection").get<bool>();
+    "object_association.consider_edge_for_big_detection").get<bool>();
+
   const auto creation_policy = perception::tracking::TrackCreationPolicy::LidarClusterOnly;
   const float32_t default_variance =
     static_cast<float32_t>(node.declare_parameter(
@@ -72,8 +75,32 @@ MultiObjectTracker init_tracker(rclcpp::Node & node)
       "pruning_ticks_threshold").get<int64_t>());
   const std::string frame = node.declare_parameter("track_frame_id", "odom");
 
+  GreedyRoiAssociatorConfig vision_config{};
+
+  if (use_vision) {
+    vision_config.intrinsics = {
+      static_cast<std::size_t>(node.declare_parameter(
+        "vision_association.intrinsics.width").get<int64_t>()),
+      static_cast<std::size_t>(node.declare_parameter(
+        "vision_association.intrinsics.height").get<int64_t>()),
+      static_cast<float32_t>(node.declare_parameter(
+        "vision_association.intrinsics.fx").get<float32_t>()),
+      static_cast<float32_t>(node.declare_parameter(
+        "vision_association.intrinsics.fy").get<float32_t>()),
+      static_cast<float32_t>(node.declare_parameter(
+        "vision_association.intrinsics.ox").get<float32_t>()),
+      static_cast<float32_t>(node.declare_parameter(
+        "vision_association.intrinsics.oy").get<float32_t>()),
+      static_cast<float32_t>(node.declare_parameter(
+        "vision_association.intrinsics.skew").get<float32_t>())
+    };
+
+    vision_config.iou_threshold = static_cast<float32_t>(node.declare_parameter(
+        "vision_association.iou_threshold").get<float32_t>());
+  }
+
   MultiObjectTrackerOptions options{
-    {max_distance, max_area_ratio, consider_edge_for_big_detections},
+    {max_distance, max_area_ratio, consider_edge_for_big_detections}, vision_config,
     {creation_policy, default_variance, noise_variance},
     pruning_time_threshold, pruning_ticks_threshold, frame};
   return MultiObjectTracker{options};
@@ -93,32 +120,61 @@ std::string status_to_string(TrackerUpdateStatus status)
   return "Invalid status";
 }
 
+geometry_msgs::msg::Transform to_transform(const nav_msgs::msg::Odometry & odometry)
+{
+  geometry_msgs::msg::Transform tf;
+  tf.translation.x = odometry.pose.pose.position.x;
+  tf.translation.y = odometry.pose.pose.position.y;
+  tf.translation.z = odometry.pose.pose.position.z;
+  tf.rotation = odometry.pose.pose.orientation;
+  return tf;
+}
+
 }  // namespace
 
 MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & options)
 :  Node("multi_object_tracker_node", options),
-  m_tracker(init_tracker(*this)),
+  m_use_vision{this->declare_parameter("use_vision", true)},
+  m_tracker(init_tracker(*this, m_use_vision)),
   m_history_depth(static_cast<size_t>(this->declare_parameter("history_depth", 20))),
   m_use_ndt(this->declare_parameter("use_ndt", true)),
   m_objects_sub(this, "detected_objects", rclcpp::QoS(m_history_depth).get_rmw_qos_profile()),
-  m_pub(create_publisher<TrackedObjects>("tracked_objects", m_history_depth))
+  m_pub(create_publisher<TrackedObjects>("tracked_objects", m_history_depth)),
+  m_tf_listener{m_tf_buffer, this}
 {
   if (m_use_ndt) {
-    m_sync = std::make_shared<message_filters::Synchronizer<OdomPolicy>>(
-      OdomPolicy(static_cast<uint32_t>(m_history_depth)),
+    m_oject_sync = std::make_shared<message_filters::Synchronizer<ObjectOdomPolicy>>(
+      ObjectOdomPolicy(static_cast<uint32_t>(m_history_depth)),
       m_objects_sub, m_odom_sub);
     m_odom_sub.subscribe(this, "odometry", rclcpp::QoS(m_history_depth).get_rmw_qos_profile());
   } else {
-    m_sync = std::make_shared<message_filters::Synchronizer<PosePolicy>>(
-      PosePolicy(static_cast<uint32_t>(m_history_depth)),
+    m_oject_sync = std::make_shared<message_filters::Synchronizer<ObjectPosePolicy>>(
+      ObjectPosePolicy(static_cast<uint32_t>(m_history_depth)),
       m_objects_sub, m_pose_sub);
     m_pose_sub.subscribe(this, "odometry", rclcpp::QoS(m_history_depth).get_rmw_qos_profile());
   }
 
-  mpark::visit(RegisterSyncCallback(this), m_sync);
+  mpark::visit(RegisterSyncCallback(this), m_oject_sync);
+
+  // Initialize vision callbacks if vision is configured to be used:
+  if (m_use_vision) {
+    m_maybe_rois_sub.emplace(
+      this, "classified_rois", rclcpp::QoS(m_history_depth).get_rmw_qos_profile());
+
+    if (m_use_ndt) {
+      m_vision_sync = std::make_shared<message_filters::Synchronizer<VisionOdomPolicy>>(
+        VisionOdomPolicy(static_cast<uint32_t>(m_history_depth)),
+        m_maybe_rois_sub.value(), m_odom_sub);
+    } else {
+      m_vision_sync = std::make_shared<message_filters::Synchronizer<VisionPosePolicy>>(
+        VisionPosePolicy(static_cast<uint32_t>(m_history_depth)),
+        m_maybe_rois_sub.value(), m_pose_sub);
+    }
+    mpark::visit(RegisterSyncCallback(this), m_vision_sync);
+  }
 }
 
-void MultiObjectTrackerNode::process_using_odom(
+void MultiObjectTrackerNode::process_objects_using_odom(
   const DetectedObjects::ConstSharedPtr & objs,
   const Odometry::ConstSharedPtr & odom)
 {
@@ -129,13 +185,13 @@ void MultiObjectTrackerNode::process_using_odom(
     m_pub->publish(std::move(result.objects));
   } else {
     RCLCPP_WARN(
-      get_logger(), "Tracker update for detection at time %d.%d failed. Reason: %s",
+      get_logger(), "Tracker update for vision detection at time %d.%d failed. Reason: %s",
       objs->header.stamp.sec, objs->header.stamp.nanosec,
       status_to_string(result.status).c_str());
   }
 }
 
-void MultiObjectTrackerNode::process_using_pose(
+void MultiObjectTrackerNode::process_objects_using_pose(
   const autoware_auto_msgs::msg::DetectedObjects::ConstSharedPtr & objs,
   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & pose)
 {
@@ -144,7 +200,37 @@ void MultiObjectTrackerNode::process_using_pose(
   odom_msg->header = pose->header;
   odom_msg->child_frame_id = "base_link";
   odom_msg->pose = pose->pose;
-  process_using_odom(objs, odom_msg);
+  process_objects_using_odom(objs, odom_msg);
+}
+
+void MultiObjectTrackerNode::process_rois_using_odom(
+  const ClassifiedRoiArray::ConstSharedPtr & rois,
+  const Odometry::ConstSharedPtr & odom)
+{
+  const auto tf_camera_from_track = compute_extrinsics(*odom, rois->header.frame_id);
+  TrackerUpdateResult result = m_tracker.update(*rois, tf_camera_from_track);
+  if (result.status == TrackerUpdateStatus::Ok) {
+    // The tracker returns its result in a unique_ptr, so the more efficient publish(unique_ptr<T>)
+    // overload can be used.
+    m_pub->publish(std::move(result.objects));
+  } else {
+    RCLCPP_WARN(
+      get_logger(), "Tracker update for detection at time %d.%d failed. Reason: %s",
+      rois->header.stamp.sec, rois->header.stamp.nanosec,
+      status_to_string(result.status).c_str());
+  }
+}
+
+void MultiObjectTrackerNode::process_rois_using_pose(
+  const ClassifiedRoiArray::ConstSharedPtr & rois,
+  const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & pose)
+{
+  // Convert pose to odom because that is what the tracker wants
+  nav_msgs::msg::Odometry::SharedPtr odom_msg = std::make_shared<nav_msgs::msg::Odometry>();
+  odom_msg->header = pose->header;
+  odom_msg->child_frame_id = "base_link";
+  odom_msg->pose = pose->pose;
+  process_rois_using_odom(rois, odom_msg);
 }
 
 MultiObjectTrackerNode::RegisterSyncCallback::RegisterSyncCallback(
@@ -154,19 +240,52 @@ MultiObjectTrackerNode::RegisterSyncCallback::RegisterSyncCallback(
 }
 
 void MultiObjectTrackerNode::RegisterSyncCallback::operator()(
-  std::shared_ptr<message_filters::Synchronizer<OdomPolicy>> sync)
+  std::shared_ptr<message_filters::Synchronizer<ObjectOdomPolicy>> sync)
 {
   sync->registerCallback(
-    std::bind(&MultiObjectTrackerNode::process_using_odom, m_class_ptr, _1, _2));
+    std::bind(&MultiObjectTrackerNode::process_objects_using_odom, m_class_ptr, _1, _2));
 }
 
 void MultiObjectTrackerNode::RegisterSyncCallback::operator()(
-  std::shared_ptr<message_filters::Synchronizer<PosePolicy>> sync)
+  std::shared_ptr<message_filters::Synchronizer<ObjectPosePolicy>> sync)
 {
   sync->registerCallback(
-    std::bind(&MultiObjectTrackerNode::process_using_pose, m_class_ptr, _1, _2));
+    std::bind(&MultiObjectTrackerNode::process_objects_using_pose, m_class_ptr, _1, _2));
   sync->setMaxIntervalDuration(std::chrono::milliseconds(20));
 }
+
+void MultiObjectTrackerNode::RegisterSyncCallback::operator()(
+  std::shared_ptr<message_filters::Synchronizer<VisionOdomPolicy>> sync)
+{
+  sync->registerCallback(
+    std::bind(&MultiObjectTrackerNode::process_rois_using_odom, m_class_ptr, _1, _2));
+}
+
+void MultiObjectTrackerNode::RegisterSyncCallback::operator()(
+  std::shared_ptr<message_filters::Synchronizer<VisionPosePolicy>> sync)
+{
+  sync->registerCallback(
+    std::bind(&MultiObjectTrackerNode::process_rois_using_pose, m_class_ptr, _1, _2));
+  sync->setMaxIntervalDuration(std::chrono::milliseconds(20));
+}
+
+geometry_msgs::msg::Transform MultiObjectTrackerNode::compute_extrinsics(
+  const nav_msgs::msg::Odometry & odom,
+  const ClassifiedRoiArray::_header_type::_frame_id_type & camera_frame_id)
+{
+  const auto & tf_camera_from_base_link_stamped =
+    m_tf_buffer.lookupTransform(
+    camera_frame_id, odom.child_frame_id,
+    time_utils::from_message(odom.header.stamp));
+  tf2::Transform tf_camera_from_base_link;
+  tf2::fromMsg(tf_camera_from_base_link_stamped, tf_camera_from_base_link);
+
+  tf2::Transform tf_base_link_from_odom;
+  tf2::fromMsg(to_transform(odom), tf_base_link_from_odom);
+
+  return tf2::toMsg(tf_camera_from_base_link * tf_base_link_from_odom);
+}
+
 
 }  // namespace tracking_nodes
 }  // namespace autoware

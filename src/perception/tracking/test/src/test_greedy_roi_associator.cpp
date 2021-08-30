@@ -90,7 +90,7 @@ public:
   TestRoiAssociation()
   : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
     camera{intrinsics},
-    associator{intrinsics} {}
+    associator{{intrinsics, 0.1F}} {}
 
   void add_object(
     const Point32 & base_face_origin,

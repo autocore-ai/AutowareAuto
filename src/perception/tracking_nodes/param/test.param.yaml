@@ -4,15 +4,32 @@
     ekf_default_variance: 1.0
     # Variance for the noise model in the filters
     ekf_noise_variance: 3.0
-    # Gate parameter: Objects farther apart than this distance are not matched.
-    association_max_distance: 2.0
-    # Gate parameter: Objects whose size differs by more than this factor are not matched.
-    association_max_area_ratio: 2.5
-    # When true, the shortest edge of the detection will be used as the max distance threshold if it is greater than the configured threshold
-    association_consider_edge_for_big_detection: True
     # Time after which to remove unseen tracks.
     # Note also the pruning_ticks_threshold – only one threshold is necessary for removal.
     pruning_time_threshold_ms: 500
     # Number of observations to remove unseen tracks.
     # Note also the pruning_time_threshold_ms – only one threshold is necessary for removal.
     pruning_ticks_threshold: 10
+    # Parameters for associating the lidar detections
+    object_association:
+      # Gate parameter: Objects farther apart than this distance are not matched.
+      max_distance: 2.0
+      # Gate parameter: Objects whose size differs by more than this factor are not matched.
+      max_area_ratio: 2.5
+      # When true, the shortest edge of the detection will be used as the max distance threshold if it is greater than the configured threshold
+      consider_edge_for_big_detection: True
+    # Parameter to allow the tracker to use vision detections for improving tracking.
+    use_vision: True
+    # Parameters for associating the vision detections
+    vision_association:
+      # The IoU threshold for a RoI and projection of another detection to be considered matches
+      iou_threshold: 0.5
+      # Intrinsics of the camera that is generating the vision detections
+      intrinsics:
+        width: 1920
+        height: 1080
+        fx: 1158.0337
+        fy: 1158.0337
+        ox: 960.0
+        oy: 540.0
+        skew: 0.0

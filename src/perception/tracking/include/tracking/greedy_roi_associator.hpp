@@ -53,6 +53,12 @@ struct TRACKING_PUBLIC IOUHeuristic
   }
 };
 
+struct GreedyRoiAssociatorConfig
+{
+  CameraIntrinsics intrinsics;
+  float32_t iou_threshold;
+};
+
 /// \brief Class to associate the detections and tracks in euclidean space to ROIs in image space
 ///        on a first-come-first-serve manner.
 class TRACKING_PUBLIC GreedyRoiAssociator
@@ -61,11 +67,9 @@ public:
   using float32_t = autoware::common::types::float32_t;
 
   /// \brief Constructor
-  /// \param intrinsics Camera intrinsics of the ROI
-  /// \param iou_threshold Minimum score result for a track and ROI to be considered a match
+  /// \param config Configuration for projection and association
   GreedyRoiAssociator(
-    const CameraIntrinsics & intrinsics,
-    float32_t iou_threshold = 0.1F
+    const GreedyRoiAssociatorConfig & config
   );
 
   /// \brief Assign the tracks to the ROIs. The assignment is done by first projecting the tracks,

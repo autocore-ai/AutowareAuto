@@ -30,9 +30,9 @@ namespace tracking
 using autoware::common::types::float32_t;
 
 GreedyRoiAssociator::GreedyRoiAssociator(
-  const CameraIntrinsics & intrinsics,
-  const float32_t iou_threshold)
-: m_camera{intrinsics}, m_iou_threshold{iou_threshold}
+  const GreedyRoiAssociatorConfig & config
+)
+: m_camera{config.intrinsics}, m_iou_threshold{config.iou_threshold}
 {
 }
 

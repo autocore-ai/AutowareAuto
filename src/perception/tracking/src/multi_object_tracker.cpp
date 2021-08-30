@@ -75,7 +75,8 @@ geometry_msgs::msg::TransformStamped to_transform(const nav_msgs::msg::Odometry 
 
 
 MultiObjectTracker::MultiObjectTracker(MultiObjectTrackerOptions options)
-: m_options(options), m_associator(options.association_config),
+: m_options(options), m_object_associator(options.object_association_config),
+  m_vision_associator{options.vision_association_config},
   m_track_creator(options.track_creator_config) {}
 
 TrackerUpdateResult MultiObjectTracker::update(
@@ -107,7 +108,7 @@ TrackerUpdateResult MultiObjectTracker::update(
   // Associate observations with tracks
   // ==================================
   AssociatorResult association;
-  association = m_associator.assign(detections, this->m_objects);
+  association = m_object_associator.assign(detections, this->m_objects);
   if (association.had_errors) {
     result.status = TrackerUpdateStatus::InvalidShape;
   }
@@ -161,6 +162,14 @@ TrackerUpdateResult MultiObjectTracker::update(
   return result;
 }
 
+TrackerUpdateResult MultiObjectTracker::update(
+  const ClassifiedRoiArrayMsg & rois,
+  const geometry_msgs::msg::Transform & tf_camera_from_track)
+{
+  const auto association = m_vision_associator.assign(rois, m_objects, tf_camera_from_track);
+  // TODO(#1287, #1120): Implement the logic for class update and track creation.
+  return TrackerUpdateResult{};
+}
 
 TrackerUpdateStatus MultiObjectTracker::validate(
   const DetectedObjectsMsg & detections,

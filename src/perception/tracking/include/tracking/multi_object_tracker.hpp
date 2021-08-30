@@ -35,6 +35,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tracking/detected_object_associator.hpp"
+#include "tracking/greedy_roi_associator.hpp"
 #include "tracking/track_creator.hpp"
 #include "tracking/tracked_object.hpp"
 #include "state_vector/common_states.hpp"
@@ -86,8 +87,10 @@ struct TRACKING_PUBLIC TrackerUpdateResult
 /// \brief Options for object tracking, with sensible defaults.
 struct TRACKING_PUBLIC MultiObjectTrackerOptions
 {
-  /// Data association parameters.
-  DataAssociationConfig association_config;
+  /// Detected object association parameters.
+  DataAssociationConfig object_association_config;
+  /// Vision ROI association parameters.
+  GreedyRoiAssociatorConfig vision_association_config;
   /// Track creator parameters.
   TrackCreatorConfig track_creator_config;
   /// Time after which unseen tracks should be pruned.
@@ -102,10 +105,12 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
 /// \brief A class for multi-object tracking.
 class TRACKING_PUBLIC MultiObjectTracker
 {
-public:
+private:
   using DetectedObjectsMsg = autoware_auto_msgs::msg::DetectedObjects;
+  using ClassifiedRoiArrayMsg = autoware_auto_msgs::msg::ClassifiedRoiArray;
   using TrackedObjectsMsg = autoware_auto_msgs::msg::TrackedObjects;
 
+public:
   /// Constructor
   explicit MultiObjectTracker(MultiObjectTrackerOptions options);
 
@@ -118,6 +123,15 @@ public:
   TrackerUpdateResult update(
     DetectedObjectsMsg detections,
     const nav_msgs::msg::Odometry & detection_frame_odometry);
+
+  /// \brief Update the tracks with the specified detections and return the tracks at the current
+  /// timestamp.
+  /// \param[in] rois An array of vision detections.
+  /// \param[in] tf_camera_from_track A transform from the track frame to the camera frame.
+  /// \return A result object containing tracks, unless an error occurred.
+  TrackerUpdateResult update(
+    const ClassifiedRoiArrayMsg & rois,
+    const geometry_msgs::msg::Transform & tf_camera_from_track);
 
 private:
   /// Check that the input data is valid.
@@ -143,7 +157,9 @@ private:
   MultiObjectTrackerOptions m_options;
 
   /// Associator for matching observations to tracks.
-  DetectedObjectAssociator m_associator;
+  DetectedObjectAssociator m_object_associator;
+
+  GreedyRoiAssociator m_vision_associator;
 
   /// Creator for creating tracks based on unassociated observations
   TrackCreator m_track_creator;
