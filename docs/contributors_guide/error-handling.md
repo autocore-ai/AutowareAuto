@@ -11,7 +11,7 @@ This article describes how developers should handle errors in their nodes in Aut
 
 Autoware.Auto currently uses basic error reporting through the ROS 2 logging mechanisms.
 
-If you are not yet familiar with the concept of logging in ROS 2, see the [ROS 2 logging page](https://index.ros.org/doc/ros2/Concepts/Logging/) for some examples and demos.
+If you are not yet familiar with the concept of logging in ROS 2, see the [ROS 2 logging page](https://docs.ros.org/en/foxy/Concepts/About-Logging.html) for some examples and demos.
 
 # Logging guidelines {#how-to-handle-errors-logging}
 
