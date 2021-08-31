@@ -18,4 +18,5 @@ objects of interest which can provide downstream procsses more information about
 - @subpage tracking-architecture
 - @subpage tracking-detected-object-associator-design
 - @subpage tracking-nodes-design
+- @subpage tracking-track-creator
 - @subpage tracking-roi-associator

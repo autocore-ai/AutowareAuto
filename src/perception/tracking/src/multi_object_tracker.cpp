@@ -131,13 +131,13 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Initialize new tracks
   // ==================================
-  m_track_creator.add_unassigned_lidar_clusters(detections, association);
+  m_track_creator.add_objects(detections, association);
   {
-    auto && new_tracks = m_track_creator.create_tracks();
+    auto && ret = m_track_creator.create_tracks();
     m_objects.insert(
       m_objects.end(),
-      std::make_move_iterator(new_tracks.begin()),
-      std::make_move_iterator(new_tracks.end()));
+      std::make_move_iterator(ret.tracks.begin()),
+      std::make_move_iterator(ret.tracks.end()));
   }
 
   // ==================================

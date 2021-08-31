@@ -29,6 +29,43 @@ namespace tracking
 {
 using autoware::common::types::float32_t;
 
+namespace
+{
+AssociatorResult create_and_init_result(
+  const std::size_t rois_size,
+  const std::size_t objects_size)
+{
+  AssociatorResult result;
+  result.track_assignments.resize(objects_size);
+  std::fill(
+    result.track_assignments.begin(), result.track_assignments.end(),
+    AssociatorResult::UNASSIGNED);
+
+  std::size_t counter = 0U;
+  std::generate_n(
+    std::inserter(
+      result.unassigned_detection_indices, result.unassigned_detection_indices.begin()),
+    rois_size, [&counter]() {return counter++;});
+  return result;
+}
+
+// Uses the given matched_detection_idx to assign to appropriate containers in result
+void handle_matching_output(
+  const std::size_t matched_detection_idx,
+  const std::size_t object_idx,
+  AssociatorResult & result)
+{
+  // There's no ROI assignment fit for the projection
+  if (matched_detection_idx == AssociatorResult::UNASSIGNED) {
+    result.unassigned_track_indices.insert(object_idx);
+    return;
+  }
+  // The track can be projected on the image and has a matching ROI, so they are associated
+  result.track_assignments[object_idx] = matched_detection_idx;
+  result.unassigned_detection_indices.erase(matched_detection_idx);
+}
+}  // namespace
+
 GreedyRoiAssociator::GreedyRoiAssociator(
   const GreedyRoiAssociatorConfig & config
 )
@@ -73,24 +110,6 @@ AssociatorResult GreedyRoiAssociator::assign(
   return result;
 }
 
-AssociatorResult GreedyRoiAssociator::create_and_init_result(
-  const std::size_t rois_size,
-  const std::size_t objects_size) const
-{
-  AssociatorResult result;
-  result.track_assignments.resize(objects_size);
-  std::fill(
-    result.track_assignments.begin(), result.track_assignments.end(),
-    AssociatorResult::UNASSIGNED);
-
-  std::size_t counter = 0U;
-  std::generate_n(
-    std::inserter(
-      result.unassigned_detection_indices, result.unassigned_detection_indices.begin()),
-    rois_size, [&counter]() {return counter++;});
-  return result;
-}
-
 std::size_t GreedyRoiAssociator::project_and_match_detection(
   const std::vector<geometry_msgs::msg::Point32> & object_shape_in_camera_frame,
   const std::unordered_set<std::size_t> & available_roi_indices,
@@ -111,21 +130,6 @@ std::size_t GreedyRoiAssociator::project_and_match_detection(
     max_score_idx = idx;
   }
   return max_score > m_iou_threshold ? max_score_idx : AssociatorResult::UNASSIGNED;
-}
-
-void GreedyRoiAssociator::handle_matching_output(
-  const std::size_t matched_detection_idx,
-  const std::size_t object_idx,
-  AssociatorResult & result) const
-{
-  // There's no ROI assignment fit for the projection
-  if (matched_detection_idx == AssociatorResult::UNASSIGNED) {
-    result.unassigned_track_indices.insert(object_idx);
-    return;
-  }
-  // The track can be projected on the image and has a matching ROI, so they are associated
-  result.track_assignments[object_idx] = matched_detection_idx;
-  result.unassigned_detection_indices.erase(matched_detection_idx);
 }
 
 namespace details

@@ -44,7 +44,7 @@ struct TRACKING_PUBLIC Projection
 };
 
 /// \brief Camera intrinsic parameters
-struct CameraIntrinsics
+struct TRACKING_PUBLIC CameraIntrinsics
 {
   std::size_t width{0U};
   std::size_t height{0U};

@@ -54,6 +54,7 @@ public:
   using EKF = autoware::common::state_estimation::KalmanFilter<MotionModel, NoiseModel>;
   using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedObject;
   using DetectedObjectMsg = autoware_auto_msgs::msg::DetectedObject;
+  using ObjectClassifications = autoware_auto_msgs::msg::TrackedObject::_classification_type;
   using ShapeMsg = autoware_auto_msgs::msg::Shape;
 
   /// Constructor
@@ -71,6 +72,8 @@ public:
 
   /// Adjust the track to the detection.
   void update(const DetectedObjectMsg & detection);
+
+  void update_class(const ObjectClassifications & obj_type);
 
   /// Call when no correspondence for this track was found.
   void no_update();

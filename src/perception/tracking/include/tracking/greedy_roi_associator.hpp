@@ -99,22 +99,12 @@ public:
   ) const;
 
 private:
-  // Create result struct and initialize data to expected default values
-  AssociatorResult create_and_init_result(
-    const std::size_t rois_size,
-    const std::size_t objects_size) const;
-
   // Scan the ROIs to find the best matching roi for a given shape by projecting it onto image
   // frame
   std::size_t project_and_match_detection(
     const std::vector<geometry_msgs::msg::Point32> & object_shape_in_camera_frame,
     const std::unordered_set<std::size_t> & available_roi_indices,
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois) const;
-
-  // Uses the given matched_detection_idx to assign to appropriate containers in result
-  void handle_matching_output(
-    const std::size_t matched_detection_idx,
-    const std::size_t object_idx, AssociatorResult & result) const;
 
   CameraModel m_camera;
   IOUHeuristic m_iou_func{};

@@ -36,53 +36,6 @@ using RoiAssociator = tracking::GreedyRoiAssociator;
 using AssociatorResult = tracking::AssociatorResult;
 using Point32 = geometry_msgs::msg::Point32;
 
-Point32 make_pt(float32_t x, float32_t y, float32_t z)
-{
-  return Point32{}.set__x(x).set__y(y).set__z(z);
-}
-
-Shape make_rectangular_shape(
-  const Point32 & base_face_origin,
-  float32_t half_width, float32_t half_length, float32_t shape_height)
-{
-  Shape retval;
-  retval.polygon.points.push_back(
-    make_pt(
-      (base_face_origin.x + half_width),
-      (base_face_origin.y + half_length), (base_face_origin.z)));
-  retval.polygon.points.push_back(
-    make_pt(
-      (base_face_origin.x + half_width),
-      (base_face_origin.y - half_length), (base_face_origin.z)));
-  retval.polygon.points.push_back(
-    make_pt(
-      (base_face_origin.x - half_width),
-      (base_face_origin.y + half_length), (base_face_origin.z)));
-  retval.polygon.points.push_back(
-    make_pt(
-      (base_face_origin.x - half_width),
-      (base_face_origin.y - half_length), (base_face_origin.z)));
-  retval.height = shape_height;
-
-  return retval;
-}
-
-ClassifiedRoi projection_to_roi(const Projection & projection)
-{
-  ClassifiedRoi roi;
-  for (const auto & pt : projection.shape) {
-    roi.polygon.points.push_back(Point32{}.set__x(pt.x).set__y(pt.y));
-  }
-  return roi;
-}
-
-geometry_msgs::msg::Transform make_identity()
-{
-  geometry_msgs::msg::Transform identity{};
-  identity.rotation.set__w(1.0);
-  return identity;
-}
-
 template<typename ObjType>
 class TestRoiAssociation : public testing::Test
 {
