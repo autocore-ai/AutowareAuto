@@ -46,13 +46,13 @@ def generate_launch_description():
     )
 
     map_pcd_file_path = os.path.join(
-        get_package_share_directory('autoware_auto_avp_demo'),
+        get_package_share_directory('autoware_demos'),
         'data',
         'autonomoustuff_parking_lot.pcd'
     )
 
     map_yaml_file_path = os.path.join(
-        get_package_share_directory('autoware_auto_avp_demo'),
+        get_package_share_directory('autoware_demos'),
         'data',
         'autonomoustuff_parking_lot.yaml'
     )
