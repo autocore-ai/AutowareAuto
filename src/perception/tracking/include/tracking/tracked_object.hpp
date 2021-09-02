@@ -73,7 +73,8 @@ public:
   /// Adjust the track to the detection.
   void update(const DetectedObjectMsg & detection);
 
-  void update_class(const ObjectClassifications & obj_type);
+  /// Update just the classification state of the track
+  void update(const ObjectClassifications & obj_type);
 
   /// Call when no correspondence for this track was found.
   void no_update();

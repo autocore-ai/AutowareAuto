@@ -152,7 +152,11 @@ void TrackedObject::update(const DetectedObjectMsg & detection)
       PoseMeasurementXYZ64::State::Matrix::Identity();
   }
   m_ekf.correct(pose_measurement);
-  m_classifier.update(detection.classification);
+}
+
+void TrackedObject::update(const ObjectClassifications & classification)
+{
+  m_classifier.update(classification);
 }
 
 void TrackedObject::no_update()

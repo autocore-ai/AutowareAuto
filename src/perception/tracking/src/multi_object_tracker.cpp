@@ -162,13 +162,19 @@ TrackerUpdateResult MultiObjectTracker::update(
   return result;
 }
 
-TrackerUpdateResult MultiObjectTracker::update(
+void MultiObjectTracker::update(
   const ClassifiedRoiArrayMsg & rois,
   const geometry_msgs::msg::Transform & tf_camera_from_track)
 {
   const auto association = m_vision_associator.assign(rois, m_objects, tf_camera_from_track);
-  // TODO(#1287, #1120): Implement the logic for class update and track creation.
-  return TrackerUpdateResult{};
+
+  for (size_t i = 0U; i < m_objects.size(); ++i) {
+    const auto & maybe_roi_idx = association.track_assignments[i];
+    if (maybe_roi_idx != AssociatorResult::UNASSIGNED) {
+      m_objects[i].update(rois.rois[maybe_roi_idx].classifications);
+    }
+  }
+  m_track_creator.add_objects(rois, association);
 }
 
 TrackerUpdateStatus MultiObjectTracker::validate(

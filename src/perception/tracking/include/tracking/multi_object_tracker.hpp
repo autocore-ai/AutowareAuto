@@ -124,12 +124,10 @@ public:
     DetectedObjectsMsg detections,
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 
-  /// \brief Update the tracks with the specified detections and return the tracks at the current
-  /// timestamp.
+  /// \brief Update the tracks with the specified detections
   /// \param[in] rois An array of vision detections.
   /// \param[in] tf_camera_from_track A transform from the track frame to the camera frame.
-  /// \return A result object containing tracks, unless an error occurred.
-  TrackerUpdateResult update(
+  void update(
     const ClassifiedRoiArrayMsg & rois,
     const geometry_msgs::msg::Transform & tf_camera_from_track);
 

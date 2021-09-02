@@ -147,7 +147,7 @@ def generate_launch_description():
         ],
         remappings=[
             ("detected_objects", "/lidars/lidar_detected_objects"),
-            ("odometry", "/vehicle/odom_pose")
+            ("ego_state", "/vehicle/odom_pose")
         ],
         condition=LaunchConfigurationEquals('use_ndt', 'False')
     )
@@ -167,7 +167,7 @@ def generate_launch_description():
         ],
         remappings=[
             ("detected_objects", "/lidars/lidar_detected_objects"),
-            ("odometry", "/localization/odometry")
+            ("ego_state", "/localization/odometry")
         ],
         condition=IfCondition(LaunchConfiguration('use_ndt'))
     )

@@ -113,8 +113,10 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
     return retval;
   }
 
+  const auto & vision_msg = *vision_msg_matches.back();
+
   const auto result = m_associator.assign(
-    *vision_msg_matches.back(), m_lidar_clusters, m_cfg.tf_camera_from_base_link);
+    vision_msg, m_lidar_clusters, m_cfg.tf_camera_from_base_link);
   std::set<size_t, std::greater<>> lidar_idx_to_erase;
 
   for (size_t cluster_idx = 0U; cluster_idx < m_lidar_clusters.objects.size();
@@ -122,6 +124,10 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
   {
     if (result.track_assignments[cluster_idx] != AssociatorResult::UNASSIGNED) {
       lidar_idx_to_erase.insert(cluster_idx);
+      // TrackedObject constructor uses the classification field in the DetectedObject to
+      // initialize track class. So assign the class from the associated ROI to the cluster.
+      m_lidar_clusters.objects[cluster_idx].classification = vision_msg.rois[result
+          .track_assignments[cluster_idx]].classifications;
       retval.tracks.emplace_back(
         TrackedObject(
           m_lidar_clusters.objects[cluster_idx],
