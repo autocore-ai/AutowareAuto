@@ -4,13 +4,15 @@
     topics:
       input_pose:
         - /localization/ndt_pose_with_covariance
-    data_driven: true
+    output_frequency: 30.0
     frame_id: "map"
     child_frame_id: "base_link"
-    mahalanobis_threshold: 2.0
+    mahalanobis_threshold: 10.0
 
+    state_variances: [
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  # position variances
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  # velocity variances
+      1.0, 1.0, 1.0, 1.0, 1.0, 1.0   # acceleration variances
+    ]
     process_noise_variances:
-      acceleration: [2.0, 2.0]
-
-    state_variances: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    min_speed_to_use_speed_orientation: 1.0
+      acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
