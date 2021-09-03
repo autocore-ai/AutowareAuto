@@ -1,5 +1,52 @@
 [
   {
+    "type": "Transform",
+    "name": "base_link",
+    "transform": {
+      "x": -0.015,
+      "y": 0.369,
+      "z": -1.37,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "CAN-Bus",
+    "name": "CAN Bus",
+    "params": {
+      "Frequency": 10,
+      "Topic": "/lgsvl/state_report"
+    },
+    "transform": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "GPS Device",
+    "name": "GPS",
+    "params": {
+      "Frequency": 12.5,
+      "Topic": "/gnss/fix",
+      "Frame": "gnss",
+      "IgnoreMapOrigin": false
+    },
+    "parent": "base_link",
+    "transform": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
     "type": "GPS Odometry",
     "name": "GPS Odometry",
     "params":
@@ -10,8 +57,26 @@
       "ChildFrame": "base_link",
       "IgnoreMapOrigin": true
     },
+    "parent": "base_link",
     "transform":
     {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pitch": 0,
+      "yaw": 0,
+      "roll": 0
+    }
+  },
+  {
+    "type": "IMU",
+    "name": "IMU",
+    "params": {
+      "Topic": "/imu/imu_raw",
+      "Frame": "imu"
+    },
+    "parent": "base_link",
+    "transform": {
       "x": 0,
       "y": 0,
       "z": 0,
@@ -37,6 +102,7 @@
       "Topic": "/lidar_front/points_raw",
       "Frame": "lidar_front"
     },
+    "parent": "base_link",
     "transform":
     {
       "x": 0.022,
@@ -64,6 +130,7 @@
       "Topic": "/lidar_rear/points_raw",
       "Frame": "lidar_rear"
     },
+    "parent": "base_link",
     "transform":
     {
       "x": 0.022,
@@ -100,6 +167,7 @@
       "Topic": "/simulator/main_camera",
       "Frame": "camera"
     },
+    "parent": "base_link",
     "transform": {
       "x": 0,
       "y": 1.7,
@@ -117,6 +185,7 @@
       "DetectionRange": 100,
       "Topic": "/simulator/ground_truth/detections2D"
     },
+    "parent": "base_link",
     "transform": {
       "x": 0,
       "y": 1.7,
