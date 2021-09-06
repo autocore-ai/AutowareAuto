@@ -189,14 +189,19 @@ TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
   const auto timeout = std::chrono::milliseconds(10);
   const auto max_cycle_time = std::chrono::milliseconds(11);
   const auto port_num = 3445U;
+  const auto topic_name = "points_xyzi";
   // Node
+  std::vector<rclcpp::Parameter> velodyne_params;
+  velodyne_params.emplace_back("ip", m_ip);
+  velodyne_params.emplace_back("port", static_cast<int64_t>(port_num));
+  velodyne_params.emplace_back("frame_id", m_frame_id);
+  velodyne_params.emplace_back("cloud_size", static_cast<int64_t>(m_cloud_size));
+  velodyne_params.emplace_back("rpm", static_cast<int>(m_vlp_config.get_rpm()));
+  velodyne_params.emplace_back("topic", topic_name);
+  rclcpp::NodeOptions velodyne_options = rclcpp::NodeOptions();
+  velodyne_options.parameter_overrides(velodyne_params);
   std::shared_ptr<VelodyneCloudNode> velodyne_ptr = std::make_shared<VelodyneCloudNode>(
-    "velodyne_cloud_node",
-    m_ip,
-    port_num,
-    m_frame_id,
-    m_cloud_size,
-    m_vlp_config);
+    "velodyne_cloud_node", velodyne_options);
   std::thread velodyne_node_thread;
 
   // Node under test
@@ -252,7 +257,9 @@ TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
         // Create thread to
         velodyne_node_thread = std::thread {
           [velodyne_ptr] {
-            velodyne_ptr->run();
+            while (rclcpp::ok()) {
+              rclcpp::spin(velodyne_ptr);
+            }
           }
         };
       },

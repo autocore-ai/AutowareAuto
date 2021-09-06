@@ -22,6 +22,7 @@
 #include <memory>
 #include <thread>
 #include <string>
+#include <vector>
 
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
@@ -32,32 +33,29 @@ TEST(velodyne_node, constructor)
   rclcpp::init(0, nullptr);
 
   const auto name = "test_node";
-  const auto ip = "127.0.0.1";
-  const auto port = 9999U;
-  const auto frame_id = "base_link";
-  const auto cloud_size = 10000U;
-  using autoware::drivers::velodyne_driver::Vlp16Translator;
-  const auto config = Vlp16Translator::Config{600.0F};
+
+  std::vector<rclcpp::Parameter> velodyne_params;
+  velodyne_params.emplace_back("ip", "127.0.0.1");
+  velodyne_params.emplace_back("port", 9999);
+  velodyne_params.emplace_back("frame_id", "base_link");
+  velodyne_params.emplace_back("cloud_size", 10000);
+  velodyne_params.emplace_back("rpm", 600);
+  velodyne_params.emplace_back("topic", "blah");
+  rclcpp::NodeOptions velodyne_options = rclcpp::NodeOptions();
+  velodyne_options.parameter_overrides(velodyne_params);
 
   using VelodyneCloudNode = autoware::drivers::velodyne_nodes::VLP16DriverNode;
-  EXPECT_NO_THROW(
-    VelodyneCloudNode(
-      name,
-      ip,
-      port,
-      frame_id,
-      cloud_size,
-      config)
-  );
+  try {
+    VelodyneCloudNode v(name, velodyne_options);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+  }
+  EXPECT_NO_THROW(VelodyneCloudNode(name, velodyne_options));
 
+  velodyne_params.pop_back();
+  velodyne_options.parameter_overrides(velodyne_params);
   EXPECT_THROW(
-    VelodyneCloudNode(
-      name,
-      ip,
-      port,
-      frame_id,
-      500U,
-      config),
+    VelodyneCloudNode(name, velodyne_options),
     std::runtime_error
   );
 
@@ -82,24 +80,28 @@ TEST_P(velodyne_node_integration, test)
 
   const auto param = GetParam();
   // Configuration
-  const auto cloud_size = param.reserved_size;
   const auto name = "test_node";
   const auto ip = "127.0.0.1";
   const auto port = 3555U;
   const auto frame_id = "base_link";
+  const auto topic = "points_xyzi";
   const auto runtime = std::chrono::seconds(10);
   using autoware::drivers::velodyne_driver::Vlp16Translator;
   const auto config = Vlp16Translator::Config{600.0F};
+  std::vector<rclcpp::Parameter> velodyne_params;
+  velodyne_params.emplace_back("ip", ip);
+  velodyne_params.emplace_back("port", static_cast<int64_t>(port));
+  velodyne_params.emplace_back("frame_id", frame_id);
+  velodyne_params.emplace_back("cloud_size", static_cast<int64_t>(param.reserved_size));
+  velodyne_params.emplace_back("rpm", static_cast<int>(config.get_rpm()));
+  velodyne_params.emplace_back("topic", topic);
+  rclcpp::NodeOptions velodyne_options = rclcpp::NodeOptions();
+  velodyne_options.parameter_overrides(velodyne_params);
 
   // Node
   using VelodyneCloudNode = autoware::drivers::velodyne_nodes::VLP16DriverNode;
   std::shared_ptr<VelodyneCloudNode> nd_ptr = std::make_shared<VelodyneCloudNode>(
-    name,
-    ip,
-    port,
-    frame_id,
-    cloud_size,
-    config);
+    name, velodyne_options);
   std::thread velodyne_node_thread;
 
   // Listener
@@ -107,7 +109,7 @@ TEST_P(velodyne_node_integration, test)
   std::shared_ptr<LidarIntegrationListener> listen_ptr;
   using lidar_integration::LidarIntegrationPclListener;
   listen_ptr = std::make_shared<LidarIntegrationPclListener>(
-    "points_xyzi",
+    topic,
     param.expected_period_ms,
     param.expected_size,
     0.7,  // period tolerance
@@ -124,7 +126,9 @@ TEST_P(velodyne_node_integration, test)
       [&velodyne_node_thread, nd_ptr] {
         // Create thread to
         velodyne_node_thread = std::thread {[nd_ptr] {
-            nd_ptr->run();
+            while (rclcpp::ok()) {
+              rclcpp::spin(nd_ptr);
+            }
           }};
       },
       [] { /* UdpDriverNode does not allow us to stop it, we need to shutdown */},

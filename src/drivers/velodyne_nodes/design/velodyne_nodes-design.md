@@ -9,11 +9,7 @@ We require the Velodyne driver to be able to interface with a ROS-based system.
 
 # Design
 
-These nodes are specializations of the UdpDriver, composed with the Vlp16Translator.
-
-Specifically, these specializations are for the sensor_msgs::msg::PointCloud2
-message type which is intended for widespread use and visualization, but not in high performance
-or safety-critical settings.
+These nodes use the UdpDriver to receive the packets from the socket and then parse the packet into sensor_msgs::msg::PointCloud2 with the Vlp16Translator.
 
 The purpose of these nodes are to convert Udp packets from a VLP16 HiRes sensor into
 ROS 2 messages.
@@ -52,4 +48,5 @@ for fusion coordination.
 # Related issues
 
 - #4 - Implement velodyne driver
+- #1309 - Update the driver for changes in ros udp driver 1.0
 

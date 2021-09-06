@@ -32,52 +32,67 @@ namespace drivers
 {
 namespace velodyne_nodes
 {
-template<typename T>
-VelodyneCloudNode<T>::VelodyneCloudNode(
-  const std::string & node_name,
-  const std::string & ip,
-  const uint16_t port,
-  const std::string & frame_id,
-  const std::size_t cloud_size,
-  const Config & config)
-: UdpDriverNode(
-    node_name,
-    "points_xyzi",
-    typename UdpDriverNode::UdpConfig{ip, port}),
-  m_translator(config),
-  m_published_cloud(false),
-  m_remainder_start_idx(0U),
-  m_point_cloud_idx(0),
-  m_frame_id(frame_id),
-  m_cloud_size(cloud_size)
-{
-  m_point_block.reserve(VelodyneTranslatorT::POINT_BLOCK_CAPACITY);
-  // If your preallocated cloud size is too small, the node really won't operate well at all
-  if (static_cast<uint32_t>(m_point_block.capacity()) >= cloud_size) {
-    throw std::runtime_error("VelodyneCloudNode: cloud_size must be > PointBlock::CAPACITY");
-  }
-}
 
-////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 VelodyneCloudNode<T>::VelodyneCloudNode(
   const std::string & node_name,
-  const std::string & node_namespace)
-: UdpDriverNode(node_name, node_namespace),
-  m_translator(
-    Config{
-        static_cast<float32_t>(this->declare_parameter("rpm").template get<int>())}),
-  m_published_cloud(false),
+  const rclcpp::NodeOptions & options)
+: rclcpp::Node(node_name, options),
+  m_io_cxt(),
+  m_udp_driver(m_io_cxt),
+  m_translator(Config{static_cast<float32_t>(this->declare_parameter("rpm").template get<int>())}),
+  m_ip(this->declare_parameter("ip").template get<std::string>().c_str()),
+  m_port(static_cast<uint16_t>(this->declare_parameter("port").template get<uint16_t>())),
+  m_pc2_pub_ptr(create_publisher<sensor_msgs::msg::PointCloud2>(
+      declare_parameter("topic").template
+      get<std::string>(), rclcpp::QoS{10})),
   m_remainder_start_idx(0U),
   m_point_cloud_idx(0),
   m_frame_id(this->declare_parameter("frame_id").template get<std::string>().c_str()),
   m_cloud_size(static_cast<std::size_t>(
       this->declare_parameter("cloud_size").template get<std::size_t>()))
 {
-  m_point_block.reserve(autoware::drivers::velodyne_driver::Vlp16Translator::POINT_BLOCK_CAPACITY);
+  m_point_block.reserve(VelodyneTranslatorT::POINT_BLOCK_CAPACITY);
   // If your preallocated cloud size is too small, the node really won't operate well at all
   if (static_cast<uint32_t>(m_point_block.capacity()) >= m_cloud_size) {
     throw std::runtime_error("VelodyneCloudNode: cloud_size must be > PointBlock::CAPACITY");
+  }
+
+
+  init_udp_driver();
+  init_output(m_pc2_msg);
+}
+
+template<typename T>
+void VelodyneCloudNode<T>::init_udp_driver()
+{
+  m_udp_driver.init_receiver(m_ip, m_port);
+  m_udp_driver.receiver()->open();
+  m_udp_driver.receiver()->bind();
+  m_udp_driver.receiver()->asyncReceive(
+    std::bind(&VelodyneCloudNode<T>::receiver_callback, this, std::placeholders::_1));
+}
+
+template<typename T>
+void VelodyneCloudNode<T>::receiver_callback(const std::vector<uint8_t> & buffer)
+{
+  Packet pkt{};
+  std::memcpy(&pkt, &buffer[0], buffer.size());
+  try {
+    // message received, convert and publish
+    if (this->convert(pkt, m_pc2_msg)) {
+      m_pc2_pub_ptr->publish(m_pc2_msg);
+      while (this->get_output_remainder(m_pc2_msg)) {
+        m_pc2_pub_ptr->publish(m_pc2_msg);
+      }
+    }
+  } catch (const std::exception & e) {
+    RCLCPP_WARN(this->get_logger(), e.what());
+    // And then just continue running
+  } catch (...) {
+    // Something really weird happened and I can't handle it here
+    RCLCPP_WARN(this->get_logger(), "Unknown exception occured in VelodynceCloudNode");
+    throw;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
