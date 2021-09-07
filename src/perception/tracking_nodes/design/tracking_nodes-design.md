@@ -42,7 +42,9 @@ Parameters:
 * use_vision - Set this to true to subscribe to `ClassifiedRoiArray` topic. This also means
                `vision_association` section needs to be defined in the params file
 * use_ndt - Set this to true to make tracker use `Odometry` msg from NDT. False will make
-            tracker use `PoseWithCovarianceStamped` msg from `lgsvl_interface`  
+            tracker use `PoseWithCovarianceStamped` msg from `lgsvl_interface`
+
+For a demo see @ref running-tracker-with-vision
 
 
 ## Inner-workings / Algorithms

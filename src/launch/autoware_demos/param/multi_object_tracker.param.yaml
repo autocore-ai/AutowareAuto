@@ -11,7 +11,7 @@
     # Note also the pruning_time_threshold_ms – only one threshold is necessary for removal.
     pruning_ticks_threshold: 10
     # Frame id in which tracks should be produced
-    track_frame_id: 'odom'
+    track_frame_id: map
     # Parameters for associating the lidar detections
     object_association:
       # Gate parameter: Objects farther apart than this distance are not matched.
@@ -37,13 +37,13 @@
       # Transform to move the lidar clusters from base_link to camera frame for association
       tf_camera_from_base_link:
         translation:
-          x: 1.7
-          y: 0.2
-          z: 0.0
-        rotation:
-          x: 0.0
+          x: -0.2
           y: 0.0
-          z: 0.0
-          w: 1.0
+          z: 1.7
+        rotation:
+          x: -0.4999999896293064
+          y: 0.5001018366018476
+          z: -0.4999999896293064
+          w: 0.4998981633981524
       # Max acceptable timestamp difference between lidar cluster and vision RoI msg
-      timestamp_diff_ms: 20
+      timestamp_diff_ms: 100

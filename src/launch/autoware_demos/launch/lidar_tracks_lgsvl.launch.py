@@ -73,6 +73,13 @@ def generate_launch_description():
             ("points_clustered", "cluster_points")
         ])
 
+    vision_detections = Node(
+            name='vision_detections',
+            executable='ground_truth_detections_node_exe',
+            package='ground_truth_detections',
+            on_exit=Shutdown()
+    )
+
     # point cloud filter transform param file shared by front and rear instances
     filter_transform_param = get_param_file(
         'point_cloud_filter_transform_nodes',
@@ -143,11 +150,13 @@ def generate_launch_description():
             {
                 'use_ndt': False,
                 'track_frame_id': "odom",
+                'use_vision': True,
             }
         ],
         remappings=[
             ("detected_objects", "/lidars/lidar_detected_objects"),
-            ("ego_state", "/vehicle/odom_pose")
+            ("ego_state", "/vehicle/odom_pose"),
+            ("classified_rois", "/perception/ground_truth_detections_2d")
         ],
         condition=LaunchConfigurationEquals('use_ndt', 'False')
     )
@@ -163,11 +172,13 @@ def generate_launch_description():
             {
                 'use_ndt': True,
                 'track_frame_id': "map",
+                'use_vision': True,
             }
         ],
         remappings=[
             ("detected_objects", "/lidars/lidar_detected_objects"),
-            ("ego_state", "/localization/odometry")
+            ("ego_state", "/localization/odometry"),
+            ("classified_rois", "/perception/ground_truth_detections_2d")
         ],
         condition=IfCondition(LaunchConfiguration('use_ndt'))
     )
@@ -274,6 +285,7 @@ def generate_launch_description():
         use_ndt,
         covariance_insertion,
         euclidean_clustering,
+        vision_detections,
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
         lgsvl_interface,

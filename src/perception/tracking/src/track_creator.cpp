@@ -22,6 +22,7 @@
 #include <set>
 #include <vector>
 
+
 namespace autoware
 {
 namespace perception
@@ -110,14 +111,20 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
   const auto vision_msg_matches = m_vision_rois_cache_ptr->getInterval(before, after);
 
   if (vision_msg_matches.empty()) {
+    std::cerr << "No matching vision msgs for creating tracks" << std::endl;
     return retval;
   }
+  std::cerr << "Got matching vision msg for creating tracks" << std::endl;
 
   const auto & vision_msg = *vision_msg_matches.back();
 
   const auto result = m_associator.assign(
     vision_msg, m_lidar_clusters, m_cfg.tf_camera_from_base_link);
   std::set<size_t, std::greater<>> lidar_idx_to_erase;
+
+  std::cerr << "Unassigned lidar " << m_lidar_clusters.objects.size() << " vision " <<
+    vision_msg.rois.size() << " now assigned " << m_lidar_clusters.objects.size() -
+    result.unassigned_track_indices.size() << std::endl;
 
   for (size_t cluster_idx = 0U; cluster_idx < m_lidar_clusters.objects.size();
     cluster_idx++)
