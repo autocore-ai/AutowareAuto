@@ -35,7 +35,7 @@ using State = autoware_auto_msgs::msg::VehicleKinematicState;
 
 using motion::motion_common::VehicleConfig;
 
-TEST(mytest_base, basic)
+TEST(MytestBase, Basic)
 {
   const auto heading_weight = 0.1;
   const auto min_record_distance = 0.0;

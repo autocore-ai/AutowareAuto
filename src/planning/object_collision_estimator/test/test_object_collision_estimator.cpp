@@ -135,11 +135,11 @@ void object_collision_estimator_test(
   }
 }
 
-TEST(object_collision_estimator, sanity) {
+TEST(ObjectCollisionEstimator, Sanity) {
   object_collision_estimator_test(100, 40);
 }
 
-TEST(object_collision_estimator, short_trajectory) {
+TEST(ObjectCollisionEstimator, ShortTrajectory) {
   object_collision_estimator_test(3, 1);
   object_collision_estimator_test(3, 2);
 
@@ -149,15 +149,15 @@ TEST(object_collision_estimator, short_trajectory) {
   object_collision_estimator_test(0, 2);
 }
 
-TEST(object_collision_estimator, emergency_stop) {
+TEST(ObjectCollisionEstimator, EmergencyStop) {
   object_collision_estimator_test(100, 0);
   object_collision_estimator_test(100, 1);
 }
 
-TEST(object_collision_estimator, no_obstacle) {
+TEST(ObjectCollisionEstimator, NoObstacle) {
   object_collision_estimator_test(100, 101);
 }
 
-TEST(object_collision_estimator, small_obstacle) {
+TEST(ObjectCollisionEstimator, SmallObstacle) {
   object_collision_estimator_test(100, 40, 0.0003);
 }

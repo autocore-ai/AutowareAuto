@@ -117,7 +117,7 @@ autoware_auto_msgs::msg::BoundingBox compute_box(Cluster & cls)
 // test that for a big point cloud, you can subdivide into distinct clusters, and turn into bounding
 // boxes
 // This tests the "cluster object lives in another scope" use case and direct bounding box formation
-TEST(euclidean_segmenter, combined)
+TEST(EuclideanSegmenter, Combined)
 {
   Config cfg{"razzledazz", 10U, 100U, 1.5, 3.5, 60.0F};
   HashConfig hcfg{-130.0F, 130.0F, -130.0F, 130.0F, 1.0F, 10000U};

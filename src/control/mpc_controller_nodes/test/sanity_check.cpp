@@ -49,7 +49,7 @@ using motion::control::mpc_controller::VehicleConfig;
 using motion::control::mpc_controller::Interpolation;
 using motion::control::mpc_controller::MpcController;
 
-class sanity_check : public ::testing::Test
+class SanityCheck : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -60,7 +60,7 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
-};  // sanity_check
+};  // SanityCheck
 
 constexpr auto cmd_topic = "test_mpc_ctrl_node_cmd";
 constexpr auto state_topic = "test_mpc_ctrl_node_state";
@@ -139,7 +139,7 @@ private:
 };  // class Listener
 
 
-TEST_F(sanity_check, basic)
+TEST_F(SanityCheck, Basic)
 {
   constexpr auto total_msgs = 10U;
   constexpr auto TOLI = 2U;

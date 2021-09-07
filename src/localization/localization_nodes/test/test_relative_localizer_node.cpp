@@ -65,7 +65,7 @@ protected:
 };
 
 
-TEST_F(RelativeLocalizationNodeTest, basic) {
+TEST_F(RelativeLocalizationNodeTest, Basic) {
   ////////////////////////////// Define lambdas
 
   /// Spin until tracker pointer reaches
@@ -178,7 +178,7 @@ TEST_F(RelativeLocalizationNodeTest, basic) {
   }
 }
 
-TEST_F(RelativeLocalizationNodeTest, exception_handling) {
+TEST_F(RelativeLocalizationNodeTest, ExceptionHandling) {
   ////////////////////////////// Define lambdas
   /// Spin until condition for node is met
   auto spin_until_condition =

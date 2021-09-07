@@ -99,7 +99,7 @@ using MyTypes = ::testing::Types<TrackedObjects, DetectedObjects>;
 // cppcheck-suppress syntaxError
 TYPED_TEST_CASE(TestRoiAssociation, MyTypes, );
 
-TYPED_TEST(TestRoiAssociation, correct_association) {
+TYPED_TEST(TestRoiAssociation, CorrectAssociation) {
   ClassifiedRoiArray rois;
 
   this->add_object(make_pt(10.0F, 10.0F, 10), 5.0F, 5.0F, 2.0F);
@@ -112,7 +112,7 @@ TYPED_TEST(TestRoiAssociation, correct_association) {
   ASSERT_EQ(result.unassigned_track_indices.size(), 0U);
 }
 
-TYPED_TEST(TestRoiAssociation, out_of_image_test) {
+TYPED_TEST(TestRoiAssociation, OutOfImageTest) {
   ClassifiedRoiArray rois;
 
   // Create a track behind the camera
@@ -125,7 +125,7 @@ TYPED_TEST(TestRoiAssociation, out_of_image_test) {
   ASSERT_TRUE(result.unassigned_track_indices.find(0U) != result.unassigned_track_indices.end());
 }
 
-TYPED_TEST(TestRoiAssociation, non_associated_track_roi) {
+TYPED_TEST(TestRoiAssociation, NonAssociatedTrackRoi) {
   ClassifiedRoiArray rois;
 
   this->add_object(make_pt(10.0F, 10.0F, 10), 5.0F, 5.0F, 2.0F);
@@ -153,7 +153,7 @@ TYPED_TEST(TestRoiAssociation, non_associated_track_roi) {
 /// don't have corresponding ROI detections.
 /// Likewise the ROIs have the following layout:  [TP, TP, TP, TP, FP, FP, FP] where false
 /// positives don't have corresponding tracks.
-TYPED_TEST(TestRoiAssociation, combined_association_test) {
+TYPED_TEST(TestRoiAssociation, CombinedAssociationTest) {
   constexpr auto num_captured_tracks = 4U;
   constexpr auto num_noncaptured_tracks = 3U;
   constexpr auto num_nonassociated_rois = 3U;

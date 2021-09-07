@@ -28,7 +28,7 @@ using autoware::common::types::bool8_t;
 
 // The logic in the test is quite similar to the logic of azimuth table initialization logic
 // however indexing is not identical.
-TEST(VLP32CDataTest, angle_lookup_test) {
+TEST(VLP32CDataTest, AngleLookupTest) {
   constexpr auto rpm{300U};
   VLP32CData vlp32c_data{rpm};
 
@@ -61,7 +61,7 @@ TEST(VLP32CDataTest, angle_lookup_test) {
   }
 }
 
-TEST(VLP32CDataTest, seq_id_test) {
+TEST(VLP32CDataTest, SeqIdTest) {
   constexpr auto rpm{300U};
   VLP32CData vlp32c_data{rpm};
   EXPECT_EQ(vlp32c_data.seq_id(0U, 12U), 0U);
@@ -70,7 +70,7 @@ TEST(VLP32CDataTest, seq_id_test) {
   EXPECT_EQ(vlp32c_data.seq_id(8U, 0U), 8U);
 }
 
-TEST(VLP32CDataTest, flag_test) {
+TEST(VLP32CDataTest, FlagTest) {
   constexpr auto rpm{300U};
   VLP32CData vlp32c_data{rpm};
 

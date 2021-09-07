@@ -136,7 +136,7 @@ public:
   lanelet::Id m_lane_id;
 };
 
-TEST_F(LanePlannerNodeTest, plan_simple_trajectory)
+TEST_F(LanePlannerNodeTest, PlanSimpleTrajectory)
 {
   using namespace std::chrono_literals;
 

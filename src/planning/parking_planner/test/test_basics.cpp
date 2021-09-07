@@ -38,7 +38,7 @@ using TrajectoryStep = autoware::motion::planning::parking_planner::TrajectorySt
 using autoware::motion::planning::parking_planner::HORIZON_LENGTH;
 
 
-TEST(vehicle_state, serialization) {
+TEST(VehicleState, Serialization) {
   auto vstest = VehicleState(0.0, 1.1, 2.2, 3.3, 4.4);
   auto roundtrip = VehicleState::deserialize(vstest.serialize());
 
@@ -49,7 +49,7 @@ TEST(vehicle_state, serialization) {
   EXPECT_EQ(vstest.get_steering(), roundtrip.get_steering());
 }
 
-TEST(vehicle_command, serialization) {
+TEST(VehicleCommand, Serialization) {
   auto vctest = VehicleCommand(0.0, 1.1);
   auto roundtrip = VehicleCommand::deserialize(vctest.serialize());
 
@@ -58,7 +58,7 @@ TEST(vehicle_command, serialization) {
 }
 
 
-TEST(bicycle_model, parameters_gettersetters) {
+TEST(BicycleModel, ParametersGettersetters) {
   auto test = BicycleModelParameters(0, 1, 2, 3, 4);
 
   test.set_length_front(0.1);
@@ -78,7 +78,7 @@ TEST(bicycle_model, parameters_gettersetters) {
 }
 
 
-TEST(bicycle_model, dynamics_basic) {
+TEST(BicycleModel, DynamicsBasic) {
   // Construct a test model
   auto parameters = BicycleModelParameters(1, 1, 1, 0.5, 0.5);
   auto model = BicycleModel(parameters);

@@ -99,7 +99,7 @@ static void send_fake_map(
 }
 
 
-TEST(parker_node_sanity_checks, basic)
+TEST(ParkerNodeSanityChecks, Basic)
 {
   rclcpp::init(0, nullptr);
 

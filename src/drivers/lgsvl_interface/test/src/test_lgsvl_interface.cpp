@@ -17,7 +17,7 @@
 #include "test_lgsvl_interface.hpp"
 #include <memory>
 
-TEST_F(LgsvlInterface_test, gear_mapping_state_command)
+TEST_F(LgsvlInterfaceTest, GearMappingStateCommand)
 {
   bool test_completed = false;
   VSC expected_result;
@@ -79,7 +79,7 @@ TEST_F(LgsvlInterface_test, gear_mapping_state_command)
     lgsvl_interface::VSD::GEAR_DRIVE);
 }
 
-TEST_F(LgsvlInterface_test, gear_mapping_state_report)
+TEST_F(LgsvlInterfaceTest, GearMappingStateReport)
 {
   lgsvl_msgs::msg::CanBusData cbd_msg;
 

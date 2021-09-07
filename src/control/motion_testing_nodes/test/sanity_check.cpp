@@ -31,7 +31,7 @@ using motion::motion_testing_nodes::TrajectoryProfile;
 using motion::motion_testing::make_state;
 using time_utils::from_message;
 
-class sanity_check : public ::testing::Test
+class SanityCheck : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -42,7 +42,7 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
-};  // sanity_check
+};  // SanityCheck
 
 class Listener : public rclcpp::Node
 {
@@ -98,7 +98,7 @@ private:
   rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub;
 };  // class Listener
 
-TEST_F(sanity_check, basic)
+TEST_F(SanityCheck, Basic)
 {
   const auto tf_topic = "motion_testing_node_tf";
   const auto traj_topic = "motion_test_node_traj";

@@ -38,7 +38,7 @@ class VoxelMapTest : public ::testing::Test, public VoxelMapContext {};
 
 void DummyLocalizationMap::clear() {}
 
-TEST_F(VoxelMapTest, basic_io) {
+TEST_F(VoxelMapTest, BasicIo) {
   constexpr auto capacity = 10U;
   constexpr auto map_frame = "map";
   constexpr auto false_frame = ".asdasd..";

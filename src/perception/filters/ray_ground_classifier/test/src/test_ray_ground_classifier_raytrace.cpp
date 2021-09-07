@@ -25,10 +25,10 @@
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
-class ray_ground_classifier_raytrace_vlp16 : public ::testing::Test
+class RayGroundClassifierRaytraceVlp16 : public ::testing::Test
 {
 public:
-  ray_ground_classifier_raytrace_vlp16()
+  RayGroundClassifierRaytraceVlp16()
   : cfg{
       0.0F,        // sensor_height_m,
       5.0F,        // max_local_slope_deg,
@@ -50,7 +50,7 @@ protected:
 };
 
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_flat)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyMFlat)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.69501861320422, 0, 0));
@@ -71,7 +71,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_flat)
   label_and_check(cfg, pts, labels);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_flat)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyfiveMFlat)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.6950186132, 0.0, 0));
@@ -92,7 +92,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_flat)
   label_and_check(cfg, pts, labels);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_flat)
+TEST_F(RayGroundClassifierRaytraceVlp16, ThirtyMFlat)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.6950186132, 0.0, 0));
@@ -113,7 +113,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_flat)
   label_and_check(cfg, pts, labels);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, thirtyfive_m_flat)
+TEST_F(RayGroundClassifierRaytraceVlp16, ThirtyfiveMFlat)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.6950186132, 0.0, 0));
@@ -135,7 +135,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, thirtyfive_m_flat)
 }
 
 ////////////////////////////////////////////////////////////////////
-TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_incline)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyMIncline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.46422494495, 0.0362703525863, 0));
@@ -157,7 +157,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_incline)
   label_and_check(cfg, pts, labels, false);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_incline)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyfiveMIncline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.46422494495, 0.0362703525863, 0));
@@ -180,7 +180,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_incline)
   label_and_check(cfg, pts, labels);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_incline)
+TEST_F(RayGroundClassifierRaytraceVlp16, ThirtyMIncline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.46422494495, 0.0362703525863, 0));
@@ -203,7 +203,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_incline)
   label_and_check(cfg, pts, labels);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, thirtyfive_m_incline)
+TEST_F(RayGroundClassifierRaytraceVlp16, ThirtyfiveMIncline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.46422494495, 0.0362703525863, 0));
@@ -227,7 +227,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, thirtyfive_m_incline)
 }
 
 //////////////////////////////////////////////////////////
-TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_decline)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyMDecline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.97056702129, -0.0433037786148, 0));
@@ -246,7 +246,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twenty_m_decline)
   label_and_check(cfg, pts, labels, false);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_decline)
+TEST_F(RayGroundClassifierRaytraceVlp16, TwentyfiveMDecline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.97056702129, -0.0433037786148, 0));
@@ -265,7 +265,7 @@ TEST_F(ray_ground_classifier_raytrace_vlp16, twentyfive_m_decline)
   label_and_check(cfg, pts, labels, false);
 }
 
-TEST_F(ray_ground_classifier_raytrace_vlp16, thirty_m_decline)
+TEST_F(RayGroundClassifierRaytraceVlp16, ThirtyMDecline)
 {
   // one ray from ray_trace.py
   dat.push_back(std::make_tuple(5.97056702129, -0.0433037786148, 0));

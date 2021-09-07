@@ -26,7 +26,7 @@
 
 // Only check that you can minimally translate a raw command
 // No reporting, or other kinds of commands
-TEST_F(sanity_checks, raw_translation)
+TEST_F(SanityChecks, RawTranslation)
 {
   const auto raw_topic = "raw_command";
   // Construct

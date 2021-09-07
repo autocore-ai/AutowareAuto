@@ -93,7 +93,7 @@ TYPED_TEST_CASE(TypedVoxelTest, PointTypes, );
 
 
 /// \brief Minimal testing of getter API
-TEST_F(VoxelTest, basic)
+TEST_F(VoxelTest, Basic)
 {
   //// Getter API ////
   // Min point
@@ -119,7 +119,7 @@ TEST_F(VoxelTest, basic)
 }
 
 /// Bad configuration cases
-TEST_F(VoxelTest, bad_cases)
+TEST_F(VoxelTest, BadCases)
 {
   // Min leaf size
   PointXYZ tmp;
@@ -202,7 +202,7 @@ TEST_F(VoxelTest, bad_cases)
   EXPECT_THROW(Config(tmp, tmp2, voxel_size, capacity), std::domain_error);
 }
 ////////////////////////////////////////////////////////////////////////////////
-TYPED_TEST(TypedVoxelTest, index_simple)
+TYPED_TEST(TypedVoxelTest, IndexSimple)
 {
   EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -0.5F)), 0UL);
   EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, -0.5F, -0.5F)), 1UL);
@@ -214,7 +214,7 @@ TYPED_TEST(TypedVoxelTest, index_simple)
   EXPECT_EQ(this->cfg_ptr->index(this->make(0.5F, 0.5F, 0.5F)), 7UL);
 }
 /// make sure index computation works
-TYPED_TEST(TypedVoxelTest, index_edge)
+TYPED_TEST(TypedVoxelTest, IndexEdge)
 {
   // do boundary queries, expect to round down:
   /*   ^ y
@@ -295,7 +295,7 @@ TYPED_TEST(TypedVoxelTest, index_edge)
 }
 
 /// make sure oob points are snapped to the edges
-TYPED_TEST(TypedVoxelTest, index_oob)
+TYPED_TEST(TypedVoxelTest, IndexOob)
 {
   // voxel (0, 0, 0)
   EXPECT_EQ(this->cfg_ptr->index(this->make(-0.5F, -0.5F, -1.5F)), 0UL);
@@ -356,7 +356,7 @@ TYPED_TEST(TypedVoxelTest, index_oob)
 }
 
 /// \brief Test generic voxel mechanisms
-TYPED_TEST(TypedVoxelTest, voxel)
+TYPED_TEST(TypedVoxelTest, Voxel)
 {
   Voxel<TypeParam> v1;
   // Dispatches to calls to occupied() and count()
@@ -378,7 +378,7 @@ TYPED_TEST(TypedVoxelTest, voxel)
 }
 ////////////////////////////////////////////////////////////////////////////////
 /// simple centroid computation for various types
-TYPED_TEST(TypedVoxelTest, centroid_voxel)
+TYPED_TEST(TypedVoxelTest, CentroidVoxel)
 {
   // simple xyz point
   CentroidVoxel<TypeParam> v1;
@@ -424,7 +424,7 @@ TYPED_TEST(TypedVoxelTest, centroid_voxel)
 }
 
 /// approximate centroid
-TYPED_TEST(TypedVoxelTest, approximate_centroid)
+TYPED_TEST(TypedVoxelTest, ApproximateCentroid)
 {
   constexpr float32_t TOL = 1.0E-6F;
   TypeParam pt;
@@ -485,7 +485,7 @@ TYPED_TEST(TypedVoxelTest, approximate_centroid)
 }
 
 /// test weirdness: indices should not roll over
-TYPED_TEST(TypedVoxelTest, small_voxel)
+TYPED_TEST(TypedVoxelTest, SmallVoxel)
 {
   constexpr float32_t sz = 0.03F;
   this->min_point.x = -130.0F;

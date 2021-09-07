@@ -32,7 +32,7 @@ using autoware::common::types::POINT_BLOCK_CAPACITY;
 using autoware::common::types::float32_t;
 
 // do basic sanity checks
-TEST_F(ray_ground_classifier, point_classification)
+TEST_F(RayGroundClassifier, PointClassification)
 {
   using autoware::perception::filters::ray_ground_classifier::RayGroundPointClassifier;
   RayGroundPointClassifier cls{cfg};
@@ -91,7 +91,7 @@ n = not ground point
  |
              g g g g .... g
  */
-TEST_F(ray_ground_classifier, flat_ground)
+TEST_F(RayGroundClassifier, FlatGround)
 {
   generate_groundspace(
     5.0F, 35.0F, 32U,
@@ -111,7 +111,7 @@ TEST_F(ray_ground_classifier, flat_ground)
  |                        n
              g g g g .... g
  */
-TEST_F(ray_ground_classifier, wall)
+TEST_F(RayGroundClassifier, Wall)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(
@@ -140,7 +140,7 @@ TEST_F(ray_ground_classifier, wall)
  |                         n
              g g g g .... g
  */
-TEST_F(ray_ground_classifier, wall2)
+TEST_F(RayGroundClassifier, Wall2)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(
@@ -170,7 +170,7 @@ TEST_F(ray_ground_classifier, wall2)
  |        g g .... g      n
                           n
  */
-TEST_F(ray_ground_classifier, ditch)
+TEST_F(RayGroundClassifier, Ditch)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(
@@ -200,7 +200,7 @@ TEST_F(ray_ground_classifier, ditch)
  |        g g .... g   g
 
  */
-TEST_F(ray_ground_classifier, gap)
+TEST_F(RayGroundClassifier, Gap)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(
@@ -234,7 +234,7 @@ TEST_F(ray_ground_classifier, gap)
  |            g g g
        g g g
  */
-TEST_F(ray_ground_classifier, valley)
+TEST_F(RayGroundClassifier, Valley)
 {
   // linearly varying slope until max slope
   const float32_t max_slope = 1.0F / 5.145F;
@@ -270,7 +270,7 @@ TEST_F(ray_ground_classifier, valley)
  |                      g g
                             g
  */
-TEST_F(ray_ground_classifier, crest)
+TEST_F(RayGroundClassifier, Crest)
 {
   // linearly varying slope until max slope
   const float32_t max_slope = -1.0F / 5.145F;
@@ -305,7 +305,7 @@ TEST_F(ray_ground_classifier, crest)
  |        g      g g     g g
       g g   g  g     g g     g
  */
-TEST_F(ray_ground_classifier, rough)
+TEST_F(RayGroundClassifier, Rough)
 {
   // up to 10 cm variation in height
   auto zfn = [](const float32_t r) {
@@ -330,7 +330,7 @@ TEST_F(ray_ground_classifier, rough)
  |           g   g
                g
  */
-TEST_F(ray_ground_classifier, driveway)
+TEST_F(RayGroundClassifier, Driveway)
 {
   // driveway itself
   const float32_t ro = 5.0F, rf = 10.0F;
@@ -367,7 +367,7 @@ TEST_F(ray_ground_classifier, driveway)
                     g g g g g
 g g g g g
 */
-TEST_F(ray_ground_classifier, plateau_ground)
+TEST_F(RayGroundClassifier, PlateauGround)
 {
   Config cfg2{
     0.4F,          // sensor_height_m,
@@ -408,7 +408,7 @@ TEST_F(ray_ground_classifier, plateau_ground)
                       n               n n
 g g g g g g g g     n   g
 */
-TEST_F(ray_ground_classifier, provisional_ground)
+TEST_F(RayGroundClassifier, ProvisionalGround)
 {
   Config cfg2{
     0.4F,          // sensor_height_m,
@@ -442,7 +442,7 @@ TEST_F(ray_ground_classifier, provisional_ground)
 }
 
 // same as wall, but just a different path to exercise the logic
-TEST_F(ray_ground_classifier, structured_partition_and_other)
+TEST_F(RayGroundClassifier, StructuredPartitionAndOther)
 {
   const float32_t ro = 5.0F, rf = 20.0F;
   generate_groundspace(
@@ -546,7 +546,7 @@ TEST_F(ray_ground_classifier, structured_partition_and_other)
   EXPECT_EQ(nonground_points[0U]->id, static_cast<uint16_t>(PointXYZIF::END_OF_SCAN_ID));
 }
 /////
-TEST_F(ray_ground_classifier, bad_cases)
+TEST_F(RayGroundClassifier, BadCases)
 {
   // check negative slopes
   EXPECT_THROW(
@@ -691,7 +691,7 @@ TEST_F(ray_ground_classifier, bad_cases)
 /////
 // Run ray ground filter on simulated data a hundred times or so to estimate the runtime
 // This can be turned into a real test when we get SIL/HIL going on
-TEST_F(ray_ground_classifier, benchmark)
+TEST_F(RayGroundClassifier, Benchmark)
 {
   // Generate simulated data for rays of size 8, 16, 32, 64, 128, 256, and 512
   PointPtrBlock raw_points, ground_points, nonground_points;

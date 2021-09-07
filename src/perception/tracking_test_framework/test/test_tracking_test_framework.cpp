@@ -30,7 +30,7 @@ constexpr auto epsilon = 1e-3F;
 }  // namespace
 
 // Test for line intersection with line
-TEST(test_tracking_test_framework, test_line_intersection_with_line) {
+TEST(TestTrackingTestFramework, TestLineIntersectionWithLine) {
   autoware::tracking_test_framework::Line l1 {
     Eigen::Vector2f{-1.0F, -1.0F}, Eigen::Vector2f{2.0F, 0.5F}};
   autoware::tracking_test_framework::Line l2 {
@@ -63,7 +63,7 @@ TEST(test_tracking_test_framework, test_line_intersection_with_line) {
 }
 
 // Test for line intersection with rectangle
-TEST(test_tracking_test_framework, test_line_intersection_with_rectangle) {
+TEST(TestTrackingTestFramework, TestLineIntersectionWithRectangle) {
   autoware::tracking_test_framework::Rectangle rect {
     Eigen::Vector2f{0.0F, 0.0F}, Eigen::Vector2f{2.0F, 3.0F}, 0.0F};
   autoware::tracking_test_framework::Line l1 {
@@ -88,7 +88,7 @@ TEST(test_tracking_test_framework, test_line_intersection_with_rectangle) {
 }
 
 // Test for line intersection with circle
-TEST(test_tracking_test_framework, test_line_intersection_with_circle) {
+TEST(TestTrackingTestFramework, TestLineIntersectionWithCircle) {
   autoware::tracking_test_framework::Circle circle {Eigen::Vector2f {1.0F, 1.0F}, 1.0F};
 
   // Intersection with line vertical to circle
@@ -126,7 +126,7 @@ TEST(test_tracking_test_framework, test_line_intersection_with_circle) {
 }
 
 
-TEST(test_tracking_test_framework, test_scene_with_single_lidar_beam_single_object) {
+TEST(TestTrackingTestFramework, TestSceneWithSingleLidarBeamSingleObject) {
   // Lidar with single beam
   autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 1, 2.0};
 
@@ -150,7 +150,7 @@ TEST(test_tracking_test_framework, test_scene_with_single_lidar_beam_single_obje
   EXPECT_TRUE(new_intersection.objects.empty());
 }
 
-TEST(test_tracking_test_framework, test_scene_with_multiple_lidar_beams_multiple_object) {
+TEST(TestTrackingTestFramework, TestSceneWithMultipleLidarBeamsMultipleObject) {
   // Lidar with multiple beams
   autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 4, 2.0};
 
@@ -205,7 +205,7 @@ TEST(test_tracking_test_framework, test_scene_with_multiple_lidar_beams_multiple
   EXPECT_GT(6.0F, bbox_area);
 }
 
-TEST(test_tracking_test_framework, test_1232_fix_scaling_factor) {
+TEST(TestTrackingTestFramework, Test1232FixScalingFactor) {
   autoware::tracking_test_framework::Lidar lidar{Eigen::Vector2f{0.0, 0.0}, 720, 200.0};
   std::vector<std::unique_ptr<autoware::tracking_test_framework::TrackedObject>> objects;
 // Tracked Car cluster

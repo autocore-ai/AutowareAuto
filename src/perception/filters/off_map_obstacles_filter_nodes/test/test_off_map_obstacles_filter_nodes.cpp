@@ -17,5 +17,5 @@
 #include "gtest/gtest.h"
 #include "off_map_obstacles_filter_nodes/off_map_obstacles_filter_node.hpp"
 
-TEST(test_off_map_obstacles_filter_nodes, test_hello) {
+TEST(TestOffMapObstaclesFilterNodes, TestHello) {
 }

@@ -31,13 +31,13 @@ using autoware::common::state_estimation::DataStorageOrder;
 using autoware::common::types::float64_t;
 
 /// \test Check that we can downscale a trivial isometry.
-TEST(MeasurementConversion, trivial_isometry_downscaling) {
+TEST(MeasurementConversion, TrivialIsometryDownscaling) {
   const auto isometry = downscale_isometry<2>(Eigen::Isometry3f::Identity());
   EXPECT_TRUE(isometry.isApprox(Eigen::Isometry2f::Identity()));
 }
 
 /// \test Check that we can downscale an isometry.
-TEST(MeasurementConversion, isometry_downscaling) {
+TEST(MeasurementConversion, IsometryDownscaling) {
   Eigen::Isometry3f initial_isometry;
   initial_isometry.linear() =
     Eigen::AngleAxisf{autoware::common::types::PI, Eigen::Vector3f::UnitZ()} *Eigen::Scaling(1.0F);

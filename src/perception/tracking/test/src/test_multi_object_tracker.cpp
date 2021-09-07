@@ -49,18 +49,18 @@ public:
   Odometry m_odom;
 };
 
-TEST_F(MultiObjectTrackerTest, test_happy_path) {
+TEST_F(MultiObjectTrackerTest, TestHappyPath) {
   EXPECT_NO_THROW(m_tracker.update(m_detections, m_odom));
 }
 
-TEST_F(MultiObjectTrackerTest, test_timestamps) {
+TEST_F(MultiObjectTrackerTest, TestTimestamps) {
   m_tracker.update(m_detections, m_odom);
   m_detections.header.stamp.sec = 999;
   const auto result = m_tracker.update(m_detections, m_odom);
   EXPECT_EQ(result.status, Status::WentBackInTime);
 }
 
-TEST_F(MultiObjectTrackerTest, test_frame_orientation_validation) {
+TEST_F(MultiObjectTrackerTest, TestFrameOrientationValidation) {
   // This rotates the object to be on its side, which does not make sense
   m_odom.pose.pose.orientation.w = 0.0;
   m_odom.pose.pose.orientation.x = 1.0;

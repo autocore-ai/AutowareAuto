@@ -156,7 +156,7 @@ public:
   }
 };
 
-TEST_F(CloudAlgorithm, approximate)
+TEST_F(CloudAlgorithm, Approximate)
 {
   this->ref_points1[0U] = this->make(-0.5F, -0.5F, -0.5F);
   this->ref_points1[1U] = this->make(0.5F, -0.5F, -0.5F);
@@ -185,7 +185,7 @@ TEST_F(CloudAlgorithm, approximate)
   EXPECT_EQ(alg_ptr->get().width, 0U);
 }
 
-TEST_F(CloudAlgorithm, centroid)
+TEST_F(CloudAlgorithm, Centroid)
 {
   this->ref_points1[0U] = this->make(-0.75F, -0.75F, -0.75F);
   this->ref_points1[1U] = this->make(0.75F, -0.75F, -0.75F);
@@ -214,7 +214,7 @@ TEST_F(CloudAlgorithm, centroid)
   EXPECT_EQ(alg_ptr->get().width, 0U);
 }
 
-TEST(voxel_grid_nodes, instantiate)
+TEST(VoxelGridNodes, Instantiate)
 {
   // Basic test to ensure that VoxelCloudNode can be instantiated
   rclcpp::init(0, nullptr);

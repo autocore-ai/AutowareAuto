@@ -36,7 +36,7 @@ static bool is_close(const float32_t a, const float32_t b, const float32_t tol =
   return std::abs(a - b) < tol;
 }
 
-TEST(test_ssc_interface, test_drive_straight) {
+TEST(TestSscInterface, TestDriveStraight) {
   VehicleKinematicState vks;
   vks.state.longitudinal_velocity_mps = 2.0;
   constexpr float32_t kYaw = 1.0471975511965976F;  // 60 deg
@@ -57,7 +57,7 @@ TEST(test_ssc_interface, test_drive_straight) {
   }
 }
 
-TEST(test_ssc_interface, test_constant_steering) {
+TEST(TestSscInterface, TestConstantSteering) {
   constexpr float32_t kFrontWheelAngleRad = 0.4f;
   constexpr float32_t kFrontAxleToCogM = 1.5f;
   constexpr float32_t kRearAxleToCogM = 0.5f;

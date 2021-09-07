@@ -27,7 +27,7 @@
 #include "test_vi_node.hpp"
 
 // Send periodic basic control command, expect that *something* happened
-TEST_F(sanity_checks, filtering)
+TEST_F(SanityChecks, Filtering)
 {
   const auto cmd_topic = "vehicle_command";
 

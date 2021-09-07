@@ -127,7 +127,7 @@ PointCloud2::SharedPtr generate_cloud_rect_counted(
   return cloud_input_ptr;
 }
 
-TEST(test_polygon_remover_nodes, test_remove_rectangle) {
+TEST(TestPolygonRemoverNodes, TestRemoveRectangle) {
   rclcpp::init(0, nullptr);
   const uint32_t count_points_within_rect = 50;
   const uint32_t count_points_outside_rect = 100;

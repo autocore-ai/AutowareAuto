@@ -25,7 +25,7 @@
 #include "test_vi_node.hpp"
 
 // Check that state machine is inline and does something
-TEST_F(sanity_checks, state_machine)
+TEST_F(SanityChecks, StateMachine)
 {
   const auto control_topic = "vehicle_command";
 

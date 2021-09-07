@@ -22,21 +22,22 @@
 
 using autoware::common::types::bool8_t;
 
-struct CommandClamp
+struct CommandClampParam
 {
   decltype(VCC::long_accel_mps2) accel;
   decltype(VCC::front_wheel_angle_rad) front_steer;
   bool8_t expect_warn;
 };
-constexpr decltype(CommandClamp::accel) max_accel{3.0F};  // TODO(c.ho) use config struct instead
-constexpr decltype(CommandClamp::accel) min_accel{-3.0F};
-constexpr decltype(CommandClamp::accel) accel_threshold{1.0F};
-constexpr decltype(CommandClamp::front_steer) max_front_steer{0.331F};
-constexpr decltype(CommandClamp::front_steer) min_front_steer{-0.331F};
-constexpr decltype(CommandClamp::front_steer) front_steer_threshold{0.3F};
+// TODO(c.ho) use config struct instead
+constexpr decltype(CommandClampParam::accel) max_accel{3.0F};
+constexpr decltype(CommandClampParam::accel) min_accel{-3.0F};
+constexpr decltype(CommandClampParam::accel) accel_threshold{1.0F};
+constexpr decltype(CommandClampParam::front_steer) max_front_steer{0.331F};
+constexpr decltype(CommandClampParam::front_steer) min_front_steer{-0.331F};
+constexpr decltype(CommandClampParam::front_steer) front_steer_threshold{0.3F};
 
 
-class command_clamp : public state_machine, public ::testing::WithParamInterface<CommandClamp>
+class CommandClamp : public state_machine, public ::testing::WithParamInterface<CommandClampParam>
 {
   void SetUp()
   {
@@ -50,7 +51,7 @@ class command_clamp : public state_machine, public ::testing::WithParamInterface
   }
 };
 
-TEST_P(command_clamp, basic)
+TEST_P(CommandClamp, Basic)
 {
   const auto param = GetParam();
   // Make command, apply
@@ -74,29 +75,29 @@ TEST_P(command_clamp, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  command_clamp,
+  Test,
+  CommandClamp,
   ::testing::Values(
     // Accel
-    CommandClamp{max_accel, 0.0F, false},
-    CommandClamp{max_accel + std::numeric_limits<decltype(max_accel)>::epsilon(), 0.0F, false},
-    CommandClamp{max_accel + std::numeric_limits<decltype(max_accel)>::epsilon() + accel_threshold,
-      0.0F, true},
-    CommandClamp{min_accel, 0.0F, false},
-    CommandClamp{min_accel - std::numeric_limits<decltype(min_accel)>::epsilon(), 0.0F, false},
-    CommandClamp{min_accel - std::numeric_limits<decltype(min_accel)>::epsilon() - accel_threshold,
-      0.0F, true},
+    CommandClampParam{max_accel, 0.0F, false},
+    CommandClampParam{max_accel + std::numeric_limits<decltype(max_accel)>::epsilon(), 0.0F, false},
+    CommandClampParam{max_accel + std::numeric_limits<decltype(max_accel)>::epsilon() +
+      accel_threshold, 0.0F, true},
+    CommandClampParam{min_accel, 0.0F, false},
+    CommandClampParam{min_accel - std::numeric_limits<decltype(min_accel)>::epsilon(), 0.0F, false},
+    CommandClampParam{min_accel - std::numeric_limits<decltype(min_accel)>::epsilon() -
+      accel_threshold, 0.0F, true},
     // Front steer
-    CommandClamp{0.0F, max_front_steer, false},
-    CommandClamp{0.0F,
+    CommandClampParam{0.0F, max_front_steer, false},
+    CommandClampParam{0.0F,
       max_front_steer + std::numeric_limits<decltype(max_accel)>::epsilon(), false},
-    CommandClamp{0.0F, max_front_steer + std::numeric_limits<decltype(max_front_steer)>::epsilon() +
-      front_steer_threshold, true},
-    CommandClamp{0.0F, min_front_steer, false},
-    CommandClamp{0.0F,
+    CommandClampParam{0.0F, max_front_steer +
+      std::numeric_limits<decltype(max_front_steer)>::epsilon() + front_steer_threshold, true},
+    CommandClampParam{0.0F, min_front_steer, false},
+    CommandClampParam{0.0F,
       min_front_steer - std::numeric_limits<decltype(min_accel)>::epsilon(), false},
-    CommandClamp{0.0F, min_front_steer - std::numeric_limits<decltype(min_front_steer)>::epsilon() -
-      front_steer_threshold, true}
+    CommandClampParam{0.0F, min_front_steer -
+      std::numeric_limits<decltype(min_front_steer)>::epsilon() - front_steer_threshold, true}
     // cppcheck-suppress syntaxError
   ),
 );

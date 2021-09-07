@@ -27,7 +27,7 @@ using TrackedObjectMsg = autoware_auto_msgs::msg::TrackedObject;
 using autoware_auto_msgs::msg::ObjectClassification;
 
 // Test that the has_twist field is respected when initializing the tracked object.
-TEST(test_tracked_object, test_optional_twist) {
+TEST(TestTrackedObject, TestOptionalTwist) {
   DetectedObjectMsg msg;
   msg.kinematics.twist.twist.linear.x = 3.0;
   TrackedObject object{msg, 1.0, 30.0};
@@ -40,7 +40,7 @@ TEST(test_tracked_object, test_optional_twist) {
 
 // Test that pose and twist covariances are handled correctly, i.e. they are read only when
 // has_pose_covariance/has_twist_covariance are set, and otherwise the default is used.
-TEST(test_tracked_object, test_optional_covariance) {
+TEST(TestTrackedObject, TestOptionalCovariance) {
   const auto kDefaultVariance = 1.0;
   DetectedObjectMsg msg;
   msg.kinematics.position_covariance[0] = 3.0;  // linear x
@@ -97,7 +97,7 @@ TEST(test_tracked_object, test_optional_covariance) {
 }
 
 // Test that calling predict() indeed changes the coordinates
-TEST(test_tracked_object, test_predict) {
+TEST(TestTrackedObject, TestPredict) {
   DetectedObjectMsg msg;
   msg.kinematics.has_twist = true;
   msg.kinematics.twist.twist.linear.x = 3.0;
@@ -108,7 +108,7 @@ TEST(test_tracked_object, test_predict) {
 }
 
 // Test that the update() method can handle detected objects with or without twist.
-TEST(test_tracked_object, test_update) {
+TEST(TestTrackedObject, TestUpdate) {
   const auto kDefaultVariance = 1.0;
   DetectedObjectMsg msg;
   std::vector<TrackedObjectMsg> distinct_results;
@@ -133,7 +133,7 @@ TEST(test_tracked_object, test_update) {
 }
 
 // Test that a newly created track isn't pruned right away, but an old track is
-TEST(test_tracked_object, test_should_be_removed) {
+TEST(TestTrackedObject, TestShouldBeRemoved) {
   DetectedObjectMsg msg;
   TrackedObject object{msg, 1.0, 30.0};
   EXPECT_EQ(object.should_be_removed(std::chrono::milliseconds(100), 5), false);

@@ -26,7 +26,7 @@ class BestEffortInitializationTest : public
 {
 };
 
-TEST(BestEffortInitializationTest, bad_lookup) {
+TEST(BestEffortInitializationTest, BadLookup) {
   BestEffortInitializer initializer;
   const auto now = std::chrono::system_clock::now();
   constexpr auto target_frame{"base_link"};
@@ -63,7 +63,7 @@ TEST(BestEffortInitializationTest, bad_lookup) {
       nonexisting_frame, source_frame), tf2::LookupException);
 }
 
-TEST_P(BestEffortInitializationTest, basic) {
+TEST_P(BestEffortInitializationTest, Basic) {
   tf2::BufferCore tf_graph;
   const auto param = GetParam();
   const auto dt = param.dt;
@@ -107,7 +107,7 @@ TEST_P(BestEffortInitializationTest, basic) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-  sanity_test, BestEffortInitializationTest,
+  SanityTest, BestEffortInitializationTest,
   ::testing::Values(
     BestEffortInitializerTestParams{
   make_transform(50.0F, 25.0F, -50.0F, -5.0F, 5.0F, 0.0F),

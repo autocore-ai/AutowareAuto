@@ -60,7 +60,7 @@ class TestTransformAdapters : public ::testing::TestWithParam<PoseParams> {};
 
 class CovarianceStabilityTest : public ::testing::TestWithParam<Cov3x3Param> {};
 
-TEST_P(TestTransformAdapters, pose_to_transform) {
+TEST_P(TestTransformAdapters, PoseToTransform) {
   const EigenPose<Real> pose = GetParam().pose;
   RosTransform ros_transform;
   RosPose ros_pose;
@@ -75,7 +75,7 @@ TEST_P(TestTransformAdapters, pose_to_transform) {
   compare(pose, eig_transform);
 }
 
-TEST_P(TestTransformAdapters, transform_to_pose) {
+TEST_P(TestTransformAdapters, TransformToPose) {
   const EigenPose<Real> pose = GetParam().pose;
   RosTransform ros_transform;
   RosPose ros_pose;
@@ -96,7 +96,7 @@ TEST_P(TestTransformAdapters, transform_to_pose) {
   }
 }
 
-TEST_P(TestTransformAdapters, pose_to_transform_to_pose) {
+TEST_P(TestTransformAdapters, PoseToTransformToPose) {
   const EigenPose<Real> pose = GetParam().pose;
   RosTransform ros_transform;
   RosPose ros_pose;
@@ -117,7 +117,7 @@ TEST_P(TestTransformAdapters, pose_to_transform_to_pose) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-  transform_param_tests, TestTransformAdapters,
+  TransformParamTests, TestTransformAdapters,
   ::testing::Values(
     PoseParams{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
     PoseParams{0.5, 0.9, 0.1, 1.0, -3.1, 0.05},
@@ -128,7 +128,7 @@ INSTANTIATE_TEST_CASE_P(
   ), );
 
 INSTANTIATE_TEST_CASE_P(
-  fuzzed_tests, TestTransformAdapters,
+  FuzzedTests, TestTransformAdapters,
   ::testing::Values(
     PoseParams{0.1, 50.0},
     PoseParams{100.0, 0.005},
@@ -136,7 +136,7 @@ INSTANTIATE_TEST_CASE_P(
     // cppcheck-suppress syntaxError
   ), );
 
-TEST_P(CovarianceStabilityTest, basic) {
+TEST_P(CovarianceStabilityTest, Basic) {
   Cov3x3Param::CovMatrix covariance = GetParam().cov;
   std::vector<Real> e_vals{GetParam().e1, GetParam().e2, GetParam().e3};
   const auto scale = 0.01;
@@ -167,7 +167,7 @@ TEST_P(CovarianceStabilityTest, basic) {
 
 // 3 eigen values and the expected validity of the covariance matrix.
 INSTANTIATE_TEST_CASE_P(
-  basic, CovarianceStabilityTest,
+  Basic, CovarianceStabilityTest,
   ::testing::Values(
     Cov3x3Param(1e-2, 65.0, 24, true),
     Cov3x3Param(-12., 24., 65., true),

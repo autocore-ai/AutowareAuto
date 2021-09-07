@@ -127,7 +127,7 @@ PointCloud2::SharedPtr generate_cloud_rect_counted(
   return cloud_input_ptr;
 }
 
-TEST(test_polygon_remover, shape_to_polyline_polygon) {
+TEST(TestPolygonRemover, ShapeToPolylinePolygon) {
   using PolygonRemover = autoware::perception::filters::polygon_remover::PolygonRemover;
   PolygonRemover polygon_remover(false);
 

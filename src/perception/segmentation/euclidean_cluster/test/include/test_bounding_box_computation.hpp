@@ -123,7 +123,7 @@ protected:
 // This test needs to make sure cluster points are navigated and passed to bounding box
 // computation properly and, in case of DetectedObjects, needs to make sure BoundingBox is copied
 // over to DetectedObjects properly.
-TEST_F(BoundingBoxComputationTest, basic_lfit_2d)
+TEST_F(BoundingBoxComputationTest, BasicLfit2d)
 {
   auto clusters = make_clusters(
     {pt_vector, pt_vector});
@@ -141,7 +141,7 @@ TEST_F(BoundingBoxComputationTest, basic_lfit_2d)
   }
 }
 
-TEST_F(BoundingBoxComputationTest, basic_eigen_2d) {
+TEST_F(BoundingBoxComputationTest, BasicEigen2d) {
   auto clusters = make_clusters(
     {pt_vector, pt_vector});
 
@@ -158,7 +158,7 @@ TEST_F(BoundingBoxComputationTest, basic_eigen_2d) {
   }
 }
 
-TEST_F(BoundingBoxComputationTest, basic_lfit_3d)
+TEST_F(BoundingBoxComputationTest, BasicLfit3d)
 {
   auto pt_vector_3d = pt_vector;
   pt_vector_3d[0U].z = -2.F;
@@ -180,7 +180,7 @@ TEST_F(BoundingBoxComputationTest, basic_lfit_3d)
   }
 }
 
-TEST_F(BoundingBoxComputationTest, basic_eigen_3d)
+TEST_F(BoundingBoxComputationTest, BasicEigen3d)
 {
   auto pt_vector_3d = pt_vector;
   pt_vector_3d[0U].z = -2.F;

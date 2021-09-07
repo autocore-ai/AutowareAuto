@@ -66,7 +66,7 @@ public:
 };
 
 /// @test       Check that we can minimize a simple parabola with a minimum at 0.
-TEST(MoreThuenteLineSearchTest, simple_quadratic_function_minimization) {
+TEST(MoreThuenteLineSearchTest, SimpleQuadraticFunctionMinimization) {
   QuadraticFunction f;
   Matrix jacobian;
 
@@ -98,7 +98,7 @@ TEST(MoreThuenteLineSearchTest, simple_quadratic_function_minimization) {
 }
 
 /// @test       Check that we can maximize a simple inverted parabola with a maximum at 0.
-TEST(MoreThuenteLineSearchTest, simple_quadratic_function_maximization) {
+TEST(MoreThuenteLineSearchTest, SimpleQuadraticFunctionMaximization) {
   QuadraticFunction f{-1};  // Inverted quadratic function.
   Matrix jacobian;
 
@@ -126,7 +126,7 @@ TEST(MoreThuenteLineSearchTest, simple_quadratic_function_maximization) {
 }
 
 /// @test       Check that we can minimize an offset parabola.
-TEST(MoreThuenteLineSearchTest, offset_quadratic_function_minimization) {
+TEST(MoreThuenteLineSearchTest, OffsetQuadraticFunctionMinimization) {
   const Vector offset{2.0};
   QuadraticFunction f{1.0, offset};  // An offset quadratic function.
   Matrix jacobian;
@@ -153,7 +153,7 @@ TEST(MoreThuenteLineSearchTest, offset_quadratic_function_minimization) {
 
 /// @test       Test that when we start closer than the smallest allowed step to the optimum we do
 ///             nothing.
-TEST(MoreThuenteLineSearchTest, do_nothing) {
+TEST(MoreThuenteLineSearchTest, DoNothing) {
   QuadraticFunction f;
   Matrix jacobian;
 
@@ -174,7 +174,7 @@ TEST(MoreThuenteLineSearchTest, do_nothing) {
 }
 
 /// @test       Check that we can minimize a function shown in Figure 3 in the paper.
-TEST(MoreThuenteLineSearchTest, function_from_paper) {
+TEST(MoreThuenteLineSearchTest, FunctionFromPaper) {
   FunctionFromFigure3 f;
   Matrix jacobian;
 
@@ -195,7 +195,7 @@ TEST(MoreThuenteLineSearchTest, function_from_paper) {
 /// @test       In the Figure 3 of the paper a failure case is presented (see 3rd row in Table 1)
 ///             where if an initial step already satisfies the strong Wolfe conditions even though
 ///             the point is far from the optimum. We reproduce this result also here.
-TEST(MoreThuenteLineSearchTest, function_from_paper_failure) {
+TEST(MoreThuenteLineSearchTest, FunctionFromPaperFailure) {
   FunctionFromFigure3 f;
   Matrix jacobian;
 
@@ -214,7 +214,7 @@ TEST(MoreThuenteLineSearchTest, function_from_paper_failure) {
 }
 
 /// @test       Check that we cannot initialize the search wrongly.
-TEST(MoreThuenteLineSearchTest, wrong_initialization) {
+TEST(MoreThuenteLineSearchTest, WrongInitialization) {
   // Min step must be smaller than the max step.
   EXPECT_THROW(MoreThuenteLineSearch(0.001F, 100.0F), std::domain_error);
   // Negative step sizes.

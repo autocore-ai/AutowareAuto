@@ -22,14 +22,14 @@
 
 using autoware::localization::ndt::P2DNDTScan;
 
-TEST_F(NDTScanTest, bad_input) {
+TEST_F(NDTScanTest, BadInput) {
   const auto capacity = 5U;
   ASSERT_LT(capacity, m_num_points);
   P2DNDTScan ndt_scan(capacity);
   EXPECT_THROW(ndt_scan.insert(m_pc), std::length_error);
 }
 
-TEST_F(NDTScanTest, basics) {
+TEST_F(NDTScanTest, Basics) {
   ASSERT_EQ(m_pc.width, m_num_points);
   ASSERT_EQ(m_points.size(), m_num_points);
 

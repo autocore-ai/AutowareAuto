@@ -94,7 +94,7 @@ private:
 };
 
 /// @test Test that we can add covariance to Odometry message.
-TEST_F(CovarianceInsertionNodeTest, publish_and_receive_odom_message) {
+TEST_F(CovarianceInsertionNodeTest, PublishAndReceiveOdomMessage) {
   nav_msgs::msg::Odometry msg{};
 
   rclcpp::NodeOptions node_options{};
@@ -139,7 +139,7 @@ TEST_F(CovarianceInsertionNodeTest, publish_and_receive_odom_message) {
 }
 
 /// @test Test that we can add covariance to Pose message making it a PoseWithCovariance one.
-TEST_F(CovarianceInsertionNodeTest, add_covariances_to_pose) {
+TEST_F(CovarianceInsertionNodeTest, AddCovariancesToPose) {
   geometry_msgs::msg::Pose msg{};
 
   rclcpp::NodeOptions node_options{};
@@ -179,7 +179,7 @@ TEST_F(CovarianceInsertionNodeTest, add_covariances_to_pose) {
 }
 
 /// @test Test that we detect setting covariances to wrong entries.
-TEST_F(CovarianceInsertionNodeTest, fail_setting_twist_to_pose) {
+TEST_F(CovarianceInsertionNodeTest, FailSettingTwistToPose) {
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_topic", "messages");
   node_options.append_parameter_override("input_msg_type", "Pose");
@@ -191,7 +191,7 @@ TEST_F(CovarianceInsertionNodeTest, fail_setting_twist_to_pose) {
 }
 
 /// @test Test that we detect setting covariance of a wrong size.
-TEST_F(CovarianceInsertionNodeTest, fail_on_wrong_number_of_entries) {
+TEST_F(CovarianceInsertionNodeTest, FailOnWrongNumberOfEntries) {
   const auto wrong_covariane_size{42UL};
   rclcpp::NodeOptions node_options{};
   node_options.append_parameter_override("input_topic", "messages");

@@ -30,7 +30,7 @@ namespace common
 {
 namespace optimization
 {
-TEST_F(CacheStateMachineTest, numeric_test) {
+TEST_F(CacheStateMachineTest, NumericTest) {
   auto eigen_comparator = [](const auto & lhs, const auto & rhs) {
       return lhs.isApprox(rhs, std::numeric_limits<float64_t>::epsilon());
     };

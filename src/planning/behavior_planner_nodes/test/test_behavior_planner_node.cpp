@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 #include "behavior_planner_nodes/behavior_planner_node.hpp"
 
-TEST(test_behavior_planner_node, test_hello) {
+TEST(TestBehaviorPlannerNode, TestHello) {
   // rclcpp::NodeOptions node_options{};
   // node_options.append_parameter_override("goal_distance_thresh", 1.0F);
   // node_options.append_parameter_override("stop_velocity_thresh", 0.1F);

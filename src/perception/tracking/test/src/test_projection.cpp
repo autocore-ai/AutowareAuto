@@ -92,7 +92,7 @@ public:
       • Camera
 
  * */
-TEST_F(PrismProjectionTest, camera_frame_projection_test) {
+TEST_F(PrismProjectionTest, CameraFrameProjectionTest) {
   CameraIntrinsics intrinsics{100, 100, 1.0F, 1.0F};
   geometry_msgs::msg::Transform identity{};
   identity.rotation.set__w(1.0);
@@ -117,7 +117,7 @@ TEST_F(PrismProjectionTest, camera_frame_projection_test) {
     ••      ••
      •••••••••
  * */
-TEST_F(PrismProjectionTest, transformed_camera_frame_test) {
+TEST_F(PrismProjectionTest, TransformedCameraFrameTest) {
   CameraIntrinsics intrinsics{100, 100, 0.6F, 1.5F, 0.01F, 0.01F, 0.005F};
   CameraModel model{intrinsics};
 
@@ -162,7 +162,7 @@ TEST_F(PrismProjectionTest, transformed_camera_frame_test) {
 }
 
 /// \brief Test to validate that objects behind the camera are not captured.
-TEST_F(PrismProjectionTest, behind_the_image_plane_test) {
+TEST_F(PrismProjectionTest, BehindTheImagePlaneTest) {
   CameraIntrinsics intrinsics{100, 100, 1.0F, 1.0F};
   CameraModel model{intrinsics};
   std::transform(
@@ -176,7 +176,7 @@ TEST_F(PrismProjectionTest, behind_the_image_plane_test) {
 }
 
 /// \brief Test to validate that points outside the FoV of the camera are clamped
-TEST_F(PrismProjectionTest, out_of_plane_test) {
+TEST_F(PrismProjectionTest, OutOfPlaneTest) {
   #ifdef __aarch64__
   // Catastrophic cancellation makes this test fail on the arm release build. See #1241
   GTEST_SKIP();

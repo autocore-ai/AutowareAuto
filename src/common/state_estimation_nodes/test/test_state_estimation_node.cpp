@@ -302,7 +302,7 @@ TEST_P(StateEstimationNodeTest, TrackObjectStraightLine) {
 }
 
 /// @test Test for the case when we publish on a timer.
-TEST_F(StateEstimationNodeTest, publish_on_timer) {
+TEST_F(StateEstimationNodeTest, PublishOnTimer) {
   auto msg = create_empty_pose("map");
   msg.header.stamp.sec = 5;
   msg.header.stamp.nanosec = 12345U;

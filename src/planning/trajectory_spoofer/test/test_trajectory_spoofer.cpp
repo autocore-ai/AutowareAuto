@@ -46,7 +46,7 @@ using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 using autoware::common::types::TAU;
 
-TEST(test_trajectory_spoofer, straight_trajectory) {
+TEST(TestTrajectorySpoofer, StraightTrajectory) {
   TrajectorySpoofer ts(20.0);
   VehicleKinematicState starting_point;
 
@@ -114,7 +114,7 @@ TEST(test_trajectory_spoofer, straight_trajectory) {
   ASSERT_FLOAT_EQ(last_point.rear_wheel_angle_rad, first_point.rear_wheel_angle_rad);
 }
 
-TEST(test_trajectory_spoofer, circular_trajectory) {
+TEST(TestTrajectorySpoofer, CircularTrajectory) {
   TrajectorySpoofer ts(10.0);
   VehicleKinematicState starting_point;
 
@@ -175,7 +175,7 @@ TEST(test_trajectory_spoofer, circular_trajectory) {
   ASSERT_FLOAT_EQ(last_point.acceleration_mps2, first_point.acceleration_mps2);
 }
 
-TEST(test_trajectory_spoofer, instantiate)
+TEST(TestTrajectorySpoofer, Instantiate)
 {
   // Basic test to ensure that TrajectorySpooferNode can be instantiated
   rclcpp::init(0, nullptr);

@@ -111,7 +111,7 @@ void create_current_pose(
 }
 
 
-TEST_F(PurePursuitTest, config)
+TEST_F(PurePursuitTest, Config)
 {
   EXPECT_THROW(Config(0.0F, 1.0F, 0.2F, true, true, 2.0F, 0.1F, 2.0F), std::domain_error);
   EXPECT_THROW(Config(-1.0F, 1.0F, 0.2F, true, true, 2.0F, 0.1F, 2.0F), std::domain_error);
@@ -122,7 +122,7 @@ TEST_F(PurePursuitTest, config)
   EXPECT_THROW(Config(10.0F, 1.0F, 0.2F, true, true, 1.0F, 0.1F, -2.0F), std::domain_error);
 }
 
-TEST_F(PurePursuitTest, simple)
+TEST_F(PurePursuitTest, Simple)
 {
   const Config cfg(0.5F, 100.0F, 0.2F, false, false, 2.0F, 0.1F, 2.0F);
   PurePursuit controller(cfg);
@@ -160,7 +160,7 @@ TEST_F(PurePursuitTest, simple)
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }
 
-TEST_F(PurePursuitTest, reverse)
+TEST_F(PurePursuitTest, Reverse)
 {
   const Config cfg(0.5F, 100.0F, 0.2F, false, false, 2.0F, 0.1F, 2.0F);
   PurePursuit controller(cfg);
@@ -200,7 +200,7 @@ TEST_F(PurePursuitTest, reverse)
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }
 
-TEST_F(PurePursuitTest, interpolation)
+TEST_F(PurePursuitTest, Interpolation)
 {
   const Config cfg(0.4F, 100.0F, 0.2F, true, false, 2.0F, 0.1F, 2.0F);
   PurePursuit controller(cfg);
@@ -237,7 +237,7 @@ TEST_F(PurePursuitTest, interpolation)
   EXPECT_NO_MEMORY_OPERATIONS_END();
 }
 
-TEST_F(PurePursuitTest, replace_short_trajectory)
+TEST_F(PurePursuitTest, ReplaceShortTrajectory)
 {
   const Config cfg(100.0F, 100.0F, 0.2F, false, false, 2.0F, 0.1F, 2.0F);
   PurePursuit controller(cfg);

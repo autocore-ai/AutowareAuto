@@ -37,7 +37,7 @@ const auto sim_veh_odom_topic = "test_lgsvl/vehicle_odom";
 const auto kinematic_state_topic = "test_vehicle_kinematic_state";
 const auto sim_odom_child_frame = "base_link";
 
-class LgsvlInterface_test : public ::testing::Test
+class LgsvlInterfaceTest : public ::testing::Test
 {
 protected:
   void SetUp() override

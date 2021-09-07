@@ -72,7 +72,7 @@ protected:
 // Two objects, one track. Track has huge y variance and small x variance.
 // Object 1 is shorter distance away on x, same y. Object2 is longer distance away on Y,
 // same x. Associator should associate track with object2
-TEST_F(AssociationTester, basic)
+TEST_F(AssociationTester, Basic)
 {
   TrackedObjects tracks_msg;
   std::vector<tracking::TrackedObject> tracked_object_vec{};
@@ -112,7 +112,7 @@ TEST_F(AssociationTester, basic)
 }
 
 // 10 tracks, 5 detections. Make sure 5 tracks are unassigned
-TEST_F(AssociationTester, more_tracks_less_objects)
+TEST_F(AssociationTester, MoreTracksLessObjects)
 {
   const auto num_tracks = 10U;
   auto num_associated_dets = 0U;
@@ -159,7 +159,7 @@ TEST_F(AssociationTester, more_tracks_less_objects)
 // 5 tracks and 5 detections. 3 of those detections have areas much smaller/bigger than the
 // corresponding tracks. This should cause gating to fail and result in no association for
 // 3 tracks.
-TEST_F(AssociationTester, area_gating_fails)
+TEST_F(AssociationTester, AreaGatingFails)
 {
   const auto num_tracks = 5U;
   auto num_unassociated_dets = 0U;

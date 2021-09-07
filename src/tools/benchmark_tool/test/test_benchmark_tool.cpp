@@ -32,6 +32,6 @@ void benchmark_tool_test()
   EXPECT_EQ(ret, 1);
 }
 
-TEST(benchmark_tool, single_frame) {
+TEST(BenchmarkTool, SingleFrame) {
   benchmark_tool_test();
 }

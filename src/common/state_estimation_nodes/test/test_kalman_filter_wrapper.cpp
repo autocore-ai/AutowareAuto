@@ -76,7 +76,7 @@ const auto kNoiseIdentity{(Eigen::Matrix<float32_t, 6, 2>{} <<
 }  // namespace
 
 /// \test Creating an empty filter and checking that everything is zero.
-TEST(KalmanFilterWrapperTest, create_empty) {
+TEST(KalmanFilterWrapperTest, CreateEmpty) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
@@ -89,7 +89,7 @@ TEST(KalmanFilterWrapperTest, create_empty) {
 }
 
 /// \test Before the filter is initialized we don't want to accept any updates.
-TEST(KalmanFilterWrapperTest, ignore_everything_before_initialization) {
+TEST(KalmanFilterWrapperTest, IgnoreEverythingBeforeInitialization) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
@@ -107,7 +107,7 @@ TEST(KalmanFilterWrapperTest, ignore_everything_before_initialization) {
 }
 
 /// \test Initialize filter with a measurement.
-TEST(KalmanFilterWrapperTest, initialize) {
+TEST(KalmanFilterWrapperTest, Initialize) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
@@ -139,7 +139,7 @@ TEST(KalmanFilterWrapperTest, initialize) {
 }
 
 /// \test Initialize filter with a measurement and ignore the ones coming from the past.
-TEST(KalmanFilterWrapperTest, ignore_measurements_from_the_past) {
+TEST(KalmanFilterWrapperTest, IgnoreMeasurementsFromThePast) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
@@ -177,7 +177,7 @@ TEST(KalmanFilterWrapperTest, ignore_measurements_from_the_past) {
 }
 
 /// \test Ignore measurements that don't pass the Mahalanobis threshold.
-TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
+TEST(KalmanFilterWrapperTest, IgnoreFarAwayMeasurements) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   using namespace std::chrono_literals;
   const float32_t mahalanobis_threshold = 1.0F;
@@ -218,7 +218,7 @@ TEST(KalmanFilterWrapperTest, ignore_far_away_measurements) {
 }
 
 /// \test Covariance of a static object grows without new observations.
-TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
+TEST(KalmanFilterWrapperTest, CovarianceGrowsWithTime) {
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
     LinearMotionModel<State>{},
@@ -257,7 +257,7 @@ TEST(KalmanFilterWrapperTest, covariance_grows_with_time) {
 
 
 /// \test Track a static object.
-TEST(KalmanFilterWrapperTest, track_static_object) {
+TEST(KalmanFilterWrapperTest, TrackStaticObject) {
   using namespace std::chrono_literals;
   using State = ConstantAccelerationFilterWrapperXY::State;
   ConstantAccelerationFilterWrapperXY filter{
@@ -300,7 +300,7 @@ TEST(KalmanFilterWrapperTest, track_static_object) {
 ///  └-------------->
 /// start           end
 ///
-TEST(KalmanFilterWrapperTest, track_thrown_ball) {
+TEST(KalmanFilterWrapperTest, TrackThrownBall) {
   using namespace std::chrono_literals;
   using FloatSeconds = std::chrono::duration<float32_t>;
 

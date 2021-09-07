@@ -49,7 +49,7 @@ public:
   }
 };
 
-TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic_io) {
+TEST(DynamicNDTVoxelTest, NdtDenseVoxelBasicIo) {
   constexpr auto eps = 1e-6;
 
   DynamicNDTVoxel voxel;
@@ -86,7 +86,7 @@ TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic_io) {
 
 ///////////////////////////////////
 
-TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
+TEST(DynamicNDTVoxelTest, NdtDenseVoxelBasic) {
   constexpr auto eps = 1e-6;
   DynamicNDTVoxel voxel;
   auto num_points = 5U;
@@ -118,7 +118,7 @@ TEST(DynamicNDTVoxelTest, ndt_dense_voxel_basic) {
 }
 
 
-TEST_F(DenseNDTMapTest, map_lookup) {
+TEST_F(DenseNDTMapTest, MapLookup) {
   constexpr auto eps = 1e-5;
   // The idea is to have a 5x5x5 grid with cell edge length of 1
   auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
@@ -185,7 +185,7 @@ TEST_F(DenseNDTMapTest, map_lookup) {
 
 ///////////////////////////////////////
 
-TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
+TEST(StaticNDTVoxelTest, NdtMapVoxelBasics) {
   StaticNDTVoxel vx;
   Eigen::Vector3d pt{5.0, 5.0, 5.0};
   Eigen::Matrix3d icov;
@@ -210,7 +210,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_basics) {
   EXPECT_TRUE(vx.inverse_covariance().isApprox(icov, std::numeric_limits<Real>::epsilon()));
 }
 
-TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
+TEST(StaticNDTVoxelTest, NdtMapVoxelInverseCovarianceBasic) {
   // Use a DynamicNDTVoxel to compute a valid covariance
   DynamicNDTVoxel generator_voxel;
   generator_voxel.add_observation(Eigen::Vector3d{1.0, 1.0, 7.0});
@@ -239,7 +239,7 @@ TEST(StaticNDTVoxelTest, ndt_map_voxel_inverse_covariance_basic) {
   EXPECT_TRUE(voxel.usable());
 }
 
-TEST_F(NDTMapTest, map_representation_bad_input) {
+TEST_F(NDTMapTest, MapRepresentationBadInput) {
   sensor_msgs::msg::PointCloud2 invalid_pc1;
   sensor_msgs::msg::PointCloud2 invalid_pc2;
 
@@ -257,7 +257,7 @@ TEST_F(NDTMapTest, map_representation_bad_input) {
   EXPECT_THROW(map_grid.set(invalid_pc2), std::runtime_error);
 }
 
-TEST_F(NDTMapTest, map_representation_basics) {
+TEST_F(NDTMapTest, MapRepresentationBasics) {
   sensor_msgs::msg::PointCloud2 msg;
   autoware::localization::ndt::NdtMapCloudModifier modifier{msg, "map"};
   auto add_pt = [&msg, &modifier](Real value) {

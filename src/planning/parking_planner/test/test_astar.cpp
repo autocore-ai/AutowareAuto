@@ -37,7 +37,7 @@ using TrajectoryStep = autoware::motion::planning::parking_planner::TrajectorySt
 using autoware::motion::planning::parking_planner::HORIZON_LENGTH;
 
 
-TEST(astar_path_planner, direct_path_x) {
+TEST(AstarPathPlanner, DirectPathX) {
   static constexpr float64_t dist = 10.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(dist, 0.0, 0.0, 0.0, 0.0);
@@ -58,7 +58,7 @@ TEST(astar_path_planner, direct_path_x) {
     autoware::motion::planning::parking_planner::DELTA_LONGITUDINAL + 0.5) + 1);
 }
 
-TEST(astar_path_planner, direct_path_y) {
+TEST(AstarPathPlanner, DirectPathY) {
   static constexpr float64_t dist = 10.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 3.14159 / 2, 0.0);
   const VehicleState goal_state(0.0, dist, 0.0, 3.14159 / 2, 0.0);
@@ -79,7 +79,7 @@ TEST(astar_path_planner, direct_path_y) {
     autoware::motion::planning::parking_planner::DELTA_LONGITUDINAL + 0.5) + 1);
 }
 
-TEST(astar_path_planner, obstacle_path_x) {
+TEST(AstarPathPlanner, ObstaclePathX) {
   static constexpr float64_t dist = 10.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(dist, 0.0, 0.0, 0.0, 0.0);
@@ -123,7 +123,7 @@ TEST(astar_path_planner, obstacle_path_x) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, obstacle_path_y) {
+TEST(AstarPathPlanner, ObstaclePathY) {
   static constexpr float64_t dist = 10.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(0.0, dist, 0.0, 0.0, 0.0);
@@ -167,7 +167,7 @@ TEST(astar_path_planner, obstacle_path_y) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, immediate_obstacle) {
+TEST(AstarPathPlanner, ImmediateObstacle) {
   static constexpr float64_t dist = 5.0;
   const VehicleState current_state(-dist / 2, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(dist / 2, 0.0, 0.0, 0.0, 0.0);
@@ -210,7 +210,7 @@ TEST(astar_path_planner, immediate_obstacle) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, sideways_parking_broad) {
+TEST(AstarPathPlanner, SidewaysParkingBroad) {
   static constexpr float64_t dist = 2.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(0.0, dist, 0.0, 0.0, 0.0);
@@ -254,7 +254,7 @@ TEST(astar_path_planner, sideways_parking_broad) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, sideways_parking_narrow) {
+TEST(AstarPathPlanner, SidewaysParkingNarrow) {
   static constexpr float64_t dist = 2.0;
   const VehicleState current_state(0.0, 0.0, 0.0, 0.0, 0.0);
   const VehicleState goal_state(0.0, dist, 0.0, 0.0, 0.0);
@@ -299,7 +299,7 @@ TEST(astar_path_planner, sideways_parking_narrow) {
 }
 
 
-TEST(astar_path_planner, parallel_short) {
+TEST(AstarPathPlanner, ParallelShort) {
   const VehicleState current_state(0.0, 0.0, 0.0, 0, 0.0);
   const VehicleState goal_state(2.0, -1.5, 0.0, 0, 0.0);
 
@@ -339,7 +339,7 @@ TEST(astar_path_planner, parallel_short) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, parallel_long) {
+TEST(AstarPathPlanner, ParallelLong) {
   const VehicleState current_state(0.0, 0.0, 0.0, 0, 0.0);
   const VehicleState goal_state(5.0, -1.5, 0.0, 0, 0.0);
 
@@ -370,7 +370,7 @@ TEST(astar_path_planner, parallel_long) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, parallel_behind) {
+TEST(AstarPathPlanner, ParallelBehind) {
   const VehicleState current_state(0.0, 0.0, 0.0, 0, 0.0);
   const VehicleState goal_state(-2.0, -1.5, 0.0, 0, 0.0);
 
@@ -410,7 +410,7 @@ TEST(astar_path_planner, parallel_behind) {
   EXPECT_EQ(num_collisions, 0);
 }
 
-TEST(astar_path_planner, infeasible_situation_current_walled) {
+TEST(AstarPathPlanner, InfeasibleSituationCurrentWalled) {
   const VehicleState current_state(0.0, 0.0, 0.0, 0, 0.0);
   const VehicleState goal_state(15.0, 0.0, 0.0, 0, 0.0);
 

@@ -30,7 +30,7 @@ using autoware::common::types::float32_t;
 
 /////////////////////////////////////////////
 /// test for minimal functionality
-TEST(euclidean_cluster, simple_bar)
+TEST(EuclideanCluster, SimpleBar)
 {
   /// setup
   Config cfg{"foo", 10U, 100U, 1.0F, 1.0F, 10.0F};
@@ -55,7 +55,7 @@ TEST(euclidean_cluster, simple_bar)
 }
 
 /// another cluster type + noise
-TEST(euclidean_cluster, noisy_L)
+TEST(EuclideanCluster, NoisyL)
 {
   // setup
   builtin_interfaces::msg::Time t;
@@ -85,7 +85,7 @@ TEST(euclidean_cluster, noisy_L)
 }
 
 /// everything plus noise
-TEST(euclidean_cluster, multi_object)
+TEST(EuclideanCluster, MultiObject)
 {
   // setup
   builtin_interfaces::msg::Time t;
@@ -136,7 +136,7 @@ TEST(euclidean_cluster, multi_object)
 }
 
 /// simple negative test case
-TEST(euclidean_cluster, no_cluster)
+TEST(EuclideanCluster, NoCluster)
 {
   // setup
   builtin_interfaces::msg::Time t;

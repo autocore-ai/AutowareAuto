@@ -50,7 +50,7 @@ struct JoyMapping
   joystick_vehicle_interface::ButtonMap button_map;
 };  // struct JoyMapping
 
-class joy_vi_test : public ::testing::TestWithParam<JoyMapping>
+class JoyViTest : public ::testing::TestWithParam<JoyMapping>
 {
 protected:
   void SetUp() override
@@ -74,7 +74,7 @@ protected:
       params.emplace_back(parameter_key, static_cast<T>(map.at(map_key)));
     }
   }
-};  // class joy_vi_test
+};  // class JoyViTest
 
 template<typename T>
 struct SubAndMsg
@@ -91,7 +91,7 @@ struct SubAndMsg
   }
 };
 
-TEST_P(joy_vi_test, basic_mapping)
+TEST_P(JoyViTest, BasicMapping)
 {
   using autoware_auto_msgs::msg::HeadlightsCommand;
   using autoware_auto_msgs::msg::WipersCommand;
@@ -408,8 +408,8 @@ TEST_P(joy_vi_test, basic_mapping)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  joy_vi_test,
+  Test,
+  JoyViTest,
   ::testing::Values(
     // Raw control command
     JoyMapping{

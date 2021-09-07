@@ -41,7 +41,7 @@ void set_weights(
 }
 
 // test various assumptions such as NAN and memset
-TEST(hungarian_assigner, assumptions)
+TEST(HungarianAssigner, Assumptions)
 {
   bool8_t bval = true;
   memset(&bval, 0, sizeof(bval));
@@ -52,7 +52,7 @@ TEST(hungarian_assigner, assumptions)
 }
 
 // absolutely minimal example
-TEST(hungarian_assigner, minimal)
+TEST(HungarianAssigner, Minimal)
 {
   hungarian_assigner_c<16U> assign;
   ASSERT_THROW(assign.set_size(5U, 4U), std::domain_error);
@@ -90,7 +90,7 @@ TEST(hungarian_assigner, minimal)
 0   10   10
 1   0    1
 */
-TEST(hungarian_assigner, basic)
+TEST(HungarianAssigner, Basic)
 {
   hungarian_assigner_c<16U> assign(3, 3);
   assign.set_weight(0.0F, 0U, 0U);
@@ -114,7 +114,7 @@ TEST(hungarian_assigner, basic)
 
 // exercise basic unbalanced logic
 // https://www.wisdomjobs.com/e-university/quantitative-techniques-for-management-tutorial-297/unbalanced-assignment-problem-9899.html
-TEST(hungarian_assigner, unbalanced1)
+TEST(HungarianAssigner, Unbalanced1)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 5U);
@@ -139,7 +139,7 @@ TEST(hungarian_assigner, unbalanced1)
 
 // exercise unbalanced logic in a complicated case
 // http://naagustutorial.blogspot.com/2013/12/hungarian-method-unbalanced-assignment.html
-TEST(hungarian_assigner, unbalanced2)
+TEST(HungarianAssigner, Unbalanced2)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 5U);
@@ -164,7 +164,7 @@ TEST(hungarian_assigner, unbalanced2)
 
 // test a complicated case
 // http://file.scirp.org/pdf/AJOR_2016063017275082.pdf
-TEST(hungarian_assigner, complicated)
+TEST(HungarianAssigner, Complicated)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(8U, 10U);
@@ -198,7 +198,7 @@ TEST(hungarian_assigner, complicated)
 }
 
 // simple case, test parallel fill
-TEST(hungarian_assigner, parallel)
+TEST(HungarianAssigner, Parallel)
 {
   const uint64_t SZ = 256U;
   hungarian_assigner_c<SZ> assign;
@@ -229,7 +229,7 @@ TEST(hungarian_assigner, parallel)
 0 1 - -
 0 - - -
 */
-TEST(hungarian_assigner, ill_conditioned)
+TEST(HungarianAssigner, IllConditioned)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 4U);
@@ -259,7 +259,7 @@ TEST(hungarian_assigner, ill_conditioned)
 1 - - -
 1 - - -
 */
-TEST(hungarian_assigner, degenerate1)
+TEST(HungarianAssigner, Degenerate1)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 4U);
@@ -277,7 +277,7 @@ TEST(hungarian_assigner, degenerate1)
   EXPECT_EQ(assign.get_assignment(3), 0);
 }
 
-TEST(hungarian_assigner, degenerate2)
+TEST(HungarianAssigner, Degenerate2)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 4U);
@@ -328,7 +328,7 @@ X 2 1 X
 X X X X
 2 1 X X
 */
-TEST(hungarian_assigner, partial)
+TEST(HungarianAssigner, Partial)
 {
   hungarian_assigner_c<16U> assign;
   assign.set_size(4U, 4U);
@@ -352,7 +352,7 @@ TEST(hungarian_assigner, partial)
    x  8 x  0 x
    x 12 x  4 x
 */
-TEST(hungarian_assigner, degenerate3)
+TEST(HungarianAssigner, Degenerate3)
 {
   hungarian_assigner_c<32U> assign;
 //  assign.reset();

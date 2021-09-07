@@ -225,11 +225,11 @@ void object_collision_estimator_node_test(
   rclcpp::shutdown();
 }
 
-TEST(object_collision_estimator_node, sanity) {
+TEST(ObjectCollisionEstimatorNode, Sanity) {
   object_collision_estimator_node_test(100, 40);
 }
 
-TEST(object_collision_estimator_node, short_trajectory) {
+TEST(ObjectCollisionEstimatorNode, ShortTrajectory) {
   object_collision_estimator_node_test(3, 1);
   object_collision_estimator_node_test(3, 2);
 
@@ -239,15 +239,15 @@ TEST(object_collision_estimator_node, short_trajectory) {
   object_collision_estimator_node_test(0, 2);
 }
 
-TEST(object_collision_estimator_node, emergency_stop) {
+TEST(ObjectCollisionEstimatorNode, EmergencyStop) {
   object_collision_estimator_node_test(100, 0);
   object_collision_estimator_node_test(100, 1);
 }
 
-TEST(object_collision_estimator_node, no_obstacle) {
+TEST(ObjectCollisionEstimatorNode, NoObstacle) {
   object_collision_estimator_node_test(100, 101);
 }
 
-TEST(object_collision_estimator_node, small_obstacle) {
+TEST(ObjectCollisionEstimatorNode, SmallObstacle) {
   object_collision_estimator_node_test(100, 40, 0.0003);
 }

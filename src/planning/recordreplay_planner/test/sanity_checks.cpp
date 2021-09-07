@@ -53,11 +53,11 @@ struct PropertyTestParameters
   system_clock::time_point starting_time;
 };
 
-class sanity_checks_trajectory_properties
+class SanityChecksTrajectoryProperties
   : public sanity_checks_base, public testing::WithParamInterface<PropertyTestParameters>
 {};
 
-TEST_P(sanity_checks_trajectory_properties, basicproperties)
+TEST_P(SanityChecksTrajectoryProperties, Basicproperties)
 {
   const auto p = GetParam();
   auto t0 = p.starting_time;
@@ -87,8 +87,8 @@ TEST_P(sanity_checks_trajectory_properties, basicproperties)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  trajectory_properties,
-  sanity_checks_trajectory_properties,
+  TrajectoryProperties,
+  SanityChecksTrajectoryProperties,
   testing::Values(
     PropertyTestParameters{std::chrono::milliseconds(100), system_clock::from_time_t({})},
     PropertyTestParameters{std::chrono::milliseconds(200), system_clock::from_time_t({})},
@@ -106,11 +106,11 @@ struct LengthTestParameters
 };
 
 
-class sanity_checks_trajectory_length
+class SanityChecksTrajectoryLength
   : public sanity_checks_base, public testing::WithParamInterface<LengthTestParameters>
 {};
 
-TEST_P(sanity_checks_trajectory_length, length)
+TEST_P(SanityChecksTrajectoryLength, Length)
 {
   const auto p = GetParam();
   const auto N = p.number_of_points;
@@ -132,8 +132,8 @@ TEST_P(sanity_checks_trajectory_length, length)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  trajectory_length,
-  sanity_checks_trajectory_length,
+  TrajectoryLength,
+  SanityChecksTrajectoryLength,
   testing::Values(
     LengthTestParameters{80},
     LengthTestParameters{200}
@@ -161,7 +161,7 @@ RecordReplayPlanner helper_create_and_record_example(uint32_t N)
 
 
 //------------------ Test that "receding horizon" planning properly works: happy case
-TEST(recordreplay_sanity_checks, receding_horizon_happycase)
+TEST(RecordreplaySanityChecks, RecedingHorizonHappycase)
 {
   const auto N = 3;
   auto planner = helper_create_and_record_example(N);
@@ -178,7 +178,7 @@ TEST(recordreplay_sanity_checks, receding_horizon_happycase)
 }
 
 //------------------ Test that "receding horizon" planning properly works:
-TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
+TEST(RecordreplaySanityChecks, RecedingHorizonCornercases)
 {
   const auto N = 3;
   auto planner = helper_create_and_record_example(N);
@@ -206,7 +206,7 @@ TEST(recordreplay_sanity_checks, receding_horizon_cornercases)
   }
 }
 
-TEST(recordreplay_sanity_checks, state_setting_mechanism)
+TEST(RecordreplaySanityChecks, StateSettingMechanism)
 {
   auto planner = RecordReplayPlanner{};
 
@@ -239,7 +239,7 @@ TEST(recordreplay_sanity_checks, state_setting_mechanism)
   EXPECT_FALSE(planner.is_replaying() );
 }
 
-TEST(recordreplay_sanity_checks, heading_weight_setting)
+TEST(RecordreplaySanityChecks, HeadingWeightSetting)
 {
   auto planner = RecordReplayPlanner{};
 

@@ -14,7 +14,7 @@
 
 /// \copyright Copyright 2021 The Autoware Foundation
 /// \file test_ne_raptor_interface.hpp
-/// \brief This file defines the DISABLED_NERaptorInterface_test class.
+/// \brief This file defines the NERaptorInterfaceTest class.
 
 #ifndef NE_RAPTOR_INTERFACE__TEST_NE_RAPTOR_INTERFACE_HPP_
 #define NE_RAPTOR_INTERFACE__TEST_NE_RAPTOR_INTERFACE_HPP_
@@ -74,7 +74,7 @@ const std::chrono::milliseconds C_TIMEOUT_MILLI = std::chrono::milliseconds(c_pu
 const uint8_t C_TIMEOUT_ITERATIONS = 25;
 
 /// \brief Class for testing NERaptorInterface
-class DISABLED_NERaptorInterface_test : public ::testing::Test
+class NERaptorInterfaceTest : public ::testing::Test
 {
 protected:
   void SetUp() override
@@ -195,7 +195,7 @@ public:
     WheelSpeedReport in_wsr;        /**< Input: WheelSpeedReport */
     VehicleKinematicState exp_vks;  /**< Expected output: VehicleKinematicState */
   };
-};  // class DISABLED_NERaptorInterface_test
+};  // class NERaptorInterfaceTest
 
 template<typename T>
 void wait_for_subscriber(

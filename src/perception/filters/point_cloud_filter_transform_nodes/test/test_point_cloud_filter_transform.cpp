@@ -94,7 +94,7 @@ sensor_msgs::msg::PointCloud2 make_pc(
   return msg;
 }
 
-class point_cloud_filter_transform_integration : public ::testing::Test
+class PointCloudFilterTransformIntegration : public ::testing::Test
 {
 protected:
   using Vlp16Translator = autoware::drivers::velodyne_driver::Vlp16Translator;
@@ -176,7 +176,7 @@ bool check_filtered_points(
   return true;
 }
 
-TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
+TEST_F(PointCloudFilterTransformIntegration, CloudBasicTest)
 {
   using VelodyneCloudNode = autoware::drivers::velodyne_nodes::VLP16DriverNode;
   using autoware::perception::filters::point_cloud_filter_transform_nodes
@@ -288,7 +288,7 @@ TEST_F(point_cloud_filter_transform_integration, cloud_basic_test)
 }
 
 // Add 5 points but 2 of them are outside the desired angle/distance.
-TEST_F(point_cloud_filter_transform_integration, filter_270_radius_10) {
+TEST_F(PointCloudFilterTransformIntegration, Filter270Radius10) {
   using PointXYZIF = autoware::common::types::PointXYZIF;
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using autoware::perception::filters::point_cloud_filter_transform_nodes
@@ -357,7 +357,7 @@ TEST_F(point_cloud_filter_transform_integration, filter_270_radius_10) {
 
 // regression test for bug 419
 // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/419
-TEST_F(point_cloud_filter_transform_integration, filter_and_transform_bug419)
+TEST_F(PointCloudFilterTransformIntegration, FilterAndTransformBug419)
 {
   rclcpp::init(0, nullptr);
 

@@ -107,7 +107,7 @@ void assert_trajectory_stop(const Trajectory & trajectory, float velocity, float
 }
 
 // Constant speed of 10mps. Last velocity point at 0mps.
-TEST(trajectory_smoother, constant) {
+TEST(TrajectorySmoother, Constant) {
   const std::chrono::milliseconds dt(DT_MS);
   auto trajectory = constant_velocity_trajectory(
     0, 0, 1, 10,
@@ -128,7 +128,7 @@ TEST(trajectory_smoother, constant) {
 }
 
 // Constant speed of 10mps. Random noise added. Last velocity point at 0mps.
-TEST(trajectory_smoother, constant_with_noise) {
+TEST(TrajectorySmoother, ConstantWithNoise) {
   const std::chrono::milliseconds dt(DT_MS);
   auto trajectory = constant_velocity_trajectory(
     0, 0, 1, 10,
@@ -150,7 +150,7 @@ TEST(trajectory_smoother, constant_with_noise) {
 }
 
 // Constant acceleration, from 10mps to 20mps. Last velocity point at 0mps.
-TEST(trajectory_smoother, acceleration) {
+TEST(TrajectorySmoother, Acceleration) {
   const std::chrono::milliseconds dt(DT_MS);
   auto trajectory = constant_acceleration_trajectory(
     0, 0, 1, 10, 1,
@@ -172,7 +172,7 @@ TEST(trajectory_smoother, acceleration) {
 
 // Constant acceleration, from 10mps to 20mps in 3.3s. Followed by a constant deceleration to 0mps
 // in 6.7s.
-TEST(trajectory_smoother, acceleration_deceleration) {
+TEST(TrajectorySmoother, AccelerationDeceleration) {
   constexpr float T = 10;   // Total time of the trajectory, [s]
   constexpr float v0 = 10;  // Initial velocity, [m/s]
   constexpr float a = 3;    // Absolute value of both the acceleration and deceleration, [m/s^2]
@@ -209,7 +209,7 @@ TEST(trajectory_smoother, acceleration_deceleration) {
 }
 
 // Constant deceleration, from 10mps to 0mps in 3.3s. Then stay at 0mps over the remaining 6.7s.
-TEST(trajectory_smoother, deceleration_halt) {
+TEST(TrajectorySmoother, DecelerationHalt) {
   const std::chrono::milliseconds dt(DT_MS);
   auto trajectory = constant_acceleration_trajectory(
     0, 0, 1, 10, -3,

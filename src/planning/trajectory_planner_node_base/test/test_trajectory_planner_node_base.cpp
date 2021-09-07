@@ -15,6 +15,6 @@
 #include "gtest/gtest.h"
 #include "trajectory_planner_node_base/trajectory_planner_node_base.hpp"
 
-// TEST(test_trajectory_planner_node_base, test_hello) {
+// TEST(TestTrajectoryPlannerNodeBase, TestHello) {
 //   EXPECT_EQ(autoware::trajectory_planner_node_base::print_hello(), 0);
 // }

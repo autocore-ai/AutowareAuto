@@ -42,7 +42,7 @@ lanelet::LaneletMap getALaneletMap()
   return std::move(*lanelet::utils::createMap({ll}));
 }
 
-TEST(test_lanelet2_map_provider, basic_test) {
+TEST(TestLanelet2MapProvider, BasicTest) {
   std::cerr << "basic test\n";
 
   // build a simple lanelet map
@@ -60,7 +60,7 @@ TEST(test_lanelet2_map_provider, basic_test) {
   remove(lanelet2_map_file.c_str());
 }
 
-TEST(test_lanelet2_map_provider_node, test_service) {
+TEST(TestLanelet2MapProviderNode, TestService) {
   std::cerr << "test node\n";
   std::string program_name = "test_node";
   char * argv[] = {strdup("test_node"), NULL};

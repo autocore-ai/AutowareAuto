@@ -46,7 +46,7 @@ struct HighFrequency
   FrequencyTargets targets;
 };
 
-class high_frequency_warning
+class HighFrequencyWarning
   : public state_machine, public ::testing::WithParamInterface<HighFrequency>
 {
 protected:
@@ -107,7 +107,7 @@ protected:
   }
 };
 
-TEST_P(high_frequency_warning, basic)
+TEST_P(HighFrequencyWarning, Basic)
 {
   GTEST_SKIP();  // #5455: Not quarantined since not broken... just not implemented
   const auto param = GetParam();
@@ -147,8 +147,8 @@ TEST_P(high_frequency_warning, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  high_frequency_warning,
+  Test,
+  HighFrequencyWarning,
   ::testing::Values(
     HighFrequency{0.0F, 0.3F, std::chrono::milliseconds{10LL}, 20U,
       FrequencyTargets{FrequencyTarget::SteerReport}},
@@ -169,11 +169,11 @@ struct StateChange
   VSC command;
 };
 
-class no_state_change : public state_machine, public ::testing::WithParamInterface<StateChange>
+class NoStateChange : public state_machine, public ::testing::WithParamInterface<StateChange>
 {
 };
 
-TEST_P(no_state_change, basic)
+TEST_P(NoStateChange, Basic)
 {
   const auto param = GetParam();
   const auto now = std::chrono::system_clock::now();
@@ -207,8 +207,8 @@ TEST_P(no_state_change, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  no_state_change,
+  Test,
+  NoStateChange,
   ::testing::Values(
     //// Gear //// 0-15
     // Gear park->*
@@ -301,7 +301,7 @@ struct TimeoutCommand
   decltype(VCC::long_accel_mps2) expected_accel;
 };
 
-class timeout_commands : public state_machine, public ::testing::WithParamInterface<TimeoutCommand>
+class TimeoutCommands : public state_machine, public ::testing::WithParamInterface<TimeoutCommand>
 {
 protected:
   void SetUp()
@@ -311,7 +311,7 @@ protected:
   }
 };
 
-TEST_P(timeout_commands, basic)
+TEST_P(TimeoutCommands, Basic)
 {
   const auto param = GetParam();
   // set state
@@ -328,8 +328,8 @@ TEST_P(timeout_commands, basic)
 // Assume characteristic time rate of 100ms
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  timeout_commands,
+  Test,
+  TimeoutCommands,
   ::testing::Values(
     TimeoutCommand{0.0F, 0.0F},  // Stopped
     // Positive

@@ -17,6 +17,6 @@
 #include "gtest/gtest.h"
 #include "off_map_obstacles_filter/off_map_obstacles_filter.hpp"
 
-TEST(test_off_map_obstacles_filter, test_remove_off_map_bboxes) {
+TEST(TestOffMapObstaclesFilter, TestRemoveOffMapBboxes) {
   // Not implemented yet
 }

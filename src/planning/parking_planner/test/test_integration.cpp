@@ -210,7 +210,7 @@ const auto slanted_gap_obstacles = std::vector<Polytope2D>{
 
 // This would be INSTANTIATE_TEST_SUITE_P in gtest 1.10 and up, but Autoware uses gtest 1.8.
 INSTANTIATE_TEST_CASE_P(
-  integration, TestIntegration, ::testing::Values(
+  Integration, TestIntegration, ::testing::Values(
     // Parallel, close, and car is somewhat small
     IntegrationTestParams{"parallel_close_small",
       side_gap_obstacles,

@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <ndt_mapping_nodes/ndt_mapping_nodes.hpp>
 
-TEST(test_ndt_mapping_node, instantiate)
+TEST(TestNdtMappingNode, Instantiate)
 {
   // Basic test to ensure that TrajectorySpooferNode can be instantiated
   rclcpp::init(0, nullptr);

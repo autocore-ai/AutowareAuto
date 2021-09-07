@@ -34,10 +34,10 @@ using autoware::perception::filters::ray_ground_classifier::Config;
 using autoware::perception::filters::ray_ground_classifier::PointPtrBlock;
 using autoware::perception::filters::ray_ground_classifier::PointXYZIFR;
 
-class ray_ground_classifier : public ::testing::Test
+class RayGroundClassifier : public ::testing::Test
 {
 public:
-  ray_ground_classifier()
+  RayGroundClassifier()
   : cfg{
       0.4F,        // sensor_height_m,
       5.0F,        // max_local_slope_deg,

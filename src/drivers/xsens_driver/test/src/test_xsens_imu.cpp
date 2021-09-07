@@ -27,9 +27,9 @@
 
 using autoware::drivers::xsens_driver::XsensImuTranslator;
 
-using xsens_driver = xsens_driver_common<XsensImuTranslator, sensor_msgs::msg::Imu>;
+using XsensDriver = xsens_driver_common<XsensImuTranslator, sensor_msgs::msg::Imu>;
 
-TEST_F(xsens_driver, basic)
+TEST_F(XsensDriver, Basic)
 {
   std::vector<uint8_t> data = {
     0x70, 0x20, 0x78, 0x1C, 0x10, 0x5C, 0x4A, 0x1C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x19, 0x5C, 0x00,

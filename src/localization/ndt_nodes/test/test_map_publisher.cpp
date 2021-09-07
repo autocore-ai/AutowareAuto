@@ -51,7 +51,7 @@ std::string build_yaml_string()
   return yaml_string;
 }
 
-TEST(PCDLoadTest, basics) {
+TEST(PCDLoadTest, Basics) {
   constexpr auto num_points = 5U;
   pcl::PointCloud<pcl::PointXYZI> dummy_cloud{};
   sensor_msgs::msg::PointCloud2 msg;
@@ -89,7 +89,7 @@ TEST(PCDLoadTest, basics) {
   remove(test_fname.c_str());
 }
 
-TEST(YamlLoadTest, basics) {
+TEST(YamlLoadTest, Basics) {
   const std::string test_fname = "YamlLoadTest_test_yaml_file.yaml";
   const std::string non_existing_fname = "NON_EXISTING_FILE_yamlLoadTest.XYZ";
   const std::string test_pcd_fname = "test.pcd";
@@ -114,7 +114,7 @@ TEST(YamlLoadTest, basics) {
   remove(test_fname.c_str());
 }
 
-TEST_F(MapPublisherTest, core_functionality)
+TEST_F(MapPublisherTest, CoreFunctionality)
 {
   using Cloud = sensor_msgs::msg::PointCloud2;
   const auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);
@@ -233,7 +233,7 @@ TEST_F(MapPublisherTest, core_functionality)
   remove(yaml_file_name.c_str());
 }
 
-TEST_F(MapPublisherTest, viz_functionality)
+TEST_F(MapPublisherTest, VizFunctionality)
 {
   using Cloud = sensor_msgs::msg::PointCloud2;
   const auto grid_config = Config(m_min_point, m_max_point, m_voxel_size, m_capacity);

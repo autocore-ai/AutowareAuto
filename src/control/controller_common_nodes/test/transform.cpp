@@ -38,19 +38,6 @@ using motion::control::controller_common_nodes::ControllerBaseNode;
 using motion::control::controller_common_nodes::Command;
 using motion::control::controller_common_nodes::ControllerPtr;
 
-class sanity_check : public ::testing::Test
-{
-protected:
-  void SetUp()
-  {
-    rclcpp::init(0, nullptr);
-  }
-  void TearDown()
-  {
-    (void)rclcpp::shutdown();
-  }
-};  // sanity_check
-
 constexpr auto cmd_topic = "test_controller_base_node_cmd_tf";
 constexpr auto state_topic = "test_controller_base_node_state_tf";
 constexpr auto tf_topic = "test_controller_base_node_tf_tf";
@@ -107,7 +94,7 @@ private:
   TestTFController * m_controller{};
 };  // class TestControllerNode
 
-class transforms : public ::testing::Test
+class Transforms : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -118,7 +105,7 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
-};  // sanity_check
+};  // Transforms
 
 // Publish static tf: nav_base -> base_link
 // Publish tfs: base_link -> odom
@@ -127,7 +114,7 @@ protected:
 // Expect result state in odom
 // Note: testing exotic transforms is outside the scope of this test; only testing that
 // transforms are applied
-TEST_F(transforms, static_dynamic_tfs)
+TEST_F(Transforms, StaticDynamicTfs)
 {
   // Publisher Node
   const auto pub_node = std::make_shared<rclcpp::Node>("test_tf_pub_node");

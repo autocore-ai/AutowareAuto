@@ -27,7 +27,7 @@ struct GearVelocity
 
 constexpr decltype(VO::velocity_mps) velocity_threshold{0.5F};
 
-class gear_shift_velocity : public state_machine, public ::testing::WithParamInterface<GearVelocity>
+class GearShiftVelocity : public state_machine, public ::testing::WithParamInterface<GearVelocity>
 {
 protected:
   // Make sure the state report and command constants are the same because we're mixing stuff
@@ -41,7 +41,7 @@ protected:
   }
 };
 
-TEST_P(gear_shift_velocity, basic)
+TEST_P(GearShiftVelocity, Basic)
 {
   const auto param = GetParam();
   // Set up state
@@ -72,8 +72,8 @@ TEST_P(gear_shift_velocity, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  gear_shift_velocity,
+  Test,
+  GearShiftVelocity,
   ::testing::Values(
     // Drive to park
     GearVelocity{VSR::GEAR_DRIVE, VSC::GEAR_PARK, velocity_threshold + 1.0F, VSC::GEAR_NO_COMMAND},
@@ -116,11 +116,11 @@ struct AutoGear
   uint8_t expected_gear;
 };
 
-class auto_gear_shift : public state_machine, public ::testing::WithParamInterface<AutoGear>
+class AutoGearShift : public state_machine, public ::testing::WithParamInterface<AutoGear>
 {
 };
 
-TEST_P(auto_gear_shift, basic)
+TEST_P(AutoGearShift, Basic)
 {
   ASSERT_EQ(config_.time_step(), std::chrono::milliseconds{100LL});
   ASSERT_GT(config_.auto_gear_shift_accel_deadzone(), 0.1F);
@@ -151,8 +151,8 @@ TEST_P(auto_gear_shift, basic)
 
 // Assume characteristic time step of 100ms
 INSTANTIATE_TEST_CASE_P(
-  test,
-  auto_gear_shift,
+  Test,
+  AutoGearShift,
   ::testing::Values(
     // Normal case: forward driving, do nothing: 0-5
     AutoGear{10.0F, 3.0F, VSR::GEAR_DRIVE, VSC::GEAR_NO_COMMAND, VSC::GEAR_NO_COMMAND},

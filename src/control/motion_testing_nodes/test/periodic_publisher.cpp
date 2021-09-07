@@ -61,7 +61,7 @@ using TestTypes = ::testing::Types<State, Trajectory, Command>;
 // cppcheck-suppress syntaxError
 TYPED_TEST_CASE(PeriodicPublisherTest, TestTypes, );
 
-TYPED_TEST(PeriodicPublisherTest, basic)
+TYPED_TEST(PeriodicPublisherTest, Basic)
 {
   ASSERT_GT((this->cfg1_)->count, 0U);
   ASSERT_GT((this->cfg2_)->count, 0U);

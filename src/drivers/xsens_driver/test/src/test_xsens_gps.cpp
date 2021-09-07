@@ -29,9 +29,9 @@
 using autoware::drivers::xsens_driver::XsensGpsTranslator;
 using autoware::drivers::xsens_driver::MID;
 
-using xsens_driver = xsens_driver_common<XsensGpsTranslator, sensor_msgs::msg::NavSatFix>;
+using XsensDriver = xsens_driver_common<XsensGpsTranslator, sensor_msgs::msg::NavSatFix>;
 
-TEST_F(xsens_driver, basic)
+TEST_F(XsensDriver, Basic)
 {
   std::vector<uint8_t> data = {
     0x70, 0x10, 0x5E, 0x1C, 0x10, 0x5C, 0x4A, 0x07, 0xE3, 0x08, 0x1E, 0x0A, 0x2E, 0x38, 0xF7, 0x00,

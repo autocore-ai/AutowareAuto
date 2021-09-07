@@ -41,12 +41,12 @@ protected:
   }
 };
 
-class wipers_on_headlights_on : public wiper_headlight_state_machine
+class WipersOnHeadlightsOn : public wiper_headlight_state_machine
 {
 };
 
 // Turning wipers on should turn on headlights: wiper command, light command, light result
-TEST_P(wipers_on_headlights_on, basic)
+TEST_P(WipersOnHeadlightsOn, Basic)
 {
   const auto param = GetParam();
   const auto state = VSC{}.set__wiper(param.wiper).set__headlight(param.headlight);
@@ -68,8 +68,8 @@ TEST_P(wipers_on_headlights_on, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  wipers_on_headlights_on,
+  Test,
+  WipersOnHeadlightsOn,
   ::testing::Values(
     WiperHeadlight{WipersCommand::ENABLE_LOW, HeadlightsCommand::NO_COMMAND,
       HeadlightsCommand::ENABLE_LOW},
@@ -91,12 +91,12 @@ INSTANTIATE_TEST_CASE_P(
   ),
 );
 
-class wipers_off_headlight_no_change : public wiper_headlight_state_machine
+class WipersOffHeadlightNoChange : public wiper_headlight_state_machine
 {
 };
 
 // Turning off wipers should keep headlights on: wiper state, light state, light command
-TEST_P(wipers_off_headlight_no_change, basic)
+TEST_P(WipersOffHeadlightNoChange, Basic)
 {
   const auto param = GetParam();
   // Set state to wipers on, headlights on
@@ -113,8 +113,8 @@ TEST_P(wipers_off_headlight_no_change, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  wipers_off_headlight_no_change,
+  Test,
+  WipersOffHeadlightNoChange,
   ::testing::Values(
     WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::NO_COMMAND},
     WiperHeadlight{VSR::WIPER_LOW, VSR::HEADLIGHT_ON, HeadlightsCommand::DISABLE},

@@ -52,7 +52,7 @@ protected:
   }
 };
 
-class motion_model : public ::testing::Test
+class MotionModel : public ::testing::Test
 {
 protected:
   MiscTestController controller_{};
@@ -68,7 +68,7 @@ void generic_checks(const Point & s, const Point & p, std::chrono::nanoseconds d
     std::chrono::duration_cast<milliseconds>(dt).count();
 }
 
-TEST_F(motion_model, constant_velocity)
+TEST_F(MotionModel, ConstantVelocity)
 {
   constexpr auto TOL = 1.0E-3F;
   const auto s =
@@ -120,7 +120,7 @@ TEST_F(motion_model, constant_velocity)
   apex_test_tools::memory_test::stop();
 }
 
-TEST_F(motion_model, constant_acceleration)
+TEST_F(MotionModel, ConstantAcceleration)
 {
   constexpr auto TOL = 1.0E-3F;
   const auto s =
@@ -168,7 +168,7 @@ TEST_F(motion_model, constant_acceleration)
   apex_test_tools::memory_test::stop();
 }
 
-TEST_F(motion_model, constant_turn_rate)
+TEST_F(MotionModel, ConstantTurnRate)
 {
   constexpr auto TOL = 1.0E-3F;
   const auto s =

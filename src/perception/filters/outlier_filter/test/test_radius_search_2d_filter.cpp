@@ -31,7 +31,7 @@ using RadiusSearch2DFilter =
  *   x -> removed
  *
  */
-TEST(RadiusSearch2DFilter, test_single_point) {
+TEST(RadiusSearch2DFilter, TestSinglePoint) {
   auto filter = std::make_shared<RadiusSearch2DFilter>(1.0, 5);
   std::vector<pcl::PointXYZ> points = {
     make_point(0.0f, 0.0f, 0.0f)};
@@ -53,7 +53,7 @@ TEST(RadiusSearch2DFilter, test_single_point) {
  * x x x -> x x x
  *   x        x
  */
-TEST(RadiusSearch2DFilter, test_simple_cloud) {
+TEST(RadiusSearch2DFilter, TestSimpleCloud) {
   auto filter = std::make_shared<RadiusSearch2DFilter>(1.0, 5);
   std::vector<pcl::PointXYZ> points = {
     make_point(0.0f, 0.0f, 0.0f),
@@ -79,7 +79,7 @@ TEST(RadiusSearch2DFilter, test_simple_cloud) {
  * x x x         -> x x x
  *   x                x
  */
-TEST(RadiusSearch2DFilter, test_outlier_point) {
+TEST(RadiusSearch2DFilter, TestOutlierPoint) {
   auto filter = std::make_shared<RadiusSearch2DFilter>(0.5, 5);
   std::vector<pcl::PointXYZ> points = {
     make_point(0.0f, 0.0f, 0.0f),
@@ -108,7 +108,7 @@ TEST(RadiusSearch2DFilter, test_outlier_point) {
  * x x x -> all removed
  *   x
  */
-TEST(RadiusSearch2DFilter, test_increase_min_neighbours) {
+TEST(RadiusSearch2DFilter, TestIncreaseMinNeighbours) {
   auto filter = std::make_shared<RadiusSearch2DFilter>(1.0, 10);
   std::vector<pcl::PointXYZ> points = {
     make_point(0.0f, 0.0f, 0.0f),
@@ -134,7 +134,7 @@ TEST(RadiusSearch2DFilter, test_increase_min_neighbours) {
  * x x x -> all removed
  *   x
  */
-TEST(RadiusSearch2DFilter, test_decrease_search_radius) {
+TEST(RadiusSearch2DFilter, TestDecreaseSearchRadius) {
   auto filter = std::make_shared<RadiusSearch2DFilter>(0.1, 5);
   std::vector<pcl::PointXYZ> points = {
     make_point(0.0f, 0.0f, 0.0f),

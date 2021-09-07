@@ -40,7 +40,7 @@ using motion::control::controller_common_nodes::Diagnostic;
 using motion::control::controller_common_nodes::State;
 using motion::control::controller_common_nodes::ControllerPtr;
 
-class error_handling : public ::testing::Test
+class ErrorHandling : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -51,7 +51,7 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
-};  // error_handling
+};  // ErrorHandling
 
 constexpr auto cmd_topic = "test_error_controller_node_cmd";
 constexpr auto state_topic = "test_error_controller_node_state";
@@ -171,7 +171,7 @@ private:
 };  // class ErrorListener
 
 
-TEST_F(error_handling, basic)
+TEST_F(ErrorHandling, Basic)
 {
   constexpr auto total_msgs = 10U;
   constexpr auto TOLI = 2U;

@@ -42,20 +42,20 @@ protected:
   }
 };  // class TestController
 
-class behavior : public ::testing::Test
+class Behavior : public ::testing::Test
 {
 public:
-  behavior()
+  Behavior()
   : controller_{BehaviorConfig{3.0F, std::chrono::milliseconds(100LL), ControlReference::SPATIAL}}
   {
   }
 
 protected:
   TestController controller_;
-};  // class behavior
+};  // class Behavior
 
 // Vehicle should come to a stop if there's no trajectory present
-TEST_F(behavior, no_trajectory)
+TEST_F(Behavior, NoTrajectory)
 {
   // TODO(c.ho) checks on stop rate
   auto state = make_state(10.0F, -30.0F, 0.0F, 3.0F, 0.0F, 0.0F, std::chrono::system_clock::now());
@@ -75,7 +75,7 @@ TEST_F(behavior, no_trajectory)
 }
 
 // Vehicle should stay stopped if the vehicle is nearly stopped
-TEST_F(behavior, no_trajectory_slow)
+TEST_F(Behavior, NoTrajectorySlow)
 {
   auto state = make_state(15.0F, 10.0F, 4.0F, 0.1F, 0.0F, 0.0F, std::chrono::system_clock::now());
   state.header.frame_id = "foo";
@@ -89,7 +89,7 @@ TEST_F(behavior, no_trajectory_slow)
 }
 
 // Vehicle should stay stopped if the vehicle is stopped
-TEST_F(behavior, no_trajectory_stopped)
+TEST_F(Behavior, NoTrajectoryStopped)
 {
   auto state = make_state(-10.0F, -30.0F, 1.0F, 0.0F, 0.0F, 0.0F, std::chrono::system_clock::now());
   state.header.frame_id = "foo";
@@ -103,7 +103,7 @@ TEST_F(behavior, no_trajectory_stopped)
 }
 
 // If the state is newest than the end of the trajectory, come to a stop
-TEST_F(behavior, old_trajectory)
+TEST_F(Behavior, OldTrajectory)
 {
   const auto dt = std::chrono::milliseconds(100LL);
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 3.0F, 1.0F, dt);
@@ -122,7 +122,7 @@ TEST_F(behavior, old_trajectory)
 }
 
 // Vehicle should come to a stop after physically being past the last point of the trajectory
-TEST_F(behavior, past_trajectory)
+TEST_F(Behavior, PastTrajectory)
 {
   const auto dt = std::chrono::milliseconds(100LL);
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 0.0F, 1.0F, dt);
@@ -140,7 +140,7 @@ TEST_F(behavior, past_trajectory)
 }
 
 // Fail on inconsistent header
-TEST_F(behavior, wrong_frame)
+TEST_F(Behavior, WrongFrame)
 {
   const auto dt = std::chrono::milliseconds(100LL);
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 3.0F, 1.0F, dt);

@@ -31,7 +31,7 @@ using autoware::motion::control::pure_pursuit::PurePursuit;
 using autoware::motion::control::pure_pursuit::VehicleControlCommand;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
-class sanity_checks : public ::testing::Test
+class SanityChecks : public ::testing::Test
 {
 protected:
   float32_t steer_angle(const float32_t dx, const float32_t lookahead) const
@@ -63,8 +63,8 @@ struct StraightTestParam
   bool8_t is_pointing_north;
 };
 
-class sanity_checks_axis_aligned_straight
-  : public sanity_checks, public ::testing::WithParamInterface<StraightTestParam> {};
+class SanityChecksAxisAlignedStraight
+  : public SanityChecks, public ::testing::WithParamInterface<StraightTestParam> {};
 
 // Basic straight test case with easy to compute lookaheads, no longitudinal control
 // Double slashes on the right to avoid -Wcomment warnings
@@ -72,7 +72,7 @@ class sanity_checks_axis_aligned_straight
 //      >--------------                    //
 //                      \                  //
 //      -----------------T---------->      //
-TEST_P(sanity_checks_axis_aligned_straight, basic)
+TEST_P(SanityChecksAxisAlignedStraight, Basic)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
@@ -93,7 +93,7 @@ TEST_P(sanity_checks_axis_aligned_straight, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  basic, sanity_checks_axis_aligned_straight,
+  Basic, SanityChecksAxisAlignedStraight,
   ::testing::Values(
     StraightTestParam{0.0F, 0.0F, false},
     StraightTestParam{3.0F, 4.0F, false},
@@ -108,10 +108,10 @@ INSTANTIATE_TEST_CASE_P(
 //  /   |
 //  |   |
 //  ^
-class sanity_checks_oriented_straight
-  : public sanity_checks, public ::testing::WithParamInterface<StraightTestParam> {};
+class SanityChecksOrientedStraight
+  : public SanityChecks, public ::testing::WithParamInterface<StraightTestParam> {};
 
-TEST_P(sanity_checks_oriented_straight, basic)
+TEST_P(SanityChecksOrientedStraight, Basic)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
@@ -133,7 +133,7 @@ TEST_P(sanity_checks_oriented_straight, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  basic, sanity_checks_oriented_straight,
+  Basic, SanityChecksOrientedStraight,
   ::testing::Values(
     StraightTestParam{0.0F, 0.0F, false},
     StraightTestParam{3.0F, 4.0F, false},
@@ -149,10 +149,10 @@ INSTANTIATE_TEST_CASE_P(
 //     /  \            //
 //    |   |            //
 //    ^---T------->    //
-class sanity_checks_orthogonal_orientation
-  : public sanity_checks, public ::testing::WithParamInterface<StraightTestParam> {};
+class SanityChecksOrthogonalOrientation
+  : public SanityChecks, public ::testing::WithParamInterface<StraightTestParam> {};
 
-TEST_P(sanity_checks_orthogonal_orientation, basic)
+TEST_P(SanityChecksOrthogonalOrientation, Basic)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
@@ -174,7 +174,7 @@ TEST_P(sanity_checks_orthogonal_orientation, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  basic, sanity_checks_orthogonal_orientation,
+  Basic, SanityChecksOrthogonalOrientation,
   ::testing::Values(
     StraightTestParam{0.0F, 5.0F, false},
     StraightTestParam{0.0F, 5.0F, true}
@@ -186,7 +186,7 @@ INSTANTIATE_TEST_CASE_P(
 // o        |
 //        __/
 //  ___---
-class sanity_checks_other : public sanity_checks
+class SanityChecksOther : public SanityChecks
 {
 protected:
   static constexpr auto size{100U};
@@ -215,7 +215,7 @@ protected:
 };
 
 // curved track TODO(c.ho) parameterize this test
-TEST_F(sanity_checks_other, curved_track_towards)
+TEST_F(SanityChecksOther, CurvedTrackTowards)
 {
   constexpr auto v0 = 10.0F;
   const auto L = cfg_.get_speed_to_lookahead_ratio() * v0;
@@ -235,7 +235,7 @@ TEST_F(sanity_checks_other, curved_track_towards)
 }
 
 // longitudinal control TODO(c.ho) parameterize this test
-TEST_F(sanity_checks, longitudinal_control)
+TEST_F(SanityChecks, LongitudinalControl)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;

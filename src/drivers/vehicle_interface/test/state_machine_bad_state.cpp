@@ -31,17 +31,17 @@ enum class State
   MODE
 };
 
-struct BadStateCommand
+struct BadStateCommandParam
 {
   std::vector<State> bad_states;
   decltype(WipersCommand::ENABLE_CLEAN) bad_value;
 };
 
-class bad_state_command
-  : public state_machine, public ::testing::WithParamInterface<BadStateCommand>
+class BadStateCommand
+  : public state_machine, public ::testing::WithParamInterface<BadStateCommandParam>
 {
 protected:
-  VSC make_bad_state(const BadStateCommand & param)
+  VSC make_bad_state(const BadStateCommandParam & param)
   {
     VSC ret{};
     const auto bad_val = param.bad_value;
@@ -84,7 +84,7 @@ protected:
   }
 };
 // blinker, headlight, wiper, gear, and mode can be out of bounds
-TEST_P(bad_state_command, basic)
+TEST_P(BadStateCommand, Basic)
 {
   const auto param = GetParam();
   const auto state = make_bad_state(param);
@@ -108,18 +108,18 @@ TEST_P(bad_state_command, basic)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test,
-  bad_state_command,
+  Test,
+  BadStateCommand,
   ::testing::Values(
     // Do combinatorial testing with N = 1
-    BadStateCommand{std::vector<State>{State::WIPER}, 55U},
-    BadStateCommand{std::vector<State>{State::BLINKER}, 53U},
-    BadStateCommand{std::vector<State>{State::GEAR}, 50U},
-    BadStateCommand{std::vector<State>{State::HEADLIGHT}, 65U},
-    BadStateCommand{std::vector<State>{State::MODE}, 15U},
+    BadStateCommandParam{std::vector<State>{State::WIPER}, 55U},
+    BadStateCommandParam{std::vector<State>{State::BLINKER}, 53U},
+    BadStateCommandParam{std::vector<State>{State::GEAR}, 50U},
+    BadStateCommandParam{std::vector<State>{State::HEADLIGHT}, 65U},
+    BadStateCommandParam{std::vector<State>{State::MODE}, 15U},
     // TODO(c.ho) more testing combinations
     // Everything
-    BadStateCommand{
+    BadStateCommandParam{
   std::vector<State>{State::MODE, State::WIPER, State::BLINKER, State::GEAR, State::HEADLIGHT},
   21U
 }

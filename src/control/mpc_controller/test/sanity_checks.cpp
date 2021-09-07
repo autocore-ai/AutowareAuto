@@ -114,7 +114,7 @@ protected:
     }
   };
 };  // class sanity_checks_base
-class sanity_checks : public sanity_checks_base
+class SanityChecks : public sanity_checks_base
 {
 protected:
   MpcController controller_{
@@ -126,9 +126,9 @@ protected:
       std::chrono::milliseconds(5LL),  // sample_period_tolerance
       std::chrono::milliseconds(100LL),  // control_lookahead_duration
       Interpolation::YES}};
-};  // class sanity_checks
+};  // class SanityChecks
 
-class sanity_checks_no_interpolation : public sanity_checks_base
+class SanityChecksNoInterpolation : public sanity_checks_base
 {
 protected:
   MpcController controller_{
@@ -140,9 +140,9 @@ protected:
       std::chrono::milliseconds(5LL),  // sample_period_tolerance
       std::chrono::milliseconds(100LL),  // control_lookahead_duration
       Interpolation::NO}};
-};  // class sanity_checks_no_interpolation
+};  // class SanityChecksNoInterpolation
 
-TEST_F(sanity_checks_no_interpolation, bad_trajectory_sample_interval)
+TEST_F(SanityChecksNoInterpolation, BadTrajectorySampleInterval)
 {
   const auto dt = controller_.get_config().behavior().time_step();
   const auto traj_ = constant_velocity_trajectory(0.0F, 0.0F, 0.0F, 0.0F, dt);
@@ -192,17 +192,17 @@ struct ConstantParam
 
 constexpr auto zero_ns = std::chrono::nanoseconds::zero();
 
-class sanity_checks_oneshot
-  : public sanity_checks, public testing::WithParamInterface<ConstantParam>
+class SanityChecksOneshot
+  : public SanityChecks, public testing::WithParamInterface<ConstantParam>
 {
 };
-class sanity_checks_simulation
-  : public sanity_checks, public testing::WithParamInterface<ConstantParam>
+class SanityChecksSimulation
+  : public SanityChecks, public testing::WithParamInterface<ConstantParam>
 {
 };
 
 // Same velocity on a constant velocity track should result in no acceleration
-TEST_P(sanity_checks_oneshot, constant_trajectory)
+TEST_P(SanityChecksOneshot, ConstantTrajectory)
 {
   const auto p = GetParam();
   auto dt = p.dt;
@@ -231,8 +231,8 @@ TEST_P(sanity_checks_oneshot, constant_trajectory)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  oneshot,
-  sanity_checks_oneshot,
+  Oneshot,
+  SanityChecksOneshot,
   testing::Values(
     // Different acceleration (profiles)
     ConstantParam{0.0F, 0.0F, 0.0F, 10.0F, 0.0F, 0.0F, zero_ns},
@@ -253,7 +253,7 @@ INSTANTIATE_TEST_CASE_P(
 ));
 
 // Lateral offset should be rejected by inducing some steering
-TEST_F(sanity_checks, lateral_offset)
+TEST_F(SanityChecks, LateralOffset)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
@@ -282,7 +282,7 @@ TEST_F(sanity_checks, lateral_offset)
 }
 
 // bad heading value in trajectory, should throw due to bad solution with Nan.
-TEST_F(sanity_checks, bad_trajectory_heading)
+TEST_F(SanityChecks, BadTrajectoryHeading)
 {
   const auto x0 = 0.0F;
   const auto y0 = 0.0F;
@@ -300,7 +300,7 @@ TEST_F(sanity_checks, bad_trajectory_heading)
 }
 
 // Fake simulation: should be able to follow trajectory from start to finish without going nuts
-TEST_P(sanity_checks_simulation, constant_trajectory_simulation)
+TEST_P(SanityChecksSimulation, ConstantTrajectorySimulation)
 {
   const auto p = GetParam();
   auto dt = p.dt;
@@ -364,8 +364,8 @@ TEST_P(sanity_checks_simulation, constant_trajectory_simulation)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  simulation,
-  sanity_checks_simulation,
+  Simulation,
+  SanityChecksSimulation,
   testing::Values(
     ConstantParam{0.0F, 0.0F, 0.0F, 10.0F, 0.0F, 0.0F, zero_ns},
     ConstantParam{10.0F, 5.0F, 0.0F, 3.0F, 1.0F, 0.0F, zero_ns},
@@ -380,7 +380,7 @@ INSTANTIATE_TEST_CASE_P(
 ));
 
 // Fake simulation: should be able to follow trajectory from start to finish without going nuts
-TEST_F(sanity_checks, back_to_back)
+TEST_F(SanityChecks, BackToBack)
 {
   const auto p = ConstantParam{0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, zero_ns};
   auto dt = p.dt;

@@ -98,7 +98,7 @@ public:
   std::vector<ClassifiedRoi> unmatched_rois;
 };
 
-TEST(TrackCreatorTest, test_lidar_only)
+TEST(TrackCreatorTest, TestLidarOnly)
 {
   TrackCreator creator{{CreationPolicies::LidarClusterOnly, 1.0F, 1.0F}};
   DetectedObject obj;
@@ -118,7 +118,7 @@ TEST(TrackCreatorTest, test_lidar_only)
 }
 
 // Test lidar and vision with two matches between them
-TEST_F(TestTrackCreator, test_lidar_if_vision_2_new_tracks)
+TEST_F(TestTrackCreator, TestLidarIfVision2NewTracks)
 {
   TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
     this->vision_policy_cfg}};
@@ -177,7 +177,7 @@ TEST_F(TestTrackCreator, test_lidar_if_vision_2_new_tracks)
 }
 
 // Test lidar and vision but no match between them
-TEST_F(TestTrackCreator, test_lidar_if_vision_no_new_track)
+TEST_F(TestTrackCreator, TestLidarIfVisionNoNewTrack)
 {
   TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
     this->vision_policy_cfg}};
@@ -222,7 +222,7 @@ TEST_F(TestTrackCreator, test_lidar_if_vision_no_new_track)
 }
 
 // No vision message within time range
-TEST_F(TestTrackCreator, test_lidar_if_vision_out_of_time_range)
+TEST_F(TestTrackCreator, TestLidarIfVisionOutOfTimeRange)
 {
   TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
     this->vision_policy_cfg}};

@@ -91,7 +91,7 @@ class AlignmentXyzTest : public P2DOptimizationTest,
 class P2DOptimizationNumericalTest : public P2DOptimizationTest,
   public ::testing::WithParamInterface<OptTestParams> {};
 
-TEST_P(P2DOptimizationNumericalTest, numerical_analysis) {
+TEST_P(P2DOptimizationNumericalTest, NumericalAnalysis) {
   {
     // m_pc is also used as the map, so this scan perfectly aligns with the map
     P2DNDTScan matching_scan(m_downsampled_cloud, m_downsampled_cloud.width);
@@ -221,7 +221,7 @@ INSTANTIATE_TEST_CASE_P(
   ), );
 
 INSTANTIATE_TEST_CASE_P(
-  numerical_analysis, P2DOptimizationNumericalTest,
+  NumericalAnalysis, P2DOptimizationNumericalTest,
   ::testing::Values(
     OptTestParams{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, false},
     OptTestParams{0.5, 0.9, 0.1, 1.0, -3.1, 0.05, true, false},

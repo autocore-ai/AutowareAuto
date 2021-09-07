@@ -106,7 +106,7 @@ public:
   std::shared_ptr<rclcpp::Publisher<PointCloud2>> m_pub_raw_points;
 };
 
-TEST(ray_ground_classifier_pcl_validation, filter_test)
+TEST(RayGroundClassifierPclValidation, FilterTest)
 {
   rclcpp::init(0, nullptr);
 

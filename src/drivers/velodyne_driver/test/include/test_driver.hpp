@@ -29,7 +29,7 @@
 #include "velodyne_driver/velodyne_translator.hpp"
 #include "gtest/gtest.h"
 /// test uint16_t conversion using example from documentation
-TEST(helpers, uint32)
+TEST(Helpers, Uint32)
 {
   const uint8_t x = 0x71;
   const uint8_t y = 0x33;
@@ -183,10 +183,10 @@ static const uint8_t static_packet[sizeof(Vlp16Translator::Packet)] =
 };
 
 
-class velodyne_driver : public ::testing::Test
+class VelodyneDriver : public ::testing::Test
 {
 public:
-  velodyne_driver()
+  VelodyneDriver()
   {
     (void)memcpy(&pkt, static_packet, sizeof(pkt));
     out.reserve(Vlp16Translator::POINT_BLOCK_CAPACITY);
@@ -195,10 +195,10 @@ public:
 protected:
   Vlp16Translator::Packet pkt;
   std::vector<autoware::common::types::PointXYZIF> out;
-};  // class velodyne_driver
+};  // class VelodyneDriver
 
 /// make sure instantiating the driver doesn't result in the process shitting the bed
-TEST_F(velodyne_driver, basic)
+TEST_F(VelodyneDriver, Basic)
 {
   const geometry_msgs::msg::Point32 offset_m;
   const geometry_msgs::msg::Point32 rotation_rad;
@@ -258,7 +258,7 @@ TEST_F(velodyne_driver, basic)
 }
 
 // figure out what the runtime of convert() is, locally
-TEST_F(velodyne_driver, benchmark)
+TEST_F(VelodyneDriver, Benchmark)
 {
   const Vlp16Translator::Config cfg{300.0F};
   autoware::drivers::velodyne_driver::Vlp16Translator driver(cfg);

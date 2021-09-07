@@ -28,7 +28,7 @@ using autoware::common::types::bool8_t;
 
 // The logic in the test is quite similar to the logic of azimuth table initialization logic however
 // indexing is not identical.
-TEST(VLS128DataTest, angle_lookup_test) {
+TEST(VLS128DataTest, AngleLookupTest) {
   constexpr auto rpm{300U};
   VLS128Data vls128_data{rpm};
   constexpr uint32_t num_blocks_in_sequence =
@@ -96,7 +96,7 @@ TEST(VLS128DataTest, angle_lookup_test) {
   EXPECT_EQ(vls128_data.seq_id(8U, 0U), 2U);
 }
 
-TEST(VLS128DataTest, seq_id_test) {
+TEST(VLS128DataTest, SeqIdTest) {
   constexpr auto rpm{300U};
   VLS128Data vls128_data{rpm};
   EXPECT_EQ(vls128_data.seq_id(0U, 12U), 0U);
@@ -105,7 +105,7 @@ TEST(VLS128DataTest, seq_id_test) {
   EXPECT_EQ(vls128_data.seq_id(8U, 0U), 2U);
 }
 
-TEST(VLS128DataTest, flag_test) {
+TEST(VLS128DataTest, FlagTest) {
   constexpr auto rpm{300U};
   VLS128Data vls128_data{rpm};
   const auto check_flag = [&vls128_data](const VLS128Data::BlockFlag & flag,

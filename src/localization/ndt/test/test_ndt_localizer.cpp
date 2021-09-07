@@ -76,7 +76,7 @@ class P2DLocalizerParameterTest : public P2DLocalizerTest,
   public ::testing::WithParamInterface<PoseParams> {};
 
 
-TEST_P(P2DLocalizerParameterTest, sanity_test) {
+TEST_P(P2DLocalizerParameterTest, SanityTest) {
   /////////////// Initialization
   const auto map_time = std::chrono::system_clock::now();
   const auto scan_time = std::chrono::system_clock::now() + std::chrono::seconds(10);
@@ -136,7 +136,7 @@ TEST_P(P2DLocalizerParameterTest, sanity_test) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-  sanity_test, P2DLocalizerParameterTest,
+  SanityTest, P2DLocalizerParameterTest,
   ::testing::Values(
     PoseParams{0.0, 0.65, 0.0, 0.0, 0.0, 0.0},
     PoseParams{0.7, 0.0, 0.7, 0.0, 0.0, 0.0},
@@ -146,7 +146,7 @@ INSTANTIATE_TEST_CASE_P(
   ), );
 
 
-TEST_F(P2DLocalizerParameterTest, delayed_scan) {
+TEST_F(P2DLocalizerParameterTest, DelayedScan) {
   P2DTestLocalizer::Transform transform_initial;
   P2DTestLocalizer localizer{
     m_localizer_config,
@@ -174,7 +174,7 @@ TEST_F(P2DLocalizerParameterTest, delayed_scan) {
   );
 }
 
-TEST_F(P2DLocalizerParameterTest, async_initial_guess) {
+TEST_F(P2DLocalizerParameterTest, AsyncInitialGuess) {
   P2DTestLocalizer::Transform transform_initial{};
   P2DTestLocalizer::PoseWithCovarianceStamped ros_pose_out{};
 

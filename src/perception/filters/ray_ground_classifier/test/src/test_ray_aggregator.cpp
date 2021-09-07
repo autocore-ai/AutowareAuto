@@ -54,7 +54,7 @@ void check_ray(const Ray & ray, const float32_t th)
 }
 
 // basic usage, stateful behavior
-TEST(ray_aggregator, basic) {
+TEST(RayAggregator, Basic) {
   const std::size_t min_ray_points = 10U;
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.1F, min_ray_points};
   RayAggregator agg{cfg};
@@ -91,7 +91,7 @@ TEST(ray_aggregator, basic) {
 }
 
 // excluded bounds rays, multiple rays, end of scan id
-TEST(ray_aggregator, multi_flipped)
+TEST(RayAggregator, MultiFlipped)
 {
   const std::size_t min_ray_points = 50U;
   RayAggregator::Config cfg{1.14159F, -1.14159F, 0.2F, min_ray_points};
@@ -153,7 +153,7 @@ TEST(ray_aggregator, multi_flipped)
 }
 
 // test various forms of templated insert, multiple times, (0, y)
-TEST(ray_aggregator, multi_insert)
+TEST(RayAggregator, MultiInsert)
 {
   std::array<PointXYZIF, 3U> pts;
   pts[0U].x = 0.0F; pts[0U].y = 1.0F;
@@ -223,7 +223,7 @@ TEST(ray_aggregator, multi_insert)
 }
 
 // bad cases: fill out MC/DC for error handling
-TEST(ray_aggregator, bad_cases)
+TEST(RayAggregator, BadCases)
 {
   const uint32_t capacity =
     static_cast<uint32_t>(autoware::common::types::POINT_BLOCK_CAPACITY);
@@ -256,7 +256,7 @@ TEST(ray_aggregator, bad_cases)
   EXPECT_THROW(agg.insert(&(all_points.back())), std::runtime_error);
 }
 
-TEST(ray_aggregator, segfault)
+TEST(RayAggregator, Segfault)
 {
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.005F, 512};
   RayAggregator agg{cfg};
@@ -287,7 +287,7 @@ TEST(ray_aggregator, segfault)
 // https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/issues/217
 // Make sure rays with "NOT_READY" state does not get included as ready rays when we reach end of
 // scan.
-TEST(ray_aggregator, reset_bug) {
+TEST(RayAggregator, ResetBug) {
   RayAggregator::Config cfg{-3.14159F, 3.14159F, 0.005F, 10};
   RayAggregator agg{cfg};
 

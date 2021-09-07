@@ -47,20 +47,20 @@ protected:
   }
 };  // class TestController
 
-class state_tracking : public ::testing::Test
+class StateTracking : public ::testing::Test
 {
 public:
-  state_tracking()
+  StateTracking()
   : controller_{BehaviorConfig{3.0F, std::chrono::milliseconds(100LL), ControlReference::SPATIAL}}
   {
   }
 
 protected:
   TestStateController controller_;
-};  // class behavior
+};  // class StateTracking
 
 // Should throw if no trajectory is present or if trajectory is of size 0
-TEST_F(state_tracking, no_trajectory)
+TEST_F(StateTracking, NoTrajectory)
 {
   EXPECT_THROW(controller_.get_current_state_spatial_index(), std::domain_error);
   EXPECT_THROW(controller_.get_current_state_temporal_index(), std::domain_error);
@@ -79,7 +79,7 @@ TEST_F(state_tracking, no_trajectory)
 }
 
 // Should throw if no trajectory is present or if trajectory is of size 0
-TEST_F(state_tracking, size_zero_trajectory)
+TEST_F(StateTracking, SizeZeroTrajectory)
 {
   EXPECT_THROW(controller_.get_current_state_spatial_index(), std::domain_error);
   EXPECT_THROW(controller_.get_current_state_temporal_index(), std::domain_error);
@@ -101,7 +101,7 @@ TEST_F(state_tracking, size_zero_trajectory)
 // subsequent calls should give the index of the point the current state is just after
 // So if points are at 0, 1, 2..., then 0, and 0.5 should result in reference indices of 0
 // and 1.0 and 1.5 should give 1
-TEST_F(state_tracking, basic)
+TEST_F(StateTracking, Basic)
 {
   const auto dt = std::chrono::milliseconds(100LL);
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 0.0F, 10.0F, dt);
@@ -128,7 +128,7 @@ TEST_F(state_tracking, basic)
 
 // Going past the end of the trajectory should keep you fixed at the end, even if
 // you go backwards
-TEST_F(state_tracking, past_end)
+TEST_F(StateTracking, PastEnd)
 {
   const auto dt = std::chrono::milliseconds(100LL);
   auto traj = constant_velocity_trajectory(0.0F, 0.0F, 3.14159F, 1.0F, dt);

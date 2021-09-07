@@ -28,7 +28,7 @@ using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
 // This test is just to make sure the alternative constructor doesn't die
-TEST(velodyne_node, constructor)
+TEST(VelodyneNode, Constructor)
 {
   rclcpp::init(0, nullptr);
 
@@ -70,11 +70,11 @@ struct VelodyneNodeTestParam
   bool8_t is_cloud;
 };  // VelodyneNodeTestParam
 
-class velodyne_node_integration : public ::testing::TestWithParam<VelodyneNodeTestParam>
+class VelodyneNodeIntegration : public ::testing::TestWithParam<VelodyneNodeTestParam>
 {
 };  // class velodyne_node_integration
 
-TEST_P(velodyne_node_integration, test)
+TEST_P(VelodyneNodeIntegration, Test)
 {
   rclcpp::init(0, nullptr);
 
@@ -151,13 +151,13 @@ TEST_P(velodyne_node_integration, test)
 }
 
 INSTANTIATE_TEST_CASE_P(
-  cloud,
-  velodyne_node_integration,
+  Cloud,
+  VelodyneNodeIntegration,
   // cppcheck-suppress syntaxError
   ::testing::Values(VelodyneNodeTestParam{55000U, 30000U, 100.0F, true}), );
 
 INSTANTIATE_TEST_CASE_P(
-  half_cloud,
-  velodyne_node_integration,
+  HalfCloud,
+  VelodyneNodeIntegration,
   // cppcheck-suppress syntaxError
   ::testing::Values(VelodyneNodeTestParam{10700U, 10700U, 50.0F, true}), );

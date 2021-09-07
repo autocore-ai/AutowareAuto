@@ -22,7 +22,7 @@
 using autoware::drivers::vehicle_interface::DbwState;
 using autoware::drivers::vehicle_interface::DbwStateMachine;
 
-TEST(test_dbw_state_machine, state_machine_disable_from_enable_requested) {
+TEST(TestDbwStateMachine, StateMachineDisableFromEnableRequested) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   // Should start in DISABLED
@@ -52,7 +52,7 @@ TEST(test_dbw_state_machine, state_machine_disable_from_enable_requested) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_dbw_state_machine, state_machine_disable_from_enable_sent) {
+TEST(TestDbwStateMachine, StateMachineDisableFromEnableSent) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   // Request has been made, should be in ENABLE_REQUESTED
@@ -92,7 +92,7 @@ TEST(test_dbw_state_machine, state_machine_disable_from_enable_sent) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_dbw_state_machine, state_machine_disable_from_enabled_user) {
+TEST(TestDbwStateMachine, StateMachineDisableFromEnabledUser) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);
@@ -114,7 +114,7 @@ TEST(test_dbw_state_machine, state_machine_disable_from_enabled_user) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_dbw_state_machine, state_machine_disable_from_enabled_dbw) {
+TEST(TestDbwStateMachine, StateMachineDisableFromEnabledDbw) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);
@@ -136,7 +136,7 @@ TEST(test_dbw_state_machine, state_machine_disable_from_enabled_dbw) {
   ASSERT_EQ(dbw_state->get_state(), DbwState::DISABLED);
 }
 
-TEST(test_dbw_state_machine, state_machine_stay_enabled) {
+TEST(TestDbwStateMachine, StateMachineStayEnabled) {
   const auto dbw_state = std::make_unique<DbwStateMachine>(3);
 
   dbw_state->user_request(true);

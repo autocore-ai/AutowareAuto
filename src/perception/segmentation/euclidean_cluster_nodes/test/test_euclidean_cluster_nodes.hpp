@@ -40,7 +40,7 @@ protected:
   }
 };
 
-TEST_F(EuclideanClusterNodesTest, instantiate)
+TEST_F(EuclideanClusterNodesTest, Instantiate)
 {
   rclcpp::NodeOptions node_options;
 
@@ -124,7 +124,7 @@ TEST_F(EuclideanClusterNodesTest, instantiate)
 }
 
 
-TEST_F(EuclideanClusterNodesTest, instantiate_downsample)
+TEST_F(EuclideanClusterNodesTest, InstantiateDownsample)
 {
   rclcpp::NodeOptions node_options;
 

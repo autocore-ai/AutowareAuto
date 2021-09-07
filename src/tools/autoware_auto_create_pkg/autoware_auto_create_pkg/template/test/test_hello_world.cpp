@@ -17,6 +17,6 @@
 #include "gtest/gtest.h"
 #include "hello_world/hello_world.hpp"
 
-TEST(test_hello_world, test_hello) {
+TEST(TestHelloWorld, TestHello) {
   EXPECT_EQ(autoware::hello_world::print_hello(), 0);
 }

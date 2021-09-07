@@ -21,7 +21,7 @@
 template<typename Container, typename RandomIt = typename Container::iterator>
 using QuickSorter = ::autoware::common::algorithm::QuickSorter<Container, RandomIt>;
 
-TEST(quick_sort_iterative, empty) {
+TEST(QuickSortIterative, Empty) {
   ::std::vector<int32_t> vector;
   QuickSorter<::std::vector<int32_t>> sorter;
   sorter.sort(vector.begin(), vector.end());
@@ -29,7 +29,7 @@ TEST(quick_sort_iterative, empty) {
   ASSERT_EQ(sorter.capacity(), 0UL);
 }
 
-TEST(quick_sort_iterative, single_elem) {
+TEST(QuickSortIterative, SingleElem) {
   ::std::vector<int32_t> vector = {42};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 1UL);
@@ -38,7 +38,7 @@ TEST(quick_sort_iterative, single_elem) {
   ASSERT_EQ(sorter.capacity(), 1UL);
 }
 
-TEST(quick_sort_iterative, two_elems) {
+TEST(QuickSortIterative, TwoElems) {
   ::std::vector<int32_t> vector = {42, 43};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 2UL);
@@ -47,7 +47,7 @@ TEST(quick_sort_iterative, two_elems) {
   ASSERT_EQ(sorter.capacity(), 2UL);
 }
 
-TEST(quick_sort_iterative, already_sorted) {
+TEST(QuickSortIterative, AlreadySorted) {
   ::std::vector<int32_t> vector = {1, 2, 3, 4, 5, 6};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);
@@ -56,7 +56,7 @@ TEST(quick_sort_iterative, already_sorted) {
   ASSERT_EQ(sorter.capacity(), 6UL);
 }
 
-TEST(quick_sort_iterative, descending) {
+TEST(QuickSortIterative, Descending) {
   ::std::vector<int32_t> vector = {6, 5, 4, 3, 2, 1};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);
@@ -65,7 +65,7 @@ TEST(quick_sort_iterative, descending) {
   ASSERT_EQ(sorter.capacity(), 6UL);
 }
 
-TEST(quick_sort_iterative, random) {
+TEST(QuickSortIterative, Random) {
   ::std::vector<int32_t> vector = {3, 5, 1, 6, 4, 2};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);
@@ -74,7 +74,7 @@ TEST(quick_sort_iterative, random) {
   ASSERT_EQ(sorter.capacity(), 6UL);
 }
 
-TEST(quick_sort_iterative, sub_range_begin) {
+TEST(QuickSortIterative, SubRangeBegin) {
   ::std::vector<int32_t> vector = {3, 5, 1, 6, 4, 2};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);
@@ -83,7 +83,7 @@ TEST(quick_sort_iterative, sub_range_begin) {
   ASSERT_EQ(sorter.capacity(), 6UL);
 }
 
-TEST(quick_sort_iterative, sub_range_end) {
+TEST(QuickSortIterative, SubRangeEnd) {
   ::std::vector<int32_t> vector = {3, 5, 1, 6, 4, 2};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);
@@ -92,7 +92,7 @@ TEST(quick_sort_iterative, sub_range_end) {
   ASSERT_EQ(sorter.capacity(), 6UL);
 }
 
-TEST(quick_sort_iterative, sub_range) {
+TEST(QuickSortIterative, SubRange) {
   ::std::vector<int32_t> vector = {3, 5, 1, 6, 4, 2};
   QuickSorter<::std::vector<int32_t>> sorter(vector.capacity());
   ASSERT_EQ(sorter.capacity(), 6UL);

@@ -33,7 +33,7 @@ using VoxelGridOutlierFilter =
  *  x  |  x
  *     |
  */
-TEST(VoxelGridOutlierFilterTest, test_four_equispaced_points) {
+TEST(VoxelGridOutlierFilterTest, TestFourEquispacedPoints) {
   auto filter =
     std::make_shared<VoxelGridOutlierFilter>(1.0f, 1.0f, 1.0f, static_cast<uint32_t>(1));
   std::vector<pcl::PointXYZ> points = {
@@ -62,7 +62,7 @@ TEST(VoxelGridOutlierFilterTest, test_four_equispaced_points) {
  *  x  |  x         |
  *     |            |
  */
-TEST(VoxelGridOutlierFilterTest, test_two_close_points) {
+TEST(VoxelGridOutlierFilterTest, TestTwoClosePoints) {
   auto filter =
     std::make_shared<VoxelGridOutlierFilter>(1.0f, 1.0f, 1.0f, static_cast<uint32_t>(2));
   std::vector<pcl::PointXYZ> points = {
@@ -94,7 +94,7 @@ TEST(VoxelGridOutlierFilterTest, test_two_close_points) {
  *      |              |
  * ----------- -> -----------
  */
-TEST(VoxelGridOutlierFilterTest, test_line) {
+TEST(VoxelGridOutlierFilterTest, TestLine) {
   auto filter =
     std::make_shared<VoxelGridOutlierFilter>(1.0f, 1.0f, 1.0f, static_cast<uint32_t>(2));
   std::vector<pcl::PointXYZ> points = {

@@ -94,7 +94,7 @@ Detection2DArray make_sample_detections()
 }
 
 // cppcheck-suppress syntaxError
-TEST_F(GroundTruth2dDetectionsTest, receive_detections)
+TEST_F(GroundTruth2dDetectionsTest, ReceiveDetections)
 {
   rclcpp::NodeOptions options{};
   const auto node = std::make_shared<GroundTruthDetectionsNode>(options);

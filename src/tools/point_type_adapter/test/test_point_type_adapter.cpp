@@ -49,7 +49,7 @@ struct PointSvl
   }
 };
 
-TEST(test_point_type_adapter, test_cloud_converter) {
+TEST(TestPointTypeAdapter, TestCloudConverter) {
   using PointXYZI = autoware::common::types::PointXYZI;
   using sensor_msgs::msg::PointCloud2;
   PointCloud2::SharedPtr cloud_svl_ptr = std::make_shared<PointCloud2>();

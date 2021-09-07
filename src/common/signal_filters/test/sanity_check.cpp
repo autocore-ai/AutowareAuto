@@ -44,7 +44,7 @@ struct TypeParams
 };
 
 template<typename T>
-class typed_checks : public ::testing::Test
+class TypedChecks : public ::testing::Test
 {
 };
 
@@ -57,9 +57,9 @@ using TestTypes = ::testing::Types<
   TypeParams<float64_t, std::chrono::steady_clock>
 >;
 // cppcheck-suppress syntaxError
-TYPED_TEST_CASE(typed_checks, TestTypes, );
+TYPED_TEST_CASE(TypedChecks, TestTypes, );
 
-TYPED_TEST(typed_checks, empty_factory)
+TYPED_TEST(TypedChecks, EmptyFactory)
 {
   using Clock = typename TypeParam::Clock;
   using Float = typename TypeParam::Float;
@@ -78,7 +78,7 @@ struct BasicParams
 };
 
 template<typename T>
-class filter_checks : public ::testing::Test
+class FilterChecks : public ::testing::Test
 {
 protected:
   template<typename ClockT, typename = std::enable_if_t<!std::is_same<ClockT, DummyClock>::value>>
@@ -101,16 +101,16 @@ using BasicTypes = ::testing::Types<
   BasicParams<float64_t, std::chrono::system_clock, FilterType::LowPassFilter>,
   BasicParams<float64_t, std::chrono::steady_clock, FilterType::LowPassFilter>
 >;
-TYPED_TEST_CASE(filter_checks, BasicTypes, );
+TYPED_TEST_CASE(FilterChecks, BasicTypes, );
 
-TYPED_TEST(filter_checks, bad_factory)
+TYPED_TEST(FilterChecks, BadFactory)
 {
   using Clock = typename TypeParam::Clock;
   using Float = typename TypeParam::Float;
   EXPECT_THROW((FilterFactory::create<Float, Clock>(TypeParam::Type, -1.0F)), std::domain_error);
 }
 
-TYPED_TEST(filter_checks, bad_input)
+TYPED_TEST(FilterChecks, BadInput)
 {
   using Clock = typename TypeParam::Clock;
   using Float = typename TypeParam::Float;
@@ -250,7 +250,7 @@ struct SanityCheckParam
 };
 
 template<typename T>
-class sanity_check : public ::testing::Test
+class SanityCheck : public ::testing::Test
 {
 };
 
@@ -268,9 +268,9 @@ using SanityCheckTypes = ::testing::Types<
   SanityCheckParam<double, std::chrono::system_clock, FilterType::LowPassFilter, 1, 100, 1>,
   SanityCheckParam<double, std::chrono::steady_clock, FilterType::LowPassFilter, 1, 100, 1>
 >;
-TYPED_TEST_CASE(sanity_check, SanityCheckTypes, );
+TYPED_TEST_CASE(SanityCheck, SanityCheckTypes, );
 
-TYPED_TEST(sanity_check, basic)
+TYPED_TEST(SanityCheck, Basic)
 {
   using Real = typename TypeParam::Float;
   using Clock = typename TypeParam::Clock;

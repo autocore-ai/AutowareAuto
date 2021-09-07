@@ -25,7 +25,7 @@
 #include "test_vi_node.hpp"
 
 // Just make sure error callbacks hit
-TEST_F(sanity_checks, error_callbacks)
+TEST_F(SanityChecks, ErrorCallbacks)
 {
   const auto raw_topic = "raw_command";
 

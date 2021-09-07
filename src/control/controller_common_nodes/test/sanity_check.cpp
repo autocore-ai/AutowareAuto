@@ -41,7 +41,7 @@ using motion::control::controller_common_nodes::State;
 using motion::control::controller_common_nodes::Diagnostic;
 using motion::control::controller_common_nodes::ControllerPtr;
 
-class sanity_check : public ::testing::Test
+class SanityCheck : public ::testing::Test
 {
 protected:
   void SetUp()
@@ -52,7 +52,7 @@ protected:
   {
     (void)rclcpp::shutdown();
   }
-};  // sanity_check
+};  // SanityCheck
 
 constexpr auto cmd_topic = "test_controller_base_node_cmd";
 constexpr auto state_topic = "test_controller_base_node_state";
@@ -178,7 +178,7 @@ public:
   }
 };  // class TestControllerNode
 
-TEST_F(sanity_check, basic)
+TEST_F(SanityCheck, Basic)
 {
   const auto total_msgs = 10U;
   constexpr auto TOL = 1.0E-3F;

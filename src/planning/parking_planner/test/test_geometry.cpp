@@ -37,7 +37,7 @@ using TrajectoryStep = autoware::motion::planning::parking_planner::TrajectorySt
 using autoware::motion::planning::parking_planner::HORIZON_LENGTH;
 
 
-TEST(geometry, point_arithmetic)
+TEST(Geometry, PointArithmetic)
 {
   Point2D p1(0, 2);
   Point2D p2(3, 0);
@@ -48,7 +48,7 @@ TEST(geometry, point_arithmetic)
   EXPECT_EQ(p1 / 2, Point2D(0, 1));  // noice
 }
 
-TEST(geometry, polyhedron_basics_1)
+TEST(Geometry, PolyhedronBasics1)
 {
   Point2D p1(0, 0);
   Point2D p2(1, 0);
@@ -66,7 +66,7 @@ TEST(geometry, polyhedron_basics_1)
   EXPECT_FALSE(P.contains_point(Point2D(-1, -1) ) );
 }
 
-TEST(geometry, polyhedron_basics_2)
+TEST(Geometry, PolyhedronBasics2)
 {
   Point2D p1(0, 0);
   Point2D p2(2, 0);
@@ -84,7 +84,7 @@ TEST(geometry, polyhedron_basics_2)
   EXPECT_FALSE(P.contains_point(Point2D(-1, -1) ) );
 }
 
-TEST(geometry, polyhedron_basics_3)
+TEST(Geometry, PolyhedronBasics3)
 {
   Point2D p1(-1, -1);
   Point2D p2(2, 2);
@@ -102,7 +102,7 @@ TEST(geometry, polyhedron_basics_3)
   EXPECT_TRUE(P.contains_point(Point2D(1, 1) ) );
 }
 
-TEST(geometry, polyhedron_intersection_1)
+TEST(Geometry, PolyhedronIntersection1)
 {
   const Polytope2D p1({{1.0, 1.0}, {-1.0, 1.0}, {-1.0, -1.0}, {1.0, -1.0}});
   const Polytope2D p2({{5.0, 5.0}, {3.0, 5.0}, {3.0, 3.0}, {5.0, 3.0}});
@@ -110,7 +110,7 @@ TEST(geometry, polyhedron_intersection_1)
   EXPECT_FALSE(p1.intersects_with(p2));
 }
 
-TEST(geometry, polyhedron_intersection_2)
+TEST(Geometry, PolyhedronIntersection2)
 {
   const Polytope2D p1({{1.0, 1.0}, {-1.0, 1.0}, {-1.0, -1.0}, {1.0, -1.0}});
   const Polytope2D p2({{2.0, 1.0}, {0.0, 1.0}, {0.0, -1.0}, {2.0, -1.0}});

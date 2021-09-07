@@ -103,7 +103,7 @@ public:
   std::shared_ptr<autoware::lane_planner::LanePlanner> m_planner_ptr;
 };
 
-TEST(TestFunction, distance2d)
+TEST(TestFunction, Distance2d)
 {
   TrajectoryPoint pt1, pt2;
   pt1.x = 3.0F;
@@ -118,7 +118,7 @@ TEST(TestFunction, distance2d)
   ASSERT_FLOAT_EQ(autoware::lane_planner::distance2d(pt1, pt2), 5.0F);
 }
 
-TEST(TestFunction, curvature)
+TEST(TestFunction, Curvature)
 {
   TrajectoryPoint pt1, pt2, pt3;
   pt1.x = 1.0F;
@@ -144,7 +144,7 @@ TEST(TestFunction, curvature)
   ASSERT_FLOAT_EQ(autoware::lane_planner::calculate_curvature(pt1, pt2, pt3), 0.5F);
 }
 
-TEST_F(LanePlannerTest, plan_simple_trajectory)
+TEST_F(LanePlannerTest, PlanSimpleTrajectory)
 {
   // create map
   const auto lane_id = lanelet::utils::getId();
@@ -172,7 +172,7 @@ TEST_F(LanePlannerTest, plan_simple_trajectory)
   ASSERT_DOUBLE_EQ(distance, 0.0);
 }
 
-TEST_F(LanePlannerTest, plan_invalid_route)
+TEST_F(LanePlannerTest, PlanInvalidRoute)
 {
   // create map
   const auto lane_id = lanelet::utils::getId();

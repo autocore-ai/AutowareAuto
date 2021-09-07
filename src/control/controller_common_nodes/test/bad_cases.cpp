@@ -161,7 +161,7 @@ public:
   }
 };  // class BadControllerNode
 
-class bad_cases : public ::testing::Test
+class BadCases : public ::testing::Test
 {
 protected:
   // Ugly global because lambdas can only convert to function pointers if they dont capture
@@ -194,7 +194,7 @@ protected:
     ss->str(std::string{});
     ss->clear();
 
-    rcutils_logging_set_output_handler(bad_cases::fake_log);
+    rcutils_logging_set_output_handler(BadCases::fake_log);
   }
   void TearDown() override
   {
@@ -207,11 +207,11 @@ protected:
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_{};
   std::shared_ptr<BadListener> sub_{};
   std::shared_ptr<BadControllerNode> ctrl_{};
-};  // bad_cases
+};  // BadCases
 
-std::stringstream * bad_cases::ss = new std::stringstream;
+std::stringstream * BadCases::ss = new std::stringstream;
 
-TEST_F(bad_cases, empty_trajectory_frame)
+TEST_F(BadCases, EmptyTrajectoryFrame)
 {
   // Publish bad trajectory
   Trajectory traj{};
@@ -253,7 +253,7 @@ TEST_F(bad_cases, empty_trajectory_frame)
   // EXPECT_EQ(last_line, "try_compute: empty trajectory frame, possibly uninitialized, deferring");
 }
 
-TEST_F(bad_cases, empty_trajectory)
+TEST_F(BadCases, EmptyTrajectory)
 {
   // Should result in only stop command
   // Publish bad trajectory
@@ -296,7 +296,7 @@ TEST_F(bad_cases, empty_trajectory)
   EXPECT_EQ(last_line, "ControllerBase: Zero length trajectory is not expected");
 }
 
-TEST_F(bad_cases, empty_state_frame)
+TEST_F(BadCases, EmptyStateFrame)
 {
   // Publish trajectory
   Trajectory traj{};

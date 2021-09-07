@@ -22,7 +22,7 @@ using autoware::common::types::float32_t;
 
 constexpr float32_t FAST_ATAN2_MAX_ERROR = 0.00469f;
 
-TEST(fast_atan2, corner_cases) {
+TEST(FastAtan2, CornerCases) {
   ASSERT_TRUE(
     fabsf(
       autoware::common::lidar_utils::fast_atan2(0.0f, 0.0f) -
@@ -45,7 +45,7 @@ TEST(fast_atan2, corner_cases) {
       atan2f(0.0f, -1.0f)) < FAST_ATAN2_MAX_ERROR);
 }
 
-TEST(fast_atan2, max_error) {
+TEST(FastAtan2, MaxError) {
   float32_t max_error = 0;
   for (float32_t f = 0; f < autoware::common::types::TAU; f += 0.00001f) {
     float32_t x = std::cos(f);

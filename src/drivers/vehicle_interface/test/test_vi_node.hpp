@@ -246,7 +246,7 @@ private:
   bool8_t m_read_timeout_handler_called{false};
 };  // class TestVINode
 
-class sanity_checks : public ::testing::Test
+class SanityChecks : public ::testing::Test
 {
 protected:
   void SetUp() override

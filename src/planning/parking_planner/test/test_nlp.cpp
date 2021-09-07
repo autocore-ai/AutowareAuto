@@ -55,7 +55,7 @@ static Trajectory create_dummy_initial_guess()
 
   return initial_guess;
 }
-TEST(bicycle_model, simple_solve) {
+TEST(BicycleModel, SimpleSolve) {
   const auto parameters = BicycleModelParameters(1.5, 1.5, 2, 0.5, 0.5);
   const NLPCostWeights weights(1.0, 1.0, 0.0);
   const VehicleState lower_state_bounds(-100, -100, -10, -2 * 3.14156, -0.52);

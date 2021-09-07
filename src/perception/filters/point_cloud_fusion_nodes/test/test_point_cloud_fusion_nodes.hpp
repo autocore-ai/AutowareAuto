@@ -137,7 +137,7 @@ builtin_interfaces::msg::Time to_msg_time(
   return result;
 }
 
-TEST_F(TestPCF, test_basic_fusion) {
+TEST_F(TestPCF, TestBasicFusion) {
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("number_of_sources", 2);
   params.emplace_back("output_frame_id", "base_link");

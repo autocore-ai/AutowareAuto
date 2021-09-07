@@ -24,7 +24,7 @@ In `my_cool_pkg/test`, create the `gtest` code file `test_my_cool_pkg.cpp`:
 ```{cpp}
 #include "gtest/gtest.h"
 #include "my_cool_pkg/my_cool_pkg.hpp"
-TEST(test_my_cool_pkg, test_hello) {
+TEST(TestMyCoolPkg, TestHello) {
   EXPECT_EQ(my_cool_pkg::print_hello(), 0);
 }
 ```
@@ -60,6 +60,8 @@ This automatically links the test with the default main function provided by `gt
 To register a new `gtest` item, wrap the test code with the macro `TEST ()`. `TEST ()`
 is a predefined macro that helps generate the final test code, and also registers
 a `gtest` item to be available for execution.
+Test case name should be in CamelCase.
+This is as gtest inserts an underscore between the fixture name and the class case name when creating the test executable.
 
 `gtest/gtest.h` also contains predefined macros of `gtest` like `ASSERT_TRUE(condition)`,
 `ASSERT_FALSE(condition)`, `ASSERT_EQ(val1,val2)`, `ASSERT_STREQ(str1,str2)`,

@@ -82,7 +82,7 @@ using autoware::common::state_estimation::PredictionEvent;
 using autoware::common::state_estimation::ResetEvent;
 
 /// @test Test that empty history can be created.
-TEST(HistoryTest, create_empty) {
+TEST(HistoryTest, CreateEmpty) {
   using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, 10, 100};
@@ -90,7 +90,7 @@ TEST(HistoryTest, create_empty) {
 }
 
 /// @test A basic test that history can be initialized with a ResetEvent.
-TEST(HistoryTest, add_reset_event) {
+TEST(HistoryTest, AddResetEvent) {
   using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
   auto filter = std::make_unique<MockFilter>();
   HistoryT history{*filter, 10, 100};
@@ -115,7 +115,7 @@ TEST(HistoryTest, add_reset_event) {
 }
 
 /// @test Test that measurements can be added to the history correctly.
-TEST(HistoryTest, add_measurement_events) {
+TEST(HistoryTest, AddMeasurementEvents) {
   using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
 
   const FilterState reset_state{FilterState::Vector{23.0F}};
@@ -191,7 +191,7 @@ TEST(HistoryTest, add_measurement_events) {
 }
 
 /// @test Test that history can be overwritten when more events come than it can hold.
-TEST(HistoryTest, exhaust_history) {
+TEST(HistoryTest, ExhaustHistory) {
   using HistoryT = History<MockFilter, PredictionEvent, ResetEvent<MockFilter>, Measurement>;
 
   const auto history_size = 3U;

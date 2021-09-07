@@ -35,7 +35,7 @@ using NewtonPolynomialTestParam1D = Polynomial1dParam<OptimizationOptions, Fixed
 class NewtonOptimizationParamTest
   : public ::testing::TestWithParam<NewtonPolynomialTestParam1D> {};
 
-TEST_P(NewtonOptimizationParamTest, newton_optimization_validation) {
+TEST_P(NewtonOptimizationParamTest, NewtonOptimizationValidation) {
   auto problem = GetParam().problem;
   auto objective = problem.get_objective();
   const auto x0 = GetParam().x0;
@@ -57,7 +57,7 @@ TEST_P(NewtonOptimizationParamTest, newton_optimization_validation) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-  test_termination,
+  TestTermination,
   NewtonOptimizationParamTest,
   ::testing::Values(
     NewtonPolynomialTestParam1D{
@@ -90,7 +90,7 @@ INSTANTIATE_TEST_CASE_P(
 // the function tolerance which depends on the step size. Parameter tolerance is useless for
 // fixed step search. Hence gradient tolerance is used for different cases.
 INSTANTIATE_TEST_CASE_P(
-  test_different_problems,
+  TestDifferentProblems,
   NewtonOptimizationParamTest,
   ::testing::Values(
     // N = 2
@@ -152,7 +152,7 @@ constexpr auto max = std::numeric_limits<float64_t>::max();
 constexpr auto qnan = std::numeric_limits<float64_t>::quiet_NaN();
 
 INSTANTIATE_TEST_CASE_P(
-  test_numeric_failure,
+  TestNumericFailure,
   NewtonOptimizationParamTest,
   ::testing::Values(
     NewtonPolynomialTestParam1D{
@@ -200,7 +200,7 @@ INSTANTIATE_TEST_CASE_P(
   ),
 );
 
-TEST(TestFixedLineSearch, fixed_line_search_validation) {
+TEST(TestFixedLineSearch, FixedLineSearchValidation) {
   // set up varaibles
   constexpr auto step = 0.01F;
   Polynomial1DOptimizationProblem dummy_optimization_problem{-2.0, 16, 10.0};
