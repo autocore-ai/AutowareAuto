@@ -1,4 +1,4 @@
-export ADE_DOCKER_RUN_ARGS="--cap-add=SYS_PTRACE --net=host --privileged --add-host ade:127.0.0.1 -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp"
+export ADE_DOCKER_RUN_ARGS="--cap-add=SYS_PTRACE --net=host --privileged --add-host ade:127.0.0.1 -v ${HOME}/.Xauthority:${HOME}/.Xauthority:ro -e XAUTHORITY=${HOME}/.Xauthority -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp"
 export ADE_GITLAB=gitlab.com
 export ADE_REGISTRY=registry.gitlab.com
 export ADE_IMAGES="

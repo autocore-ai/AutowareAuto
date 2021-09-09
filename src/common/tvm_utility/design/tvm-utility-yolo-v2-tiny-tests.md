@@ -41,8 +41,6 @@ $ colcon test --packages-select tvm_utility
 
 Vulkan is supported by default by the tvm_vendor package.
 
-In order to use a GPU backend with ade, Autoware.Auto provides a `.aderc-gpu` configuration file.
-
 ## Troubleshooting
 
 To work around a bug for the nvidia+mesa libraries combination in the case of Vulkan, X forwading

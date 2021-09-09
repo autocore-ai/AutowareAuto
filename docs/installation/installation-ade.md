@@ -211,14 +211,6 @@ This usually indicates that a new NVIDIA graphics driver has been installed (usu
 
 Restart your system after installing the new NVIDIA driver.
 
-## Error - "Unable to create the rendering window after 100 tries" when launching GUI application
-
-If you have an NVIDIA GPU and are using the proprietary NVIDIA GPU driver, you may encounter this error when using the default `.aderc` or `.aderc-arm64` files.
-This is due to a decision that was made regarding support for users with and without NVIDIA GPUs and those with and without the proprietary NVIDIA driver.
-For more information you can review the discussion that lead to this decision in [this issue](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/502).
-
-To resolve this issue, simply remove the line `export ADE_DISABLE_NVIDIA_DOCKER=true` from the `.aderc` file that you are using and restart `ade` with:
-
 ```{bash}
 ade$ exit
 $ ade stop
