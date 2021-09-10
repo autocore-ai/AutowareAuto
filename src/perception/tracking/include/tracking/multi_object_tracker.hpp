@@ -21,28 +21,30 @@
 #ifndef TRACKING__MULTI_OBJECT_TRACKER_HPP_
 #define TRACKING__MULTI_OBJECT_TRACKER_HPP_
 
+#include <tracking/detected_object_associator.hpp>
+#include <tracking/greedy_roi_associator.hpp>
+#include <tracking/track_creator.hpp>
+#include <tracking/tracked_object.hpp>
+#include <tracking/visibility_control.hpp>
+
+#include <autoware_auto_msgs/msg/detected_object.hpp>
+#include <autoware_auto_msgs/msg/tracked_object.hpp>
+#include <autoware_auto_msgs/msg/tracked_objects.hpp>
+#include <common/types.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <motion_model/linear_motion_model.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <state_estimation/kalman_filter/kalman_filter.hpp>
+#include <state_estimation/noise_model/wiener_noise.hpp>
+#include <state_vector/common_states.hpp>
+#include <tf2/buffer_core.h>
+
 #include <chrono>
 #include <cstddef>
 #include <limits>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "autoware_auto_msgs/msg/detected_object.hpp"
-#include "autoware_auto_msgs/msg/tracked_object.hpp"
-#include "autoware_auto_msgs/msg/tracked_objects.hpp"
-#include "common/types.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "nav_msgs/msg/odometry.hpp"
-#include "tracking/detected_object_associator.hpp"
-#include "tracking/greedy_roi_associator.hpp"
-#include "tracking/track_creator.hpp"
-#include "tracking/tracked_object.hpp"
-#include "state_vector/common_states.hpp"
-#include "state_estimation/kalman_filter/kalman_filter.hpp"
-#include "motion_model/linear_motion_model.hpp"
-#include "state_estimation/noise_model/wiener_noise.hpp"
-#include "tracking/visibility_control.hpp"
 
 
 namespace autoware
@@ -101,7 +103,6 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
   std::string frame = "map";  // This default probably does not need to be changed.
 };
 
-
 /// \brief A class for multi-object tracking.
 class TRACKING_PUBLIC MultiObjectTracker
 {
@@ -112,7 +113,8 @@ private:
 
 public:
   /// Constructor
-  explicit MultiObjectTracker(MultiObjectTrackerOptions options);
+  explicit MultiObjectTracker(
+    MultiObjectTrackerOptions options, const tf2::BufferCore & tf2_buffer);
 
   /// \brief Update the tracks with the specified detections and return the tracks at the current
   /// timestamp.
@@ -126,10 +128,7 @@ public:
 
   /// \brief Update the tracks with the specified detections
   /// \param[in] rois An array of vision detections.
-  /// \param[in] tf_camera_from_track A transform from the track frame to the camera frame.
-  void update(
-    const ClassifiedRoiArrayMsg & rois,
-    const geometry_msgs::msg::Transform & tf_camera_from_track);
+  void update(const ClassifiedRoiArrayMsg & rois);
 
 private:
   /// Check that the input data is valid.
@@ -146,7 +145,7 @@ private:
   TrackedObjectsMsg convert_to_msg(const builtin_interfaces::msg::Time & stamp) const;
 
   /// The tracked objects, also called "tracks".
-  std::vector<TrackedObject> m_objects;
+  TrackedObjects m_tracks;
 
   /// Timestamp of the last update.
   std::chrono::system_clock::time_point m_last_update;

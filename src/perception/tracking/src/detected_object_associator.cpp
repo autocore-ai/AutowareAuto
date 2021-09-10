@@ -50,20 +50,24 @@ DetectedObjectAssociator::DetectedObjectAssociator(const DataAssociationConfig &
 
 AssociatorResult DetectedObjectAssociator::assign(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
-  const std::vector<TrackedObject> & tracks)
+  const TrackedObjects & tracks)
 {
+  if (tracks.frame_id != detections.header.frame_id) {
+    throw std::runtime_error(
+            "Cannot associate tracks with detections - they are in different frames");
+  }
   reset();
   m_num_detections = detections.objects.size();
-  m_num_tracks = tracks.size();
+  m_num_tracks = tracks.objects.size();
   m_are_tracks_rows = (m_num_tracks <= m_num_detections);
   if (m_are_tracks_rows) {
     m_assigner.set_size(
-      static_cast<assigner_idx_t>(tracks.size()),
+      static_cast<assigner_idx_t>(tracks.objects.size()),
       static_cast<assigner_idx_t>(detections.objects.size()));
   } else {
     m_assigner.set_size(
       static_cast<assigner_idx_t>(detections.objects.size()),
-      static_cast<assigner_idx_t>(tracks.size()));
+      static_cast<assigner_idx_t>(tracks.objects.size()));
   }
   compute_weights(detections, tracks);
   // TODO(gowtham.ranganathan): Revisit this after #979 since till then assigner will always
@@ -85,11 +89,11 @@ void DetectedObjectAssociator::reset()
 
 void DetectedObjectAssociator::compute_weights(
   const autoware_auto_msgs::msg::DetectedObjects & detections,
-  const std::vector<TrackedObject> & tracks)
+  const TrackedObjects & tracks)
 {
   for (size_t det_idx = 0U; det_idx < detections.objects.size(); ++det_idx) {
-    for (size_t track_idx = 0U; track_idx < tracks.size(); ++track_idx) {
-      const auto & track = tracks[track_idx];
+    for (size_t track_idx = 0U; track_idx < tracks.objects.size(); ++track_idx) {
+      const auto & track = tracks.objects[track_idx];
       const auto & detection = detections.objects[det_idx];
 
       try {

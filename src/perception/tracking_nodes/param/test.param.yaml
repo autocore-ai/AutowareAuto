@@ -35,16 +35,5 @@
         ox: 960.0
         oy: 540.0
         skew: 0.0
-      # Transform to move the lidar clusters from base_link to camera frame for association
-      tf_camera_from_base_link:
-        translation:
-          x: 1.7
-          y: 0.2
-          z: 0.0
-        rotation:
-          x: 0.0
-          y: 0.0
-          z: 0.0
-          w: 1.0
       # Max acceptable timestamp difference between lidar cluster and vision RoI msg
       timestamp_diff_ms: 20

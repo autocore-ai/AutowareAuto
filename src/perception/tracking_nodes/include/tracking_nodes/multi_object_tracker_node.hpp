@@ -83,9 +83,11 @@ public:
   struct ProcessVision;
 
 private:
-  geometry_msgs::msg::Transform compute_tf_camera_from_odom(const nav_msgs::msg::Odometry & odom);
-
   bool8_t m_use_vision = true;
+
+  tf2::BufferCore m_tf_buffer;
+  tf2_ros::TransformListener m_tf_listener;
+
   /// The actual tracker implementation.
   autoware::perception::tracking::MultiObjectTracker m_tracker;
   size_t m_history_depth = 0U;
@@ -96,15 +98,11 @@ private:
   std::experimental::optional<rclcpp::Subscription<ClassifiedRoiArray>::SharedPtr>
   m_maybe_vision_sub;
 
-  std::experimental::optional<tf2::Transform> m_maybe_tf_camera_from_base_link;
-
   mpark::variant<PoseSubscriber, OdomSubscriber> m_pose_or_odom_sub;
   mpark::variant<std::shared_ptr<OdomCache>, std::shared_ptr<PoseCache>> m_pose_or_odom_cache;
 
   /// Publisher for tracked objects.
   rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_pub;
-  tf2::BufferCore m_tf_buffer;
-  tf2_ros::TransformListener m_tf_listener;
 };
 
 /// Struct to call the process function with correct arguments for the different types of cache

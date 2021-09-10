@@ -15,10 +15,13 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <common/types.hpp>
+#include <time_utils/time_utils.hpp>
 #include <tracking/detected_object_associator.hpp>
 #include <tracking/greedy_roi_associator.hpp>
+
 #include <algorithm>
 #include <unordered_set>
+#include <string>
 #include <vector>
 
 namespace autoware
@@ -28,6 +31,8 @@ namespace perception
 namespace tracking
 {
 using autoware::common::types::float32_t;
+
+const std::chrono::milliseconds GreedyRoiAssociator::kTfTooOld{100};
 
 namespace
 {
@@ -67,23 +72,27 @@ void handle_matching_output(
 }  // namespace
 
 GreedyRoiAssociator::GreedyRoiAssociator(
-  const GreedyRoiAssociatorConfig & config
-)
-: m_camera{config.intrinsics}, m_iou_threshold{config.iou_threshold}
-{
-}
+  const GreedyRoiAssociatorConfig & config,
+  const tf2::BufferCore & tf_buffer)
+: m_camera{config.intrinsics}, m_iou_threshold{config.iou_threshold}, m_tf_buffer{tf_buffer} {}
 
 AssociatorResult GreedyRoiAssociator::assign(
   const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-  const std::vector<TrackedObject> & tracks,
-  const geometry_msgs::msg::Transform & tf_camera_from_track
-) const
+  const TrackedObjects & tracks) const
 {
-  AssociatorResult result = create_and_init_result(rois.rois.size(), tracks.size());
-  const details::ShapeTransformer transformer{tf_camera_from_track};
-  for (auto track_idx = 0U; track_idx < tracks.size(); ++track_idx) {
+  AssociatorResult result = create_and_init_result(rois.rois.size(), tracks.objects.size());
+  geometry_msgs::msg::TransformStamped tf_roi_from_track;
+  try {
+    tf_roi_from_track = lookup_transform_handler(
+      rois.header.frame_id, tracks.frame_id, time_utils::from_message(rois.header.stamp));
+  } catch (const std::exception & e) {
+    std::cerr << "Transform lookup failed with exception: " << e.what() << std::endl;
+    return result;
+  }
+  const details::ShapeTransformer transformer{tf_roi_from_track.transform};
+  for (auto track_idx = 0U; track_idx < tracks.objects.size(); ++track_idx) {
     const auto matched_detection_idx = project_and_match_detection(
-      transformer(tracks[track_idx].shape()), result.unassigned_detection_indices, rois);
+      transformer(tracks.objects[track_idx].shape()), result.unassigned_detection_indices, rois);
 
     handle_matching_output(matched_detection_idx, track_idx, result);
   }
@@ -93,12 +102,19 @@ AssociatorResult GreedyRoiAssociator::assign(
 
 AssociatorResult GreedyRoiAssociator::assign(
   const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-  const autoware_auto_msgs::msg::DetectedObjects & objects,
-  const geometry_msgs::msg::Transform & tf_camera_from_object
-) const
+  const autoware_auto_msgs::msg::DetectedObjects & objects) const
 {
   AssociatorResult result = create_and_init_result(rois.rois.size(), objects.objects.size());
-  const details::ShapeTransformer transformer{tf_camera_from_object};
+  geometry_msgs::msg::TransformStamped tf_roi_from_detection;
+  try {
+    tf_roi_from_detection = lookup_transform_handler(
+      rois.header.frame_id, objects.header.frame_id,
+      time_utils::from_message(rois.header.stamp));
+  } catch (const std::exception & e) {
+    std::cerr << "Transform lookup failed with exception: " << e.what() << std::endl;
+    return result;
+  }
+  const details::ShapeTransformer transformer{tf_roi_from_detection.transform};
 
   for (auto object_idx = 0U; object_idx < objects.objects.size(); ++object_idx) {
     auto detection_idx = project_and_match_detection(
@@ -108,6 +124,25 @@ AssociatorResult GreedyRoiAssociator::assign(
   }
 
   return result;
+}
+
+geometry_msgs::msg::TransformStamped GreedyRoiAssociator::lookup_transform_handler(
+  const std::string & target_frame,
+  const std::string & source_frame,
+  const tf2::TimePoint & stamp) const
+{
+  geometry_msgs::msg::TransformStamped retval;
+  try {
+    retval = m_tf_buffer.lookupTransform(target_frame, source_frame, stamp);
+  } catch (const tf2::ExtrapolationException & e) {
+    retval = m_tf_buffer.lookupTransform(target_frame, source_frame, tf2::TimePointZero);
+    const auto stamp_diff = stamp - time_utils::from_message(retval.header.stamp);
+    if (stamp_diff > kTfTooOld) {
+      std::cerr << "Using tf that is " << std::chrono::duration_cast<std::chrono::milliseconds>(
+        stamp_diff).count() << "ms old" << std::endl;
+    }
+  }
+  return retval;
 }
 
 std::size_t GreedyRoiAssociator::project_and_match_detection(

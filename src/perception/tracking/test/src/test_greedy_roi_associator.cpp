@@ -14,36 +14,64 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include "tracking/test_utils.hpp"
 #include <gtest/gtest.h>
 #include <tracking/greedy_roi_associator.hpp>
 #include <tracking/projection.hpp>
 #include <vector>
-#include "tracking/test_utils.hpp"
 
-using TrackedObject = autoware::perception::tracking::TrackedObject;
-using TrackedObjects = std::vector<TrackedObject>;
+using autoware::perception::tracking::TrackedObject;
+using autoware::perception::tracking::TrackedObjects;
 
-using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
-using DetectedObject = autoware_auto_msgs::msg::DetectedObject;
-using Shape = autoware_auto_msgs::msg::Shape;
-using Projection = autoware::perception::tracking::Projection;
-using CameraModel = autoware::perception::tracking::CameraModel;
-using CameraIntrinsics = autoware::perception::tracking::CameraIntrinsics;
-using ClassifiedRoi = autoware_auto_msgs::msg::ClassifiedRoi;
-using ClassifiedRoiArray = autoware_auto_msgs::msg::ClassifiedRoiArray;
+using autoware_auto_msgs::msg::DetectedObjects;
+using autoware_auto_msgs::msg::DetectedObject;
+using autoware_auto_msgs::msg::Shape;
+using autoware::perception::tracking::Projection;
+using autoware::perception::tracking::CameraModel;
+using autoware::perception::tracking::CameraIntrinsics;
+using autoware_auto_msgs::msg::ClassifiedRoi;
+using autoware_auto_msgs::msg::ClassifiedRoiArray;
+using geometry_msgs::msg::Point32;
+
 namespace tracking = autoware::perception::tracking;
 using RoiAssociator = tracking::GreedyRoiAssociator;
 using AssociatorResult = tracking::AssociatorResult;
-using Point32 = geometry_msgs::msg::Point32;
 
-template<typename ObjType>
+namespace
+{
+constexpr autoware::common::types::bool8_t kIsStatic = true;
+constexpr auto kTrackerFrame = "odom";
+constexpr auto kCameraFrame = "camera";
+constexpr auto kDummyTfAuthority = "test_authority";
+
+geometry_msgs::msg::TransformStamped create_identity_transform(
+  const std_msgs::msg::Header::_frame_id_type & frame_id,
+  const std_msgs::msg::Header::_frame_id_type & child_frame_id,
+  const std_msgs::msg::Header::_stamp_type & stamp) noexcept
+{
+  geometry_msgs::msg::Transform identity{};
+  identity.rotation.w = 1.0;
+
+  geometry_msgs::msg::TransformStamped tf;
+  tf.header.frame_id = frame_id;
+  tf.child_frame_id = child_frame_id;
+  tf.header.stamp = stamp;
+  tf.transform = identity;
+  return tf;
+}
+
+}  // namespace
+
+template<typename ObjectsT>
 class TestRoiAssociation : public testing::Test
 {
 public:
   TestRoiAssociation()
   : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
     camera{intrinsics},
-    associator{{intrinsics, 0.1F}} {}
+    associator{{intrinsics, 0.1F}, tf_buffer} {init_frame_id();}
+
+  void init_frame_id();
 
   void add_object(
     const Point32 & base_face_origin,
@@ -54,8 +82,21 @@ public:
   CameraIntrinsics intrinsics;
   CameraModel camera;
   RoiAssociator associator;
-  ObjType objects;
+  ObjectsT objects;
+  tf2::BufferCore tf_buffer;
 };
+
+template<>
+void TestRoiAssociation<TrackedObjects>::init_frame_id()
+{
+  objects.frame_id = kTrackerFrame;
+}
+
+template<>
+void TestRoiAssociation<DetectedObjects>::init_frame_id()
+{
+  objects.header.frame_id = kTrackerFrame;
+}
 
 template<>
 void TestRoiAssociation<TrackedObjects>::add_object(
@@ -66,7 +107,7 @@ void TestRoiAssociation<TrackedObjects>::add_object(
 {
   DetectedObject object;
   object.shape = make_rectangular_shape(base_face_origin, half_width, half_length, shape_height);
-  objects.emplace_back(object, 0.0, 0.0);
+  objects.objects.emplace_back(object, 0.0, 0.0);
 }
 
 template<>
@@ -83,14 +124,14 @@ void TestRoiAssociation<DetectedObjects>::add_object(
 template<>
 Shape TestRoiAssociation<TrackedObjects>::get_ith_shape(const size_t i)
 {
-  assert(objects.size() > i);
-  return objects[i].shape();
+  EXPECT_TRUE(objects.objects.size() > i);
+  return objects.objects[i].shape();
 }
 
 template<>
 Shape TestRoiAssociation<DetectedObjects>::get_ith_shape(const size_t i)
 {
-  assert(objects.objects.size() > i);
+  EXPECT_TRUE(objects.objects.size() > i);
   return objects.objects[i].shape;
 }
 
@@ -101,12 +142,17 @@ TYPED_TEST_CASE(TestRoiAssociation, MyTypes, );
 
 TYPED_TEST(TestRoiAssociation, CorrectAssociation) {
   ClassifiedRoiArray rois;
+  rois.header.frame_id = kCameraFrame;
+
+  const auto tf = create_identity_transform(
+    rois.header.frame_id, kTrackerFrame, rois.header.stamp);
+  this->tf_buffer.setTransform(tf, kDummyTfAuthority, kIsStatic);
 
   this->add_object(make_pt(10.0F, 10.0F, 10), 5.0F, 5.0F, 2.0F);
   const auto projection = this->camera.project(expand_shape_to_vector(this->get_ith_shape(0U)));
   ASSERT_TRUE(projection);
   rois.rois.push_back(projection_to_roi(projection.value()));
-  const auto result = this->associator.assign(rois, this->objects, make_identity());
+  const auto result = this->associator.assign(rois, this->objects);
   ASSERT_EQ(result.track_assignments.front(), 0U);
   ASSERT_EQ(result.unassigned_detection_indices.size(), 0U);
   ASSERT_EQ(result.unassigned_track_indices.size(), 0U);
@@ -114,12 +160,17 @@ TYPED_TEST(TestRoiAssociation, CorrectAssociation) {
 
 TYPED_TEST(TestRoiAssociation, OutOfImageTest) {
   ClassifiedRoiArray rois;
+  rois.header.frame_id = kCameraFrame;
+
+  const auto tf = create_identity_transform(
+    rois.header.frame_id, kTrackerFrame, rois.header.stamp);
+  this->tf_buffer.setTransform(tf, kDummyTfAuthority, kIsStatic);
 
   // Create a track behind the camera
   this->add_object(make_pt(10.0F, 10.0F, -10), 5.0F, 5.0F, 2.0F);
   const auto projection = this->camera.project(expand_shape_to_vector(this->get_ith_shape(0U)));
   ASSERT_FALSE(projection);
-  const auto result = this->associator.assign(rois, this->objects, make_identity());
+  const auto result = this->associator.assign(rois, this->objects);
   ASSERT_EQ(result.track_assignments.front(), AssociatorResult::UNASSIGNED);
   ASSERT_EQ(result.unassigned_detection_indices.size(), 0U);
   ASSERT_TRUE(result.unassigned_track_indices.find(0U) != result.unassigned_track_indices.end());
@@ -127,21 +178,28 @@ TYPED_TEST(TestRoiAssociation, OutOfImageTest) {
 
 TYPED_TEST(TestRoiAssociation, NonAssociatedTrackRoi) {
   ClassifiedRoiArray rois;
+  rois.header.frame_id = kCameraFrame;
+
+  const auto tf = create_identity_transform(
+    rois.header.frame_id, kTrackerFrame, rois.header.stamp);
+  this->tf_buffer.setTransform(tf, kDummyTfAuthority, kIsStatic);
 
   this->add_object(make_pt(10.0F, 10.0F, 10), 5.0F, 5.0F, 2.0F);
 
   // Use the phantom track to create a detection that is not associated with the correct track.
   TrackedObjects phantom_tracks;
+  phantom_tracks.frame_id = kTrackerFrame;
   {
     DetectedObject tmp_obj;
     tmp_obj.shape = make_rectangular_shape(make_pt(-50.0F, -20.0F, 100), 2.0F, 5.0F, 25.0F);
-    phantom_tracks.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
+    phantom_tracks.objects.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
   }
 
-  const auto projection = this->camera.project(expand_shape_to_vector(phantom_tracks[0].shape()));
+  const auto projection = this->camera.project(
+    expand_shape_to_vector(phantom_tracks.objects[0].shape()));
   ASSERT_TRUE(projection);
   rois.rois.push_back(projection_to_roi(projection.value()));
-  const auto result = this->associator.assign(rois, this->objects, make_identity());
+  const auto result = this->associator.assign(rois, this->objects);
   ASSERT_EQ(result.track_assignments.front(), AssociatorResult::UNASSIGNED);
   ASSERT_TRUE(
     result.unassigned_detection_indices.find(0U) != result.unassigned_detection_indices.end());
@@ -158,7 +216,13 @@ TYPED_TEST(TestRoiAssociation, CombinedAssociationTest) {
   constexpr auto num_noncaptured_tracks = 3U;
   constexpr auto num_nonassociated_rois = 3U;
   TrackedObjects phantom_tracks;  // Only used to create false-positive ROIs
+  phantom_tracks.frame_id = kTrackerFrame;
   ClassifiedRoiArray rois;
+  rois.header.frame_id = kCameraFrame;
+
+  const auto tf = create_identity_transform(
+    rois.header.frame_id, kTrackerFrame, rois.header.stamp);
+  this->tf_buffer.setTransform(tf, kDummyTfAuthority, kIsStatic);
 
   // Objects not to be captured by the camera
   this->add_object(make_pt(10.0F, 10.0F, -10), 5.0F, 5.0F, 2.0F);
@@ -187,23 +251,23 @@ TYPED_TEST(TestRoiAssociation, CombinedAssociationTest) {
   {
     DetectedObject tmp_obj;
     tmp_obj.shape = make_rectangular_shape(make_pt(-10.0F, -10.0F, 10), 5.0F, 5.0F, 2.0F);
-    phantom_tracks.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
+    phantom_tracks.objects.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
     tmp_obj.shape = make_rectangular_shape(make_pt(-20.0F, -10.0F, 50), 15.0F, 25.0F, 10.0F);
-    phantom_tracks.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
+    phantom_tracks.objects.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
     tmp_obj.shape = make_rectangular_shape(make_pt(-50.0F, -20.0F, 100), 2.0F, 5.0F, 25.0F);
-    phantom_tracks.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
+    phantom_tracks.objects.push_back(TrackedObject{tmp_obj, 0.0, 0.0});
   }
-  ASSERT_EQ(phantom_tracks.size(), num_nonassociated_rois);
+  ASSERT_EQ(phantom_tracks.objects.size(), num_nonassociated_rois);
 
   // Push the false positive projections to the roi array
-  for (const auto & phantom_track : phantom_tracks) {
+  for (const auto & phantom_track : phantom_tracks.objects) {
     const auto maybe_projection =
       this->camera.project(expand_shape_to_vector(phantom_track.shape()));
     ASSERT_TRUE(maybe_projection);
     rois.rois.push_back(projection_to_roi(maybe_projection.value()));
   }
 
-  auto result = this->associator.assign(rois, this->objects, make_identity());
+  auto result = this->associator.assign(rois, this->objects);
 
   for (auto i = 0U; i < result.track_assignments.size(); ++i) {
     if (i < num_noncaptured_tracks) {

@@ -20,8 +20,8 @@
 #include "gtest/gtest.h"
 #include "time_utils/time_utils.hpp"
 #include "tracking/test_utils.hpp"
-#include "tracking/tracked_object.hpp"
 #include "tracking/track_creator.hpp"
+#include "tracking/tracked_object.hpp"
 
 using AssociatorResult = autoware::perception::tracking::AssociatorResult;
 using CameraModel = autoware::perception::tracking::CameraModel;
@@ -35,12 +35,34 @@ using TrackCreator = autoware::perception::tracking::TrackCreator;
 using TrackedObject = autoware::perception::tracking::TrackedObject;
 using VisionPolicyConfig = autoware::perception::tracking::VisionPolicyConfig;
 
+namespace
+{
+constexpr autoware::common::types::bool8_t kIsStatic = true;
+
+geometry_msgs::msg::TransformStamped create_identity_transform(
+  const std_msgs::msg::Header::_frame_id_type & frame_id,
+  const std_msgs::msg::Header::_frame_id_type & child_frame_id,
+  const std_msgs::msg::Header::_stamp_type & stamp) noexcept
+{
+  geometry_msgs::msg::Transform identity{};
+  identity.rotation.w = 1.0;
+
+  geometry_msgs::msg::TransformStamped tf;
+  tf.header.frame_id = frame_id;
+  tf.child_frame_id = child_frame_id;
+  tf.header.stamp = stamp;
+  tf.transform = identity;
+  return tf;
+}
+
+}  // namespace
+
 class TestTrackCreator : public testing::Test
 {
 public:
   TestTrackCreator()
   : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
-    vision_policy_cfg{{intrinsics, 0.1F}, make_identity(), std::chrono::milliseconds{20}},
+    vision_policy_cfg{{intrinsics, 0.1F}, std::chrono::milliseconds{20}},
     camera{intrinsics}
   {
     const auto get_roi_from_detection = [this](const DetectedObject & obj) -> ClassifiedRoi
@@ -96,11 +118,13 @@ public:
   std::vector<std::pair<DetectedObject, ClassifiedRoi>> object_roi_pairs;
   std::vector<DetectedObject> unmatched_objects;
   std::vector<ClassifiedRoi> unmatched_rois;
+  tf2::BufferCore tf_buffer;
 };
 
 TEST(TrackCreatorTest, TestLidarOnly)
 {
-  TrackCreator creator{{CreationPolicies::LidarClusterOnly, 1.0F, 1.0F}};
+  tf2::BufferCore tf_buffer;
+  TrackCreator creator{{CreationPolicies::LidarClusterOnly, 1.0, 1.0}, tf_buffer};
   DetectedObject obj;
   DetectedObjects objs;
   const int num_objects = 10;
@@ -120,8 +144,8 @@ TEST(TrackCreatorTest, TestLidarOnly)
 // Test lidar and vision with two matches between them
 TEST_F(TestTrackCreator, TestLidarIfVision2NewTracks)
 {
-  TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
-    this->vision_policy_cfg}};
+  TrackCreator creator{
+    {CreationPolicies::LidarClusterIfVision, 1.0, 1.0, this->vision_policy_cfg}, tf_buffer};
   auto now_time = time_utils::to_message(
     std::chrono::system_clock::time_point{std::chrono::system_clock::now()});
 
@@ -129,6 +153,7 @@ TEST_F(TestTrackCreator, TestLidarIfVision2NewTracks)
   DetectedObject lidar_detection;
   DetectedObjects lidar_detections;
   lidar_detections.header.stamp = now_time;
+  lidar_detections.header.frame_id = "base_link";
   const int num_objects = 10;
   for (int i = 0; i < num_objects; ++i) {
     lidar_detections.objects.push_back(lidar_detection);
@@ -136,26 +161,32 @@ TEST_F(TestTrackCreator, TestLidarIfVision2NewTracks)
   lidar_detections.objects[0] = this->object_roi_pairs[0].first;
   lidar_detections.objects[2] = this->object_roi_pairs[1].first;
   lidar_detections.objects[4] = this->unmatched_objects[1];
-  AssociatorResult lidar_track_assn;
-  lidar_track_assn.unassigned_detection_indices = {0, 2, 4};
-  creator.add_objects(lidar_detections, lidar_track_assn);
+  AssociatorResult lidar_track_assignment;
+  lidar_track_assignment.unassigned_detection_indices = {0, 2, 4};
+  creator.add_objects(lidar_detections, lidar_track_assignment);
 
   // Add vision
   ClassifiedRoi vision_detection;
   ClassifiedRoiArray vision_detections;
   vision_detections.header.stamp = time_utils::to_message(
-    time_utils::from_message(now_time) +
-    std::chrono::milliseconds(15));
+    time_utils::from_message(now_time) + std::chrono::milliseconds(15));
+  vision_detections.header.frame_id = "camera";
   const int num_vision_detections = 6;
   for (int i = 0; i < num_vision_detections; ++i) {
     vision_detections.rois.push_back(vision_detection);
   }
-  AssociatorResult vision_track_assn;
-  vision_track_assn.unassigned_detection_indices = {1, 3, 5};
+  AssociatorResult vision_track_assignment;
+  vision_track_assignment.unassigned_detection_indices = {1, 3, 5};
   vision_detections.rois[1] = this->object_roi_pairs[1].second;
   vision_detections.rois[3] = this->object_roi_pairs[0].second;
   vision_detections.rois[5] = this->unmatched_rois[0];
-  creator.add_objects(vision_detections, vision_track_assn);
+  creator.add_objects(vision_detections, vision_track_assignment);
+
+  const auto tf = create_identity_transform(
+    vision_detections.header.frame_id,
+    lidar_detections.header.frame_id,
+    vision_detections.header.stamp);
+  tf_buffer.setTransform(tf, "test_authority", kIsStatic);
 
   // Test
   const auto ret = creator.create_tracks();
@@ -179,41 +210,49 @@ TEST_F(TestTrackCreator, TestLidarIfVision2NewTracks)
 // Test lidar and vision but no match between them
 TEST_F(TestTrackCreator, TestLidarIfVisionNoNewTrack)
 {
-  TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
-    this->vision_policy_cfg}};
+  TrackCreator creator{
+    {CreationPolicies::LidarClusterIfVision, 1.0, 1.0, this->vision_policy_cfg}, tf_buffer};
   auto now_time = time_utils::to_message(
     std::chrono::system_clock::time_point{std::chrono::system_clock::now()});
 
   // Add lidar
   DetectedObject lidar_detection;
   DetectedObjects lidar_detections;
+  lidar_detections.header.frame_id = "base_link";
   lidar_detections.header.stamp = now_time;
   const int num_objects = 10;
   for (int i = 0; i < num_objects; ++i) {
     lidar_detection.shape.height = i;  // use index as height to differentiate between detections
     lidar_detections.objects.push_back(lidar_detection);
   }
-  AssociatorResult lidar_track_assn;
-  lidar_track_assn.unassigned_detection_indices = {0, 2, 4};
+  AssociatorResult lidar_track_assignment;
+  lidar_track_assignment.unassigned_detection_indices = {0, 2, 4};
   lidar_detections.objects[0] = this->object_roi_pairs[0].first;
   lidar_detections.objects[2] = this->object_roi_pairs[1].first;
   lidar_detections.objects[4] = this->object_roi_pairs[2].first;
-  creator.add_objects(lidar_detections, lidar_track_assn);
+  creator.add_objects(lidar_detections, lidar_track_assignment);
 
   // Add vision
   ClassifiedRoi vision_detection;
   ClassifiedRoiArray vision_detections;
   vision_detections.header.stamp = time_utils::to_message(
     time_utils::from_message(now_time) - std::chrono::milliseconds(15));
+  vision_detections.header.frame_id = "camera";
   const int num_vision_detections = 5;
   for (int i = 0; i < num_vision_detections; ++i) {
     vision_detections.rois.push_back(vision_detection);
   }
-  AssociatorResult vision_track_assn;
-  vision_track_assn.unassigned_detection_indices = {1, 3};
+  AssociatorResult vision_track_assignment;
+  vision_track_assignment.unassigned_detection_indices = {1, 3};
   vision_detections.rois[1] = this->unmatched_rois[0];
   vision_detections.rois[3] = this->unmatched_rois[1];
-  creator.add_objects(vision_detections, vision_track_assn);
+  creator.add_objects(vision_detections, vision_track_assignment);
+
+  const auto tf = create_identity_transform(
+    vision_detections.header.frame_id,
+    lidar_detections.header.frame_id,
+    vision_detections.header.stamp);
+  tf_buffer.setTransform(tf, "test_authority", kIsStatic);
 
   // Test
   const auto ret = creator.create_tracks();
@@ -224,37 +263,44 @@ TEST_F(TestTrackCreator, TestLidarIfVisionNoNewTrack)
 // No vision message within time range
 TEST_F(TestTrackCreator, TestLidarIfVisionOutOfTimeRange)
 {
-  TrackCreator creator{{CreationPolicies::LidarClusterIfVision, 1.0F, 1.0F,
-    this->vision_policy_cfg}};
+  TrackCreator creator{
+    {CreationPolicies::LidarClusterIfVision, 1.0, 1.0, this->vision_policy_cfg}, tf_buffer};
   auto now_time = time_utils::to_message(
     std::chrono::system_clock::time_point{std::chrono::system_clock::now()});
 
   // Add lidar
   DetectedObject lidar_detection;
   DetectedObjects lidar_detections;
+  lidar_detections.header.frame_id = "base_link";
   lidar_detections.header.stamp = now_time;
   const int num_objects = 10;
   for (int i = 0; i < num_objects; ++i) {
     lidar_detection.shape.height = i;  // use index as height to differentiate between detections
     lidar_detections.objects.push_back(lidar_detection);
   }
-  AssociatorResult lidar_track_assn;
-  lidar_track_assn.unassigned_detection_indices = {0, 2, 4};
-  creator.add_objects(lidar_detections, lidar_track_assn);
+  AssociatorResult lidar_track_assignment;
+  lidar_track_assignment.unassigned_detection_indices = {0, 2, 4};
+  creator.add_objects(lidar_detections, lidar_track_assignment);
 
   // Add vision
   ClassifiedRoi vision_detection;
   ClassifiedRoiArray vision_detections;
   vision_detections.header.stamp = time_utils::to_message(
-    time_utils::from_message(now_time) +
-    std::chrono::milliseconds(555));
+    time_utils::from_message(now_time) + std::chrono::milliseconds(555));
+  vision_detections.header.frame_id = "camera";
   const int num_vision_detections = 5;
   for (int i = 0; i < num_vision_detections; ++i) {
     vision_detections.rois.push_back(vision_detection);
   }
-  AssociatorResult vision_track_assn;
-  vision_track_assn.unassigned_detection_indices = {1, 3};
-  creator.add_objects(vision_detections, vision_track_assn);
+  AssociatorResult vision_track_assignment;
+  vision_track_assignment.unassigned_detection_indices = {1, 3};
+  creator.add_objects(vision_detections, vision_track_assignment);
+
+  const auto tf = create_identity_transform(
+    vision_detections.header.frame_id,
+    lidar_detections.header.frame_id,
+    vision_detections.header.stamp);
+  tf_buffer.setTransform(tf, "test_authority", kIsStatic);
 
   // Test
   const auto ret = creator.create_tracks();

@@ -14,6 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <time_utils/time_utils.hpp>
 #include <tracking/track_creator.hpp>
 
@@ -22,19 +23,17 @@
 #include <set>
 #include <vector>
 
-
 namespace autoware
 {
 namespace perception
 {
 namespace tracking
 {
-
 CreationPolicyBase::CreationPolicyBase(
   const float64_t default_variance,
-  const float64_t noise_variance)
-: m_default_variance(default_variance), m_noise_variance(noise_variance)
-{}
+  const float64_t noise_variance,
+  const tf2::BufferCore & tf_buffer)
+: m_default_variance{default_variance}, m_noise_variance{noise_variance}, m_tf_buffer{tf_buffer} {}
 
 autoware_auto_msgs::msg::DetectedObjects CreationPolicyBase::populate_unassigned_lidar_detections(
   const autoware_auto_msgs::msg::DetectedObjects & clusters,
@@ -47,15 +46,11 @@ autoware_auto_msgs::msg::DetectedObjects CreationPolicyBase::populate_unassigned
   }
   return retval;
 }
-void LidarClusterIfVisionPolicy::add_objects(
-  const autoware_auto_msgs::msg::DetectedObjects & clusters,
-  const AssociatorResult & associator_result)
-{
-  m_lidar_clusters = populate_unassigned_lidar_detections(clusters, associator_result);
-}
 
-LidarOnlyPolicy::LidarOnlyPolicy(const float64_t default_variance, const float64_t noise_variance)
-: CreationPolicyBase(default_variance, noise_variance) {}
+LidarOnlyPolicy::LidarOnlyPolicy(
+  const float64_t default_variance, const float64_t noise_variance,
+  const tf2::BufferCore & tf_buffer)
+: CreationPolicyBase(default_variance, noise_variance, tf_buffer) {}
 
 void LidarOnlyPolicy::add_objects(
   const autoware_auto_msgs::msg::DetectedObjects & clusters,
@@ -75,6 +70,13 @@ TracksAndLeftovers LidarOnlyPolicy::create()
 }
 
 void LidarClusterIfVisionPolicy::add_objects(
+  const autoware_auto_msgs::msg::DetectedObjects & clusters,
+  const AssociatorResult & associator_result)
+{
+  m_lidar_clusters = populate_unassigned_lidar_detections(clusters, associator_result);
+}
+
+void LidarClusterIfVisionPolicy::add_objects(
   const autoware_auto_msgs::msg::ClassifiedRoiArray & vision_rois,
   const AssociatorResult & associator_result)
 {
@@ -88,11 +90,11 @@ void LidarClusterIfVisionPolicy::add_objects(
 }
 LidarClusterIfVisionPolicy::LidarClusterIfVisionPolicy(
   const VisionPolicyConfig & cfg, const float64_t default_variance,
-  const float64_t noise_variance)
-: CreationPolicyBase(default_variance, noise_variance),
-  m_cfg(cfg),
-  m_associator(cfg.associator_cfg),
-  m_vision_rois_cache_ptr(std::make_shared<VisionCache>())
+  const float64_t noise_variance, const tf2::BufferCore & tf_buffer)
+: CreationPolicyBase{default_variance, noise_variance, tf_buffer},
+  m_cfg{cfg},
+  m_associator{cfg.associator_cfg, tf_buffer},
+  m_vision_rois_cache_ptr{std::make_shared<VisionCache>()}
 {
   m_vision_rois_cache_ptr->setCacheSize(kVisionCacheSize);
 }
@@ -114,17 +116,10 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
     std::cerr << "No matching vision msgs for creating tracks" << std::endl;
     return retval;
   }
-  std::cerr << "Got matching vision msg for creating tracks" << std::endl;
 
   const auto & vision_msg = *vision_msg_matches.back();
-
-  const auto result = m_associator.assign(
-    vision_msg, m_lidar_clusters, m_cfg.tf_camera_from_base_link);
+  const auto result = m_associator.assign(vision_msg, m_lidar_clusters);
   std::set<size_t, std::greater<>> lidar_idx_to_erase;
-
-  std::cerr << "Unassigned lidar " << m_lidar_clusters.objects.size() << " vision " <<
-    vision_msg.rois.size() << " now assigned " << m_lidar_clusters.objects.size() -
-    result.unassigned_track_indices.size() << std::endl;
 
   for (size_t cluster_idx = 0U; cluster_idx < m_lidar_clusters.objects.size();
     cluster_idx++)
@@ -150,13 +145,13 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
   return retval;
 }
 
-TrackCreator::TrackCreator(const TrackCreatorConfig & config)
+TrackCreator::TrackCreator(const TrackCreatorConfig & config, const tf2::BufferCore & tf_buffer)
 {
   switch (config.policy) {
     case TrackCreationPolicy::LidarClusterOnly:
       m_policy_object = std::make_unique<LidarOnlyPolicy>(
         config.default_variance,
-        config.noise_variance);
+        config.noise_variance, tf_buffer);
       break;
     case TrackCreationPolicy::LidarClusterIfVision:
       if (config.vision_policy_config == std::experimental::nullopt) {
@@ -167,7 +162,7 @@ TrackCreator::TrackCreator(const TrackCreatorConfig & config)
       m_policy_object = std::make_unique<LidarClusterIfVisionPolicy>(
         config.vision_policy_config.value(),
         config.default_variance,
-        config.noise_variance);
+        config.noise_variance, tf_buffer);
       break;
     default:
       throw std::runtime_error("Track creation policy does not exist / not implemented");

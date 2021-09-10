@@ -21,6 +21,7 @@
 #include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <common/types.hpp>
 #include <message_filters/cache.h>
+#include <tf2/buffer_core.h>
 #include <tracking/greedy_roi_associator.hpp>
 #include <tracking/tracked_object.hpp>
 #include <tracking/tracker_types.hpp>
@@ -42,8 +43,6 @@ struct TRACKING_PUBLIC VisionPolicyConfig
 {
   // Struct defining parameters for vision association
   GreedyRoiAssociatorConfig associator_cfg;
-  // Tf to transform from base_link to the camera frame
-  geometry_msgs::msg::Transform tf_camera_from_base_link;
   // Maximum allowed difference in the timestamp of the two messages being associated
   std::chrono::milliseconds max_vision_lidar_timestamp_diff{20};
 };
@@ -79,7 +78,10 @@ public:
   /// Constructor
   /// \param default_variance Default variance value for tracks to be created
   /// \param noise_variance Default noise variance for tracks to be created
-  CreationPolicyBase(const float64_t default_variance, const float64_t noise_variance);
+  /// \param tf_buffer tf buffer containing the necessary transforms
+  CreationPolicyBase(
+    const float64_t default_variance, const float64_t noise_variance,
+    const tf2::BufferCore & tf_buffer);
 
   /// Function to create new tracks based on previously supplied detection data
   /// \return Struct containing new tracks and unused detections
@@ -113,13 +115,17 @@ public:
 protected:
   float64_t m_default_variance;
   float64_t m_noise_variance;
+  const tf2::BufferCore & m_tf_buffer;
+  autoware_auto_msgs::msg::DetectedObjects m_debug_objects;
 };
 
 // Class implementing LidarOnly track creation policy
 class LidarOnlyPolicy : public CreationPolicyBase
 {
 public:
-  LidarOnlyPolicy(const float64_t default_variance, const float64_t noise_variance);
+  LidarOnlyPolicy(
+    const float64_t default_variance, const float64_t noise_variance,
+    const tf2::BufferCore & tf_buffer);
   TracksAndLeftovers create() override;
 
   void add_objects(
@@ -143,7 +149,7 @@ class LidarClusterIfVisionPolicy : public CreationPolicyBase
 public:
   LidarClusterIfVisionPolicy(
     const VisionPolicyConfig & cfg, const float64_t default_variance,
-    const float64_t noise_variance);
+    const float64_t noise_variance, const tf2::BufferCore & tf_buffer);
   TracksAndLeftovers create() override;
 
   void add_objects(
@@ -172,7 +178,8 @@ public:
   using float32_t = common::types::float32_t;
   /// \brief Constructor
   /// \param config parameters for track creation
-  explicit TrackCreator(const TrackCreatorConfig & config);
+  /// \param tf_buffer Tf buffer containing the necessary transforms
+  explicit TrackCreator(const TrackCreatorConfig & config, const tf2::BufferCore & tf_buffer);
   /// \brief Create new tracks based on the policy and unassociated detections. Call the
   ///        appropriate add_unassigned_* functions before calling this.
   /// \return vector of newly created TrackedObject objects

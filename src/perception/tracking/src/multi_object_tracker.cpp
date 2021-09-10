@@ -14,16 +14,16 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include "tracking/multi_object_tracker.hpp"
+#include <tracking/multi_object_tracker.hpp>
+
+#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <tf2_eigen/tf2_eigen.h>
+#include <time_utils/time_utils.hpp>
 
 #include <algorithm>
 #include <cmath>
 #include <memory>
-
-#include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
-#include "geometry_msgs/msg/quaternion.hpp"
-#include "tf2_eigen/tf2_eigen.h"
-#include "time_utils/time_utils.hpp"
 
 using autoware::common::types::float64_t;
 
@@ -74,10 +74,15 @@ geometry_msgs::msg::TransformStamped to_transform(const nav_msgs::msg::Odometry 
 }  // anonymous namespace
 
 
-MultiObjectTracker::MultiObjectTracker(MultiObjectTrackerOptions options)
-: m_options(options), m_object_associator(options.object_association_config),
-  m_vision_associator{options.vision_association_config},
-  m_track_creator(options.track_creator_config) {}
+MultiObjectTracker::MultiObjectTracker(
+  MultiObjectTrackerOptions options, const tf2::BufferCore & buffer)
+: m_options{options},
+  m_object_associator{options.object_association_config},
+  m_vision_associator{options.vision_association_config, buffer},
+  m_track_creator{options.track_creator_config, buffer}
+{
+  m_tracks.frame_id = m_options.frame;
+}
 
 TrackerUpdateResult MultiObjectTracker::update(
   DetectedObjectsMsg detections,
@@ -100,7 +105,7 @@ TrackerUpdateResult MultiObjectTracker::update(
   // TODO(nikolai.morin): Simplify after #1002
   const auto target_time = time_utils::from_message(detections.header.stamp);
   const auto dt = target_time - m_last_update;
-  for (auto & object : m_objects) {
+  for (auto & object : m_tracks.objects) {
     object.predict(dt);
   }
 
@@ -108,7 +113,7 @@ TrackerUpdateResult MultiObjectTracker::update(
   // Associate observations with tracks
   // ==================================
   AssociatorResult association;
-  association = m_object_associator.assign(detections, this->m_objects);
+  association = m_object_associator.assign(detections, this->m_tracks);
   if (association.had_errors) {
     result.status = TrackerUpdateStatus::InvalidShape;
   }
@@ -116,16 +121,16 @@ TrackerUpdateResult MultiObjectTracker::update(
   // ==================================
   // Update tracks with observations
   // ==================================
-  for (size_t track_idx = 0; track_idx < m_objects.size(); ++track_idx) {
+  for (size_t track_idx = 0; track_idx < m_tracks.objects.size(); ++track_idx) {
     size_t detection_idx = association.track_assignments[track_idx];
     if (detection_idx == AssociatorResult::UNASSIGNED) {
       continue;
     }
     const auto & detection = detections.objects[detection_idx];
-    m_objects[track_idx].update(detection);
+    m_tracks.objects[track_idx].update(detection);
   }
   for (const size_t track_idx : association.unassigned_track_indices) {
-    m_objects[track_idx].no_update();
+    m_tracks.objects[track_idx].no_update();
   }
 
   // ==================================
@@ -134,8 +139,8 @@ TrackerUpdateResult MultiObjectTracker::update(
   m_track_creator.add_objects(detections, association);
   {
     auto && ret = m_track_creator.create_tracks();
-    m_objects.insert(
-      m_objects.end(),
+    m_tracks.objects.insert(
+      m_tracks.objects.end(),
       std::make_move_iterator(ret.tracks.begin()),
       std::make_move_iterator(ret.tracks.end()));
   }
@@ -144,13 +149,12 @@ TrackerUpdateResult MultiObjectTracker::update(
   // Prune tracks
   // ==================================
   const auto last = std::remove_if(
-    m_objects.begin(), m_objects.end(), [this](const auto & object) {
+    m_tracks.objects.begin(), m_tracks.objects.end(), [this](const auto & object) {
       return object.should_be_removed(
         this->m_options.pruning_time_threshold,
         this->m_options.pruning_ticks_threshold);
     });
-  m_objects.erase(last, m_objects.end());
-
+  m_tracks.objects.erase(last, m_tracks.objects.end());
   // ==================================
   // Build result
   // ==================================
@@ -162,16 +166,14 @@ TrackerUpdateResult MultiObjectTracker::update(
   return result;
 }
 
-void MultiObjectTracker::update(
-  const ClassifiedRoiArrayMsg & rois,
-  const geometry_msgs::msg::Transform & tf_camera_from_track)
+void MultiObjectTracker::update(const ClassifiedRoiArrayMsg & rois)
 {
-  const auto association = m_vision_associator.assign(rois, m_objects, tf_camera_from_track);
+  const auto association = m_vision_associator.assign(rois, m_tracks);
 
-  for (size_t i = 0U; i < m_objects.size(); ++i) {
+  for (size_t i = 0U; i < m_tracks.objects.size(); ++i) {
     const auto & maybe_roi_idx = association.track_assignments[i];
     if (maybe_roi_idx != AssociatorResult::UNASSIGNED) {
-      m_objects[i].update(rois.rois[maybe_roi_idx].classifications);
+      m_tracks.objects[i].update(rois.rois[maybe_roi_idx].classifications);
     }
   }
   m_track_creator.add_objects(rois, association);
@@ -256,10 +258,10 @@ MultiObjectTracker::TrackedObjectsMsg MultiObjectTracker::convert_to_msg(
 {
   TrackedObjectsMsg array;
   array.header.stamp = stamp;
-  array.header.frame_id = m_options.frame;
-  array.objects.reserve(m_objects.size());
+  array.header.frame_id = m_tracks.frame_id;
+  array.objects.reserve(m_tracks.objects.size());
   std::transform(
-    m_objects.begin(), m_objects.end(), std::back_inserter(array.objects), [](
+    m_tracks.objects.begin(), m_tracks.objects.end(), std::back_inserter(array.objects), [](
       TrackedObject o) {return o.msg();});
   return array;
 }

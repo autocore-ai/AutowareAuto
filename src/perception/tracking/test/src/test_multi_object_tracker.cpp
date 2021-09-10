@@ -30,7 +30,8 @@ class MultiObjectTrackerTest : public ::testing::Test
 {
 public:
   MultiObjectTrackerTest()
-  : m_tracker{Options{{2.0F, 2.5F, true}, {}, {CreationPolicies::LidarClusterOnly, 1.0F, 1.0F}}}
+  : m_tracker{Options{{2.0F, 2.5F, true}, {}, {CreationPolicies::LidarClusterOnly, 1.0F, 1.0F}},
+      m_tf_buffer}
   {
     m_detections.header.frame_id = "base_link";
     m_detections.header.stamp.sec = 1000;
@@ -44,6 +45,7 @@ public:
 
   void TearDown() {}
 
+  tf2::BufferCore m_tf_buffer;
   Tracker m_tracker;
   DetectedObjects m_detections;
   Odometry m_odom;

@@ -23,7 +23,7 @@
 
 /// \brief Ensure Eigen does not allocate memory dynamically
 #define EIGEN_NO_MALLOC
-/// \brief Prevent Eigen from yelling at you for larged fix-sized matrices
+/// \brief Prevent Eigen from yelling at you for larger fix-sized matrices
 #define EIGEN_STACK_ALLOCATION_LIMIT 0
 
 #include <Eigen/Core>

@@ -16,14 +16,17 @@
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
 #include <autoware_auto_msgs/msg/detected_objects.hpp>
-#include <helper_functions/template_utils.hpp>
-#include <geometry/intersection.hpp>
 #include <geometry/common_2d.hpp>
+#include <geometry/intersection.hpp>
+#include <helper_functions/template_utils.hpp>
 #include <lidar_utils/point_cloud_utils.hpp>
-#include <tracking/tracker_types.hpp>
-#include <tracking/tracked_object.hpp>
+#include <tf2/buffer_core.h>
 #include <tracking/projection.hpp>
+#include <tracking/tracked_object.hpp>
+#include <tracking/tracker_types.hpp>
 #include <tracking/visibility_control.hpp>
+
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -68,37 +71,38 @@ public:
 
   /// \brief Constructor
   /// \param config Configuration for projection and association
-  GreedyRoiAssociator(
-    const GreedyRoiAssociatorConfig & config
-  );
+  /// \param tf_buffer TF2 buffer
+  explicit GreedyRoiAssociator(
+    const GreedyRoiAssociatorConfig & config,
+    const tf2::BufferCore & tf_buffer);
 
   /// \brief Assign the tracks to the ROIs. The assignment is done by first projecting the tracks,
   /// Then assigning each track to a detection according to the IoU metric in a greedy fashion.
   /// \param rois ROI detections
   /// \param tracks Tracks
-  /// \param tf_camera_from_track Transform from the track frame to the camera frame
   /// \return The association between the tracks and the rois
   AssociatorResult assign(
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-    const std::vector<TrackedObject> & tracks,
-    const geometry_msgs::msg::Transform & tf_camera_from_track
-  ) const;
+    const TrackedObjects & tracks) const;
 
   /// \brief Assign the objects to the ROIs. The assignment is done by first projecting the
   /// detections, then assigning each detection to a ROI according to the IoU metric in a
   /// greedy fashion.
   /// \param rois Regions of Interest in camera frame from vision subsystem
   /// \param objects DetectedObjects from lidar or radar
-  /// \param tf_camera_from_object Transform from the track frame to the camera frame
   /// \return The association between the objects and the rois. In this case, "tracks" in the
   ///         return struct refers to the 3D objects and "detections" refer to the ROIs
   AssociatorResult assign(
     const autoware_auto_msgs::msg::ClassifiedRoiArray & rois,
-    const autoware_auto_msgs::msg::DetectedObjects & objects,
-    const geometry_msgs::msg::Transform & tf_camera_from_object
-  ) const;
+    const autoware_auto_msgs::msg::DetectedObjects & objects) const;
 
 private:
+  // Handles extrapolation exception alone. Caller responsible for all else
+  geometry_msgs::msg::TransformStamped lookup_transform_handler(
+    const std::string & target_frame,
+    const std::string & source_frame,
+    const tf2::TimePoint & stamp) const;
+
   // Scan the ROIs to find the best matching roi for a given shape by projecting it onto image
   // frame
   std::size_t project_and_match_detection(
@@ -109,6 +113,9 @@ private:
   CameraModel m_camera;
   IOUHeuristic m_iou_func{};
   float32_t m_iou_threshold{0.1F};
+  const tf2::BufferCore & m_tf_buffer;
+
+  static const std::chrono::milliseconds kTfTooOld;
 };
 
 namespace details

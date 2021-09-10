@@ -24,7 +24,7 @@
     use_vision: True    # Parameters for associating the vision detections
     vision_association:
       # The IoU threshold for a RoI and projection of another detection to be considered matches
-      iou_threshold: 0.5
+      iou_threshold: 0.01
       # Intrinsics of the camera that is generating the vision detections
       intrinsics:
         width: 1920
@@ -34,16 +34,5 @@
         ox: 960.0
         oy: 540.0
         skew: 0.0
-      # Transform to move the lidar clusters from base_link to camera frame for association
-      tf_camera_from_base_link:
-        translation:
-          x: -0.2
-          y: 0.0
-          z: 1.7
-        rotation:
-          x: -0.4999999896293064
-          y: 0.5001018366018476
-          z: -0.4999999896293064
-          w: 0.4998981633981524
       # Max acceptable timestamp difference between lidar cluster and vision RoI msg
       timestamp_diff_ms: 100

@@ -19,8 +19,8 @@
 #include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <common/types.hpp>
 #include <hungarian_assigner/hungarian_assigner.hpp>
-#include <tracking/tracker_types.hpp>
 #include <tracking/tracked_object.hpp>
+#include <tracking/tracker_types.hpp>
 
 #include <experimental/optional>
 #include <map>
@@ -84,8 +84,7 @@ public:
   /// \param tracks List of tracks
   /// \return Returns Associator result struct
   AssociatorResult assign(
-    const autoware_auto_msgs::msg::DetectedObjects & detections, const
-    std::vector<TrackedObject> & tracks);
+    const autoware_auto_msgs::msg::DetectedObjects & detections, const TrackedObjects & tracks);
 
 private:
   /// \brief Reset internal states of the associator
@@ -93,8 +92,7 @@ private:
 
   /// \brief Loop through all detections and tracks and set weights between them in the assigner
   void compute_weights(
-    const autoware_auto_msgs::msg::DetectedObjects & detections,
-    const std::vector<TrackedObject> & tracks);
+    const autoware_auto_msgs::msg::DetectedObjects & detections, const TrackedObjects & tracks);
 
   /// \brief Check if the given track and detection are similar enough to compute weight
   bool consider_associating(

@@ -23,6 +23,8 @@ namespace autoware
 namespace ground_truth_detections
 {
 
+constexpr char GroundTruthDetectionsNode::kFrameId[];
+
 GroundTruthDetectionsNode::GroundTruthDetectionsNode(const rclcpp::NodeOptions & options)
 :  Node("ground_truth_detections", options),
   m_detection2d_pub{create_publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>(
@@ -38,6 +40,7 @@ void GroundTruthDetectionsNode::on_detection(const lgsvl_msgs::msg::Detection2DA
 {
   autoware_auto_msgs::msg::ClassifiedRoiArray roi_array;
   roi_array.header = msg.header;
+  roi_array.header.frame_id = kFrameId;
 
   roi_array.rois.resize(msg.detections.size());
   std::transform(

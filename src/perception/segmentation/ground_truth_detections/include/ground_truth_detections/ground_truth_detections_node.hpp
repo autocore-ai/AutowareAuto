@@ -25,7 +25,6 @@
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
 #include <lgsvl_msgs/msg/detection2_d_array.hpp>
-
 #include <rclcpp/rclcpp.hpp>
 
 namespace autoware
@@ -49,6 +48,7 @@ private:
 
   rclcpp::Publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>::SharedPtr m_detection2d_pub{};
   rclcpp::Subscription<lgsvl_msgs::msg::Detection2DArray>::SharedPtr m_detection2d_sub{};
+  static constexpr char kFrameId[] = "camera";
 };
 }  // namespace ground_truth_detections
 }  // namespace autoware

@@ -28,6 +28,11 @@ using DetectedObject = autoware_auto_msgs::msg::DetectedObject;
 
 namespace tracking = autoware::perception::tracking;
 
+namespace
+{
+constexpr auto kTrackerFrame = "odom";
+}  // namespace
+
 class AssociationTester : public testing::Test
 {
 protected:
@@ -104,8 +109,10 @@ TEST_F(AssociationTester, Basic)
   obj2.kinematics.centroid_position.x = 2.0;
   obj2.kinematics.centroid_position.y = 3.0;
   objects_msg.objects.push_back(obj2);
+  objects_msg.header.frame_id = kTrackerFrame;  // Set to the same frame as the tracker.
 
-  const auto ret = m_associator.assign(objects_msg, tracked_object_vec);
+  tracking::TrackedObjects tracks{tracked_object_vec, kTrackerFrame};
+  const auto ret = m_associator.assign(objects_msg, tracks);
   EXPECT_EQ(ret.track_assignments[0U], 1U);
   EXPECT_EQ(ret.unassigned_detection_indices.size(), 1U);
   EXPECT_TRUE(ret.unassigned_detection_indices.find(0U) != ret.unassigned_detection_indices.end());
@@ -146,8 +153,10 @@ TEST_F(AssociationTester, MoreTracksLessObjects)
       detections_msg.objects.push_back(current_detection);
     }
   }
+  detections_msg.header.frame_id = kTrackerFrame;  // Set to the same frame as the tracker.
 
-  const auto ret = m_associator.assign(detections_msg, tracked_object_vec);
+  tracking::TrackedObjects tracks{tracked_object_vec, kTrackerFrame};
+  const auto ret = m_associator.assign(detections_msg, tracks);
 
   EXPECT_EQ(ret.unassigned_track_indices.size(), num_tracks - num_associated_dets);
   for (size_t i = 0U; i < ret.unassigned_track_indices.size(); ++i) {
@@ -201,7 +210,10 @@ TEST_F(AssociationTester, AreaGatingFails)
 
     detections_msg.objects.push_back(current_detection);
   }
-  const auto ret = m_associator.assign(detections_msg, tracked_object_vec);
+  detections_msg.header.frame_id = kTrackerFrame;  // Set to the same frame as the tracker.
+
+  tracking::TrackedObjects tracks{tracked_object_vec, kTrackerFrame};
+  const auto ret = m_associator.assign(detections_msg, tracks);
 
   // Verify unassigned tracks
   ASSERT_EQ(ret.unassigned_track_indices.size(), num_unassociated_dets);

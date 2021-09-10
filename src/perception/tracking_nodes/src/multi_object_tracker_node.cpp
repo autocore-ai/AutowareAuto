@@ -51,41 +51,15 @@ using std::placeholders::_2;
 
 namespace
 {
-constexpr std::chrono::milliseconds kMaxLidarEgoStateStampDiff{30};
+constexpr std::chrono::milliseconds kMaxLidarEgoStateStampDiff{100};
 constexpr std::chrono::milliseconds kMaxVisionEgoStateStampDiff{100};
 constexpr std::int64_t kDefaultHistoryDepth{20};
 constexpr std::int64_t kDefaultPoseHistoryDepth{100};
 
-// TODO(#1304): This tf should come from tf listener and not from param file
-geometry_msgs::msg::Transform get_tf_camera_from_base_link_from_params(rclcpp::Node & node)
-{
-  const auto maybe_declare_and_get = [&node](const std::string & s) -> double {
-      if (node.has_parameter(s)) {
-        return node.get_parameter(s).as_double();
-      } else {
-        return node.declare_parameter(s).get<float64_t>();
-      }
-    };
-
-  geometry_msgs::msg::Transform tf_camera_from_base_link;
-  tf_camera_from_base_link.translation.x = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.translation.x");
-  tf_camera_from_base_link.translation.y = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.translation.y");
-  tf_camera_from_base_link.translation.z = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.translation.z");
-  tf_camera_from_base_link.rotation.w = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.rotation.w");
-  tf_camera_from_base_link.rotation.x = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.rotation.x");
-  tf_camera_from_base_link.rotation.y = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.rotation.y");
-  tf_camera_from_base_link.rotation.z = maybe_declare_and_get(
-    "vision_association.tf_camera_from_base_link.rotation.z");
-  return tf_camera_from_base_link;
-}
-
-MultiObjectTracker init_tracker(rclcpp::Node & node, const bool8_t use_vision)
+MultiObjectTracker init_tracker(
+  rclcpp::Node & node,
+  const bool8_t use_vision,
+  tf2::BufferCore & tf_buffer)
 {
   const float32_t max_distance =
     static_cast<float32_t>(node.declare_parameter(
@@ -141,7 +115,6 @@ MultiObjectTracker init_tracker(rclcpp::Node & node, const bool8_t use_vision)
 
     VisionPolicyConfig vision_policy_cfg;
     vision_policy_cfg.associator_cfg = vision_config;
-    vision_policy_cfg.tf_camera_from_base_link = get_tf_camera_from_base_link_from_params(node);
     vision_policy_cfg.max_vision_lidar_timestamp_diff = std::chrono::milliseconds(
       node.declare_parameter(
         "vision_association.timestamp_diff_ms").get<int64_t>());
@@ -155,7 +128,7 @@ MultiObjectTracker init_tracker(rclcpp::Node & node, const bool8_t use_vision)
   MultiObjectTrackerOptions options{
     {max_distance, max_area_ratio, consider_edge_for_big_detections}, vision_config,
     creator_config, pruning_time_threshold, pruning_ticks_threshold, frame};
-  return MultiObjectTracker{options};
+  return MultiObjectTracker{options, tf_buffer};
 }
 
 std::string status_to_string(TrackerUpdateStatus status)
@@ -170,16 +143,6 @@ std::string status_to_string(TrackerUpdateStatus status)
     case TrackerUpdateStatus::InvalidShape: return "InvalidShape";
   }
   return "Invalid status";
-}
-
-geometry_msgs::msg::Transform to_transform(const nav_msgs::msg::Odometry & odometry)
-{
-  geometry_msgs::msg::Transform tf;
-  tf.translation.x = odometry.pose.pose.position.x;
-  tf.translation.y = odometry.pose.pose.position.y;
-  tf.translation.z = odometry.pose.pose.position.z;
-  tf.rotation = odometry.pose.pose.orientation;
-  return tf;
 }
 
 // Convert pose msg to odom msg
@@ -211,11 +174,11 @@ T get_closest_match(const std::vector<T> & matched_msgs, const rclcpp::Time & st
 MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & options)
 :  Node("multi_object_tracker_node", options),
   m_use_vision{this->declare_parameter("use_vision", true)},
-  m_tracker{init_tracker(*this, m_use_vision)},
+  m_tf_listener{m_tf_buffer},
+  m_tracker{init_tracker(*this, m_use_vision, m_tf_buffer)},
   m_history_depth{static_cast<size_t>(declare_parameter("history_depth", kDefaultHistoryDepth))},
   m_use_ndt{this->declare_parameter("use_ndt", true)},
-  m_pub{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)},
-  m_tf_listener{m_tf_buffer}
+  m_pub{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)}
 {
   const auto pose_history_depth =
     static_cast<size_t>(declare_parameter("pose_history_depth", kDefaultPoseHistoryDepth));
@@ -245,10 +208,6 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
           (ClassifiedRoiArray::ConstSharedPtr msg) {
           mpark::visit(ProcessVision{this, msg}, m_pose_or_odom_cache);
         }));
-
-    tf2::Transform temp;
-    tf2::fromMsg(get_tf_camera_from_base_link_from_params(*this), temp);
-    m_maybe_tf_camera_from_base_link.emplace(temp);
   }
 }
 
@@ -270,20 +229,10 @@ void MultiObjectTrackerNode::process(
 }
 
 void MultiObjectTrackerNode::process(
-  const ClassifiedRoiArray::ConstSharedPtr & rois,
-  const Odometry::ConstSharedPtr & odom)
+  const ClassifiedRoiArray::ConstSharedPtr & rois, const Odometry::ConstSharedPtr &)
 {
-  const auto tf_camera_from_track = compute_tf_camera_from_odom(*odom);
-  m_tracker.update(*rois, tf_camera_from_track);
-}
-
-geometry_msgs::msg::Transform MultiObjectTrackerNode::compute_tf_camera_from_odom(
-  const nav_msgs::msg::Odometry & odom)
-{
-  tf2::Transform tf_base_link_from_odom;
-  tf2::fromMsg(to_transform(odom), tf_base_link_from_odom);
-
-  return tf2::toMsg(m_maybe_tf_camera_from_base_link.value() * tf_base_link_from_odom);
+  // TODO(#1321): Do we need the odometry input here?
+  m_tracker.update(*rois);
 }
 
 MultiObjectTrackerNode::ProcessLidar::ProcessLidar(
