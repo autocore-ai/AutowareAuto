@@ -46,24 +46,23 @@ void GroundTruthVisualizerNode::process(
   sensor_msgs::msg::CompressedImage::ConstSharedPtr img_msg,
   autoware_auto_msgs::msg::ClassifiedRoiArray::ConstSharedPtr roi_msg)
 {
-  static const bool is_polyline_closed = true;
-  static const cv::Scalar color{0, 255, 0};
-  cv_bridge::CvImagePtr cv_img_ptr;
+  const bool is_polyline_closed = true;
+  const std::int32_t thickness = 5;
+  const cv::Scalar color{0, 255, 0};
+  cv_bridge::CvImagePtr cv_img_ptr{};
   try {
     cv_img_ptr = cv_bridge::toCvCopy(img_msg);
   } catch (cv_bridge::Exception & e) {
     RCLCPP_WARN(get_logger(), "cv_bridge exception: %s", e.what());
     return;
   }
+  if (!cv_img_ptr) {return;}
   for (const auto & rect : roi_msg->rois) {
     std::vector<cv::Point> pts;
     for (const auto & pt : rect.polygon.points) {
-      cv::Point temp_pt;
-      temp_pt.x = static_cast<int>(pt.x);
-      temp_pt.y = static_cast<int>(pt.y);
-      pts.emplace_back(std::move(temp_pt));
+      pts.emplace_back(static_cast<std::int32_t>(pt.x), static_cast<std::int32_t>(pt.y));
     }
-    cv::polylines(cv_img_ptr->image, pts, is_polyline_closed, color);
+    cv::polylines(cv_img_ptr->image, pts, is_polyline_closed, color, thickness);
   }
   m_image_pub->publish(*(cv_img_ptr->toImageMsg()));
 }

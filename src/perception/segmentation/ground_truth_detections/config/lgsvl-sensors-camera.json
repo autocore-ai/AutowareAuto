@@ -181,7 +181,11 @@
     "type": "2D Ground Truth",
     "name": "2D Ground Truth",
     "params": {
+      "Width": 1920,
+      "Height": 1080,
       "Frequency": 10,
+      "FieldOfView": 50,
+      "MinDistance": 0.1,
       "DetectionRange": 100,
       "Topic": "/simulator/ground_truth/detections2D"
     },
