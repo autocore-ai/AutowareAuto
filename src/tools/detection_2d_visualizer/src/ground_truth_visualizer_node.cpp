@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include "ground_truth_visualizer/ground_truth_visualizer_node.hpp"
-
+#include <detection_2d_visualizer/ground_truth_visualizer_node.hpp>
+#include <detection_2d_visualizer/utils.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 #include <memory>
@@ -24,7 +24,7 @@
 
 namespace autoware
 {
-namespace ground_truth_visualizer
+namespace detection_2d_visualizer
 {
 
 GroundTruthVisualizerNode::GroundTruthVisualizerNode(const rclcpp::NodeOptions & options)
@@ -46,8 +46,7 @@ void GroundTruthVisualizerNode::process(
   sensor_msgs::msg::CompressedImage::ConstSharedPtr img_msg,
   autoware_auto_msgs::msg::ClassifiedRoiArray::ConstSharedPtr roi_msg)
 {
-  const bool is_polyline_closed = true;
-  const std::int32_t thickness = 5;
+  constexpr std::int32_t thickness = 5;
   const cv::Scalar color{0, 255, 0};
   cv_bridge::CvImagePtr cv_img_ptr{};
   try {
@@ -58,20 +57,16 @@ void GroundTruthVisualizerNode::process(
   }
   if (!cv_img_ptr) {return;}
   for (const auto & rect : roi_msg->rois) {
-    std::vector<cv::Point> pts;
-    for (const auto & pt : rect.polygon.points) {
-      pts.emplace_back(static_cast<std::int32_t>(pt.x), static_cast<std::int32_t>(pt.y));
-    }
-    cv::polylines(cv_img_ptr->image, pts, is_polyline_closed, color, thickness);
+    draw_shape(cv_img_ptr, rect.polygon, color, thickness);
   }
   m_image_pub->publish(*(cv_img_ptr->toImageMsg()));
 }
 
-}  // namespace ground_truth_visualizer
+}  // namespace detection_2d_visualizer
 }  // namespace autoware
 
 #include "rclcpp_components/register_node_macro.hpp"
 
 // This acts as an entry point, allowing the component to be
 // discoverable when its library is being loaded into a running process
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware::ground_truth_visualizer::GroundTruthVisualizerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::detection_2d_visualizer::GroundTruthVisualizerNode)

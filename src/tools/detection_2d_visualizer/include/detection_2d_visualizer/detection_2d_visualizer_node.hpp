@@ -18,50 +18,54 @@
 /// \file
 /// \brief This file defines the ground_truth_visualizer_node class.
 
-#ifndef GROUND_TRUTH_VISUALIZER__GROUND_TRUTH_VISUALIZER_NODE_HPP_
-#define GROUND_TRUTH_VISUALIZER__GROUND_TRUTH_VISUALIZER_NODE_HPP_
+#ifndef DETECTION_2D_VISUALIZER__DETECTION_2D_VISUALIZER_NODE_HPP_
+#define DETECTION_2D_VISUALIZER__DETECTION_2D_VISUALIZER_NODE_HPP_
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
+#include <detection_2d_visualizer/visibility_control.hpp>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/compressed_image.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
 
-#include "visibility_control.hpp"
 
 namespace autoware
 {
-namespace ground_truth_visualizer
+namespace detection_2d_visualizer
 {
 
 /// Class subscribes to CompressedImage and ClassifiedROIArray boxes,
 /// then converts it into Image and draws the boxes over the image
-class GROUND_TRUTH_VISUALIZER_PUBLIC GroundTruthVisualizerNode : public rclcpp::Node
+class DETECTION_2D_VISUALIZER_PUBLIC Detection2dVisualizerNode : public rclcpp::Node
 {
 public:
-  explicit GroundTruthVisualizerNode(const rclcpp::NodeOptions & options);
+  explicit Detection2dVisualizerNode(const rclcpp::NodeOptions & options);
 
   /// Convert compressed image to raw image and draw the boxes over the image
   /// \param img_msg CompressedImage
   /// \param roi_msg boxes to draw over the image
+  /// \param projection_msg Projections of clusters that correspond with the captured image
   void process(
     sensor_msgs::msg::CompressedImage::ConstSharedPtr img_msg,
-    autoware_auto_msgs::msg::ClassifiedRoiArray::ConstSharedPtr roi_msg);
+    autoware_auto_msgs::msg::ClassifiedRoiArray::ConstSharedPtr roi_msg,
+    autoware_auto_msgs::msg::ClassifiedRoiArray::ConstSharedPtr projection_msg);
 
 private:
-  using Policy = message_filters::sync_policies::ExactTime<sensor_msgs::msg::CompressedImage,
+  using Policy = message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::CompressedImage,
+      autoware_auto_msgs::msg::ClassifiedRoiArray,
       autoware_auto_msgs::msg::ClassifiedRoiArray>;
 
   message_filters::Subscriber<sensor_msgs::msg::CompressedImage> m_image_sub;
   message_filters::Subscriber<autoware_auto_msgs::msg::ClassifiedRoiArray> m_roi_sub;
+  message_filters::Subscriber<autoware_auto_msgs::msg::ClassifiedRoiArray> m_projection_sub;
   std::unique_ptr<message_filters::Synchronizer<Policy>> m_sync_ptr;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr m_image_pub;
 };
-}  // namespace ground_truth_visualizer
+}  // namespace detection_2d_visualizer
 }  // namespace autoware
 
-#endif  // GROUND_TRUTH_VISUALIZER__GROUND_TRUTH_VISUALIZER_NODE_HPP_
+#endif  // DETECTION_2D_VISUALIZER__DETECTION_2D_VISUALIZER_NODE_HPP_

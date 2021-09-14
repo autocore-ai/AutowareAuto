@@ -61,7 +61,10 @@ class TestTrackCreator : public testing::Test
 {
 public:
   TestTrackCreator()
-  : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
+  : image_width{500U},
+    image_heigth{500U},
+    intrinsics{CameraIntrinsics{image_width, image_heigth, 5.0F, 5.0F,
+        static_cast<float32_t>(image_width) / 2.0F, static_cast<float32_t>(image_heigth) / 2.0F}},
     vision_policy_cfg{{intrinsics, 0.1F}, std::chrono::milliseconds{20}},
     camera{intrinsics}
   {
@@ -112,6 +115,9 @@ public:
       unmatched_rois.emplace_back(roi2);
     }
   }
+
+  std::size_t image_width;
+  std::size_t image_heigth;
   CameraIntrinsics intrinsics;
   VisionPolicyConfig vision_policy_cfg;
   CameraModel camera;

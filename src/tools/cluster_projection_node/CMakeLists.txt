@@ -14,32 +14,29 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(ground_truth_visualizer)
+project(cluster_projection_node)
 
 # require that dependencies from package.xml be available
 find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies(REQUIRED
-  ${${PROJECT_NAME}_BUILD_DEPENDS}
-  ${${PROJECT_NAME}_BUILDTOOL_DEPENDS}
+ament_auto_find_build_dependencies()
+
+set(CLUSTER_PROJECTION_NODE_SRC
+    src/cluster_projection_node.cpp
 )
 
-set(GROUND_TRUTH_VISUALIZER_NODE_SRC
-  src/ground_truth_visualizer_node.cpp
-)
-
-set(GROUND_TRUTH_VISUALIZER_NODE_HEADERS
-  include/ground_truth_visualizer/ground_truth_visualizer_node.hpp
+set(CLUSTER_PROJECTION_NODE_HEADERS
+    include/cluster_projection_node/cluster_projection_node.hpp
 )
 
 # generate component node library
-ament_auto_add_library(${PROJECT_NAME}_node SHARED
-  ${GROUND_TRUTH_VISUALIZER_NODE_SRC}
-  ${GROUND_TRUTH_VISUALIZER_NODE_HEADERS}
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  ${CLUSTER_PROJECTION_NODE_SRC}
+  ${CLUSTER_PROJECTION_NODE_HEADERS}
 )
-autoware_set_compile_options(${PROJECT_NAME}_node)
-rclcpp_components_register_node(${PROJECT_NAME}_node
-  PLUGIN "autoware::ground_truth_visualizer::GroundTruthVisualizerNode"
-  EXECUTABLE ${PROJECT_NAME}_node_exe
+autoware_set_compile_options(${PROJECT_NAME})
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::cluster_projection_node::ClusterProjectionNode"
+  EXECUTABLE cluster_projection_node_exe
 )
 
 # Testing
@@ -49,4 +46,4 @@ if(BUILD_TESTING)
 endif()
 
 # ament package generation and installing
-ament_auto_package()
+ament_auto_package(INSTALL_TO_SHARE param)

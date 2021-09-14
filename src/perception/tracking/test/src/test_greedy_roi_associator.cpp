@@ -67,7 +67,10 @@ class TestRoiAssociation : public testing::Test
 {
 public:
   TestRoiAssociation()
-  : intrinsics{CameraIntrinsics{500U, 500U, 5.0F, 5.0F}},
+  : image_width{500U},
+    image_heigth{500U},
+    intrinsics{CameraIntrinsics{image_width, image_heigth, 5.0F, 5.0F,
+        static_cast<float32_t>(image_width) / 2.0F, static_cast<float32_t>(image_heigth) / 2.0F}},
     camera{intrinsics},
     associator{{intrinsics, 0.1F}, tf_buffer} {init_frame_id();}
 
@@ -79,6 +82,8 @@ public:
 
   Shape get_ith_shape(const size_t i);
 
+  std::size_t image_width;
+  std::size_t image_heigth;
   CameraIntrinsics intrinsics;
   CameraModel camera;
   RoiAssociator associator;

@@ -37,10 +37,8 @@ bool is_projection_valid(const Projection & projection) noexcept
 CameraModel::CameraModel(
   const CameraIntrinsics & intrinsics
 )
-: m_height_interval{-static_cast<float32_t>(intrinsics.height) / 2.0F,
-    static_cast<float32_t>(intrinsics.height) / 2.0F},
-  m_width_interval{-static_cast<float32_t>(intrinsics.width) / 2.0F,
-    static_cast<float32_t>(intrinsics.width) / 2.0F},
+: m_height_interval{0.F, static_cast<float32_t>(intrinsics.height)},
+  m_width_interval{0.F, static_cast<float32_t>(intrinsics.width)},
   m_corners{
     Point{}.set__x(Interval::min(m_width_interval))
     .set__y(Interval::max(m_height_interval)).set__z(0.0F),
