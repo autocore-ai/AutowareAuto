@@ -1593,7 +1593,7 @@ TEST_F(NERaptorInterfaceTest, DISABLED_TestCmdHighLevelControl)
 
 /* Test High Level Control Command
  * without checking whether ROS messages are received */
-TEST_F(NERaptorInterfaceTest, TestCmdHighLevelControlNoMsgCheck)
+TEST_F(NERaptorInterfaceTest, DISABLED_TestCmdHighLevelControlNoMsgCheck)
 {
   test_hlcc myTests[kNumTests_HLCC];
   MiscReport in_mr{};
