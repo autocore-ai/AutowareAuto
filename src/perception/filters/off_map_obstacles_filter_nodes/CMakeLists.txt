@@ -40,7 +40,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 autoware_set_compile_options(${PROJECT_NAME})
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "autoware::perception::filters::outlier_filter_nodes::RadiusSearch2DFilterNode"
+  PLUGIN "autoware::off_map_obstacles_filter_nodes::OffMapObstaclesFilterNode"
   EXECUTABLE ${PROJECT_NAME}_exe
 )
 
