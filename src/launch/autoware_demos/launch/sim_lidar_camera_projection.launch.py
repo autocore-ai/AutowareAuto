@@ -47,25 +47,6 @@ def generate_launch_description():
         on_exit=Shutdown()
     )
 
-    lidar_projector = Node(
-        name='lidar_projector',
-        package='cluster_projection_node',
-        executable='cluster_projection_node_exe',
-        parameters=[get_param_file('cluster_projection_node',
-                                   'cluster_projection_node.param.yaml')],
-        on_exit=Shutdown()
-    )
-
-    image_visualizer = Node(
-        name='image_visualizer',
-        package='detection_2d_visualizer',
-        executable='detection_2d_visualizer_node_exe',
-        on_exit=Shutdown(),
-        remappings=[
-            ("/projections", "/projected_clusters")
-        ]
-    )
-
     # Setup robot state publisher
     vehicle_description_pkg_path = get_package_share_directory(
         'lexus_rx_450h_description')
@@ -147,6 +128,28 @@ def generate_launch_description():
             ("points_in", "points_nonground"),
             ("points_clustered", "cluster_points")
         ])
+
+    lidar_projector = Node(
+        name='lidar_projector',
+        package='cluster_projection_node',
+        executable='cluster_projection_node_exe',
+        parameters=[get_param_file('cluster_projection_node',
+                                   'cluster_projection_node.param.yaml')],
+        remappings=[
+            ("/clusters_in", "/lidars/lidar_detected_objects"),
+        ],
+        on_exit=Shutdown()
+    )
+
+    image_visualizer = Node(
+        name='image_visualizer',
+        package='detection_2d_visualizer',
+        executable='detection_2d_visualizer_node_exe',
+        on_exit=Shutdown(),
+        remappings=[
+            ("/projections", "/projected_clusters")
+        ]
+    )
 
     rviz_cfg_pkg_path = get_package_share_directory(
         'autoware_demos')

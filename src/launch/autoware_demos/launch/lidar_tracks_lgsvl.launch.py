@@ -268,6 +268,28 @@ def generate_launch_description():
         parameters=[{'robot_description': urdf_file}],
     )
 
+    lidar_projector = Node(
+        name='lidar_projector',
+        package='cluster_projection_node',
+        executable='cluster_projection_node_exe',
+        parameters=[get_param_file('cluster_projection_node',
+                                   'cluster_projection_node.param.yaml')],
+        remappings=[
+            ("/clusters_in", "/lidars/lidar_detected_objects"),
+        ],
+        on_exit=Shutdown()
+    )
+
+    image_visualizer = Node(
+        name='image_visualizer',
+        package='detection_2d_visualizer',
+        executable='detection_2d_visualizer_node_exe',
+        on_exit=Shutdown(),
+        remappings=[
+            ("/projections", "/projected_clusters")
+        ]
+    )
+
     # Run rviz
     examples_pkg_path = get_package_share_directory(
         'autoware_demos')
@@ -297,4 +319,6 @@ def generate_launch_description():
         rviz_runner,
         state_estimation,
         voxel_grid_downsampling,
+        lidar_projector,
+        image_visualizer,
     ])
