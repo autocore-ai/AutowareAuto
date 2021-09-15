@@ -7,7 +7,7 @@
     use_cluster: True
     use_box: True
     max_cloud_size: 55000
-    downsample: False
+    downsample: True
     use_lfit: True
     use_z: True
     cluster:
@@ -27,11 +27,11 @@
       min_point:
         x: -130.0
         y: -130.0
-        z: -130.0
+        z: -1.5
       max_point:
         x: 130.0
         y: 130.0
-        z: 130.0
+        z: 4.0
       voxel_size:
         x: 0.2
         y: 0.2

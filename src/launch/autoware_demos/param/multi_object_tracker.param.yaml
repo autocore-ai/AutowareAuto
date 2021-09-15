@@ -24,7 +24,7 @@
     use_vision: True    # Parameters for associating the vision detections
     vision_association:
       # The IoU threshold for a RoI and projection of another detection to be considered matches
-      iou_threshold: 0.5
+      iou_threshold: 0.4
       # Intrinsics of the camera that is generating the vision detections
       intrinsics:
         width: 1920

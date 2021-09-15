@@ -57,6 +57,7 @@ void ClusterProjectionNode::cluster_callback(
 {
   autoware_auto_msgs::msg::ClassifiedRoiArray projections;
   projections.header = objects_msg->header;
+  projections.header.frame_id = m_camera_frame;
 
   for (const auto & object : objects_msg->objects) {
     try {

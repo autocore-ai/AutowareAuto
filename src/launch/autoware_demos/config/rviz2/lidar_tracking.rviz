@@ -6,18 +6,14 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /PointCloud21
-        - /TrackedObjects1
         - /TrackedObjects1/CAR1
         - /TrackedObjects1/TRUCK1
         - /TrackedObjects1/TRAILER1
         - /TrackedObjects1/MOTORCYCLE1
         - /TrackedObjects1/CYCLIST1
         - /TrackedObjects1/PEDESTRIAN1
-        - /PointCloud22
-        - /DetectedObjects2
       Splitter Ratio: 0.5
-    Tree Height: 337
+    Tree Height: 699
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -66,7 +62,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 255
+      Max Intensity: 212
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud2
@@ -84,52 +80,47 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - CAR:
-        Alpha: 0.699999988079071
-        Color: 0; 0; 142
-      CYCLIST:
-        Alpha: 0.699999988079071
-        Color: 119; 11; 32
-      Class: autoware_rviz_plugins/DetectedObjects
-      Display 3d polygon: true
-      Enabled: true
-      MOTORCYCLE:
-        Alpha: 0.699999988079071
-        Color: 0; 0; 230
-      Name: DetectedObjects
-      Namespaces:
-        {}
-      PEDESTRIAN:
-        Alpha: 0.699999988079071
-        Color: 220; 20; 60
-      TRAILER:
-        Alpha: 0.699999988079071
-        Color: 0; 80; 100
-      TRUCK:
-        Alpha: 0.699999988079071
-        Color: 0; 0; 70
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /lidars/lidar_bounding_boxes
-      UNKNOWN:
-        Alpha: 0.699999988079071
-        Color: 255; 255; 255
-      Value: true
     - Class: rviz_default_plugins/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        base_link:
+          Value: true
+        camera:
+          Value: true
+        gnss:
+          Value: true
+        imu:
+          Value: true
+        lidar_front:
+          Value: true
+        lidar_rear:
+          Value: true
+        nav_base:
+          Value: true
+        odom:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        odom:
+          base_link:
+            camera:
+              {}
+            gnss:
+              {}
+            imu:
+              {}
+            lidar_front:
+              {}
+            lidar_rear:
+              {}
+            nav_base:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -150,6 +141,38 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gnss:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lidar_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        lidar_rear:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        nav_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       TF Prefix: ""
       Update Interval: 0
@@ -250,7 +273,7 @@ Visualization Manager:
         Color: 0; 0; 230
       Name: DetectedObjects
       Namespaces:
-        {}
+        "": true
       PEDESTRIAN:
         Alpha: 0.699999988079071
         Color: 220; 20; 60
@@ -311,7 +334,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 70.683349609375
+      Distance: 46.79145431518555
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -326,10 +349,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.37979668378829956
+      Pitch: 0.689796507358551
       Target Frame: base_link
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.0573837757110596
+      Yaw: 3.02738356590271
     Saved: ~
 Window Geometry:
   Displays:
@@ -347,5 +370,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1280
-  X: 3200
-  Y: 0
+  X: 2129
+  Y: 107

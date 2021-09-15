@@ -12,11 +12,11 @@
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>autoware_auto_launch</exec_depend>
   <exec_depend>behavior_planner_nodes</exec_depend>
+  <exec_depend>cluster_projection_node</exec_depend>
   <exec_depend>covariance_insertion_nodes</exec_depend>
+  <exec_depend>detection_2d_visualizer</exec_depend>
   <exec_depend>euclidean_cluster_nodes</exec_depend>
   <exec_depend>ground_truth_detections</exec_depend>
-  <exec_depend>cluster_projection_node</exec_depend>
-  <exec_depend>detection_2d_visualizer</exec_depend>
   <exec_depend>lane_planner_nodes</exec_depend>
   <exec_depend>lanelet2_global_planner_nodes</exec_depend>
   <exec_depend>lanelet2_map_provider</exec_depend>

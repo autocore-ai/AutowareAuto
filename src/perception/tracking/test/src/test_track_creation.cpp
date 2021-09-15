@@ -252,6 +252,21 @@ TEST_F(TestTrackCreator, TestLidarIfVisionNoNewTrack)
   vision_track_assignment.unassigned_detection_indices = {1, 3};
   vision_detections.rois[1] = this->unmatched_rois[0];
   vision_detections.rois[3] = this->unmatched_rois[1];
+
+  // Add vision that are older than the previous one
+  ClassifiedRoiArray vision_detections_old1;
+  vision_detections_old1.header.stamp = time_utils::to_message(
+    time_utils::from_message(now_time) - std::chrono::milliseconds(17));
+  vision_detections.header.frame_id = "camera";
+
+  // Add vision that is out of range
+  ClassifiedRoiArray vision_detections_old2;
+  vision_detections_old1.header.stamp = time_utils::to_message(
+    time_utils::from_message(now_time) - std::chrono::milliseconds(27));
+  vision_detections.header.frame_id = "camera";
+
+  creator.add_objects(vision_detections_old2, AssociatorResult{});
+  creator.add_objects(vision_detections_old1, AssociatorResult{});
   creator.add_objects(vision_detections, vision_track_assignment);
 
   const auto tf = create_identity_transform(
