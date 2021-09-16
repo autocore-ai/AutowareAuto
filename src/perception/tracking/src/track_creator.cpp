@@ -102,7 +102,6 @@ LidarClusterIfVisionPolicy::LidarClusterIfVisionPolicy(
 TracksAndLeftovers LidarClusterIfVisionPolicy::create()
 {
   TracksAndLeftovers retval;
-  retval.detections_leftover = m_lidar_clusters;
   // For foxy time has to be initialized explicitly with sec, nanosec constructor to use the
   // correct clock source when querying message_filters::cache.
   // Refer: https://github.com/ros2/message_filters/issues/32

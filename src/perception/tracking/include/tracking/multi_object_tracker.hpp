@@ -78,12 +78,12 @@ enum class TrackerUpdateStatus
 /// \brief Output of MultiObjectTracker::update.
 struct TRACKING_PUBLIC TrackerUpdateResult
 {
-  /// The tracking output. It can be nullptr when the status is not Ok.
-  std::unique_ptr<autoware_auto_msgs::msg::TrackedObjects> objects;
+  /// The existing tracks output.
+  autoware_auto_msgs::msg::TrackedObjects tracks;
+  /// Any unassigned clusters left after the update.
+  autoware_auto_msgs::msg::DetectedObjects unassigned_clusters;
   /// Indicates the success or failure, and kind of failure, of the tracking operation.
   TrackerUpdateStatus status;
-  /// How many of the input objects are not present in the output.
-  int ignored = 0;
 };
 
 /// \brief Options for object tracking, with sensible defaults.
@@ -100,7 +100,7 @@ struct TRACKING_PUBLIC MultiObjectTrackerOptions
   /// Number of updates after which unseen tracks should be pruned.
   std::size_t pruning_ticks_threshold = std::numeric_limits<std::size_t>::max();
   /// The frame in which to do tracking.
-  std::string frame = "map";  // This default probably does not need to be changed.
+  std::string frame = "map";
 };
 
 /// \brief A class for multi-object tracking.
@@ -123,7 +123,7 @@ public:
   /// tracking frame, which is defined in MultiObjectTrackerOptions.
   /// \return A result object containing tracks, unless an error occurred.
   TrackerUpdateResult update(
-    DetectedObjectsMsg detections,
+    const DetectedObjectsMsg & detections,
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 
   /// \brief Update the tracks with the specified detections
@@ -137,8 +137,8 @@ private:
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 
   /// Transform the detections into the tracker frame.
-  void transform(
-    DetectedObjectsMsg & detections,
+  DetectedObjectsMsg transform(
+    const DetectedObjectsMsg & detections,
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 
   /// Convert the internal tracked object representation to the ROS message type.

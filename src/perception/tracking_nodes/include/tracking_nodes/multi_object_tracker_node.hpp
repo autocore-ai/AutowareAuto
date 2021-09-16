@@ -33,8 +33,8 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/buffer_core.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf2_msgs/msg/tf_message.hpp>
+#include <tf2_ros/transform_listener.h>
 #include <tracking/multi_object_tracker.hpp>
 #include <tracking_nodes/visibility_control.hpp>
 
@@ -101,8 +101,10 @@ private:
   mpark::variant<PoseSubscriber, OdomSubscriber> m_pose_or_odom_sub;
   mpark::variant<std::shared_ptr<OdomCache>, std::shared_ptr<PoseCache>> m_pose_or_odom_cache;
 
-  /// Publisher for tracked objects.
-  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_pub;
+  /// A Publisher for tracked objects.
+  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_track_publisher;
+  /// A publisher for all the leftover objects.
+  rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_leftover_publisher;
 };
 
 /// Struct to call the process function with correct arguments for the different types of cache

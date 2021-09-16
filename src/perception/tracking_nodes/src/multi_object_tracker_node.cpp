@@ -178,7 +178,8 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
   m_tracker{init_tracker(*this, m_use_vision, m_tf_buffer)},
   m_history_depth{static_cast<size_t>(declare_parameter("history_depth", kDefaultHistoryDepth))},
   m_use_ndt{this->declare_parameter("use_ndt", true)},
-  m_pub{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)}
+  m_track_publisher{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)},
+  m_leftover_publisher{create_publisher<DetectedObjects>("leftover_clusters", m_history_depth)}
 {
   const auto pose_history_depth =
     static_cast<size_t>(declare_parameter("pose_history_depth", kDefaultPoseHistoryDepth));
@@ -215,11 +216,10 @@ void MultiObjectTrackerNode::process(
   const DetectedObjects::ConstSharedPtr & objs,
   const Odometry::ConstSharedPtr & odom)
 {
-  TrackerUpdateResult result = m_tracker.update(*objs, *odom);
+  const TrackerUpdateResult result = m_tracker.update(*objs, *odom);
   if (result.status == TrackerUpdateStatus::Ok) {
-    // The tracker returns its result in a unique_ptr, so the more efficient publish(unique_ptr<T>)
-    // overload can be used.
-    m_pub->publish(std::move(result.objects));
+    m_track_publisher->publish(result.tracks);
+    m_leftover_publisher->publish(result.unassigned_clusters);
   } else {
     RCLCPP_WARN(
       get_logger(), "Tracker update for vision detection at time %d.%d failed. Reason: %s",
