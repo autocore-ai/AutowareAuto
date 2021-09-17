@@ -108,7 +108,7 @@ as `Vehicle URL`.
 Once submitted, click on the wrench icon for the Lexus vehicle and
 
 - Change the bridge type to `Ros2NativeBridge`
-- In the `Sensors` box, copy and paste the content of  [`avp-sensors.json`](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/tools/autoware_demos/config/svl/avp-sensors.json) located in the Autoware.Auto repository at `src/tools/autoware_demos/config/svl` to tell LGSVL about sensor positions and where to communicate information to the Autoware.Auto stack.
+- In the `Sensors` box, copy and paste the content of  [`avp-sensors.json`](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/src/launch/autoware_demos/config/svl/avp-sensors.json) located in the Autoware.Auto repository at `src/tools/autoware_demos/config/svl` to tell LGSVL about sensor positions and where to communicate information to the Autoware.Auto stack.
 
 @image html images/lgsvl-bridge-sensors.png "Configuring bridge and sensors"
 
