@@ -58,13 +58,14 @@ void compare_shapes(
     const auto projected_pt_it = std::find_if(
       projection.shape.begin(), projection.shape.end(),
       [expected_projected_x, expected_projected_y](const auto & pt) {
-        // TODO(#1241): Investigate the numerical instability that causes large
-        //  floating point errors
-        constexpr auto eps = 1e-5F;
+        // Projection requires series of float operations that result in accuracy drop.
+        // Considering the result is in pixel coordinates, the following eps is sufficient for
+        // the unit tests:
+        constexpr auto eps = 1e-4F;
         return autoware::common::helper_functions::comparisons::abs_eq(
-          (x_(pt) - expected_projected_x), 0.0F, eps) &&
+          x_(pt), expected_projected_x, eps) &&
         autoware::common::helper_functions::comparisons::abs_eq(
-          (y_(pt) - expected_projected_y), 0.0F, eps);
+          y_(pt), expected_projected_y, eps);
       });
     EXPECT_NE(projected_pt_it, projection.shape.end());
   }

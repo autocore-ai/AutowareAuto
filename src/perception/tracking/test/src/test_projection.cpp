@@ -184,10 +184,6 @@ TEST_F(PrismProjectionTest, BehindTheImagePlaneTest) {
 
 /// \brief Test to validate that points outside the FoV of the camera are clamped
 TEST_F(PrismProjectionTest, OutOfPlaneTest) {
-  #ifdef __aarch64__
-  // Catastrophic cancellation makes this test fail on the arm release build. See #1241
-  GTEST_SKIP();
-  #endif
   CameraIntrinsics intrinsics{image_width, image_heigth, 1.0F, 1.0F, half_image_width,
     half_image_height};
   CameraModel model{intrinsics};
@@ -196,17 +192,19 @@ TEST_F(PrismProjectionTest, OutOfPlaneTest) {
     static_cast<float32_t>(intrinsics.width) * distance_from_origin * 1000.0F;
   rectangular_prism.polygon.points[1U].x +=
     static_cast<float32_t>(intrinsics.width) * distance_from_origin * 1000.0F;
+
+  // Large numbers might need greater precision tolerance, hence the scaling:
+  const auto feps = rectangular_prism.polygon.points[0U].x *
+    std::numeric_limits<float32_t>::epsilon();
   // Just use the base of the prism to simplify the problem
   auto projection = model.project(rectangular_prism.polygon.points);
   EXPECT_TRUE(projection);
-  const auto check_pt = [&projection](auto x, auto y) {
+  const auto check_pt = [&projection, feps](auto x, auto y) {
       const auto res_it = std::find_if(
         projection->shape.begin(), projection->shape.end(),
-        [x, y](const auto & pt) {
-          return autoware::common::helper_functions::comparisons::abs_eq(
-            (x - pt.x), 0.0F, std::numeric_limits<decltype(x)>::epsilon()) &&
-          autoware::common::helper_functions::comparisons::abs_eq(
-            (y - pt.y), 0.0F, std::numeric_limits<decltype(y)>::epsilon());
+        [x, y, feps](const auto & pt) {
+          return autoware::common::helper_functions::comparisons::abs_eq(x, pt.x, feps) &&
+          autoware::common::helper_functions::comparisons::abs_eq(y, pt.y, feps);
         });
       if (res_it == projection->shape.end()) {
         std::stringstream projected_pts{};
