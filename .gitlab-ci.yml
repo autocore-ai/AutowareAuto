@@ -308,7 +308,7 @@ coverage:
     - 'git lfs install'
     - 'git lfs pull --include="*" --exclude=""'
     - 'vcs import < autoware.auto.$ROS_DISTRO.repos'
-    - './tools/coverage/coverage.sh -u'
+    - './tools/coverage/diff_coverage.sh -u'
   after_script:
     - colcon test-result --verbose
   artifacts:
