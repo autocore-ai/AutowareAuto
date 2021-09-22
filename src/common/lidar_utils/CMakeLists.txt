@@ -27,6 +27,7 @@ if(BUILD_TESTING)
   ament_add_gtest(test_lidar_utils
     test/src/test_fast_atan2.cpp
     test/src/test_point_cloud_utils.cpp
+    test/src/test_cluster_view.cpp
   )
   autoware_set_compile_options(test_lidar_utils)
   target_include_directories(test_lidar_utils
