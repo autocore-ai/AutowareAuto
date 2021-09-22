@@ -71,12 +71,10 @@ MultiObjectTracker init_tracker(
     "object_association.consider_edge_for_big_detection").get<bool>();
 
   auto creation_policy = perception::tracking::TrackCreationPolicy::LidarClusterOnly;
-  const float32_t default_variance =
-    static_cast<float32_t>(node.declare_parameter(
-      "ekf_default_variance").get<float64_t>());
-  const float32_t noise_variance =
-    static_cast<float32_t>(node.declare_parameter(
-      "ekf_noise_variance").get<float64_t>());
+  const auto default_variance = node.declare_parameter(
+    "ekf_default_variance").get<float64_t>();
+  const auto noise_variance = node.declare_parameter(
+    "ekf_noise_variance").get<float64_t>();
   const std::chrono::nanoseconds pruning_time_threshold =
     std::chrono::milliseconds(
     node.declare_parameter(
@@ -146,8 +144,8 @@ std::string status_to_string(TrackerUpdateStatus status)
 }
 
 // Convert pose msg to odom msg
-nav_msgs::msg::Odometry::SharedPtr to_odom(
-  geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_msg)
+Odometry::SharedPtr to_odom(
+  const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & pose_msg)
 {
   nav_msgs::msg::Odometry::SharedPtr odom_msg = std::make_shared<nav_msgs::msg::Odometry>();
   odom_msg->header = pose_msg->header;
@@ -173,50 +171,63 @@ T get_closest_match(const std::vector<T> & matched_msgs, const rclcpp::Time & st
 
 MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & options)
 :  Node("multi_object_tracker_node", options),
+  m_use_ndt{this->declare_parameter("use_ndt", true)},
   m_use_vision{this->declare_parameter("use_vision", true)},
+  m_history_depth{static_cast<std::size_t>(
+      declare_parameter("history_depth", kDefaultHistoryDepth))},
   m_tf_listener{m_tf_buffer},
   m_tracker{init_tracker(*this, m_use_vision, m_tf_buffer)},
-  m_history_depth{static_cast<size_t>(declare_parameter("history_depth", kDefaultHistoryDepth))},
-  m_use_ndt{this->declare_parameter("use_ndt", true)},
   m_track_publisher{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)},
   m_leftover_publisher{create_publisher<DetectedObjects>("leftover_clusters", m_history_depth)}
 {
   const auto pose_history_depth =
     static_cast<size_t>(declare_parameter("pose_history_depth", kDefaultPoseHistoryDepth));
+  m_odom_cache = std::make_unique<OdomCache>();
+  m_odom_cache->setCacheSize(static_cast<std::uint32_t>(pose_history_depth));
   if (m_use_ndt) {
-    m_pose_or_odom_sub.emplace<OdomSubscriber>(
-      this, "ego_state", rclcpp::QoS{pose_history_depth}.get_rmw_qos_profile());
-    m_pose_or_odom_cache = std::make_shared<OdomCache>(
-      mpark::get<OdomSubscriber>(m_pose_or_odom_sub), pose_history_depth);
+    m_odom_subscription = create_subscription<OdometryMsg>(
+      "ego_state", rclcpp::QoS{pose_history_depth},
+      std::bind(&MultiObjectTrackerNode::odometry_callback, this, std::placeholders::_1));
   } else {
-    m_pose_or_odom_sub.emplace<PoseSubscriber>(
-      this, "ego_state", rclcpp::QoS{pose_history_depth}.get_rmw_qos_profile());
-    m_pose_or_odom_cache = std::make_shared<PoseCache>(
-      mpark::get<PoseSubscriber>(m_pose_or_odom_sub), pose_history_depth);
+    m_pose_subscription = create_subscription<PoseMsg>(
+      "ego_state", rclcpp::QoS{pose_history_depth},
+      std::bind(&MultiObjectTrackerNode::pose_callback, this, std::placeholders::_1));
   }
 
-  m_lidar_clusters_sub = create_subscription<autoware_auto_msgs::msg::DetectedObjects>(
-    "detected_objects", rclcpp::QoS{m_history_depth}, [this]
-      (autoware_auto_msgs::msg::DetectedObjects::ConstSharedPtr msg) {
-      mpark::visit(ProcessLidar{this, msg}, m_pose_or_odom_cache);
-    });
+  m_detected_objects_subscription = create_subscription<DetectedObjects>(
+    "detected_objects", rclcpp::QoS{m_history_depth},
+    std::bind(&MultiObjectTrackerNode::detected_objects_callback, this, std::placeholders::_1));
 
   // Initialize vision callbacks if vision is configured to be used:
   if (m_use_vision) {
-    m_maybe_vision_sub.emplace(
-      create_subscription<ClassifiedRoiArray>(
-        "classified_rois", rclcpp::QoS{m_history_depth}, [this]
-          (ClassifiedRoiArray::ConstSharedPtr msg) {
-          mpark::visit(ProcessVision{this, msg}, m_pose_or_odom_cache);
-        }));
+    m_vision_subcription = create_subscription<ClassifiedRoiArray>(
+      "classified_rois", rclcpp::QoS{m_history_depth},
+      std::bind(&MultiObjectTrackerNode::classified_roi_callback, this, std::placeholders::_1));
   }
 }
 
-void MultiObjectTrackerNode::process(
-  const DetectedObjects::ConstSharedPtr & objs,
-  const Odometry::ConstSharedPtr & odom)
+void MultiObjectTrackerNode::odometry_callback(const OdometryMsg::ConstSharedPtr odom)
 {
-  const TrackerUpdateResult result = m_tracker.update(*objs, *odom);
+  m_odom_cache->add(odom);
+}
+
+void MultiObjectTrackerNode::pose_callback(const PoseMsg::ConstSharedPtr pose)
+{
+  m_odom_cache->add(to_odom(pose));
+}
+
+void MultiObjectTrackerNode::detected_objects_callback(const DetectedObjects::ConstSharedPtr objs)
+{
+  const rclcpp::Time msg_stamp{objs->header.stamp.sec, objs->header.stamp.nanosec};
+  const auto earliest_time = msg_stamp - kMaxLidarEgoStateStampDiff;
+  const auto latest_time = msg_stamp + kMaxLidarEgoStateStampDiff;
+  const auto matched_msgs = m_odom_cache->getInterval(earliest_time, latest_time);
+  if (matched_msgs.empty()) {
+    RCLCPP_WARN(get_logger(), "No matching odom msg received for obj msg");
+    return;
+  }
+  const TrackerUpdateResult result = m_tracker.update(
+    *objs, *get_closest_match(matched_msgs, objs->header.stamp));
   if (result.status == TrackerUpdateStatus::Ok) {
     m_track_publisher->publish(result.tracks);
     m_leftover_publisher->publish(result.unassigned_clusters);
@@ -228,81 +239,10 @@ void MultiObjectTrackerNode::process(
   }
 }
 
-void MultiObjectTrackerNode::process(
-  const ClassifiedRoiArray::ConstSharedPtr & rois, const Odometry::ConstSharedPtr &)
+void MultiObjectTrackerNode::classified_roi_callback(const ClassifiedRoiArray::ConstSharedPtr rois)
 {
-  // TODO(#1321): Do we need the odometry input here?
   m_tracker.update(*rois);
 }
-
-MultiObjectTrackerNode::ProcessLidar::ProcessLidar(
-  MultiObjectTrackerNode * tracker_ptr,
-  DetectedObjects::ConstSharedPtr msg)
-{
-  m_node_ptr = tracker_ptr;
-  m_msg = msg;
-
-  const rclcpp::Time msg_stamp{m_msg->header.stamp.sec, m_msg->header.stamp.nanosec};
-  m_left_interval = msg_stamp - kMaxLidarEgoStateStampDiff;
-  m_right_interval = msg_stamp + kMaxLidarEgoStateStampDiff;
-}
-
-void MultiObjectTrackerNode::ProcessLidar::operator()(
-  const std::shared_ptr<OdomCache> & cache_ptr)
-{
-  const auto matched_msgs = cache_ptr->getInterval(m_left_interval, m_right_interval);
-  if (matched_msgs.empty()) {
-    RCLCPP_WARN(m_node_ptr->get_logger(), "No matching odom msg received for obj msg");
-    return;
-  }
-  m_node_ptr->process(m_msg, get_closest_match(matched_msgs, m_msg->header.stamp));
-}
-
-void MultiObjectTrackerNode::ProcessLidar::operator()(
-  const std::shared_ptr<PoseCache> & cache_ptr)
-{
-  const auto matched_msgs = cache_ptr->getInterval(m_left_interval, m_right_interval);
-  if (matched_msgs.empty()) {
-    RCLCPP_WARN(m_node_ptr->get_logger(), "No matching odom msg received for obj msg");
-    return;
-  }
-  m_node_ptr->process(m_msg, to_odom(get_closest_match(matched_msgs, m_msg->header.stamp)));
-}
-
-MultiObjectTrackerNode::ProcessVision::ProcessVision(
-  MultiObjectTrackerNode * tracker_ptr,
-  ClassifiedRoiArray::ConstSharedPtr msg)
-{
-  m_node_ptr = tracker_ptr;
-  m_msg = msg;
-
-  const rclcpp::Time msg_stamp(m_msg->header.stamp.sec, m_msg->header.stamp.nanosec);
-  m_left_interval = msg_stamp - std::chrono::milliseconds(kMaxVisionEgoStateStampDiff);
-  m_right_interval = msg_stamp + std::chrono::milliseconds(kMaxVisionEgoStateStampDiff);
-}
-
-void MultiObjectTrackerNode::ProcessVision::operator()(
-  const std::shared_ptr<OdomCache> & cache_ptr)
-{
-  const auto matched_msgs = cache_ptr->getInterval(m_left_interval, m_right_interval);
-  if (matched_msgs.empty()) {
-    RCLCPP_WARN(m_node_ptr->get_logger(), "No matching odom msg received for vision msg");
-    return;
-  }
-  m_node_ptr->process(m_msg, get_closest_match(matched_msgs, m_msg->header.stamp));
-}
-
-void MultiObjectTrackerNode::ProcessVision::operator()(
-  const std::shared_ptr<PoseCache> & cache_ptr)
-{
-  const auto matched_msgs = cache_ptr->getInterval(m_left_interval, m_right_interval);
-  if (matched_msgs.empty()) {
-    RCLCPP_WARN(m_node_ptr->get_logger(), "No matching pose msg received for vision msg");
-    return;
-  }
-  m_node_ptr->process(m_msg, to_odom(get_closest_match(matched_msgs, m_msg->header.stamp)));
-}
-
 
 }  // namespace tracking_nodes
 }  // namespace autoware

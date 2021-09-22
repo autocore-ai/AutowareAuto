@@ -53,88 +53,42 @@ class TRACKING_NODES_PUBLIC MultiObjectTrackerNode : public rclcpp::Node
 {
   using DetectedObjects = autoware_auto_msgs::msg::DetectedObjects;
   using ClassifiedRoiArray = autoware_auto_msgs::msg::ClassifiedRoiArray;
-  using Odometry = nav_msgs::msg::Odometry;
-
-  using OdomSubscriber = message_filters::Subscriber<nav_msgs::msg::Odometry>;
-  using PoseSubscriber = message_filters::Subscriber<geometry_msgs::msg
-      ::PoseWithCovarianceStamped>;
-
-  using OdomCache = message_filters::Cache<nav_msgs::msg::Odometry>;
-  using PoseCache = message_filters::Cache<geometry_msgs::msg::PoseWithCovarianceStamped>;
+  using OdometryMsg = nav_msgs::msg::Odometry;
+  using PoseMsg = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using OdomCache = message_filters::Cache<OdometryMsg>;
 
 public:
   /// \brief Constructor
   explicit MultiObjectTrackerNode(const rclcpp::NodeOptions & options);
 
-  /// Callback for matching detections + odom messages.
-  /// This unusual signature is mandated by message_filters.
-  void process(
-    const DetectedObjects::ConstSharedPtr & objs,
-    const Odometry::ConstSharedPtr & odom);
-  /// Callback for matching vision detections + odom messages.
-  /// This unusual signature is mandated by message_filters.
-  void process(
-    const ClassifiedRoiArray::ConstSharedPtr & rois,
-    const Odometry::ConstSharedPtr & odom);
-
-  // Forward declare structs that handle variant. Declaration outside the class to better handle
-  // formatting with uncrustify
-  struct ProcessLidar;
-  struct ProcessVision;
-
 private:
-  bool8_t m_use_vision = true;
+  void TRACKING_NODES_LOCAL odometry_callback(const OdometryMsg::ConstSharedPtr msg);
+  void TRACKING_NODES_LOCAL pose_callback(const PoseMsg::ConstSharedPtr msg);
+  void TRACKING_NODES_LOCAL detected_objects_callback(const DetectedObjects::ConstSharedPtr msg);
+  void TRACKING_NODES_LOCAL classified_roi_callback(const ClassifiedRoiArray::ConstSharedPtr msg);
+
+  common::types::bool8_t m_use_ndt{true};
+  common::types::bool8_t m_use_vision{true};
+  std::size_t m_history_depth{0UL};
 
   tf2::BufferCore m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;
 
   /// The actual tracker implementation.
   autoware::perception::tracking::MultiObjectTracker m_tracker;
-  size_t m_history_depth = 0U;
-  bool8_t m_use_ndt = true;
 
-  /// Subscription to detection messages.
-  rclcpp::Subscription<DetectedObjects>::SharedPtr m_lidar_clusters_sub;
-  std::experimental::optional<rclcpp::Subscription<ClassifiedRoiArray>::SharedPtr>
-  m_maybe_vision_sub;
+  rclcpp::Subscription<PoseMsg>::SharedPtr m_pose_subscription{};
+  rclcpp::Subscription<OdometryMsg>::SharedPtr m_odom_subscription{};
+  rclcpp::Subscription<DetectedObjects>::SharedPtr m_detected_objects_subscription{};
+  rclcpp::Subscription<ClassifiedRoiArray>::SharedPtr m_vision_subcription{};
 
-  mpark::variant<PoseSubscriber, OdomSubscriber> m_pose_or_odom_sub;
-  mpark::variant<std::shared_ptr<OdomCache>, std::shared_ptr<PoseCache>> m_pose_or_odom_cache;
+  /// A cache that stores the odometry messages.
+  std::unique_ptr<OdomCache> m_odom_cache{};
 
   /// A Publisher for tracked objects.
-  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_track_publisher;
+  rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_track_publisher{};
   /// A publisher for all the leftover objects.
-  rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_leftover_publisher;
-};
-
-/// Struct to call the process function with correct arguments for the different types of cache
-/// variant
-struct MultiObjectTrackerNode::ProcessLidar
-{
-  ProcessLidar(MultiObjectTrackerNode * tracker_ptr, DetectedObjects::ConstSharedPtr msg);
-  void operator()(const std::shared_ptr<OdomCache> & cache_ptr);
-  void operator()(const std::shared_ptr<PoseCache> & cache_ptr);
-
-private:
-  DetectedObjects::ConstSharedPtr m_msg;
-  MultiObjectTrackerNode * m_node_ptr;
-  rclcpp::Time m_left_interval;
-  rclcpp::Time m_right_interval;
-};
-
-/// Struct to call the process function with correct arguments for the different types of cache
-/// variant
-struct MultiObjectTrackerNode::ProcessVision
-{
-  ProcessVision(MultiObjectTrackerNode * tracker_ptr, ClassifiedRoiArray::ConstSharedPtr msg);
-  void operator()(const std::shared_ptr<OdomCache> & cache_ptr);
-  void operator()(const std::shared_ptr<PoseCache> & cache_ptr);
-
-private:
-  ClassifiedRoiArray::ConstSharedPtr m_msg;
-  MultiObjectTrackerNode * m_node_ptr;
-  rclcpp::Time m_left_interval;
-  rclcpp::Time m_right_interval;
+  rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_leftover_publisher{};
 };
 
 }  // namespace tracking_nodes
