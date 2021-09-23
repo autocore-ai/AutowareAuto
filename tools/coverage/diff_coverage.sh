@@ -81,6 +81,10 @@ if [ ${SKIP_TEST} -eq 0 ]; then
 
   mv log/latest_lcov_stdout.logs log/latest/lcov_stdout.logs  # 'latest' will be the latest test job
   lcov ${OPTS[@]} --capture -o lcov.test >> log/latest/lcov_stdout.logs
+  if [ ! -s lcov.test ]; then
+    echo "No coverage result. Modified packages may not contain any test."
+    exit 0
+  fi
   lcov -a lcov.base -a lcov.test -o lcov.total >> log/latest/lcov_stdout.logs
   lcov -r lcov.total \
     "${AA_PATH}/build/*" \
