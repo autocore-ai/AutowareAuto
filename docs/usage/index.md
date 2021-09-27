@@ -51,3 +51,4 @@ The following pages describe how to run demonstrations which showcase specific p
 - @subpage perception-stack-howto
 - @subpage recordreplay-planner-howto
 - @subpage rosbag-localization-howto
+- @subpage scenario-simulator-howto
