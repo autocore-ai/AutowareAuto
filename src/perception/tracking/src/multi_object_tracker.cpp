@@ -84,11 +84,11 @@ MultiObjectTracker::MultiObjectTracker(
   m_tracks.frame_id = m_options.frame;
 }
 
-TrackerUpdateResult MultiObjectTracker::update(
+DetectedObjectsUpdateResult MultiObjectTracker::update(
   const DetectedObjectsMsg & detections,
   const nav_msgs::msg::Odometry & detection_frame_odometry)
 {
-  TrackerUpdateResult result;
+  DetectedObjectsUpdateResult result;
   result.status = this->validate(detections, detection_frame_odometry);
   if (result.status != TrackerUpdateStatus::Ok) {
     return result;
@@ -144,6 +144,7 @@ TrackerUpdateResult MultiObjectTracker::update(
       std::make_move_iterator(ret.tracks.begin()),
       std::make_move_iterator(ret.tracks.end()));
     result.unassigned_clusters = ret.detections_leftover;
+    result.track_creation_summary = ret.track_creation_summary;
   }
 
   // ==================================

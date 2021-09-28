@@ -275,7 +275,8 @@ def generate_launch_description():
         parameters=[get_param_file('cluster_projection_node',
                                    'cluster_projection_node.param.yaml')],
         remappings=[
-            ("/clusters_in", "/lidars/lidar_detected_objects"),
+            ("/clusters_in", "/perception/associated_detections"),
+            ("/projected_clusters", "/track_creating_projections"),
         ],
         on_exit=Shutdown()
     )
@@ -285,8 +286,12 @@ def generate_launch_description():
         package='detection_2d_visualizer',
         executable='detection_2d_visualizer_node_exe',
         on_exit=Shutdown(),
+        parameters=[get_param_file('autoware_demos',
+                                   'tracker_detection_visualization.param.yaml')],
         remappings=[
-            ("/projections", "/projected_clusters")
+            ("/projections", "/track_creating_projections"),
+            ("/rois", "perception/ground_truth_detections_2d"),
+            ("/image_with_detections", "/image_with_detections")
         ]
     )
 
@@ -320,5 +325,5 @@ def generate_launch_description():
         state_estimation,
         voxel_grid_downsampling,
         lidar_projector,
-        image_visualizer,
+        image_visualizer
     ])

@@ -22,6 +22,8 @@
       consider_edge_for_big_detection: True
     # Parameter to allow the tracker to use vision detections for improving tracking.
     use_vision: True
+    # Parameter to allow the tracker to visualize the 2d-3d associations during track creation
+    visualize_track_creation: True
     # Parameters for associating the vision detections
     vision_association:
       # The IoU threshold for a RoI and projection of another detection to be considered matches

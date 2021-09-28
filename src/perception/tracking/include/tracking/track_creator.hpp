@@ -61,13 +61,30 @@ struct TRACKING_PUBLIC TrackCreatorConfig
   std::experimental::optional<VisionPolicyConfig> vision_policy_config = std::experimental::nullopt;
 };
 
+
+struct TRACKING_PUBLIC ClusterVisionAssociation
+{
+  AssociatorResult assignments;
+  autoware_auto_msgs::msg::ClassifiedRoiArray rois;
+  autoware_auto_msgs::msg::DetectedObjects objects3d;
+};
+
+struct TRACKING_PUBLIC TrackCreationSummary
+{
+  /// The vision-cluster association result if it applies
+  std::experimental::optional<ClusterVisionAssociation> maybe_vision_associations{};
+};
+
+
 /// Struct to be used as the return value from track creation process
-struct TRACKING_PUBLIC TracksAndLeftovers
+struct TRACKING_PUBLIC TrackCreationResult
 {
   /// List of newly created tracks
   std::vector<TrackedObject> tracks;
   /// List of detection that was not associated and not used to create tracks
   autoware_auto_msgs::msg::DetectedObjects detections_leftover;
+  /// Additional context regarding the track creation
+  TrackCreationSummary track_creation_summary{};
 };
 
 /// \brief Abstract base class for different track creation policy implementations
@@ -85,7 +102,7 @@ public:
 
   /// Function to create new tracks based on previously supplied detection data
   /// \return Struct containing new tracks and unused detections
-  virtual TracksAndLeftovers create() = 0;
+  virtual TrackCreationResult create() = 0;
 
   /// \brief Keep tracks of all unassigned lidar clusters. Clears the previously passed clusters
   /// \param clusters DetectedObjects msg output by the lidar clustering algorithm
@@ -126,7 +143,7 @@ public:
   LidarOnlyPolicy(
     const float64_t default_variance, const float64_t noise_variance,
     const tf2::BufferCore & tf_buffer);
-  TracksAndLeftovers create() override;
+  TrackCreationResult create() override;
 
   void add_objects(
     const autoware_auto_msgs::msg::DetectedObjects & clusters,
@@ -150,7 +167,7 @@ public:
   LidarClusterIfVisionPolicy(
     const VisionPolicyConfig & cfg, const float64_t default_variance,
     const float64_t noise_variance, const tf2::BufferCore & tf_buffer);
-  TracksAndLeftovers create() override;
+  TrackCreationResult create() override;
 
   void add_objects(
     const autoware_auto_msgs::msg::DetectedObjects & clusters,
@@ -183,7 +200,7 @@ public:
   /// \brief Create new tracks based on the policy and unassociated detections. Call the
   ///        appropriate add_unassigned_* functions before calling this.
   /// \return vector of newly created TrackedObject objects
-  inline TracksAndLeftovers create_tracks() {return m_policy_object->create();}
+  inline TrackCreationResult create_tracks() {return m_policy_object->create();}
 
   /// Function to add unassigned detections. This function just passes through the arguments.
   /// The actual implementation is handled by the individual policy implementation classes.

@@ -76,7 +76,7 @@ enum class TrackerUpdateStatus
 
 
 /// \brief Output of MultiObjectTracker::update.
-struct TRACKING_PUBLIC TrackerUpdateResult
+struct TRACKING_PUBLIC DetectedObjectsUpdateResult
 {
   /// The existing tracks output.
   autoware_auto_msgs::msg::TrackedObjects tracks;
@@ -84,6 +84,8 @@ struct TRACKING_PUBLIC TrackerUpdateResult
   autoware_auto_msgs::msg::DetectedObjects unassigned_clusters;
   /// Indicates the success or failure, and kind of failure, of the tracking operation.
   TrackerUpdateStatus status;
+  /// Additional context regarding the track creation
+  TrackCreationSummary track_creation_summary;
 };
 
 /// \brief Options for object tracking, with sensible defaults.
@@ -122,7 +124,7 @@ public:
   /// \param[in] detection_frame_odometry An odometry message for the detection frame in the
   /// tracking frame, which is defined in MultiObjectTrackerOptions.
   /// \return A result object containing tracks, unless an error occurred.
-  TrackerUpdateResult update(
+  DetectedObjectsUpdateResult update(
     const DetectedObjectsMsg & detections,
     const nav_msgs::msg::Odometry & detection_frame_odometry);
 

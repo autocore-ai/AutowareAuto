@@ -89,6 +89,15 @@ private:
   rclcpp::Publisher<autoware_auto_msgs::msg::TrackedObjects>::SharedPtr m_track_publisher{};
   /// A publisher for all the leftover objects.
   rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_leftover_publisher{};
+
+  // Visualization variables & functions
+  void maybe_visualize(
+    const perception::tracking::DetectedObjectsUpdateResult & result,
+    DetectedObjects all_objects);
+
+  bool8_t m_visualize_track_creation = false;
+
+  rclcpp::Publisher<DetectedObjects>::SharedPtr m_track_creating_clusters_pub;
 };
 
 }  // namespace tracking_nodes

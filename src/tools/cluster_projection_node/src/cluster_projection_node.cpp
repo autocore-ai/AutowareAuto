@@ -27,10 +27,10 @@ namespace cluster_projection_node
 ClusterProjectionNode::ClusterProjectionNode(const rclcpp::NodeOptions & options)
 :  Node("cluster_projection_node", options),
   m_clusters_sub{create_subscription<autoware_auto_msgs::msg::DetectedObjects>(
-      "clusters_in", rclcpp::QoS{10},
+      "clusters_in", rclcpp::QoS{30},
       std::bind(&ClusterProjectionNode::cluster_callback, this, std::placeholders::_1))},
   m_projection_pub{create_publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>(
-      "/projected_clusters", rclcpp::QoS{10})},
+      "/projected_clusters", rclcpp::QoS{30})},
   m_camera_model{{
         static_cast<std::size_t>(declare_parameter(
           "camera_intrinsics.width").get<int64_t>()),

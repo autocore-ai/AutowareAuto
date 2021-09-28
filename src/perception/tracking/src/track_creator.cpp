@@ -59,9 +59,9 @@ void LidarOnlyPolicy::add_objects(
   m_lidar_clusters = populate_unassigned_lidar_detections(clusters, associator_result);
 }
 
-TracksAndLeftovers LidarOnlyPolicy::create()
+TrackCreationResult LidarOnlyPolicy::create()
 {
-  TracksAndLeftovers retval;
+  TrackCreationResult retval;
   for (const auto & cluster : m_lidar_clusters.objects) {
     retval.tracks.emplace_back(
       TrackedObject(cluster, m_default_variance, m_noise_variance));
@@ -99,9 +99,10 @@ LidarClusterIfVisionPolicy::LidarClusterIfVisionPolicy(
   m_vision_rois_cache_ptr->setCacheSize(kVisionCacheSize);
 }
 
-TracksAndLeftovers LidarClusterIfVisionPolicy::create()
+TrackCreationResult LidarClusterIfVisionPolicy::create()
 {
-  TracksAndLeftovers retval;
+  TrackCreationResult retval;
+
   // For foxy time has to be initialized explicitly with sec, nanosec constructor to use the
   // correct clock source when querying message_filters::cache.
   // Refer: https://github.com/ros2/message_filters/issues/32
@@ -117,17 +118,23 @@ TracksAndLeftovers LidarClusterIfVisionPolicy::create()
   }
 
   const auto & vision_msg = *vision_msg_matches.back();
-  const auto result = m_associator.assign(vision_msg, m_lidar_clusters);
+  const auto association_result = m_associator.assign(vision_msg, m_lidar_clusters);
+
+  retval.track_creation_summary.maybe_vision_associations.emplace();
+  retval.track_creation_summary.maybe_vision_associations->assignments = association_result;
+  retval.track_creation_summary.maybe_vision_associations->rois = vision_msg;
+  retval.track_creation_summary.maybe_vision_associations->objects3d = m_lidar_clusters;
+
   std::set<size_t, std::greater<>> lidar_idx_to_erase;
 
   for (size_t cluster_idx = 0U; cluster_idx < m_lidar_clusters.objects.size();
     cluster_idx++)
   {
-    if (result.track_assignments[cluster_idx] != AssociatorResult::UNASSIGNED) {
+    if (association_result.track_assignments[cluster_idx] != AssociatorResult::UNASSIGNED) {
       lidar_idx_to_erase.insert(cluster_idx);
       // TrackedObject constructor uses the classification field in the DetectedObject to
       // initialize track class. So assign the class from the associated ROI to the cluster.
-      m_lidar_clusters.objects[cluster_idx].classification = vision_msg.rois[result
+      m_lidar_clusters.objects[cluster_idx].classification = vision_msg.rois[association_result
           .track_assignments[cluster_idx]].classifications;
       retval.tracks.emplace_back(
         TrackedObject(

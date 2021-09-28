@@ -38,7 +38,7 @@ using autoware::common::types::float64_t;
 using autoware::perception::tracking::MultiObjectTracker;
 using autoware::perception::tracking::MultiObjectTrackerOptions;
 using autoware::perception::tracking::TrackCreatorConfig;
-using autoware::perception::tracking::TrackerUpdateResult;
+using autoware::perception::tracking::DetectedObjectsUpdateResult;
 using autoware::perception::tracking::TrackerUpdateStatus;
 using autoware::perception::tracking::GreedyRoiAssociatorConfig;
 using autoware::perception::tracking::CameraIntrinsics;
@@ -178,7 +178,8 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
   m_tf_listener{m_tf_buffer},
   m_tracker{init_tracker(*this, m_use_vision, m_tf_buffer)},
   m_track_publisher{create_publisher<TrackedObjects>("tracked_objects", m_history_depth)},
-  m_leftover_publisher{create_publisher<DetectedObjects>("leftover_clusters", m_history_depth)}
+  m_leftover_publisher{create_publisher<DetectedObjects>("leftover_clusters", m_history_depth)},
+  m_visualize_track_creation{this->declare_parameter("visualize_track_creation", false)}
 {
   const auto pose_history_depth =
     static_cast<size_t>(declare_parameter("pose_history_depth", kDefaultPoseHistoryDepth));
@@ -204,6 +205,15 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
       "classified_rois", rclcpp::QoS{m_history_depth},
       std::bind(&MultiObjectTrackerNode::classified_roi_callback, this, std::placeholders::_1));
   }
+
+  if (m_visualize_track_creation) {
+    if (!m_use_vision) {
+      throw std::runtime_error(
+              "Visualization can only be enabled if the vision detections are enabled.");
+    }
+    m_track_creating_clusters_pub =
+      create_publisher<DetectedObjects>("associated_detections", m_history_depth);
+  }
 }
 
 void MultiObjectTrackerNode::odometry_callback(const OdometryMsg::ConstSharedPtr odom)
@@ -226,11 +236,12 @@ void MultiObjectTrackerNode::detected_objects_callback(const DetectedObjects::Co
     RCLCPP_WARN(get_logger(), "No matching odom msg received for obj msg");
     return;
   }
-  const TrackerUpdateResult result = m_tracker.update(
+  const auto result = m_tracker.update(
     *objs, *get_closest_match(matched_msgs, objs->header.stamp));
   if (result.status == TrackerUpdateStatus::Ok) {
     m_track_publisher->publish(result.tracks);
     m_leftover_publisher->publish(result.unassigned_clusters);
+    maybe_visualize(result, *objs);
   } else {
     RCLCPP_WARN(
       get_logger(), "Tracker update for vision detection at time %d.%d failed. Reason: %s",
@@ -244,6 +255,19 @@ void MultiObjectTrackerNode::classified_roi_callback(const ClassifiedRoiArray::C
   m_tracker.update(*rois);
 }
 
+void MultiObjectTrackerNode::maybe_visualize(
+  const DetectedObjectsUpdateResult & result,
+  DetectedObjects all_objects)
+{
+  if (!m_visualize_track_creation) {
+    return;
+  }
+  // Align the detections on time with the rois they are associated to.
+  const auto & rois = result.track_creation_summary.maybe_vision_associations->rois;
+  all_objects.header.stamp = rois.header.stamp;
+
+  m_track_creating_clusters_pub->publish(all_objects);
+}
 }  // namespace tracking_nodes
 }  // namespace autoware
 
