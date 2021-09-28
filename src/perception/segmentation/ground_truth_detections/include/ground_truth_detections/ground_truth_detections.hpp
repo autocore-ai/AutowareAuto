@@ -24,8 +24,12 @@
 #include <ground_truth_detections/visibility_control.hpp>
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
+#include <autoware_auto_msgs/msg/detected_object_kinematics.hpp>
+#include <autoware_auto_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <lgsvl_msgs/msg/detection2_d_array.hpp>
+#include <lgsvl_msgs/msg/detection3_d_array.hpp>
+#include <string>
 
 namespace autoware
 {
@@ -35,24 +39,48 @@ namespace ground_truth_detections
 /**
  * @brief Make classification with class known with certainty.
  *
- * The label in `detection` is mapped to an `ObjectClassification` value if known, else mapped to
- * `UNKNOWN`. The full mapping is given in the design doc.
+ * The `label` is mapped to an `ObjectClassification` value if known, else mapped to `UNKNOWN`. The
+ * full mapping is given in the design doc.
  *
- * @param detection The input detection
+ * @param label The label of an detection assumed to come from SVL
  * @return the classification
  */
 autoware_auto_msgs::msg::ObjectClassification GROUND_TRUTH_DETECTIONS_PUBLIC make_classification(
-  const lgsvl_msgs::msg::Detection2D & detection);
+  const std::string & label);
 
 /**
  * @brief Convert 2D bounding box from LGSVL format of center point, width, and height to a
- * polygon with four points
+ * polygon with four points in image coordinates.
  *
- * @param detection The input detection
+ * @param detection The 2D input detection
  * @return the output polygon. The first point is the lower left corner, the second point is the lower right corner etc.
  */
 geometry_msgs::msg::Polygon GROUND_TRUTH_DETECTIONS_PUBLIC make_polygon(
   const lgsvl_msgs::msg::Detection2D & detection);
+
+/**
+ * @brief Make kinematics from a 3D detection from SVL
+ *
+ * @param detection The 3D input detection
+ */
+autoware_auto_msgs::msg::DetectedObjectKinematics GROUND_TRUTH_DETECTIONS_PUBLIC make_kinematics(
+  const lgsvl_msgs::msg::Detection3D & detection);
+
+/**
+ * @brief Make a (2D + height) shape from a 3D detection from SVL
+ *
+ * The four points of the shape's polygon represent the bottom of the detection. The first point is
+ * the rear left corner, the second point is the rear right corner, the third point is the front
+ * right corner, and the fourth point is the front left corner.
+ *
+ * The z coordinate of all four points is identical and set to the minimum value of all points after
+ * rotating and translating in 3D. This assumes the detection is made in a frame whose z axis is
+ * gravity aligned.
+ *
+ * @param detection The 3D input detection
+ */
+autoware_auto_msgs::msg::Shape GROUND_TRUTH_DETECTIONS_PUBLIC make_shape(
+  const lgsvl_msgs::msg::Detection3D & detection);
 
 }  // namespace ground_truth_detections
 }  // namespace autoware

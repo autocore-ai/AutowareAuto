@@ -199,5 +199,15 @@
       "yaw": 0,
       "roll": 0
     }
+  },
+  {
+    "type": "3D Ground Truth",
+    "name": "3D Ground Truth",
+    "params": {
+      "Frequency": 10,
+      "MaxDistance": 200,
+      "Topic": "/simulator/ground_truth/detections3D"
+    },
+    "parent": "base_link"
   }
 ]

@@ -24,7 +24,9 @@
 #include <ground_truth_detections/ground_truth_detections.hpp>
 
 #include <autoware_auto_msgs/msg/classified_roi_array.hpp>
+#include <autoware_auto_msgs/msg/detected_objects.hpp>
 #include <lgsvl_msgs/msg/detection2_d_array.hpp>
+#include <lgsvl_msgs/msg/detection3_d_array.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 namespace autoware
@@ -46,9 +48,17 @@ private:
   /// @param msg Input message
   void on_detection(const lgsvl_msgs::msg::Detection2DArray & msg);
 
+  /// \brief Callback for input message. Publish output message.
+  /// @param msg Input message
+  void on_detection(const lgsvl_msgs::msg::Detection3DArray & msg);
+
   rclcpp::Publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>::SharedPtr m_detection2d_pub{};
   rclcpp::Subscription<lgsvl_msgs::msg::Detection2DArray>::SharedPtr m_detection2d_sub{};
-  static constexpr char kFrameId[] = "camera";
+  static constexpr char kFrameId2d[] = "camera";
+
+  rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_detection3d_pub{};
+  rclcpp::Subscription<lgsvl_msgs::msg::Detection3DArray>::SharedPtr m_detection3d_sub{};
+  static constexpr char kFrameId3d[] = "base_link";
 };
 }  // namespace ground_truth_detections
 }  // namespace autoware
