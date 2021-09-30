@@ -86,6 +86,8 @@ TEST(ClassificaitonTrackerTest, TestMultipleUpdates) {
     {{autoware_auto_msgs::msg::ObjectClassification::CAR, 1.0F}});
   const DetectedObject truck = create_object(
     {{autoware_auto_msgs::msg::ObjectClassification::TRUCK, 1.0F}});
+  const DetectedObject unknown_object = create_object(
+    {{autoware_auto_msgs::msg::ObjectClassification::UNKNOWN, 1.0F}});
   ClassificationTracker tracker;
   tracker.update(car.classification);
   EXPECT_EQ(autoware_auto_msgs::msg::ObjectClassification::CAR, tracker.most_likely_class());
@@ -97,6 +99,14 @@ TEST(ClassificaitonTrackerTest, TestMultipleUpdates) {
   tracker.update(car.classification, 100.0F);
   tracker.update(car.classification, 100.0F);
   EXPECT_EQ(autoware_auto_msgs::msg::ObjectClassification::TRUCK, tracker.most_likely_class());
+  // Perform updates with a normal covariance. These should change the most likely class.
+  tracker.update(car.classification);
+  tracker.update(car.classification);
+  EXPECT_EQ(autoware_auto_msgs::msg::ObjectClassification::CAR, tracker.most_likely_class());
+  tracker.update(unknown_object.classification);
+  tracker.update(unknown_object.classification);
+  tracker.update(unknown_object.classification);
+  EXPECT_EQ(autoware_auto_msgs::msg::ObjectClassification::UNKNOWN, tracker.most_likely_class());
 }
 
 TEST(ClassificaitonTrackerTest, TestMultipleUpdatesInOneObject) {

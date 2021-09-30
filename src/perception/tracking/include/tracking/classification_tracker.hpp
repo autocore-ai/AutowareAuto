@@ -63,8 +63,10 @@ public:
 
   /// Allow specifying a custom observation covariance.
   explicit GenericClassificationTracker(
-    const autoware::common::types::float32_t default_observation_covariance)
-  : m_default_observation_covariance{default_observation_covariance} {}
+    const autoware::common::types::float32_t default_observation_covariance,
+    const autoware::common::types::float32_t initial_state_covariance)
+  : m_default_observation_covariance{default_observation_covariance},
+    m_initial_state_covariance{initial_state_covariance} {}
 
   ///
   /// @brief      Update the class probabilities given a classification update.
@@ -172,15 +174,14 @@ private:
     return initial_state;
   }
 
+  /// The default observation covariance.
+  autoware::common::types::float32_t m_default_observation_covariance{0.1F};
+  autoware::common::types::float32_t m_initial_state_covariance{100000.0F};
 
   /// The underlying Kalman filter.
   ClassTrackerKalmanFilter m_tracker = common::state_estimation::make_correction_only_kalman_filter(
     create_initial_classification_vector(),
-    std::numeric_limits<common::types::float32_t>::max() *
-    ClassificationStateT::Matrix::Identity());
-
-  /// The default observation covariance.
-  autoware::common::types::float32_t m_default_observation_covariance{0.1F};
+    m_initial_state_covariance * ClassificationStateT::Matrix::Identity());
 };
 
 
