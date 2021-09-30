@@ -1,0 +1,10 @@
+# Autoware State Monitor Parameters
+/**:
+  ros__parameters:
+    update_rate: 10.0
+    arrived_distance_threshold: 2.0
+    stopped_time_threshold: 1.0
+    stopped_velocity_threshold_mps: 0.01
+    wait_time_after_initializing: 1.0
+    wait_time_after_planning: 1.0
+    wait_time_after_arrived_goal: 2.0

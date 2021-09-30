@@ -11,13 +11,14 @@ Parts of the AutowareAuto stack could be split into different pipelines allowing
 
 # Design
 <!-- Required -->
-The launch files will be split into 8 different pipelines:
+The launch files will be split into 9 different pipelines:
  * localization
  * mapping
  * perception
  * planning
  * sensors
  * simulator
+ * system
  * vehicle
  * visualization
 
