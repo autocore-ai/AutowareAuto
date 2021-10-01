@@ -21,6 +21,7 @@
 #include <common/types.hpp>
 #include <autoware_auto_msgs/msg/wipers_command.hpp>
 #include <autoware_auto_msgs/msg/headlights_command.hpp>
+#include <autoware_auto_msgs/msg/horn_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_odometry.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
@@ -41,6 +42,7 @@ namespace drivers
 namespace vehicle_interface
 {
 using autoware_auto_msgs::msg::HeadlightsCommand;
+using autoware_auto_msgs::msg::HornCommand;
 using autoware_auto_msgs::msg::WipersCommand;
 using MaybeStateCommand = std::experimental::optional<autoware_auto_msgs::msg::VehicleStateCommand>;
 using BasicControlCommand = autoware_auto_msgs::msg::VehicleControlCommand;
@@ -215,7 +217,7 @@ private:
     ValueStamp<decltype(HeadlightsCommand::command)> headlight;
     ValueStamp<decltype(VSC::mode)> mode;
     ValueStamp<decltype(VSC::hand_brake)> hand_brake;
-    ValueStamp<decltype(VSC::horn)> horn;
+    ValueStamp<decltype(HornCommand::active)> horn;
   };  // struct StateChangeRequest
   //lint -restore NOLINT
   // Make sure uint members are within range--otherwise set to NO_COMMAND

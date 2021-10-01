@@ -25,6 +25,8 @@
 
 #include "autoware_auto_msgs/msg/headlights_command.hpp"
 #include "autoware_auto_msgs/msg/headlights_report.hpp"
+#include "autoware_auto_msgs/msg/horn_command.hpp"
+#include "autoware_auto_msgs/msg/horn_report.hpp"
 #include "autoware_auto_msgs/msg/wipers_command.hpp"
 #include "autoware_auto_msgs/msg/wipers_report.hpp"
 
@@ -43,6 +45,8 @@ using VSC = autoware_auto_msgs::msg::VehicleStateCommand;
 using VSR = StateReport;
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
+using autoware_auto_msgs::msg::HornCommand;
+using autoware_auto_msgs::msg::HornReport;
 using autoware_auto_msgs::msg::WipersCommand;
 using autoware_auto_msgs::msg::WipersReport;
 static_assert(VSC::BLINKER_OFF == VSR::BLINKER_OFF, "BLINKER_OFF!=");

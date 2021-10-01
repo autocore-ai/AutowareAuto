@@ -16,6 +16,7 @@
 #include "vehicle_interface/platform_interface.hpp"
 
 #include "autoware_auto_msgs/msg/headlights_command.hpp"
+#include "autoware_auto_msgs/msg/horn_command.hpp"
 
 namespace autoware
 {
@@ -45,6 +46,12 @@ PlatformInterface::get_headlights_report() const noexcept
   return m_headlights_report;
 }
 
+const autoware_auto_msgs::msg::HornReport &
+PlatformInterface::get_horn_report() const noexcept
+{
+  return m_horn_report;
+}
+
 const autoware_auto_msgs::msg::WipersReport &
 PlatformInterface::get_wipers_report() const noexcept
 {
@@ -61,6 +68,11 @@ autoware_auto_msgs::msg::HeadlightsReport & PlatformInterface::headlights_report
   return m_headlights_report;
 }
 
+autoware_auto_msgs::msg::HornReport & PlatformInterface::horn_report() noexcept
+{
+  return m_horn_report;
+}
+
 autoware_auto_msgs::msg::WipersReport & PlatformInterface::wipers_report() noexcept
 {
   return m_wipers_report;
@@ -71,6 +83,13 @@ void PlatformInterface::send_headlights_command(
 {
   (void)msg;
   throw std::runtime_error("HeadlightsCommand not supported by this vehicle interface");
+}
+
+void PlatformInterface::send_horn_command(
+  const autoware_auto_msgs::msg::HornCommand & msg)
+{
+  (void)msg;
+  throw std::runtime_error("HornCommand not supported by this vehicle interface");
 }
 
 void PlatformInterface::send_wipers_command(

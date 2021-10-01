@@ -37,6 +37,7 @@ LgsvlInterfaceNode::LgsvlInterfaceNode(
     "lgsvl_interface",
     std::unordered_set<ViFeature> {
       ViFeature::HEADLIGHTS,
+      ViFeature::HORN,
       ViFeature::WIPERS,
     },
     options

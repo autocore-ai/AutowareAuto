@@ -53,6 +53,8 @@ namespace vehicle_interface
 using Real = decltype(BasicControlCommand::long_accel_mps2);
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
+using autoware_auto_msgs::msg::HornCommand;
+using autoware_auto_msgs::msg::HornReport;
 using autoware_auto_msgs::msg::WipersCommand;
 using autoware_auto_msgs::msg::WipersReport;
 
@@ -72,6 +74,7 @@ struct FilterConfig
 enum class ViFeature
 {
   HEADLIGHTS,
+  HORN,
   WIPERS,
 };
 
@@ -169,6 +172,8 @@ private:
     m_state_sub{nullptr};
   rclcpp::Publisher<HeadlightsReport>::SharedPtr m_headlights_rpt_pub{nullptr};
   rclcpp::Subscription<HeadlightsCommand>::SharedPtr m_headlights_cmd_sub{nullptr};
+  rclcpp::Publisher<HornReport>::SharedPtr m_horn_rpt_pub{nullptr};
+  rclcpp::Subscription<HornCommand>::SharedPtr m_horn_cmd_sub{nullptr};
   rclcpp::Publisher<WipersReport>::SharedPtr m_wipers_rpt_pub{nullptr};
   rclcpp::Subscription<WipersCommand>::SharedPtr m_wipers_cmd_sub{nullptr};
   rclcpp::Service<autoware_auto_msgs::srv::AutonomyModeChange>::SharedPtr m_mode_service{nullptr};
@@ -191,6 +196,7 @@ private:
   std::map<std::string, ViFeature> m_avail_features =
   {
     {"headlights", ViFeature::HEADLIGHTS},
+    {"horn", ViFeature::HORN},
     {"wipers", ViFeature::WIPERS},
   };
   std::unordered_set<ViFeature> m_enabled_features{};

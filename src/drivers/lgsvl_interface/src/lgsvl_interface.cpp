@@ -31,6 +31,8 @@
 
 #include "autoware_auto_msgs/msg/headlights_command.hpp"
 #include "autoware_auto_msgs/msg/headlights_report.hpp"
+#include "autoware_auto_msgs/msg/horn_command.hpp"
+#include "autoware_auto_msgs/msg/horn_report.hpp"
 #include "autoware_auto_msgs/msg/wipers_command.hpp"
 #include "autoware_auto_msgs/msg/wipers_report.hpp"
 
@@ -43,6 +45,8 @@ namespace lgsvl_interface
 {
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
+using autoware_auto_msgs::msg::HornCommand;
+using autoware_auto_msgs::msg::HornReport;
 using autoware_auto_msgs::msg::WipersCommand;
 using autoware_auto_msgs::msg::WipersReport;
 
@@ -299,7 +303,6 @@ bool8_t LgsvlInterface::send_state_command(const autoware_auto_msgs::msg::Vehicl
   m_lgsvl_state.set__current_gear(msg_corrected.gear);
   m_lgsvl_state.set__vehicle_mode(msg_corrected.mode);
   m_lgsvl_state.set__hand_brake_active(msg_corrected.hand_brake);
-  m_lgsvl_state.set__horn_active(msg_corrected.horn);
   m_lgsvl_state.set__autonomous_mode_active(
     msg_corrected.mode ==
     VSD::VEHICLE_MODE_COMPLETE_AUTO_DRIVE ? true : false);
@@ -371,6 +374,11 @@ void LgsvlInterface::send_headlights_command(const autoware_auto_msgs::msg::Head
   }
 
   m_lgsvl_state.set__headlight_state(shifted_command);
+}
+
+void LgsvlInterface::send_horn_command(const autoware_auto_msgs::msg::HornCommand & msg)
+{
+  m_lgsvl_state.set__horn_active(msg.active);
 }
 
 void LgsvlInterface::send_wipers_command(const autoware_auto_msgs::msg::WipersCommand & msg)

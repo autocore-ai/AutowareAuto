@@ -208,6 +208,10 @@ public:
   /// \param[in] msg The headlights command to send to the vehicle
   void send_headlights_command(const HeadlightsCommand & msg) override;
 
+  /// \brief Send a horn command to the vehicle platform.
+  /// \param[in] msg The horn command to send to the vehicle
+  void send_horn_command(const HornCommand & msg) override;
+
   /// \brief Send a wipers command to the vehicle platform.
   /// \param[in] msg The wipers command to send to the vehicle
   void send_wipers_command(const WipersCommand & msg) override;

@@ -288,6 +288,15 @@ void VehicleInterfaceNode::init(
       {m_interface->send_headlights_command(*msg);});
   }
 
+  if (m_enabled_features.find(ViFeature::HORN) != m_enabled_features.end()) {
+    m_horn_rpt_pub = create_publisher<autoware_auto_msgs::msg::HornReport>(
+      "horn_report", rclcpp::QoS{10U});
+    m_horn_cmd_sub = create_subscription<autoware_auto_msgs::msg::HornCommand>(
+      "horn_command", rclcpp::QoS{10U},
+      [this](autoware_auto_msgs::msg::HornCommand::SharedPtr msg)
+      {m_interface->send_horn_command(*msg);});
+  }
+
   if (m_enabled_features.find(ViFeature::WIPERS) != m_enabled_features.end()) {
     m_wipers_rpt_pub = create_publisher<autoware_auto_msgs::msg::WipersReport>(
       "wipers_report", rclcpp::QoS{10U});
