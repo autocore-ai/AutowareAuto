@@ -66,7 +66,7 @@ private:
   // preallocated message
   PointCloud2 m_ground_msg;
   PointCloud2 m_nonground_msg;
-  const std::size_t m_pcl_size;
+  const uint32_t m_pcl_size;
   const std::string m_frame_id;
   // Basic stateful stuff, will get refactored after we have a proper state machine implementation
   bool8_t m_has_failed;

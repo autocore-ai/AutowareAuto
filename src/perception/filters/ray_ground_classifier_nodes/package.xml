@@ -12,6 +12,7 @@
     <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
     <depend>autoware_auto_common</depend>
+    <depend>point_cloud_msg_wrapper</depend>
     <depend>ray_ground_classifier</depend>
     <depend>rclcpp</depend>
     <depend>rclcpp_components</depend>

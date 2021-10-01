@@ -17,6 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <common/types.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <ray_ground_classifier_nodes/ray_ground_classifier_cloud_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <string>
@@ -24,11 +26,7 @@
 #include <memory>
 #include <cmath>
 
-#include "lidar_utils/point_cloud_utils.hpp"
-
 using autoware::common::types::float32_t;
-using autoware::common::lidar_utils::create_custom_pcl;
-using autoware::common::lidar_utils::add_point_to_cloud;
 
 class RayGroundPclValidationTester : public rclcpp::Node
 {
@@ -153,10 +151,18 @@ TEST(RayGroundClassifierPclValidation, FilterTest)
   exec.add_node(ray_gnd_ptr->get_node_base_interface());
   exec.add_node(ray_gnd_validation_tester);
 
-  std::vector<std::string> five_field_names{"x", "y", "z", "intensity", "timestamp"};
-  std::vector<std::string> three_field_names{"x", "y", "z"};
-  const auto three_fields_pc = create_custom_pcl<float32_t>(three_field_names, mini_cloud_size);
-  const auto five_fields_pc = create_custom_pcl<float32_t>(five_field_names, mini_cloud_size);
+  sensor_msgs::msg::PointCloud2 test_pc1;
+  sensor_msgs::msg::PointCloud2 test_pc2;
+
+  using autoware::common::types::PointXYZI;
+
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier1{test_pc1, "base_link"};
+  modifier1.clear();
+  modifier1.reserve(mini_cloud_size);
+
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier2{test_pc2, "base_link"};
+  modifier2.clear();
+  modifier2.reserve(mini_cloud_size);
 
   // set all the points so they are valid ground
   for (uint32_t i = 0; i < mini_cloud_size; i++) {
@@ -165,11 +171,9 @@ TEST(RayGroundClassifierPclValidation, FilterTest)
     float32_t x = std::cos(angle) * radius_ring_1;
     float32_t y = std::sin(angle) * radius_ring_1;
     float32_t z = 0;
-    autoware::common::types::PointXYZF pt{x, y, z};
-    uint32_t tmp_i = i;
-    add_point_to_cloud(*three_fields_pc, pt, tmp_i);
-    tmp_i = i;
-    add_point_to_cloud(*five_fields_pc, pt, tmp_i);
+    PointXYZI pt{x, y, z};
+    modifier1.push_back(pt);
+    modifier2.push_back(pt);
   }
 
   // expected size = 4 bytes * 4 fields * cloud_size
@@ -181,8 +185,8 @@ TEST(RayGroundClassifierPclValidation, FilterTest)
     std::this_thread::sleep_for(std::chrono::milliseconds{1LL});
   }
 
-  ray_gnd_validation_tester->m_pub_raw_points->publish(*three_fields_pc);
-  ray_gnd_validation_tester->m_pub_raw_points->publish(*five_fields_pc);
+  ray_gnd_validation_tester->m_pub_raw_points->publish(test_pc1);
+  ray_gnd_validation_tester->m_pub_raw_points->publish(test_pc2);
 
   // Wait up to 5s but return early if we can
   for (auto iter = 0U; iter < 500U; ++iter) {

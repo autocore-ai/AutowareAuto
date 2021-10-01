@@ -39,12 +39,6 @@ using autoware::common::types::float32_t;
 
 using autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode;
 
-bool operator==(const PointXYZIF & point1, const PointXYZIF & point2)
-{
-  return (point1.x == point2.x) && (point1.y == point2.y) && (point1.z == point2.z) &&
-         (point1.intensity == point2.intensity) && (point1.id == point2.id);
-}
-
 class VoxelAlgorithm : public ::testing::Test
 {
 protected:
@@ -114,14 +108,7 @@ protected:
   }
   bool8_t check(const sensor_msgs::msg::PointCloud2 & cloud, std::size_t N)
   {
-    struct PointXYZI
-    {
-      float32_t x;
-      float32_t y;
-      float32_t z;
-      float32_t intensity;
-    };
-    point_cloud_msg_wrapper::PointCloud2View<PointXYZI> cloud_view{cloud};
+    point_cloud_msg_wrapper::PointCloud2View<PointXYZIF> cloud_view{cloud};
     bool8_t ret = true;
     constexpr float32_t TOL = 1.0E-6F;
     for (const auto & msg_point_ref : cloud_view) {

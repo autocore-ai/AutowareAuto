@@ -14,7 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
+#include <common/types.hpp>
 #include <point_cloud_fusion/point_cloud_fusion.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 
 namespace autoware
 {
@@ -39,47 +41,40 @@ uint32_t PointCloudFusion::fuse_pc_msgs(
 {
   uint32_t pc_concat_idx = 0;
 
+  using autoware::common::types::PointXYZI;
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier{cloud_concatenated};
+
   for (size_t i = 0; i < m_input_topics_size; ++i) {
-    concatenate_pointcloud(*msgs[i], cloud_concatenated, pc_concat_idx);
+    concatenate_pointcloud(*msgs[i], pc_concat_idx, modifier);
   }
+
   return pc_concat_idx;
 }
 
 void PointCloudFusion::concatenate_pointcloud(
   const sensor_msgs::msg::PointCloud2 & pc_in,
-  sensor_msgs::msg::PointCloud2 & pc_out,
-  uint32_t & concat_idx) const
+  uint32_t & concat_idx,
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> & modifier) const
 {
   if ((pc_in.width + concat_idx) > m_cloud_capacity) {
     throw Error::TOO_LARGE;
   }
 
-  sensor_msgs::PointCloud2ConstIterator<float32_t> x_it_in(pc_in, "x");
-  sensor_msgs::PointCloud2ConstIterator<float32_t> y_it_in(pc_in, "y");
-  sensor_msgs::PointCloud2ConstIterator<float32_t> z_it_in(pc_in, "z");
-  sensor_msgs::PointCloud2ConstIterator<float32_t> intensity_it_in(pc_in, "intensity");
+  using autoware::common::types::PointXYZI;
+  point_cloud_msg_wrapper::PointCloud2View<PointXYZI> view{pc_in};
 
-  while (x_it_in != x_it_in.end() &&
-    y_it_in != y_it_in.end() &&
-    z_it_in != z_it_in.end() &&
-    intensity_it_in != intensity_it_in.end())
-  {
-    common::types::PointXYZIF pt;
-    pt.x = *x_it_in;
-    pt.y = *y_it_in;
-    pt.z = *z_it_in;
-    pt.intensity = *intensity_it_in;
+  auto view_it = view.cbegin();
+  while (view_it != view.cend()) {
+    common::types::PointXYZI pt;
+    pt.x = (*view_it).x;
+    pt.y = (*view_it).y;
+    pt.z = (*view_it).z;
+    pt.intensity = (*view_it).intensity;
 
-    if (common::lidar_utils::add_point_to_cloud(pc_out, pt, concat_idx)) {
-      ++x_it_in;
-      ++y_it_in;
-      ++z_it_in;
-      ++intensity_it_in;
-    } else {
-      // Somehow the point could be inserted to the concatenated cloud. Something regarding
-      // the cloud sizes must be off.
-      throw Error::INSERT_FAILED;
-    }
+    modifier.push_back(pt);
+    ++concat_idx;
+
+    ++view_it;
   }
 }
 

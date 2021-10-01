@@ -57,50 +57,6 @@ using autoware::common::types::float64_t;
 /// rotation
 static const uint32_t MAX_SCAN_POINTS = 57872U;
 
-/// Point cloud iterator wrapper, that allows to reuse iterators. Reinitializing
-/// of iterators is quite costly due to the implementation of the
-/// PointCloud2IteratorBase<...>::set_field method.
-class LIDAR_UTILS_PUBLIC PointCloudIts
-{
-public:
-  /// \brief Creates new iterator wrapper with space reserved for 4 iterators,
-  /// namely x, y, z and intensity
-  PointCloudIts();
-
-  /// \brief Resets the iterators for the given cloud to the given index
-  /// \param[in] cloud the point cloud to reset the iterators to
-  /// \param[in] idx the index/offset to advance the iterators to
-  void reset(sensor_msgs::msg::PointCloud2 & cloud, uint32_t idx = 0);
-
-  /// \brief Returns iterator for the "x" field
-  inline sensor_msgs::PointCloud2Iterator<float32_t> & x_it()
-  {
-    return m_its[0];
-  }
-
-  /// \brief Returns iterator for the "y" field
-  inline sensor_msgs::PointCloud2Iterator<float32_t> & y_it()
-  {
-    return m_its[1];
-  }
-
-  /// \brief Returns iterator for the "z" field
-  inline sensor_msgs::PointCloud2Iterator<float32_t> & z_it()
-  {
-    return m_its[2];
-  }
-
-  /// \brief Returns iterator for the "intensity" field
-  sensor_msgs::PointCloud2Iterator<float32_t> & intensity_it()
-  {
-    return m_its[3];
-  }
-
-private:
-  /// Internal storage of the iterators
-  ::std::vector<sensor_msgs::PointCloud2Iterator<float32_t>> m_its;
-};
-
 /// \brief Compute minimum safe length of point cloud access
 /// \param[in] msg The point cloud message to validate
 /// \return Byte index of one past the end of the last point ok to access
@@ -118,88 +74,6 @@ struct SafeCloudIndices
 /// form `for (auto idx = 0U; idx < ret.data_length; idx += msg.point_step)
 /// {memcpy(&pt, msg.data[idx], ret.point_step);}`
 LIDAR_UTILS_PUBLIC SafeCloudIndices sanitize_point_cloud(const sensor_msgs::msg::PointCloud2 & msg);
-
-/// \brief initializes header information for point cloud for x, y, z and intensity
-/// \param[out] msg a point cloud message to initialize
-/// \param[in] frame_id the name of the frame for the point cloud (assumed fixed)
-/// \param[in] size number of points to preallocate for underyling data array
-LIDAR_UTILS_PUBLIC void init_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::string & frame_id,
-  const std::size_t size = static_cast<std::size_t>(MAX_SCAN_POINTS));
-
-/// initializes header information for point cloud given frame id, size, number of frames and
-///  a parameter pack of fields.
-/// \tparam Fields Template paramater pack containing field types.
-/// \param msg Point cloud message.
-/// \param frame_id Frame ID of the point cloud.
-/// \param size Size of the initialized point cloud.
-/// \param num_fields Number of fields.
-/// \param fields Set of parameters defining the fields. Each field must contain the following
-/// parameters in strict order: `field_name, count, data_type`. These parameters should
-/// be provided for each field
-template<typename ... Fields>
-LIDAR_UTILS_PUBLIC void init_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::string & frame_id,
-  const std::size_t size,
-  const uint32_t num_fields,
-  Fields const & ... fields
-)
-{
-  msg.height = 1U;
-  msg.is_bigendian = false;
-  msg.is_dense = false;
-  msg.header.frame_id = frame_id;
-  sensor_msgs::PointCloud2Modifier modifier(msg);
-  // set the fields
-  // TODO(vrichard) replace explicit check by safe_cast
-  // See https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1027
-  if (num_fields > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
-    // prevent future access to random memory value or segmentation fault
-    throw std::runtime_error(
-            "converting " + std::to_string(
-              num_fields) + " to int would change sign of value");
-  }
-  modifier.setPointCloud2Fields(static_cast<int>(num_fields), fields ...);
-  // allocate memory so that iterators can be used
-  modifier.resize(size);
-}
-
-/// \brief add a point in the cloud by memcpy instead of using iterators
-/// This version prioritize speed and ease of parallelisation
-/// it assumes : - PointXYZIF is a POD object equivalent to a point stored in the cloud,
-///                which means same fields and same endianness.
-///              - The caller is responsible for incrementing point_cloud_idx between two calls.
-///                This differs from add_point_to_cloud who increment point_cloud_idx by itself
-LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud_raw(
-  sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::types::PointXYZIF & pt,
-  uint32_t point_cloud_idx);
-
-LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud(
-  PointCloudIts & cloud_its,
-  const autoware::common::types::PointXYZIF & pt,
-  uint32_t & point_cloud_idx);
-
-LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud(
-  sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::types::PointXYZIF & pt,
-  uint32_t & point_cloud_idx);
-
-LIDAR_UTILS_PUBLIC bool8_t add_point_to_cloud(
-  sensor_msgs::msg::PointCloud2 & cloud,
-  const autoware::common::types::PointXYZF & pt,
-  uint32_t & point_cloud_idx);
-
-LIDAR_UTILS_PUBLIC void reset_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::size_t size,
-  uint32_t & point_cloud_idx);
-
-LIDAR_UTILS_PUBLIC void resize_pcl_msg(
-  sensor_msgs::msg::PointCloud2 & msg,
-  const std::size_t new_size);
 
 /// \brief Get cluster from clusters based on the cluster id
 /// \param[in] clusters The clusters object

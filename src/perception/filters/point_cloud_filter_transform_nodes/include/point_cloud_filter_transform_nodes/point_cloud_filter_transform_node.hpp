@@ -110,7 +110,7 @@ private:
   const typename std::shared_ptr<rclcpp::Publisher<PointCloud2>> m_pub_ptr;
   const size_t m_expected_num_publishers;
   const size_t m_expected_num_subscribers;
-  const std::size_t m_pcl_size;
+  const std::uint32_t m_pcl_size;
   PointCloud2 m_filtered_transformed_msg;
 };
 

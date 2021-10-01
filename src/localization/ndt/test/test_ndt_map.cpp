@@ -245,8 +245,8 @@ TEST_F(NDTMapTest, MapRepresentationBadInput) {
 
   // initialize the messages
   // Message with the missing fields
-  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI>
-  pc_view_with_wrong_point{invalid_pc1, "map"};
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> pc_view_with_wrong_point{
+    invalid_pc1, "map"};
   pc_view_with_wrong_point.resize(100U);
   // Correct message format, but empty
   autoware::localization::ndt::NdtMapCloudModifier empty_view{invalid_pc2, "map"};
@@ -360,8 +360,8 @@ sensor_msgs::msg::PointCloud2 make_pcl(
 sensor_msgs::msg::PointCloud2 make_pcl(const std::vector<Eigen::Vector3d> & pts)
 {
   sensor_msgs::msg::PointCloud2 cloud;
-  point_cloud_msg_wrapper::PointCloud2Modifier<autoware::common::types::PointXYZI>
-  modifier{cloud, "map"};
+  using autoware::common::types::PointXYZI;
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier{cloud, "map"};
   for (const auto & pt : pts) {
     autoware::common::types::PointXYZI ptF{};
     ptF.x = static_cast<float>(pt(0U));

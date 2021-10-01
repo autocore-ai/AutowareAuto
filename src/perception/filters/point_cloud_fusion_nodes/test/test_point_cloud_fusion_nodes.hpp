@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <point_cloud_fusion_nodes/point_cloud_fusion_node.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <common/types.hpp>
 #include <memory>
@@ -46,17 +47,18 @@ sensor_msgs::msg::PointCloud2 make_pc(
   std::vector<int32_t> seeds,
   builtin_interfaces::msg::Time stamp)
 {
+  using autoware::common::types::PointXYZI;
   sensor_msgs::msg::PointCloud2 msg;
-  autoware::common::lidar_utils::init_pcl_msg(msg, "base_link", seeds.size());
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier{msg, "base_link"};
+  // modifier.reserve(seeds.size());
 
-  uint32_t pidx = 0;
   for (auto seed : seeds) {
-    autoware::common::types::PointXYZIF pt;
+    PointXYZI pt;
     pt.x = seed;
     pt.y = seed;
     pt.z = seed;
     pt.intensity = seed;
-    autoware::common::lidar_utils::add_point_to_cloud(msg, pt, pidx);
+    modifier.push_back(pt);
   }
 
   msg.header.stamp = stamp;

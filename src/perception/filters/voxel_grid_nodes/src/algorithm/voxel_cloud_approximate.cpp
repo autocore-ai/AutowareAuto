@@ -17,9 +17,9 @@
 #include <cstring>
 
 #include "lidar_utils/point_cloud_utils.hpp"
+#include "point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp"
 #include "voxel_grid_nodes/algorithm/voxel_cloud_approximate.hpp"
 
-using autoware::common::lidar_utils::add_point_to_cloud;
 using autoware::common::lidar_utils::has_intensity_and_throw_if_no_xyz;
 
 namespace autoware
@@ -39,7 +39,7 @@ VoxelCloudApproximate::VoxelCloudApproximate(const voxel_grid::Config & cfg)
   m_grid(cfg)
 {
   // frame id is arbitrary, not the responsibility of this component
-  autoware::common::lidar_utils::init_pcl_msg(m_cloud, "base_link", cfg.get_capacity());
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZIF>{m_cloud, "base_link"};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,17 +81,16 @@ void VoxelCloudApproximate::insert(
 ////////////////////////////////////////////////////////////////////////////////
 const sensor_msgs::msg::PointCloud2 & VoxelCloudApproximate::get()
 {
-  // resetting the index for the pointcloud iterators
-  autoware::common::lidar_utils::reset_pcl_msg(m_cloud, m_grid.capacity(), m_point_cloud_idx);
+  using autoware::common::types::PointXYZIF;
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZIF> modifier{m_cloud};
+  modifier.clear();
+  modifier.reserve(m_grid.size());
 
   for (const auto & it : m_grid) {
     const auto & pt = it.second.get();
-    (void)add_point_to_cloud(m_cloud, pt, m_point_cloud_idx);
-    // Don't need to check if cloud can't fit since it has the same capacity as the grid
-    // insert will throw if the grid is at capacity
+    modifier.push_back(pt);
   }
   m_grid.clear();
-  autoware::common::lidar_utils::resize_pcl_msg(m_cloud, m_point_cloud_idx);
 
   return m_cloud;
 }

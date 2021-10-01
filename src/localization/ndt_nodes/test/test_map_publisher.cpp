@@ -55,8 +55,8 @@ TEST(PCDLoadTest, Basics) {
   constexpr auto num_points = 5U;
   pcl::PointCloud<pcl::PointXYZI> dummy_cloud{};
   sensor_msgs::msg::PointCloud2 msg;
-  point_cloud_msg_wrapper::PointCloud2Modifier<autoware::common::types::PointXYZI>
-  msg_modifier{msg, "base_link"};
+  using autoware::common::types::PointXYZI;
+  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> msg_modifier{msg, "base_link"};
   const std::string test_fname = "PCDLoadTest_test_pcd_file.pcd";
   const std::string non_existing_fname = "NON_EXISTING_FILE_PCDLoadTest.XYZ";
 
