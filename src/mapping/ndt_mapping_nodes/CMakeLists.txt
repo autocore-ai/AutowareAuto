@@ -47,10 +47,9 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/ndt_mapping_nodes_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${MAPPER_NODE_EXE})
+
   find_package(ament_cmake_gtest REQUIRED)
   # TODO(yunus.caliskan): figure out why we need this when it gets exported by point_cloud_mapping
   find_package(PCL 1.8 REQUIRED COMPONENTS io)

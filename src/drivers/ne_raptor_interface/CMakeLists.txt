@@ -62,9 +62,11 @@ ament_auto_add_library(${PROJECT_NAME}_node SHARED
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-old-style-cast)
 
 autoware_set_compile_options(${PROJECT_NAME}_node)
+
+set(NODE_NAME ${PROJECT_NAME}_node_exe)
 rclcpp_components_register_node(${PROJECT_NAME}_node
   PLUGIN "autoware::ne_raptor_interface::NERaptorInterfaceNode"
-  EXECUTABLE ${PROJECT_NAME}_node_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 # Testing
@@ -72,10 +74,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/ne_raptor_interface_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # Unit tests
   set(TEST_SOURCES

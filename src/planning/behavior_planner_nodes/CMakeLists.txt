@@ -33,10 +33,11 @@ ament_auto_add_library(behavior_planner_node SHARED
   ${BEHAVIOR_PLANNER_NODE_SRC}
   ${BEHAVIOR_PLANNER_NODE_HEADERS}
 )
+set(NODE_NAME behavior_planner_node_exe)
 autoware_set_compile_options(behavior_planner_node)
 rclcpp_components_register_node(behavior_planner_node
   PLUGIN "autoware::behavior_planner_nodes::BehaviorPlannerNode"
-  EXECUTABLE behavior_planner_node_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 # Testing
@@ -44,10 +45,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/behavior_planner_node_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # Unit tests
   set(TEST_SOURCES test/test_behavior_planner_node.cpp)

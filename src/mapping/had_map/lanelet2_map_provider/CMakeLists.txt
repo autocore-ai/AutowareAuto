@@ -69,14 +69,16 @@ autoware_set_compile_options(${LANELET2_MAP_NODES})
 target_link_libraries(${LANELET2_MAP_NODES}
   ${GeographicLib_LIBRARIES})
 
+set(PROVIDER_NODE_NAME ${PROJECT_NAME}_exe)
 rclcpp_components_register_node(${LANELET2_MAP_NODES}
   PLUGIN "autoware::lanelet2_map_provider::Lanelet2MapProviderNode"
-  EXECUTABLE ${PROJECT_NAME}_exe
+  EXECUTABLE ${PROVIDER_NODE_NAME}
 )
 
+set(VISUALIZER_NODE_NAME lanelet2_map_visualizer_exe)
 rclcpp_components_register_node(${LANELET2_MAP_NODES}
   PLUGIN "autoware::lanelet2_map_provider::Lanelet2MapVisualizer"
-  EXECUTABLE lanelet2_map_visualizer_exe
+  EXECUTABLE ${VISUALIZER_NODE_NAME}
 )
 
 # Testing
@@ -88,10 +90,9 @@ if(BUILD_TESTING)
     test/lanelet2_map_provider_launch.test.py
     TIMEOUT "30"
   )
-  add_ros_test(
-    test/lanelet2_map_visualizer_launch.test.py
-    TIMEOUT "30"
-  )
+
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${VISUALIZER_NODE_NAME})
 
   # Unit tests
   set(TEST_SOURCES test/test_lanelet2_map_provider.cpp)

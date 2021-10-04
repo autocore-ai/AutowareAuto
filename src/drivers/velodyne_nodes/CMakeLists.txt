@@ -67,13 +67,15 @@ if(BUILD_TESTING)
       test/velodyne_node_bad.test.py
       TIMEOUT "10"
     )
+
     add_ros_test(
       test/velodyne_node_half_cloud.test.py
       TIMEOUT "120"
     )
-    add_ros_test(
-      test/velodyne_node_launch.test.py
-      TIMEOUT "30"
+
+    find_package(autoware_testing REQUIRED)
+    add_smoke_test(${PROJECT_NAME} ${CLOUD_EXEC}
+      EXECUTABLE_ARGUMENTS "--model vlp16"
     )
 endif()
 

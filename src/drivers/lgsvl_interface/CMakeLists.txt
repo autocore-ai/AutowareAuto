@@ -11,9 +11,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/lgsvl_interface_node.cpp)
 autoware_set_compile_options(${PROJECT_NAME})
 
+set(NODE_NAME ${PROJECT_NAME}_exe)
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "lgsvl_interface::LgsvlInterfaceNode"
-  EXECUTABLE ${PROJECT_NAME}_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 if(BUILD_TESTING)
@@ -21,10 +22,9 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/src/lgsvl_interface_node_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
+
   # gtest
   set(LGSVL_INTERFACE_GTEST test_${PROJECT_NAME}_gtest)
 

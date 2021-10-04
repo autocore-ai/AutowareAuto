@@ -38,9 +38,10 @@ ament_auto_add_library(${TRAJECTORY_SPOOFER_NODE_LIB} SHARED
 target_link_libraries(${TRAJECTORY_SPOOFER_NODE_LIB} ${TRAJECTORY_SPOOFER_LIB})
 autoware_set_compile_options(${TRAJECTORY_SPOOFER_NODE_LIB})
 
+set(NODE_NAME ${TRAJECTORY_SPOOFER_NODE_LIB}_exe)
 rclcpp_components_register_node(${TRAJECTORY_SPOOFER_NODE_LIB}
   PLUGIN "autoware::trajectory_spoofer::TrajectorySpooferNode"
-  EXECUTABLE ${TRAJECTORY_SPOOFER_NODE_LIB}_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 # Testing
@@ -49,10 +50,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/trajectory_spoofer_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # Unit tests
   set(TEST_SOURCES test/gtest_main.cpp test/test_trajectory_spoofer.cpp)

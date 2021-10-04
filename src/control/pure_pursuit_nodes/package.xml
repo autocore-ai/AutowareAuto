@@ -24,7 +24,7 @@
     <test_depend>tf2_msgs</test_depend>
     <test_depend>std_msgs</test_depend>
     <test_depend>rclcpp</test_depend>
-    <test_depend>ros_testing</test_depend>
+    <test_depend>autoware_testing</test_depend>
     <test_depend>launch_testing_ros</test_depend>
 
     <export><build_type>ament_cmake</build_type></export>

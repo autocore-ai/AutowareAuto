@@ -36,9 +36,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   ${SSC_INTERFACE_HEADERS}
 )
 autoware_set_compile_options(${PROJECT_NAME})
+
+set(NODE_NAME ${PROJECT_NAME}_node_exe)
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "ssc_interface::SscInterfaceNode"
-  EXECUTABLE ${PROJECT_NAME}_node_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 # Testing
@@ -46,10 +48,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/ssc_interface_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # Unit tests
   ament_add_gtest(test_${PROJECT_NAME}

@@ -53,9 +53,10 @@ autoware_set_compile_options(${P2D_NDT_LOCALIZER_NODE_LIB})
 target_link_libraries(${P2D_NDT_LOCALIZER_NODE_LIB}
   ${PCL_LIBRARIES})
 
+set(P2D_NDT_LOCALIZER_NODE_EXE ${P2D_NDT_LOCALIZER_NODE_LIB}_exe)
 rclcpp_components_register_node(${P2D_NDT_LOCALIZER_NODE_LIB}
   PLUGIN "autoware::localization::ndt_nodes::P2DNDTLocalizerNodeComponent"
-  EXECUTABLE ${P2D_NDT_LOCALIZER_NODE_LIB}_exe
+  EXECUTABLE ${P2D_NDT_LOCALIZER_NODE_EXE}
 )
 
 # TODO(yunus.caliskan): Remove once #978 is fixed.
@@ -69,12 +70,12 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${P2D_NDT_LOCALIZER_NODE_EXE}
+          PARAM_FILENAME test_localizer.param.yaml)
+
   add_ros_test(
     test/ndt_map_publisher_launch.test.py
-    TIMEOUT "30"
-  )
-  add_ros_test(
-    test/ndt_localizer_launch.test.py
     TIMEOUT "30"
   )
 

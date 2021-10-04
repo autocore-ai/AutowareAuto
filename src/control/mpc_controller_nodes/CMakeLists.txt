@@ -14,7 +14,8 @@ ament_auto_add_library(mpc_controller_node SHARED
 autoware_set_compile_options(mpc_controller_node)
 target_include_directories(mpc_controller_node SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 
-ament_auto_add_executable(mpc_controller_node_exe
+set(NODE_NAME mpc_controller_node_exe)
+ament_auto_add_executable(${NODE_NAME}
   src/mpc_controller_nodes/mpc_controller_main.cpp)
 
 ### Test
@@ -23,10 +24,9 @@ if(BUILD_TESTING)
   # Linters
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/mpc_controller_nodes_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
+
   # Unit test
   ament_add_gtest(mpc_controller_nodes_unit_tests
     test/gtest_main.cpp

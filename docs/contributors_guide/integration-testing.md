@@ -61,12 +61,46 @@ and determines if the test passes
 In Autoware.Auto, we use the [launch_testing](https://github.com/ros2/launch/tree/master/launch_testing) framework.
 
 
+## Smoke tests {#integration-testing-smoke-test}
+
+Autoware has dedicated API for smoke testing 
+
+To use this framework, in `package.xml` add:
+
+```{xml}
+<test_depend>autoware_testing</test_depend>
+```
+
+and in `CMakeLists.txt` add:
+
+```{cmake}
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
+endif()
+```
+
+which adds smoke test that ensures that node can be: 
+
+1. launched with default parameter file,
+2. terminated with a standard `SIGTERM` signal,
+
+For full API documentation see [package design page](@ref autoware_testing-package-design).
+
+This API is not suitable for all smoke test cases. For example, it can not be used when some specific file location,
+like map, is required to be passed to the node or some preparation need to be conducted before node launch. In such 
+cases use manual solution from [section below](#integration-testing-component-test).
+
+
 ## Integration test with a single node: component test {#integration-testing-component-test}
 
-The simplest scenario is a single node. In this case, the integration test is commonly referred to
-as a component test.
+The simplest scenario is a single node. In this case, the integration test is commonly referred to as a component test.
 
-To add a component test to an existing node, follow the example of the `ndt_mapper_nodes` package that has a single node in an executable named `ndt_mapper_node_exe`.
+To add a component test to an existing node, follow the example of the `lanelet2_map_provider` package that has 
+an executable named `lanelet2_map_provider_exe`.
 
 In `package.xml`, add
 
@@ -82,14 +116,16 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   add_ros_test(
-    test/single_node_launch.test.py
+    test/lanelet2_map_provider_launch.test.py
     TIMEOUT "30"
   )
 endif()
 ```
-The `TIMEOUT` argument is given in seconds; see  [here](https://github.com/ros2/ros_testing/blob/master/ros_testing/cmake/add_ros_test.cmake) for details.
+The `TIMEOUT` argument is given in seconds; see [here](https://github.com/ros2/ros_testing/blob/master/ros_testing/cmake/add_ros_test.cmake) for details.
 
-Create the file `test/single_node_launch.test.py` taking the [launch_testing quick-start example](https://github.com/ros2/launch/tree/master/launch_testing#quick-start-example) as an example.
+To create test follow [launch_testing quick-start example](https://github.com/ros2/launch/tree/master/launch_testing#quick-start-example). 
+
+Let's look at `test/lanelet2_map_provider_launch.test.py` as an example.
 
 The essential content is to first import dependencies:
 
@@ -104,34 +140,41 @@ import pytest
 import unittest
 ```
 
-Then create a launch description to launch the node under test:
+Then a launch description was created to launch the node under test. Note that `test_map.osm` file path is found and passed to the node. This is one of limitation of [smoke test](#integration-testing-smoke-test):
 
 ```{python}
 @pytest.mark.launch_test
 def generate_test_description():
 
-    ndt_mapper = Node(
-        package='ndt_mapping_nodes',
-        executable='ndt_mapper_node_exe',
-        name='ndt_mapper_node',
-        node_namespace='mapper',
-        output='screen',
-        parameters=[
-            os.path.join(get_package_share_directory('ndt_mapping_nodes'), 'param/test.param.yaml')
-        ],
+    map_osm_file = os.path.join(
+        get_package_share_directory('lanelet2_map_provider'),
+        'data/test_map.osm'
     )
 
-    context = {'ndt_mapper': ndt_mapper}
+    lanelet2_map_provider = Node(
+        package='lanelet2_map_provider',
+        executable='lanelet2_map_provider_exe',
+        namespace='had_maps',
+        parameters=[
+            os.path.join(
+                get_package_share_directory('lanelet2_map_provider'),
+                'param/test.param.yaml'
+            ),
+            {
+                'map_osm_file': map_osm_file
+            }]
+    )
 
-    launch_description = LaunchDescription([
-        ndt_mapper,
+    context = {'lanelet2_map_provider': lanelet2_map_provider}
+
+    return LaunchDescription([
+        lanelet2_map_provider,
         # Start tests right away - no need to wait for anything
-        launch_testing.actions.ReadyToTest()])
-
-    return launch_description, context
+        launch_testing.actions.ReadyToTest()]
+    ), context
 ```
 
-and finally the test condition. In this case, it is just a smoke test that ensures the node can be
+and finally the test condition. As before, it is just a smoke test ensures the node can be
 
 1. launched with its default parameter file,
 2. terminated with a standard `SIGTERM` signal,
@@ -147,7 +190,6 @@ class TestProcessOutput(unittest.TestCase):
         launch_testing.asserts.assertExitCodes(proc_info, [-15], process=ndt_mapper)
 ```
 
-
 ## Running the test
 
 Continuing the example from above, first build
@@ -155,20 +197,20 @@ Continuing the example from above, first build
 ```{bash}
 $ ade enter
 ade$ cd AutowareAuto
-ade$ colcon build --packages-up-to ndt_mapping_nodes
+ade$ colcon build --packages-up-to lanelet2_map_provider
 ade$ source install/setup.bash
 ```
 
 then either execute the component test manually
 
 ```{bash}
-ade$ ros2 test src/mapping/ndt_mapping_nodes/test/ndt_mapping_nodes_launch.test.py
+ade$ ros2 test src/mapping/had_map/lanelet2_map_provider/test/lanelet2_map_provider_launch.test.py
 ```
 
 or as part of testing the entire package:
 
 ```{bash}
-ade$ colcon test --packages-select ndt_mapping_nodes
+ade$ colcon test --packages-select lanelet2_map_provider
 ```
 
 Verify that the test is executed; e.g.
@@ -176,7 +218,7 @@ Verify that the test is executed; e.g.
 ```{bash}
 ade$ colcon test-result --all --verbose
 ...
-build/ndt_mapping_nodes/test_results/ndt_mapping_nodes/test_ndt_mapping_nodes_launch.test.py.xunit.xml: 1 test, 0 errors, 0 failures, 0 skipped
+build/lanelet2_map_provider/test_results/lanelet2_map_provider/test_lanelet2_map_provider_launch.test.py.xunit.xml: 1 test, 0 errors, 0 failures, 0 skipped
 ```
 
 ## Next steps {#integration-testing-next-steps}

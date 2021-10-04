@@ -35,9 +35,10 @@ ament_auto_add_library(lane_planner_node SHARED
 )
 
 autoware_set_compile_options(lane_planner_node)
+set(NODE_NAME lane_planner_node_exe)
 rclcpp_components_register_node(lane_planner_node
   PLUGIN "autoware::lane_planner_nodes::LanePlannerNode"
-  EXECUTABLE lane_planner_node_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 # Testing
@@ -45,10 +46,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/lane_planner_node_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # Unit tests
   set(TEST_SOURCES test/test_lane_planner_node.cpp)

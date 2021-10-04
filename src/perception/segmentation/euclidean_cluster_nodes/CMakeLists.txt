@@ -29,9 +29,10 @@ ament_auto_add_library(${CLUSTER_NODE_LIB} SHARED
   src/euclidean_cluster_node.cpp)
 autoware_set_compile_options(${CLUSTER_NODE_LIB})
 
+set(NODE_NAME ${CLUSTER_NODE_LIB}_exe)
 rclcpp_components_register_node(${CLUSTER_NODE_LIB}
   PLUGIN "autoware::perception::segmentation::euclidean_cluster_nodes::EuclideanClusterNode"
-  EXECUTABLE ${CLUSTER_NODE_LIB}_exe
+  EXECUTABLE ${NODE_NAME}
 )
 
 ## Testing
@@ -40,10 +41,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_ros_test(
-    test/euclidean_cluster_node_launch.test.py
-    TIMEOUT "30"
-  )
+  find_package(autoware_testing REQUIRED)
+  add_smoke_test(${PROJECT_NAME} ${NODE_NAME})
 
   # gtest
   set(CLUSTER_NODE_GTEST eucliden_cluster_nodes_gtest)
