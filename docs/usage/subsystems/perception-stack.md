@@ -103,7 +103,7 @@ The rviz config has displays for all topics in this tutorial. As nodes are launc
   ```{bash}
   $ ade enter
   ade$ source /opt/AutowareAuto/setup.bash
-  ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_raw
+  ade$ ros2 run point_cloud_filter_transform_nodes point_cloud_filter_transform_node_exe --ros-args --remap __ns:=/lidar_front --params-file /opt/AutowareAuto/share/point_cloud_filter_transform_nodes/param/vlp16_sim_lexus_filter_transform.param.yaml --remap __node:=filter_transform_vlp16_front  --remap points_in:=/lidar_front/points_xyzi
   ```
   ![Autoware.Auto transformed points snapshot](autoware-auto-transformed-points.png)
 
