@@ -15,6 +15,7 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "ground_truth_detections/ground_truth_detections_node.hpp"
+
 #include <autoware_auto_msgs/msg/classified_roi.hpp>
 #include <autoware_auto_msgs/msg/detected_object.hpp>
 #include <algorithm>
@@ -24,17 +25,17 @@ namespace autoware
 namespace ground_truth_detections
 {
 
-constexpr char GroundTruthDetectionsNode::kFrameId2d[];
 constexpr char GroundTruthDetectionsNode::kFrameId3d[];
 
 GroundTruthDetectionsNode::GroundTruthDetectionsNode(const rclcpp::NodeOptions & options)
-:  Node("ground_truth_detections", options),
+: Node("ground_truth_detections", options),
   m_detection2d_pub{create_publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>(
       "/perception/ground_truth_detections_2d", rclcpp::QoS{10})},
   m_detection2d_sub{create_subscription<lgsvl_msgs::msg::Detection2DArray>(
       "/simulator/ground_truth/detections2D", rclcpp::QoS{10},
       [this](lgsvl_msgs::msg::Detection2DArray::SharedPtr msg) {on_detection(*msg);}
     )},
+  m_vision_frame_id(this->declare_parameter("vision_frame_id", "camera")),
   m_detection3d_pub{create_publisher<autoware_auto_msgs::msg::DetectedObjects>(
     "/perception/ground_truth_detections_3d", rclcpp::QoS{10})},
 m_detection3d_sub{create_subscription<lgsvl_msgs::msg::Detection3DArray>(
@@ -48,7 +49,7 @@ void GroundTruthDetectionsNode::on_detection(const lgsvl_msgs::msg::Detection2DA
 {
   autoware_auto_msgs::msg::ClassifiedRoiArray roi_array;
   roi_array.header = msg.header;
-  roi_array.header.frame_id = kFrameId2d;
+  roi_array.header.frame_id = m_vision_frame_id;
 
   roi_array.rois.resize(msg.detections.size());
   std::transform(

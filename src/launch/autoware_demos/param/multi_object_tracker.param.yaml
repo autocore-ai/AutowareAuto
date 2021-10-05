@@ -22,6 +22,7 @@
       consider_edge_for_big_detection: True
     # Parameter to allow the tracker to use vision detections for improving tracking.
     use_vision: True    # Parameters for associating the vision detections
+    num_vision_topics: 2  # number of vision topics to subscribe to
     visualize_track_creation: True    # Parameters for visualizing track creation
     vision_association:
       # The IoU threshold for a RoI and projection of another detection to be considered matches
@@ -30,8 +31,8 @@
       intrinsics:
         width: 1920
         height: 1080
-        fx: 1158.0337
-        fy: 1158.0337
+        fx: 935.3074360871939
+        fy: 935.3074360871939
         ox: 960.0
         oy: 540.0
         skew: 0.0

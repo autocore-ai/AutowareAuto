@@ -29,7 +29,7 @@ namespace detection_2d_visualizer
 Detection2dVisualizerNode::Detection2dVisualizerNode(const rclcpp::NodeOptions & options)
 :  Node("ground_truth_visualizer", options),
   m_image_sub{this, "/simulator/main_camera"},
-  m_roi_sub(this, "/rois"),
+  m_roi_sub(this, "/perception/ground_truth_detections_2d"),
   m_projection_sub(this, "/projections"),
   m_image_pub{create_publisher<sensor_msgs::msg::Image>("/image_with_detections", rclcpp::QoS{20})}
 {

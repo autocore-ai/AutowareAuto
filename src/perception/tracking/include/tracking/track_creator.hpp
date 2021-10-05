@@ -28,6 +28,8 @@
 #include <tracking/visibility_control.hpp>
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -62,19 +64,7 @@ struct TRACKING_PUBLIC TrackCreatorConfig
 };
 
 
-struct TRACKING_PUBLIC ClusterVisionAssociation
-{
-  AssociatorResult assignments;
-  autoware_auto_msgs::msg::ClassifiedRoiArray rois;
-  autoware_auto_msgs::msg::DetectedObjects objects3d;
-};
-
-struct TRACKING_PUBLIC TrackCreationSummary
-{
-  /// The vision-cluster association result if it applies
-  std::experimental::optional<ClusterVisionAssociation> maybe_vision_associations{};
-};
-
+using MaybeRoiStampsT = std::experimental::optional<std::vector<builtin_interfaces::msg::Time>>;
 
 /// Struct to be used as the return value from track creation process
 struct TRACKING_PUBLIC TrackCreationResult
@@ -83,8 +73,8 @@ struct TRACKING_PUBLIC TrackCreationResult
   std::vector<TrackedObject> tracks;
   /// List of detection that was not associated and not used to create tracks
   autoware_auto_msgs::msg::DetectedObjects detections_leftover;
-  /// Additional context regarding the track creation
-  TrackCreationSummary track_creation_summary{};
+  /// Timestamps of msgs from each of the ClassifiedROIArray topics used for track creation
+  MaybeRoiStampsT maybe_roi_stamps = std::experimental::nullopt;
 };
 
 /// \brief Abstract base class for different track creation policy implementations
@@ -178,13 +168,16 @@ public:
     const AssociatorResult & associator_result) override;
 
 private:
-  static constexpr size_t kVisionCacheSize = 20U;
+  using VisionCache = message_filters::Cache<autoware_auto_msgs::msg::ClassifiedRoiArray>;
+
+  void create_using_cache(const VisionCache & vision_cache, TrackCreationResult & creator_ret);
+
+  static constexpr uint32_t kVisionCacheSize = 20U;
 
   VisionPolicyConfig m_cfg;
   GreedyRoiAssociator m_associator;
 
-  using VisionCache = message_filters::Cache<autoware_auto_msgs::msg::ClassifiedRoiArray>;
-  std::shared_ptr<VisionCache> m_vision_rois_cache_ptr = nullptr;
+  std::unordered_map<std::string, VisionCache> m_vision_cache_map;
   autoware_auto_msgs::msg::DetectedObjects m_lidar_clusters;
 };
 

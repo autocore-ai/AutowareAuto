@@ -40,6 +40,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace autoware
 {
@@ -80,7 +81,7 @@ private:
   rclcpp::Subscription<PoseMsg>::SharedPtr m_pose_subscription{};
   rclcpp::Subscription<OdometryMsg>::SharedPtr m_odom_subscription{};
   rclcpp::Subscription<DetectedObjects>::SharedPtr m_detected_objects_subscription{};
-  rclcpp::Subscription<ClassifiedRoiArray>::SharedPtr m_vision_subcription{};
+  std::vector<rclcpp::Subscription<ClassifiedRoiArray>::SharedPtr> m_vision_subscriptions;
 
   /// A cache that stores the odometry messages.
   std::unique_ptr<OdomCache> m_odom_cache{};
@@ -92,7 +93,7 @@ private:
 
   // Visualization variables & functions
   void maybe_visualize(
-    const perception::tracking::DetectedObjectsUpdateResult & result,
+    const perception::tracking::MaybeRoiStampsT::value_type & roi_stamps,
     DetectedObjects all_objects);
 
   bool8_t m_visualize_track_creation = false;

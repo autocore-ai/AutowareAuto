@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    camera_frame: camera
+    # Intrinsics of the camera that is generating the vision detections
+    camera_intrinsics:
+      width: 1920
+      height: 1080
+      fx: 935.3074360871939
+      fy: 935.3074360871939
+      ox: 960.0
+      oy: 540.0
+      skew: 0.0

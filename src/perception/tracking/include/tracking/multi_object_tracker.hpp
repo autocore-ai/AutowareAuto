@@ -84,8 +84,8 @@ struct TRACKING_PUBLIC DetectedObjectsUpdateResult
   autoware_auto_msgs::msg::DetectedObjects unassigned_clusters;
   /// Indicates the success or failure, and kind of failure, of the tracking operation.
   TrackerUpdateStatus status;
-  /// Additional context regarding the track creation
-  TrackCreationSummary track_creation_summary;
+  /// Timestamps of ROI msgs used for track creation. Useful for debugging purposes.
+  MaybeRoiStampsT maybe_roi_stamps;
 };
 
 /// \brief Options for object tracking, with sensible defaults.

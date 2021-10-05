@@ -201,9 +201,18 @@ MultiObjectTrackerNode::MultiObjectTrackerNode(const rclcpp::NodeOptions & optio
 
   // Initialize vision callbacks if vision is configured to be used:
   if (m_use_vision) {
-    m_vision_subcription = create_subscription<ClassifiedRoiArray>(
-      "classified_rois", rclcpp::QoS{m_history_depth},
-      std::bind(&MultiObjectTrackerNode::classified_roi_callback, this, std::placeholders::_1));
+    auto num_vision_topics = static_cast<size_t>(this->declare_parameter("num_vision_topics", 1));
+
+    m_vision_subscriptions.resize(num_vision_topics);
+
+    for (size_t i = 0U; i < m_vision_subscriptions.size(); ++i) {
+      const auto topic_name = "classified_rois" + std::to_string(i + 1);
+      m_vision_subscriptions[i] = create_subscription<ClassifiedRoiArray>(
+        topic_name, rclcpp::QoS{m_history_depth},
+        std::bind(
+          &MultiObjectTrackerNode::classified_roi_callback, this,
+          std::placeholders::_1));
+    }
   }
 
   if (m_visualize_track_creation) {
@@ -238,10 +247,10 @@ void MultiObjectTrackerNode::detected_objects_callback(const DetectedObjects::Co
   }
   const auto result = m_tracker.update(
     *objs, *get_closest_match(matched_msgs, objs->header.stamp));
-  if (result.status == TrackerUpdateStatus::Ok) {
+  if (result.status == TrackerUpdateStatus::Ok && result.maybe_roi_stamps) {
     m_track_publisher->publish(result.tracks);
     m_leftover_publisher->publish(result.unassigned_clusters);
-    maybe_visualize(result, *objs);
+    maybe_visualize(*(result.maybe_roi_stamps), *objs);
   } else {
     RCLCPP_WARN(
       get_logger(), "Tracker update for vision detection at time %d.%d failed. Reason: %s",
@@ -256,17 +265,17 @@ void MultiObjectTrackerNode::classified_roi_callback(const ClassifiedRoiArray::C
 }
 
 void MultiObjectTrackerNode::maybe_visualize(
-  const DetectedObjectsUpdateResult & result,
+  const perception::tracking::MaybeRoiStampsT::value_type & roi_stamps,
   DetectedObjects all_objects)
 {
   if (!m_visualize_track_creation) {
     return;
   }
   // Align the detections on time with the rois they are associated to.
-  const auto & rois = result.track_creation_summary.maybe_vision_associations->rois;
-  all_objects.header.stamp = rois.header.stamp;
-
-  m_track_creating_clusters_pub->publish(all_objects);
+  for (const auto & stamp : roi_stamps) {
+    all_objects.header.stamp = stamp;
+    m_track_creating_clusters_pub->publish(all_objects);
+  }
 }
 }  // namespace tracking_nodes
 }  // namespace autoware

@@ -41,6 +41,15 @@ Inputs:
 Outputs:
 * [AssociatorResult](@ref autoware::perception::tracking::AssociatorResult)
 
+### Calculating the intrinsics for the camera in the simulator
+The sensor json file will contain the field of view (it is the vertical FOV) and the aspect ratio (width & height). Use those numbers to calculate the parametrs as follows,  
+\f[ aspect\_ratio = width / height \f]
+\f[ horizontal\_fov = 2 * tan^{-1}(tan(FOV / 2) * aspect\_ratio) \f]
+\f[ f_x = width / 2 * tan(0.5 * horizontal\_fov) \f]
+\f[ f_y = height / 2 * tan(0.5 * FOV) \f]
+\f[ c_x = width / 2 \f]
+\f[ c_y = height / 2 \f]
+
 
 ## Related issues
 

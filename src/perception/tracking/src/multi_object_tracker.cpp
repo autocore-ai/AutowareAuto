@@ -144,7 +144,7 @@ DetectedObjectsUpdateResult MultiObjectTracker::update(
       std::make_move_iterator(ret.tracks.begin()),
       std::make_move_iterator(ret.tracks.end()));
     result.unassigned_clusters = ret.detections_leftover;
-    result.track_creation_summary = ret.track_creation_summary;
+    result.maybe_roi_stamps = ret.maybe_roi_stamps;
   }
 
   // ==================================

@@ -28,6 +28,7 @@
 #include <lgsvl_msgs/msg/detection2_d_array.hpp>
 #include <lgsvl_msgs/msg/detection3_d_array.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <string>
 
 namespace autoware
 {
@@ -54,7 +55,7 @@ private:
 
   rclcpp::Publisher<autoware_auto_msgs::msg::ClassifiedRoiArray>::SharedPtr m_detection2d_pub{};
   rclcpp::Subscription<lgsvl_msgs::msg::Detection2DArray>::SharedPtr m_detection2d_sub{};
-  static constexpr char kFrameId2d[] = "camera";
+  std::string m_vision_frame_id;
 
   rclcpp::Publisher<autoware_auto_msgs::msg::DetectedObjects>::SharedPtr m_detection3d_pub{};
   rclcpp::Subscription<lgsvl_msgs::msg::Detection3DArray>::SharedPtr m_detection3d_sub{};

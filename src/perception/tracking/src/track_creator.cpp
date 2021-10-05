@@ -69,6 +69,17 @@ TrackCreationResult LidarOnlyPolicy::create()
   return retval;
 }
 
+constexpr uint32_t LidarClusterIfVisionPolicy::kVisionCacheSize;
+
+LidarClusterIfVisionPolicy::LidarClusterIfVisionPolicy(
+  const VisionPolicyConfig & cfg, const float64_t default_variance,
+  const float64_t noise_variance, const tf2::BufferCore & tf_buffer)
+: CreationPolicyBase{default_variance, noise_variance, tf_buffer},
+  m_cfg{cfg},
+  m_associator{cfg.associator_cfg, tf_buffer}
+{
+}
+
 void LidarClusterIfVisionPolicy::add_objects(
   const autoware_auto_msgs::msg::DetectedObjects & clusters,
   const AssociatorResult & associator_result)
@@ -86,23 +97,20 @@ void LidarClusterIfVisionPolicy::add_objects(
   for (const auto & unassigned_idx : associator_result.unassigned_detection_indices) {
     vision_rois_msg->rois.push_back(vision_rois.rois[unassigned_idx]);
   }
-  m_vision_rois_cache_ptr->add(vision_rois_msg);
-}
-LidarClusterIfVisionPolicy::LidarClusterIfVisionPolicy(
-  const VisionPolicyConfig & cfg, const float64_t default_variance,
-  const float64_t noise_variance, const tf2::BufferCore & tf_buffer)
-: CreationPolicyBase{default_variance, noise_variance, tf_buffer},
-  m_cfg{cfg},
-  m_associator{cfg.associator_cfg, tf_buffer},
-  m_vision_rois_cache_ptr{std::make_shared<VisionCache>()}
-{
-  m_vision_rois_cache_ptr->setCacheSize(kVisionCacheSize);
+
+  const auto & frame_id = vision_rois_msg->header.frame_id;
+  auto matching_vision_cache = m_vision_cache_map.find(frame_id);
+  if (matching_vision_cache == m_vision_cache_map.end()) {
+    const auto emplace_status = m_vision_cache_map.emplace(frame_id, kVisionCacheSize);
+    matching_vision_cache = emplace_status.first;
+  }
+  matching_vision_cache->second.add(vision_rois_msg);
 }
 
-TrackCreationResult LidarClusterIfVisionPolicy::create()
+void LidarClusterIfVisionPolicy::create_using_cache(
+  const VisionCache & vision_cache,
+  TrackCreationResult & creator_ret)
 {
-  TrackCreationResult retval;
-
   // For foxy time has to be initialized explicitly with sec, nanosec constructor to use the
   // correct clock source when querying message_filters::cache.
   // Refer: https://github.com/ros2/message_filters/issues/32
@@ -110,20 +118,20 @@ TrackCreationResult LidarClusterIfVisionPolicy::create()
     m_lidar_clusters.header.stamp.nanosec};
   const auto before = t - m_cfg.max_vision_lidar_timestamp_diff;
   const auto after = t + m_cfg.max_vision_lidar_timestamp_diff;
-  const auto vision_msg_matches = m_vision_rois_cache_ptr->getInterval(before, after);
+  const auto vision_msg_matches = vision_cache.getInterval(before, after);
 
   if (vision_msg_matches.empty()) {
     std::cerr << "No matching vision msgs for creating tracks" << std::endl;
-    return retval;
+    return;
   }
 
   const auto & vision_msg = *vision_msg_matches.back();
   const auto association_result = m_associator.assign(vision_msg, m_lidar_clusters);
 
-  retval.track_creation_summary.maybe_vision_associations.emplace();
-  retval.track_creation_summary.maybe_vision_associations->assignments = association_result;
-  retval.track_creation_summary.maybe_vision_associations->rois = vision_msg;
-  retval.track_creation_summary.maybe_vision_associations->objects3d = m_lidar_clusters;
+  if (!creator_ret.maybe_roi_stamps) {
+    creator_ret.maybe_roi_stamps = std::vector<builtin_interfaces::msg::Time>{};
+  }
+  creator_ret.maybe_roi_stamps->push_back(vision_msg.header.stamp);
 
   std::set<size_t, std::greater<>> lidar_idx_to_erase;
 
@@ -136,7 +144,7 @@ TrackCreationResult LidarClusterIfVisionPolicy::create()
       // initialize track class. So assign the class from the associated ROI to the cluster.
       m_lidar_clusters.objects[cluster_idx].classification = vision_msg.rois[association_result
           .track_assignments[cluster_idx]].classifications;
-      retval.tracks.emplace_back(
+      creator_ret.tracks.emplace_back(
         TrackedObject(
           m_lidar_clusters.objects[cluster_idx],
           m_default_variance, m_noise_variance));
@@ -146,6 +154,14 @@ TrackCreationResult LidarClusterIfVisionPolicy::create()
   // Erase lidar clusters that are associated to a vision roi
   for (const auto idx : lidar_idx_to_erase) {
     m_lidar_clusters.objects.erase(m_lidar_clusters.objects.begin() + static_cast<int32_t>(idx));
+  }
+}
+
+TrackCreationResult LidarClusterIfVisionPolicy::create()
+{
+  TrackCreationResult retval;
+  for (const auto & frame_cache : m_vision_cache_map) {
+    create_using_cache(frame_cache.second, retval);
   }
   retval.detections_leftover = m_lidar_clusters;
   return retval;

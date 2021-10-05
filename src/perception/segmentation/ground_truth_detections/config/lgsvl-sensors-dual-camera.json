@@ -155,7 +155,7 @@
   },
   {
     "type": "Color Camera",
-    "name": "Main Camera",
+    "name": "Camera Right",
     "params": {
       "Width": 1920,
       "Height": 1080,
@@ -164,22 +164,22 @@
       "FieldOfView": 60,
       "MinDistance": 0.1,
       "MaxDistance": 2000,
-      "Topic": "/simulator/main_camera",
-      "Frame": "camera"
+      "Topic": "/simulator/camera_right",
+      "Frame": "camera_right"
     },
     "parent": "base_link",
     "transform": {
-      "x": 0,
+      "x": 0.5,
       "y": 1.25,
       "z": 1.75,
       "pitch": 0,
-      "yaw": 0,
+      "yaw": 45,
       "roll": 0
     }
   },
   {
     "type": "2D Ground Truth",
-    "name": "2D Ground Truth",
+    "name": "2D Ground Truth Right",
     "params": {
       "Width": 1920,
       "Height": 1080,
@@ -188,26 +188,66 @@
       "MinDistance": 0.1,
       "MaxDistance": 200,
       "DetectionRange": 200,
-      "Topic": "/simulator/ground_truth/detections2D"
+      "Topic": "/simulator/ground_truth/camera_right/detections2D",
+      "Frame": "camera_right"      
     },
     "parent": "base_link",
     "transform": {
-      "x": 0,
+      "x": 0.5,
       "y": 1.25,
       "z": 1.75,
       "pitch": 0,
-      "yaw": 0,
+      "yaw": 45,
       "roll": 0
     }
   },
   {
-    "type": "3D Ground Truth",
-    "name": "3D Ground Truth",
+    "type": "Color Camera",
+    "name": "Camera Left",
     "params": {
-      "Frequency": 10,
-      "MaxDistance": 200,
-      "Topic": "/simulator/ground_truth/detections3D"
+      "Width": 1920,
+      "Height": 1080,
+      "Frequency": 15,
+      "JpegQuality": 75,
+      "FieldOfView": 60,
+      "MinDistance": 0.1,
+      "MaxDistance": 2000,
+      "Topic": "/simulator/camera_left",
+      "Frame": "camera_left"
     },
-    "parent": "base_link"
+    "parent": "base_link",
+    "transform": {
+      "x": -0.5,
+      "y": 1.25,
+      "z": 1.75,
+      "pitch": 0,
+      "yaw": -45,
+      "roll": 0
+    }
+  },
+  {
+    "type": "2D Ground Truth",
+    "name": "2D Ground Truth Left",
+    "params": {
+      "Width": 1920,
+      "Height": 1080,
+      "Frequency": 10,
+      "FieldOfView": 60,
+      "MinDistance": 0.1,
+      "MaxDistance": 200,
+      "DetectionRange": 200,
+      "Topic": "/simulator/ground_truth/camera_left/detections2D",
+      "Frame": "camera_left"      
+    },
+    "parent": "base_link",
+    "transform": {
+      "x": -0.5,
+      "y": 1.25,
+      "z": 1.75,
+      "pitch": 0,
+      "yaw": -45,
+      "roll": 0
+    }
   }
 ]
+
