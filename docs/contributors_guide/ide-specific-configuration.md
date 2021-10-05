@@ -129,10 +129,76 @@ To be able to run and/or debug this file with CLion, do the following:
 
 In the end it should look like this:
 
-@image html images/ide-configuration-clion-06-run-configuration-done.png "Run/Debug Configurations Done" width=90%
+@image html images/ide-configuration-clion-06-run-configuration-done.png "Run/Debug Configurations Done" width=60%
 
 After clicking OK, it should now be possible to click the Triangle or the Bug button to run or debug the application :)
 
 ### Configuring for other nodes
 
 The `Executable` and `Program Arguments` can be modified to make it work with any other node.
+
+## Formatting the code and Documentation related settings
+
+### Code Style
+
+-# Navigate to `File | Settings` in the main menu.
+-# In Settings, navigate to `Editor | Code Style`.
+  - Hard wrap at: 100
+  - Visual guides at: 100
+  - Enable ClangFormat: Checked
+
+It should look like this:
+
+@image html images/ide-configuration-clion-07-code-style.png "Code Style" width=40%
+
+-# In Settings, navigate to `Editor | Code Style | C/C++`.
+- On top right click `Set from...`
+- Pick Google (Although most will be overwritten by ClangFormat)
+- Go to `Code Generation` tab
+  - Under Documentation Comments
+    - Add \@brief tag: Checked
+    - Tag prefix in line comments: \@param
+    - Tag prefix in block comments: \@param
+
+It should look like this:
+
+@image html images/ide-configuration-clion-08-code-generation.png "Code Generation" width=40%
+
+### External Tools
+
+For following commands to work, CLion should be started in a terminal where the
+current ROS2 is sourced.
+
+-# Navigate to `File | Settings` in the main menu.
+-# In Settings, navigate to `Tools | External Tools`.
+-# Press the `+` button to add following tools:
+  -# ament_cpplint:
+    - Name: `ament_cpplint`
+    - Program: `ament_cpplint`
+    - Arguments: `$FilePath$`
+    - Working directory: `$ProjectFileDir$`
+@image html images/ide-configuration-clion-09-external_cpplint.png "ament_cpplint" width=30%
+  -# ament_uncrustify:
+    - Name: `ament_uncrustify`
+    - Program: `ament_uncrustify`
+    - Arguments: `--reformat $FilePath$`
+    - Working directory: `$ProjectFileDir$`
+@image html images/ide-configuration-clion-10-external_uncrustify.png "ament_uncrustify" width=30%
+  -# ament_flake8:
+    - Name: `ament_flake8`
+    - Program: `ament_flake8`
+    - Arguments: `$FilePath$`
+    - Working directory: `$ProjectFileDir$`
+@image html images/ide-configuration-clion-11-external_flake8.png "ament_flake8" width=30%
+
+-# Press OK to save settings and exit `Settings` window.
+-# Reopen `File | Settings` in the main menu.
+-# In Settings, navigate to `Keymap`.
+-# Under `External Tools | External Tools` assign hotkeys to these tools.
+
+Once these are set, it is possible to use these hotkeys to automatically run 
+these tools. Also `Reformat Code` shortcut will apply settings of `.clang-format`
+on the code.
+
+For detailed information about formatting use instructions at 
+@ref contributors-guidelines-formatting "Contributors Guidelines for Formatting"

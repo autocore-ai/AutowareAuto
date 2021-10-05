@@ -135,6 +135,61 @@ ament_cpplint path/to/pkg_foo
 Tools such as CLion can parse the output of the previous command and provide fast navigation to
 offending lines in the code.
 
+### Using ament_clang_format
+
+`ament_uncrustify --reformat` is able to format the code to a degree but its results
+are generally not enough to pass `ament_cpplint`. To automate the process,
+`ament_clang_format` can be used like:
+```{bash}
+AutowareAuto $ ament_clang_format --config .clang-format --reformat file.cpp
+```
+
+The configuration is stored in the text file `.clang-format` in the base directory of a source
+checkout of Autoware.Auto.
+
+`ament_clang_format` is available in ADE by default. When working outside of ADE, install it e.g.
+with
+
+```{bash}
+sudo apt install ros-${ROS_DISTRO}-ament-clang-format
+```
+
+A way to use all these three tools is as follows:
+-# `ament_clang_format --config AutowareAuto/.clang-format --reformat file.cpp`
+-# `ament_uncrustify --reformat file.cpp`
+-# `ament_cpplint file.cpp`
+-# Fix all reported errors
+-# Repeat the previous steps until `ament_uncrustify` and `ament_cpplint` give no more errors.
+
+#### Order of header includes
+
+The recommended order of `#include` directives is based on the [google styleguide](https://google.github.io/styleguide/cppguide.html#Names_and_Order_of_Includes)
+
+-# corresponding file: from `bar.cpp` in package `foo`, that's `#include "foo/bar.hpp"`
+-# C system headers; e.g. `#include <stdint.h>`
+-# C++ system headers; e.g. `#include <vector>`
+-# headers from this or other packages; e.g. `#include "pkg/baz.hpp"`
+-# message headers; e.g. `#include "foo/msg/bar.hpp"`
+
+with headers in each group sorted alphabetically and groups separated by a single blank line.
+
+In order for automatic grouping and sorting to work:
+
+-# Use `#include "foo/bar.hpp"` for headers from the same and other packages
+-# Use `#include <vector>` with **angle brackets only for C and C++ system headers**
+-# Invoke `ament_clang_format` like explained above.
+
+The resulting order should satisfy `ament_cpplint`.
+
+@note If cpplint complains about the order of headers, ensure that the delimiters match the above
+rules. Example error:
+
+```console
+Found C system header after C++ system header.
+```
+
+### Utilizing git pre-commit
+
 To lint the code automatically before each commit, activate the `pre-commit`
 [hook](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/.git-hooks/pre-commit). From the
 repository base directory, do:
