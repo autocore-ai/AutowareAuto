@@ -66,6 +66,7 @@ public:
     for (std::size_t i = 0; i < m_ground_points.size(); i++) {
       ret = (m_ground_points[i].data.size() == expected_ground_pcl_size) && ret;
       std::cout << "ground pc actual size = " << m_ground_points[i].data.size() << std::endl;
+      std::cout << "ground pc expected size = " << expected_ground_pcl_size << std::endl;
     }
     return ret;
   }
@@ -87,6 +88,7 @@ public:
     for (std::size_t i = 0; i < m_nonground_points.size(); i++) {
       ret = (m_nonground_points[i].data.size() == expected_nongnd_pcl_size) && ret;
       std::cout << "nonground pc actual size = " << m_nonground_points[i].data.size() << std::endl;
+      std::cout << "nonground pc expected size = " << expected_nongnd_pcl_size << std::endl;
     }
     return ret;
   }

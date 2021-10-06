@@ -80,9 +80,7 @@ RayGroundClassifierCloudNode::RayGroundClassifierCloudNode(
   m_ground_pub_ptr(create_publisher<PointCloud2>(
       "points_ground", rclcpp::QoS(10))),
   m_nonground_pub_ptr(create_publisher<PointCloud2>(
-      "points_nonground", rclcpp::QoS(10))),
-  m_ground_pc_idx{0},
-  m_nonground_pc_idx{0}
+      "points_nonground", rclcpp::QoS(10)))
 {
   // initialize messages
   point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI>{
@@ -157,7 +155,6 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
           }
         } else {
           nonground_msg_modifier.push_back(PointXYZI{pt->x, pt->y, pt->z, pt->intensity});
-          m_nonground_pc_idx++;
         }
       } catch (const std::runtime_error & e) {
         m_has_failed = true;
@@ -200,14 +197,12 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
             ground_msg_modifier.push_back(
               PointXYZI{
                       ground_point->x, ground_point->y, ground_point->z, ground_point->intensity});
-            m_ground_pc_idx++;
           }
           for (auto & nonground_point : nonground_blk) {
             nonground_msg_modifier.push_back(
               PointXYZI{
                       nonground_point->x, nonground_point->y, nonground_point->z,
                       nonground_point->intensity});
-            m_nonground_pc_idx++;
           }
         } catch (const std::runtime_error & e) {
           m_has_failed = true;
@@ -239,9 +234,6 @@ RayGroundClassifierCloudNode::callback(const PointCloud2::SharedPtr msg)
       return;
     }
 
-    // Resize the clouds down to their actual sizes.
-    ground_msg_modifier.resize(m_ground_pc_idx);
-    nonground_msg_modifier.resize(m_nonground_pc_idx);
     // publish: nonground first for the possible microseconds of latency
     m_nonground_pub_ptr->publish(m_nonground_msg);
     m_ground_pub_ptr->publish(m_ground_msg);
@@ -267,13 +259,9 @@ void RayGroundClassifierCloudNode::reset()
   // reset messages
   point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier1{m_ground_msg};
   modifier1.clear();
-  modifier1.resize(m_pcl_size);
-  m_ground_pc_idx = 0;
 
   point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier2{m_nonground_msg};
   modifier2.clear();
-  modifier2.resize(m_pcl_size);
-  m_nonground_pc_idx = 0;
 }
 }  // namespace ray_ground_classifier_nodes
 }  // namespace filters
