@@ -242,6 +242,6 @@ class EuclideanClusterNodeTask(BenchmarkTask):
 
         # Compute the speed metric
         if not self._speed_metric.compute_metric("Speed during benchmark (milliseconds): " +
-                                                 "\nMin: %.1f\nAverage: %.1f\nMax: %.1f"):
+                                                 "\nMin: %.3f\nAverage: %.3f\nMax: %.3f"):
             error(self.node,
                   "Problem computing speed metrics")

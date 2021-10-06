@@ -104,12 +104,17 @@ class AverageMetric(Metric):
 
             av_value = av_value / len(file_lines)
 
+            # Display summary in milliseconds
+            min_value /= 1e3
+            av_value /= 1e3
+            max_value /= 1e3
+
             if not self._save_metric_file(min_value, av_value, max_value):
                 error(self.node, "Error saving metric file.")
 
             # Print average to the node output
             if("" == reportMsg):
-                reportMsg = "metric : \nMin: %.1f\nAverage: %.1f \nMax: %.1f"
+                reportMsg = "metric : \nMin: %.3f\nAverage: %.3f \nMax: %.3f"
             info(self.node,
                  reportMsg % (min_value, av_value, max_value))
 

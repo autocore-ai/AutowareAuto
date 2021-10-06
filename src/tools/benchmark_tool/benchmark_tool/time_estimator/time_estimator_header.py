@@ -27,7 +27,7 @@ class TimeEstimatorHeader(object):
 
     It measures the time elapsed from the reception of a message using the header stamp
     information. It measures the difference between the received time and the time in the message
-    header, it uses millisecond resolution.
+    header, it uses microsecond resolution.
 
     This class should be used when the node that produces the message, is copying the header from
     its input topic message to the output topic message.
@@ -108,13 +108,11 @@ class TimeEstimatorHeader(object):
         # the time written in the message header
         time_message = rclpy.time.Time()
         time_message = time_message.from_msg(msg.header.stamp)
-        measure = time_now - time_message.nanoseconds
-
-        # Transform from nanoseconds to milliseconds
-        measure = measure / (1000 * 1000)
+        elapsed_ns = time_now - time_message.nanoseconds
+        elapsed_us = elapsed_ns / 1e3
 
         publish_msg = Int64()
-        publish_msg.data = int(measure)
+        publish_msg.data = int(elapsed_us)
 
         # Publish the measurement
         self._publisher.publish(publish_msg)

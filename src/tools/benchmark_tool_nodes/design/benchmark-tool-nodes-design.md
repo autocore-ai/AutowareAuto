@@ -111,7 +111,8 @@ to be sent.
 #### Time estimation
 
 The **Time estimation** component measures the time elapsed between an input
-topic and an output topic.
+topic and an output topic. The measurements sent by this component to the
+**Output formatter** are in microseconds.
 A component that uses the **Time estimation** block should provide the topics
 to listen to.
 
@@ -119,7 +120,8 @@ to listen to.
 
 The **Output formatter** component is a general block used to listen to the
 output data. It should be extended with specialized components that hold
-specific information on how to format the output data.
+specific information on how to format the output data. Moreover, the generic
+formatter prints the raw incoming data to file.
 
 List of components that extend the **Output formatter**:
 
