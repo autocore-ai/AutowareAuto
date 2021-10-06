@@ -9,9 +9,9 @@ This is the design document for the `vehicle_constants_manager` package.
 <!-- Things to consider:
     - Why did we implement this feature? -->
 
-This library provides a struct for holding vehicle specific constants. And it
-can be used to retrieve these parameters from `vehicle_constants_manager_node`
-if it is running.
+This library provides a struct for holding vehicle specific constants. It also
+provides a helper method to declare vehicle specific constants which have
+already been passed into a node and provide a `VehicleConstants` object.
 
 # Design
 
@@ -51,9 +51,9 @@ be split in 2 categories:
 
 The `VehicleConstants` constructor is initialized with the primary parameters.
 
-The library also provides a `try_get_vehicle_constants` method. Using this
-method, the user can access parameters in the `vehicle_constants_manager_node`
-by providing it a node instance pointer and a timeout.
+The library also provides a `declare_and_get_vehicle_constants` method. Using
+this method, the user can declare vehicle parameters that are already passed
+into the node and obtain a `VehicleConstants` object.
 
 ## Assumptions / Known limits
 
@@ -61,9 +61,27 @@ by providing it a node instance pointer and a timeout.
 
 This library assumes the vehicle is defined with Ackermann steering geometry.
 
-`try_get_vehicle_constants` method requires `vehicle_constants_manager_node`
-to be running. If not, it will throw an exception and end after timeout is
-reached.
+`declare_and_get_vehicle_constants` method requires the passed node to have following parameters overridden:
+
+(Pay attention to the `vehicle` namespace)
+```yaml
+vehicle:
+  wheel_radius:
+  wheel_width:
+  wheel_base:
+  wheel_tread:
+  overhang_front:
+  overhang_rear:
+  overhang_left:
+  overhang_right:
+  vehicle_height:
+  cg_to_rear:
+  tire_cornering_stiffness_front_n_per_deg:
+  tire_cornering_stiffness_rear_n_per_deg:
+  mass_vehicle:
+  inertia_yaw_kg_m_2:
+```
+
 
 ## Inputs / Outputs / API {#vehicle-constants-manager-package-design-inputs}
 
@@ -74,14 +92,14 @@ reached.
 The constructor of `VehicleConstants` takes the primary vehicle constants and
 generates the derived parameters.
 
-`try_get_vehicle_constants` method takes a `rclcpp::Node::SharedPtr` object and
-a timeout duration. And returns a `VehicleConstants` object if it succeeds.
+`declare_and_get_vehicle_constants` method takes a `rclcpp::Node` object. And 
+returns a `VehicleConstants` object if it succeeds.
 
 Example usage:
 ```cpp
-using namespace std::chrono_literals;
-auto vehicle_constants = try_get_vehicle_constants(
-    this->create_sub_node(""), 300ms);
+// In the constructor of a node which received primary vehicle parameters from a
+// .yaml file or run args.
+auto vehicle_constants = declare_and_get_vehicle_constants(*this);
 ```
 
 ## Inner-workings / Algorithms

@@ -14,14 +14,16 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
-#include "gtest/gtest.h"
 #include "vehicle_constants_manager/vehicle_constants_manager.hpp"
-
+#include "gtest/gtest.h"
 
 TEST(TestVehicleConstantsManager, TestInitializationConstructor) {
   using float64_t = autoware::common::types::float64_t;
-  using VehicleConstants = autoware::common::vehicle_constants_manager::VehicleConstants;
+  using VehicleConstants =
+    autoware::common::vehicle_constants_manager::VehicleConstants;
 
   const float64_t wheel_radius = 0.37;
   const float64_t wheel_width = 0.27;
@@ -41,67 +43,78 @@ TEST(TestVehicleConstantsManager, TestInitializationConstructor) {
   // Well set parameters
   EXPECT_NO_THROW(
     VehicleConstants vc(
-      wheel_radius,
-      wheel_width,
-      wheel_base,
-      wheel_tread,
-      overhang_front,
-      overhang_rear,
-      overhang_left,
-      overhang_right,
-      vehicle_height,
-      cg_to_rear,
+      wheel_radius, wheel_width, wheel_base, wheel_tread, overhang_front,
+      overhang_rear, overhang_left, overhang_right, vehicle_height, cg_to_rear,
       tire_cornering_stiffness_front_n_per_deg,
-      tire_cornering_stiffness_rear_n_per_deg,
-      mass_vehicle,
-      inertia_yaw_kg_m_2
-  ));
+      tire_cornering_stiffness_rear_n_per_deg, mass_vehicle,
+      inertia_yaw_kg_m_2));
 
   // Center of gravity is not within wheel_base
   const float64_t bad_cg_to_rear = wheel_base + 1.0;
   EXPECT_THROW(
     VehicleConstants vc(
-      wheel_radius,
-      wheel_width,
-      wheel_base,
-      wheel_tread,
-      overhang_front,
-      overhang_rear,
-      overhang_left,
-      overhang_right,
-      vehicle_height,
-      bad_cg_to_rear,
+      wheel_radius, wheel_width, wheel_base,
+      wheel_tread, overhang_front, overhang_rear,
+      overhang_left, overhang_right,
+      vehicle_height, bad_cg_to_rear,
       tire_cornering_stiffness_front_n_per_deg,
       tire_cornering_stiffness_rear_n_per_deg,
-      mass_vehicle,
-      inertia_yaw_kg_m_2
-    ), std::runtime_error);
+      mass_vehicle, inertia_yaw_kg_m_2),
+    std::runtime_error);
 
   // Some supposedly absolute parameters are negative
   EXPECT_THROW(
     VehicleConstants vc(
-      wheel_radius,
-      wheel_width,
-      -wheel_base,
-      wheel_tread,
-      -overhang_front,
-      overhang_rear,
-      overhang_left,
-      -overhang_right,
-      vehicle_height,
-      cg_to_rear,
+      wheel_radius, wheel_width, -wheel_base,
+      wheel_tread, -overhang_front, overhang_rear,
+      overhang_left, -overhang_right,
+      vehicle_height, cg_to_rear,
       tire_cornering_stiffness_front_n_per_deg,
       tire_cornering_stiffness_rear_n_per_deg,
-      mass_vehicle,
-      inertia_yaw_kg_m_2), std::runtime_error);
+      mass_vehicle, inertia_yaw_kg_m_2),
+    std::runtime_error);
+}
+
+TEST(TestVehicleConstantsManager, TestGetVehicleConstantsMissing) {
+  rclcpp::init(0, nullptr);
+  const std::string ns_node = "TestGetVehicleConstantsMissing";
+  rclcpp::Node node("some_node", ns_node);
+  EXPECT_THROW(
+    autoware::common::vehicle_constants_manager::
+    declare_and_get_vehicle_constants(node),
+    std::runtime_error);
+  rclcpp::shutdown();
 }
 
 TEST(TestVehicleConstantsManager, TestGetVehicleConstants) {
   rclcpp::init(0, nullptr);
-  const rclcpp::Node::SharedPtr node = std::make_shared<rclcpp::Node>("some_node");
-  using namespace std::chrono_literals;
-  EXPECT_THROW(
-    autoware::common::vehicle_constants_manager::try_get_vehicle_constants(node, 300ms),
-    std::runtime_error);
+  const std::string ns_node = "TestGetVehicleConstants";
+  std::vector<rclcpp::Parameter> params;
+  const std::string ns_vehicle = "vehicle.";
+  params.emplace_back(ns_vehicle + "wheel_radius", 0.37);
+  params.emplace_back(ns_vehicle + "wheel_width", 0.27);
+  params.emplace_back(ns_vehicle + "wheel_base", 2.734);
+  params.emplace_back(ns_vehicle + "wheel_tread", 1.571);
+  params.emplace_back(ns_vehicle + "overhang_front", 1.033);
+  params.emplace_back(ns_vehicle + "overhang_rear", 1.021);
+  params.emplace_back(ns_vehicle + "overhang_left", 0.3135);
+  params.emplace_back(ns_vehicle + "overhang_right", 0.3135);
+  params.emplace_back(ns_vehicle + "vehicle_height", 1.662);
+  params.emplace_back(ns_vehicle + "cg_to_rear", 1.367);
+  params.emplace_back(ns_vehicle + "tire_cornering_stiffness_front", 0.1);
+  params.emplace_back(ns_vehicle + "tire_cornering_stiffness_rear", 0.1);
+  params.emplace_back(ns_vehicle + "mass_vehicle", 2120.0);
+  params.emplace_back(ns_vehicle + "inertia_yaw_kg_m2", 12.0);
+
+  rclcpp::NodeOptions node_options;
+  node_options.parameter_overrides(params);
+
+  const rclcpp::Node::SharedPtr node =
+    std::make_shared<rclcpp::Node>("some_node", ns_node, node_options);
+
+  EXPECT_NO_THROW(
+    autoware::common::vehicle_constants_manager::
+    declare_and_get_vehicle_constants(*node));
+
   rclcpp::shutdown();
 }

@@ -27,5 +27,4 @@ across the Autoware.Auto system.
 - @subpage state-estimation-design
 - @subpage state-estimation-nodes-design
 - @subpage tvm-utility-design
-- @subpage vehicle-constants-manager-nodes-package-design
 - @subpage vehicle-constants-manager-package-design

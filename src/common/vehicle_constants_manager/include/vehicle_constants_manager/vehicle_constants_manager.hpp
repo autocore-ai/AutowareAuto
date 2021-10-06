@@ -33,7 +33,6 @@ namespace common
 {
 namespace vehicle_constants_manager
 {
-
 /// @brief A struct that holds vehicle specific parameters that don't change over time.
 /// @details These parameters include wheel size, vehicle mass, vehicle size, tire cornering
 /// stiffness, moment of inertia, center of gravity.
@@ -63,13 +62,11 @@ struct VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants
   /// @throws std::runtime_error if cg_to_rear is larger than wheel_base (center of gravity must be
   /// within front and rear axles.)
   explicit VehicleConstants(
-    float64_t wheel_radius, float64_t wheel_width, float64_t wheel_base,
-    float64_t wheel_tread, float64_t overhang_front,
-    float64_t overhang_rear, float64_t overhang_left,
-    float64_t overhang_right, float64_t vehicle_height,
-    float64_t cg_to_rear, float64_t tire_cornering_stiffness_front,
-    float64_t tire_cornering_stiffness_rear, float64_t mass_vehicle,
-    float64_t inertia_yaw_kg_m_2);
+    float64_t wheel_radius, float64_t wheel_width, float64_t wheel_base, float64_t wheel_tread,
+    float64_t overhang_front, float64_t overhang_rear, float64_t overhang_left,
+    float64_t overhang_right, float64_t vehicle_height, float64_t cg_to_rear,
+    float64_t tire_cornering_stiffness_front, float64_t tire_cornering_stiffness_rear,
+    float64_t mass_vehicle, float64_t inertia_yaw_kg_m_2);
 
   // Primary Constants
 
@@ -162,21 +159,16 @@ struct VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants
   std::string str_pretty() const;
 };
 
-/// @brief This blocking method attempts to retrieve vehicle constants with a node pointer.
+/// @brief Declares the vehicle parameters for the node and creates a VehicleConstants object.
 /// @details It creates a `rclcpp::SyncParametersClient` object to reach parameters of the
 /// `vehicle_constants_manager_node` and attempts to retrieve all required parameters from the node.
-/// If timeout is reached before successful retrieval, an exception is thrown.
-/// @param node_ptr A fully constructed node pointer, don't pass `this` in a Node constructor,
-/// instead pass a `this->create_sub_node("")`
-/// @param nanos_timeout If the `vehicle_constants_manager_node` isn't running or hasn't published
-/// the parameters, this method will wait until this timeout value has passed
-/// @throws std::runtime_error if the timeout is reached.
-/// @throws std::runtime_error if `rclcpp` is interrupted while attempting to reach the params.
-/// @throws std::runtime_error if not all parameters are retrieved.
+/// @throws std::runtime_error if `VehicleConstants` object fails to initialize
+/// @throws rclcpp::exceptions::InvalidParameterTypeException if declare_parameter gets a value with
+/// wrong type
+/// @throws rclcpp::exceptions::InvalidParameterValueException if initial value fails to be set.
 /// @return A VehicleConstants object containing vehicle constant parameters.
-VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants try_get_vehicle_constants(
-  const rclcpp::Node::SharedPtr & node_ptr, const std::chrono::nanoseconds & nanos_timeout);
-
+VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants
+declare_and_get_vehicle_constants(rclcpp::Node & node);
 }  // namespace vehicle_constants_manager
 }  // namespace common
 }  // namespace autoware
