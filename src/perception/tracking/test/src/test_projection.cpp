@@ -147,7 +147,10 @@ TEST_F(PrismProjectionTest, TransformedCameraFrameTest) {
   const auto transform = tf2::eigenToTransform(tf_camera_from_ego.cast<float64_t>()).transform;
   // Transform the shape and pass it to the camra model:
   ShapeTransformer transformer{transform};
-  auto projection = model.project(transformer(rectangular_prism));
+  auto projection = model.project(
+    transformer(
+      rectangular_prism, geometry_msgs::msg::Point{},
+      geometry_msgs::msg::Quaternion{}));
 
   EXPECT_TRUE(projection);
 

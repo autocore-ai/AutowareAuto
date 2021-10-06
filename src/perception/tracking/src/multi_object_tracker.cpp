@@ -19,6 +19,7 @@
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <time_utils/time_utils.hpp>
 
 #include <algorithm>
@@ -243,16 +244,22 @@ MultiObjectTracker::DetectedObjectsMsg MultiObjectTracker::transform(
   result.header.frame_id = m_options.frame;
   result.objects.reserve(detections.objects.size());
   for (const auto & original_detection : detections.objects) {
-    // Transform the shape. If needed, this can potentially be made more efficient by not using
-    // tf2::doTransform, which converts the TransformStamped message to a different representation
-    // in each call.
     result.objects.emplace_back(original_detection);
     auto & detection = result.objects.back();
-    tf2::doTransform(detection.shape.polygon, detection.shape.polygon, tf_msg__tracking__detection);
     // Transform the pose.
     tf2::fromMsg(detection.kinematics.centroid_position, centroid_detection);
     const Eigen::Vector3d centroid_tracking = tf__tracking__detection * centroid_detection;
     detection.kinematics.centroid_position = tf2::toMsg(centroid_tracking);
+    if (detection.kinematics.orientation_availability != DetectedObjectKinematics::UNAVAILABLE) {
+      geometry_msgs::msg::QuaternionStamped q_out;
+      // Use quaternion stamped because there is no doTransform for quaternion even though
+      // stamp of QuaternionStamped is not being used for anything
+      tf2::doTransform(
+        geometry_msgs::msg::QuaternionStamped{}.set__quaternion(detection.kinematics.orientation),
+        q_out,
+        tf_msg__tracking__detection);
+      detection.kinematics.orientation = q_out.quaternion;
+    }
     if (detection.kinematics.has_position_covariance) {
       // Doing this properly is difficult. We'll ignore the rotational part. This is a practical
       // solution since only the yaw covariance is relevant, and the yaw covariance is

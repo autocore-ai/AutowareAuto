@@ -97,10 +97,21 @@ protected:
   }
 
   void test_object_msg(
-    const DetectedObject & object, const std::vector<Pt> & corners, const float
-    TOL = 1.0E-6F)
+    const DetectedObject & object, const BoundingBox & box, const float TOL = 1.0E-6F)
   {
-    test_corners(object, corners, TOL);
+    std::vector<Pt> expected_corners{4};
+    expected_corners[0] = make_pt(-0.5F * box.size.y, -0.5F * box.size.x, -box.size.z);
+
+    expected_corners[1] = expected_corners[0];
+    expected_corners[1].y += box.size.x;
+
+    expected_corners[2] = expected_corners[1];
+    expected_corners[2].x += box.size.y;
+
+    expected_corners[3] = expected_corners[2];
+    expected_corners[3].y -= box.size.x;
+
+    test_corners(object, expected_corners, TOL);
     EXPECT_EQ(object.existence_probability, 1.0F);
     ASSERT_EQ(object.classification.size(), 1U);
     EXPECT_EQ(
@@ -136,8 +147,8 @@ TEST_F(BoundingBoxComputationTest, BasicLfit2d)
 
   DetectedObjects objects_msg = convert_to_detected_objects(boxes_msg);
   ASSERT_EQ(objects_msg.objects.size(), 2U);
-  for (const auto & object : objects_msg.objects) {
-    test_object_msg(object, lfit_expected_corners, 0.25F);
+  for (size_t i = 0U; i < objects_msg.objects.size(); ++i) {
+    test_object_msg(objects_msg.objects[i], boxes_msg.boxes[i], 0.25F);
   }
 }
 
@@ -153,8 +164,8 @@ TEST_F(BoundingBoxComputationTest, BasicEigen2d) {
 
   DetectedObjects objects_msg = convert_to_detected_objects(boxes_msg);
   ASSERT_EQ(objects_msg.objects.size(), 2U);
-  for (const auto & object : objects_msg.objects) {
-    test_object_msg(object, eigen_expected_corners, 0.25F);
+  for (size_t i = 0U; i < objects_msg.objects.size(); ++i) {
+    test_object_msg(objects_msg.objects[i], boxes_msg.boxes[i], 0.25F);
   }
 }
 
@@ -174,9 +185,9 @@ TEST_F(BoundingBoxComputationTest, BasicLfit3d)
   }
 
   ASSERT_EQ(objects_msg.objects.size(), 2U);
-  for (const auto & object : objects_msg.objects) {
-    test_object_msg(object, expected_corners_3d, 0.25F);
-    EXPECT_EQ(object.shape.height, 4.0F);
+  for (size_t i = 0U; i < objects_msg.objects.size(); ++i) {
+    test_object_msg(objects_msg.objects[i], boxes_msg.boxes[i], 0.25F);
+    EXPECT_EQ(objects_msg.objects[i].shape.height, 4.0F);
   }
 }
 
@@ -196,9 +207,9 @@ TEST_F(BoundingBoxComputationTest, BasicEigen3d)
   }
 
   ASSERT_EQ(objects_msg.objects.size(), 2U);
-  for (const auto & object : objects_msg.objects) {
-    test_object_msg(object, expected_corners_3d, 0.25F);
-    EXPECT_EQ(object.shape.height, 4.0F);
+  for (size_t i = 0U; i < objects_msg.objects.size(); ++i) {
+    test_object_msg(objects_msg.objects[i], boxes_msg.boxes[i], 0.25F);
+    EXPECT_EQ(objects_msg.objects[i].shape.height, 4.0F);
   }
 }
 

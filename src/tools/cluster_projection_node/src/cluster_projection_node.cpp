@@ -68,7 +68,10 @@ void ClusterProjectionNode::cluster_callback(
       autoware_auto_msgs::msg::ClassifiedRoi projection_roi;
 
       perception::tracking::details::ShapeTransformer transformer{tf.transform};
-      const auto projected_pts = m_camera_model.project(transformer(object.shape));
+      const auto projected_pts = m_camera_model.project(
+        transformer(
+          object.shape, object
+          .kinematics.centroid_position, object.kinematics.orientation));
 
       if (!projected_pts) {
         RCLCPP_DEBUG(get_logger(), "could not project an object's shape.");

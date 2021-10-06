@@ -18,6 +18,7 @@
 
 #include <measurement_conversion/measurement_conversion.hpp>
 #include <measurement_conversion/measurement_typedefs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <Eigen/Core>
 
@@ -120,6 +121,11 @@ TrackedObject::TrackedObject(
   m_msg.existence_probability = detection.existence_probability;
   m_msg.classification = detection.classification;
   m_msg.shape.push_back(detection.shape);
+  // z is not filtered through ekf. Just pass it through
+  m_msg.kinematics.centroid_position.z = detection.kinematics.centroid_position.z;
+  // Orientation is not filtered though ekf. Just pass it through from the input
+  m_msg.kinematics.orientation_availability = detection.kinematics.orientation_availability;
+  m_msg.kinematics.orientation = detection.kinematics.orientation;
   // Kinematics are owned by the EKF and only filled in in the msg() getter
   m_classifier.update(detection.classification);
 }
@@ -137,6 +143,7 @@ void TrackedObject::update(const DetectedObjectMsg & detection)
   m_ticks_since_last_seen = 0;
   // Update the shape
   m_msg.shape = {detection.shape};
+  m_msg.kinematics.orientation = detection.kinematics.orientation;
 
   // It needs to be determined which parts of the DetectedObject message are set, and can be used
   // to update the state. Also, even if a variable is set, its covariance might not be set.

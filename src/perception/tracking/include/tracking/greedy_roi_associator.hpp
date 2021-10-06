@@ -127,9 +127,13 @@ public:
   explicit ShapeTransformer(const geometry_msgs::msg::Transform & tf);
   using Point32 = geometry_msgs::msg::Point32;
   /// \brief Transform the bottom and top face vertices of the given shape. No order is preserved.
-  /// \param shape Shape msg.
+  /// \param shape Shape msg with corners in object-local coordinate
+  /// \param centroid Centroid of the object whose corners are defined in shape
+  /// \param orientation Orientation of the object
   /// \return Transformed vertices of the bottom and the top face.
-  std::vector<Point32> operator()(const autoware_auto_msgs::msg::Shape & shape) const;
+  std::vector<Point32> operator()(
+    const autoware_auto_msgs::msg::Shape & shape, const geometry_msgs::msg::Point & centroid,
+    const geometry_msgs::msg::Quaternion & orientation) const;
 
 private:
   common::lidar_utils::StaticTransformer m_transformer;

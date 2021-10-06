@@ -108,6 +108,11 @@ public:
     return m_msg.shape[0];
   }
 
+  inline const geometry_msgs::msg::Quaternion orientation() const
+  {
+    return m_msg.kinematics.orientation;
+  }
+
 private:
   /// The final to-be-published object.
   TrackedObjectMsg m_msg;
