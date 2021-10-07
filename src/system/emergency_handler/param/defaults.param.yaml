@@ -1,0 +1,11 @@
+---
+/**:
+  ros__parameters:
+    update_rate: 10.0
+    data_ready_timeout: 30.0
+    timeout_driving_capability: 1.0
+    use_emergency_hold: false
+    emergency_hazard_level: 2 # 1: Safe Fault, 2: Latent Fault, 3: Single Point Fault
+    emergency_stop_acceleration_mps2: -2.5
+    use_parking_after_stopped: true
+    stopped_velocity_threshold: 0.001

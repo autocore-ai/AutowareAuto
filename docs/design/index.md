@@ -15,5 +15,6 @@ individual ODDs listed at @ref usage-odd-demos.
 - @subpage autoware-perception-design
 - @subpage autoware-planning-design
 - @subpage autoware-prediction-design
+- @subpage autoware-system-design
 - @subpage autoware-tools-design
 - @subpage autoware-urdf-design
