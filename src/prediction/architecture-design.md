@@ -33,6 +33,8 @@ The prediction relies on the presence of an HD map and internally works in the m
 
 The transformation of inputs and output could be done in a separate node, preferably running on the same ECU or even process as the core prediction. The transformation node needs a deterministic policy to choose the transformation to/from map coordinates in order to satisfy the *consistent inputs* requirement. But if  `tf2` is used, transformations may change in the background without the prediction node being aware of that. Hence it is easier to implement the transformation in a single C++ object that is owned by the prediction node.
 
+The prediction module sits in a pipeline receiving input from the tracker and publishing output to the planning and control modules.
+
 #### Map
 
 The map needs to provide lanes with a center line and boundaries to be able to decide if an object is inside or outside a given area.
@@ -53,7 +55,7 @@ other inputs as they are available.
 
 ### Outputs
 
-- predicted dynamic objects in odometry frame on topic `/predicted_objects`
+- predicted dynamic objects in odometry frame on topic `/prediction/predicted_objects`
 
 ## Inner-workings / Algorithms
 
@@ -83,8 +85,8 @@ In phase 3., conflicts or collisions between the ego vehicle and other objects g
 The scene interpretation library can serve multiple purposes:
 
 1. Association
-  1. Given lane association, infer one or more maneuvers, or intent, for each dynamic object. For example, for a vehicle waiting at a red traffic light, the intent may be to drive straight or to turn right. For a pedestrian near but not on a crossing, options are to cross or to follow a different path. This can be summarized as one or more sequences of lanelet IDs.
-  1. Use map information to select dynamic objects for which the prediction needs to be modified or can be skipped; e.g. parked cars, pedestrians far from any lane.
+  -# Given the lane association, infer one or more maneuvers, or intent, for each dynamic object. For example, for a vehicle waiting at a red traffic light, the intent may be to drive straight or to turn right. For a pedestrian near but not on a crossing, options are to cross or to follow a different path. This can be summarized as one or more sequences of lanelet IDs.
+  -# Use map information to select dynamic objects for which the prediction needs to be modified or can be skipped; e.g. parked cars, pedestrians far from any lane.
 
 The output of the scene interpretation includes a `PredictedDynamicObjects` message with information filled where applicable. Additional output includes  any other information such as the association of objects to lanes on the map that simplify the prediction in the next step.
 
@@ -111,8 +113,8 @@ This module takes the previous ego path as input. This reduces uncertainty as th
 
 The main use cases for the conflict resolution are
 
-1. obeying the traffic rules at unprotected intersections so the ego vehicle yields and takes it right of way,
-1. avoiding virtual conflicts with cars behind ego e.g. when waiting at a traffic signal.
+-# obeying the traffic rules at unprotected intersections so the ego vehicle yields and takes it right of way,
+-# avoiding virtual conflicts with cars behind ego e.g. when waiting at a traffic signal.
 
 For example, if ego wants to drive straight through an intersection and an oncoming vehicle wants to turn left such that the predicted paths collide, then the other vehicle's predicted path is modified to yield to ego.
 
@@ -123,13 +125,13 @@ In relying on the map for information regarding priorities of lanes, one can get
 Whenever there are differences in behavior prediction needed to handle local preferences, then they should be configurable via parameters. For example, if a vehicle is predicted to prefer the right lane on a multi-lane road, then "right" should be a parameter that can be changed at least in the initialization of the module.
 
 ## Known limits / Open questions
-1. Interaction between other traffic agents is not considered
-1. Interaction between ego and other traffic agents is simplified to conflict resolution and does not handle scenarios requiring co-operation such that ego and another agent have to leave their desired trajectory to jointly reach their target.
-1. Not easy to predict articulated vehicles like a tractor trailer in tight curves. This requires a good perception to be able to combine the two objects into one and a good motion model. This is where rule-based approaches are stretched and it may be easier to solve with machine-learning approach.
-1. Only a best estimate is output, no uncertainties are used on the input or output.
-1. Static obstacles not considered
-1. Occlusions not considered. The occluded area could be stored as an occupancy grid but that is currently unavailable in Autoware.Auto.
-1. The map is taken as the static environment because there is currently no dynamic inference from perception.
+-# Interaction between other traffic agents is not considered
+-# Interaction between ego and other traffic agents is simplified to conflict resolution and does not handle scenarios requiring co-operation such that ego and another agent have to leave their desired trajectory to jointly reach their target.
+-# Not easy to predict articulated vehicles like a tractor trailer in tight curves. This requires a good perception to be able to combine the two objects into one and a good motion model. This is where rule-based approaches are stretched and it may be easier to solve with machine-learning approach.
+-# Only a best estimate is output, no uncertainties are used on the input or output.
+-# Static obstacles not considered
+-# Occlusions not considered. The occluded area could be stored as an occupancy grid but that is currently unavailable in Autoware.Auto.
+-# The map is taken as the static environment because there is currently no dynamic inference from perception.
 
 # Error detection and handling
 

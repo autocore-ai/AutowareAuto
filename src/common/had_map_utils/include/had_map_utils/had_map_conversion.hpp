@@ -16,7 +16,7 @@
 #define HAD_MAP_UTILS__HAD_MAP_CONVERSION_HPP_
 
 #include <autoware_auto_msgs/msg/had_map_bin.hpp>
-#include <cmath>
+#include <lanelet2_core/LaneletMap.h>
 #include <memory>
 #include "had_map_utils/visibility_control.hpp"
 
