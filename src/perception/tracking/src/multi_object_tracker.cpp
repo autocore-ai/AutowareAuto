@@ -175,8 +175,18 @@ DetectedObjectsUpdateResult MultiObjectTracker::update(
 
 void MultiObjectTracker::update(const ClassifiedRoiArrayMsg & rois)
 {
-  const auto association = m_vision_associator.assign(rois, m_tracks);
-
+  const auto target_time = time_utils::from_message(rois.header.stamp);
+  if (target_time < m_last_update) {
+    std::cerr << "Trying to update the tracks in the past. Skipping." << std::endl;
+    return;
+  }
+  const auto dt = target_time - m_last_update;
+  auto tracks_copy = m_tracks;
+  for (auto & object : tracks_copy.objects) {
+    object.predict(dt);
+  }
+  const auto association = m_vision_associator.assign(rois, tracks_copy);
+  // Update the original tracks' classification.
   for (size_t i = 0U; i < m_tracks.objects.size(); ++i) {
     const auto & maybe_roi_idx = association.track_assignments[i];
     if (maybe_roi_idx != AssociatorResult::UNASSIGNED) {
