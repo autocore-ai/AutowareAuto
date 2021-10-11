@@ -75,7 +75,8 @@ public:
   void update(const DetectedObjectMsg & detection);
 
   /// Update just the classification state of the track
-  void update(const ObjectClassifications & obj_type);
+  void update(
+    const ObjectClassifications & obj_type, const common::types::float32_t covariance);
 
   /// Call when no correspondence for this track was found.
   void no_update();

@@ -154,9 +154,11 @@ void TrackedObject::update(const DetectedObjectMsg & detection)
   m_ekf.correct(pose_measurement);
 }
 
-void TrackedObject::update(const ObjectClassifications & classification)
+void TrackedObject::update(
+  const ObjectClassifications & classification,
+  const common::types::float32_t covariance)
 {
-  m_classifier.update(classification);
+  m_classifier.update(classification, covariance);
 }
 
 void TrackedObject::no_update()
