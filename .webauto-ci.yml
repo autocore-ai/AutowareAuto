@@ -1,0 +1,10 @@
+# This is required for Continuous Integration for Autoware using the simulator
+
+services:
+  planning_simulator_v2:
+    type: roslaunch
+    package_name: scenario_test_runner_launch
+    file_name: autoware_auto.launch.py
+    params:
+      vehicle_model: lexus
+      sensor_model: aip_xx1
