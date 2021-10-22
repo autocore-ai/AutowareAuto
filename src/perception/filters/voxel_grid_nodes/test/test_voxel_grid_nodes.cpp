@@ -32,8 +32,8 @@ using autoware::perception::filters::voxel_grid::Config;
 using autoware::perception::filters::voxel_grid_nodes::algorithm::VoxelCloudBase;
 using autoware::perception::filters::voxel_grid_nodes::algorithm::VoxelCloudApproximate;
 using autoware::perception::filters::voxel_grid_nodes::algorithm::VoxelCloudCentroid;
-using autoware::perception::filters::voxel_grid::PointXYZIF;
 
+using autoware::common::types::PointXYZI;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 
@@ -42,17 +42,17 @@ using autoware::perception::filters::voxel_grid_nodes::VoxelCloudNode;
 class VoxelAlgorithm : public ::testing::Test
 {
 protected:
-  PointXYZIF make(const float32_t x, const float32_t y, const float32_t z)
+  PointXYZI make(const float32_t x, const float32_t y, const float32_t z)
   {
-    PointXYZIF ret;
+    PointXYZI ret;
     ret.x = x;
     ret.y = y;
     ret.z = z;
     return ret;
   }
   std::unique_ptr<Config> cfg_ptr;
-  std::array<PointXYZIF, 16U> obs_points1;
-  std::array<PointXYZIF, 8U> ref_points1;
+  std::array<PointXYZI, 16U> obs_points1;
+  std::array<PointXYZI, 8U> ref_points1;
   const std::size_t m_capacity;
 
 public:
@@ -101,14 +101,14 @@ protected:
   using VoxelAlgorithm::make;
   void make(sensor_msgs::msg::PointCloud2 & cloud, std::size_t N)
   {
-    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZIF> mod{cloud, "frame_id"};
+    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> mod{cloud, "frame_id"};
     for (std::size_t idx = 0U; idx < N; ++idx) {
       mod.push_back(obs_points1[idx]);
     }
   }
   bool8_t check(const sensor_msgs::msg::PointCloud2 & cloud, std::size_t N)
   {
-    point_cloud_msg_wrapper::PointCloud2View<PointXYZIF> cloud_view{cloud};
+    point_cloud_msg_wrapper::PointCloud2View<PointXYZI> cloud_view{cloud};
     bool8_t ret = true;
     constexpr float32_t TOL = 1.0E-6F;
     for (const auto & msg_point_ref : cloud_view) {

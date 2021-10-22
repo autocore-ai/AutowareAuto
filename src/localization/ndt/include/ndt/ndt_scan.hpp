@@ -17,13 +17,14 @@
 #ifndef NDT__NDT_SCAN_HPP_
 #define NDT__NDT_SCAN_HPP_
 
+#include <common/types.hpp>
 #include <helper_functions/crtp.hpp>
 #include <ndt/visibility_control.hpp>
 #include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <common/types.hpp>
 #include <time_utils/time_utils.hpp>
+
 #include <Eigen/Core>
 #include <vector>
 
@@ -157,7 +158,7 @@ public:
     if (msg.width > m_points.capacity()) {
       throw std::length_error(container_full_error);
     }
-    using PointXYZI = autoware::common::types::PointXYZI;
+    using autoware::common::types::PointXYZI;
     point_cloud_msg_wrapper::PointCloud2View<PointXYZI> msg_view{msg};
     for (const auto & point : msg_view) {
       m_points.emplace_back(point.x, point.y, point.z);

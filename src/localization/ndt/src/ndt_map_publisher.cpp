@@ -70,8 +70,6 @@ void read_from_yaml(
 
 void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 * msg)
 {
-  // TODO(yunus.caliskan): Consider replacing the logic here with pointcloud_msg_wrapper once
-  // It supports the padding in the structs with heterogeneous fields.
   pcl::PCLPointCloud2 pcl_cloud;
   if (pcl::io::loadPCDFile(file_name, pcl_cloud) == -1) {  // load the file
     throw std::runtime_error(std::string("PCD file ") + file_name + " could not be loaded.");
@@ -84,50 +82,76 @@ void read_from_pcd(const std::string & file_name, sensor_msgs::msg::PointCloud2 
   sensor_msgs::msg::PointCloud2 cloud;
   pcl_conversions::moveFromPCL(pcl_cloud, cloud);
 
-  // Ensure that we have at least the x, y, z fields and check whether we have intensity
-  const auto has_intensity = common::lidar_utils::has_intensity_and_throw_if_no_xyz(cloud);
-  if (has_intensity && msg->fields.size() == 4U &&
-    msg->fields[3U].datatype == sensor_msgs::msg::PointField::FLOAT32)
-  {
-    // Quick path: the data already has the desired format
+  using autoware::common::types::float32_t;
+  using autoware::common::types::PointXYZI;
+  using point_cloud_msg_wrapper::PointCloud2View;
+  using point_cloud_msg_wrapper::PointCloud2Modifier;
+  if (PointCloud2View<PointXYZI>::can_be_created_from(cloud)) {
+    // The cloud already has correct fields.
     *msg = std::move(cloud);
     return;
   }
 
-  // We don't have intensity of the correct format
-  // Set up a new point cloud with the correct fields
-  sensor_msgs::msg::PointCloud2 adjusted_cloud;
-  const size_t num_points = cloud.data.size() / cloud.point_step;
+  struct PointWithoutIntensity
+  {
+    float32_t x;
+    float32_t y;
+    float32_t z;
+  };
 
-  using autoware::common::types::PointXYZI;
-  point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> modifier{
-    adjusted_cloud, msg->header.frame_id};
-  modifier.reserve(num_points);
+  if (PointCloud2View<PointWithoutIntensity>::can_be_created_from(cloud)) {
+    sensor_msgs::msg::PointCloud2 adjusted_cloud;
+    point_cloud_msg_wrapper::PointCloud2View<PointWithoutIntensity> old_cloud_view{cloud};
+    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> adjusted_cloud_modifier{
+      adjusted_cloud, msg->header.frame_id};
+    adjusted_cloud_modifier.reserve(old_cloud_view.size());
 
-  // Copy x, y, z into it
-  for (size_t i = 0; i < num_points; ++i) {
-    const uint8_t * src = cloud.data.data() + cloud.point_step * i;
-    uint8_t * dest = adjusted_cloud.data.data() + adjusted_cloud.point_step * i;
-    std::memcpy(dest, src, 3 * sizeof(float32_t));
-    // If intensity exists, copy it into the new cloud, otherwise, set it to 0.0
-    // This would be faster with separate loops, but this function isn't a hotspot
-    float intensity = 0.0f;
-    if (has_intensity) {
-      const size_t intensity_offset = cloud.point_step * i + 3 * sizeof(float32_t);
-      if (msg->fields[3U].datatype == sensor_msgs::msg::PointField::FLOAT32) {
-        std::memcpy(&intensity, cloud.data.data() + intensity_offset, sizeof(float32_t));
-      } else if (msg->fields[3U].datatype == sensor_msgs::msg::PointField::UINT8) {
-        intensity = static_cast<float32_t>(cloud.data[intensity_offset]);
-      } else {
-        throw std::runtime_error("intensity datatype is not float or uint8_t");
-      }
+    for (const auto & old_point : old_cloud_view) {
+      const PointXYZI point{
+        old_point.x,
+        old_point.y,
+        old_point.z,
+        0.0f};
+      adjusted_cloud_modifier.push_back(point);
     }
-    uint8_t * dest_intensity = adjusted_cloud.data.data() + adjusted_cloud.point_step * i + 3 *
-      sizeof(float32_t);
-    std::memcpy(dest_intensity, &intensity, sizeof(float32_t));
+
+    *msg = std::move(adjusted_cloud);
+    return;
   }
 
-  *msg = std::move(adjusted_cloud);
+  // We must pack this structure as this is how data is stored coming from the PCL conversion.
+  #pragma pack(push, 1)
+  struct PointWithUintIntensity
+  {
+    float32_t x;
+    float32_t y;
+    float32_t z;
+    std::uint8_t intensity;
+  };
+  #pragma pack(pop)
+
+  if (PointCloud2View<PointWithUintIntensity>::can_be_created_from(cloud)) {
+    // We need to convert the intensity field.
+    sensor_msgs::msg::PointCloud2 adjusted_cloud;
+    point_cloud_msg_wrapper::PointCloud2View<PointWithUintIntensity> old_cloud_view{cloud};
+    point_cloud_msg_wrapper::PointCloud2Modifier<PointXYZI> adjusted_cloud_modifier{
+      adjusted_cloud, msg->header.frame_id};
+    adjusted_cloud_modifier.reserve(old_cloud_view.size());
+
+    for (const auto & old_point : old_cloud_view) {
+      const PointXYZI point{
+        old_point.x,
+        old_point.y,
+        old_point.z,
+        static_cast<float>(old_point.intensity)};
+      adjusted_cloud_modifier.push_back(point);
+    }
+
+    *msg = std::move(adjusted_cloud);
+    return;
+  }
+
+  throw std::runtime_error("intensity datatype is not float or uint8_t");
 }
 
 geocentric_pose_t load_map(
