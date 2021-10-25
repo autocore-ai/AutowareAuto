@@ -3,7 +3,7 @@
 services:
   planning_simulator_v2:
     type: roslaunch
-    package_name: scenario_test_runner_launch
+    package_name: scenario_simulator_launch
     file_name: autoware_auto.launch.py
     params:
       vehicle_model: lexus
