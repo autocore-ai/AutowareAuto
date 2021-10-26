@@ -439,8 +439,9 @@ void LgsvlInterface::on_odometry(const nav_msgs::msg::Odometry & msg)
 
       // Get values from vehicle odometry
       vse_t.state.longitudinal_velocity_mps = get_odometry().velocity_mps;
-      vse_t.state.front_wheel_angle_rad = get_odometry().front_wheel_angle_rad;
-      vse_t.state.rear_wheel_angle_rad = get_odometry().rear_wheel_angle_rad;
+      // Steer semantically is z up, ccw positive, but LGSVL thinks its the opposite
+      vse_t.state.front_wheel_angle_rad = -get_odometry().front_wheel_angle_rad;
+      vse_t.state.rear_wheel_angle_rad = -get_odometry().rear_wheel_angle_rad;
       if (state_report().gear == autoware_auto_msgs::msg::VehicleStateReport::GEAR_REVERSE) {
         vse_t.state.longitudinal_velocity_mps *= -1.0f;
       }
