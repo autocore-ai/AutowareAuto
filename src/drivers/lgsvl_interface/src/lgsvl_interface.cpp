@@ -29,6 +29,8 @@
 
 #include "lgsvl_interface/lgsvl_interface.hpp"
 
+#include "autoware_auto_msgs/msg/hazard_lights_command.hpp"
+#include "autoware_auto_msgs/msg/hazard_lights_report.hpp"
 #include "autoware_auto_msgs/msg/headlights_command.hpp"
 #include "autoware_auto_msgs/msg/headlights_report.hpp"
 #include "autoware_auto_msgs/msg/horn_command.hpp"
@@ -43,6 +45,8 @@ using namespace std::chrono_literals;
 
 namespace lgsvl_interface
 {
+using autoware_auto_msgs::msg::HazardLightsCommand;
+using autoware_auto_msgs::msg::HazardLightsReport;
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
 using autoware_auto_msgs::msg::HornCommand;

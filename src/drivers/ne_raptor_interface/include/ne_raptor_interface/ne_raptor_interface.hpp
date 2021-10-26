@@ -59,6 +59,7 @@
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
+#include <autoware_auto_msgs/msg/hazard_lights_command.hpp>
 
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 
@@ -113,6 +114,8 @@ using autoware_auto_msgs::msg::HighLevelControlCommand;
 using autoware_auto_msgs::msg::RawControlCommand;
 using autoware_auto_msgs::msg::VehicleControlCommand;
 using autoware_auto_msgs::msg::VehicleStateCommand;
+
+using autoware_auto_msgs::msg::HazardLightsCommand;
 
 using autoware_auto_msgs::msg::VehicleStateReport;
 using autoware_auto_msgs::msg::VehicleOdometry;

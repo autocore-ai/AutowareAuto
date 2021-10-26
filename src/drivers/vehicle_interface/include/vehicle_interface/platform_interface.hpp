@@ -19,6 +19,8 @@
 #define VEHICLE_INTERFACE__PLATFORM_INTERFACE_HPP_
 
 #include <common/types.hpp>
+#include <autoware_auto_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_auto_msgs/msg/hazard_lights_report.hpp>
 #include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/headlights_report.hpp>
 #include <autoware_auto_msgs/msg/horn_command.hpp>
@@ -37,6 +39,8 @@
 
 using autoware::common::types::bool8_t;
 
+using autoware_auto_msgs::msg::HazardLightsCommand;
+using autoware_auto_msgs::msg::HazardLightsReport;
 using autoware_auto_msgs::msg::HeadlightsCommand;
 using autoware_auto_msgs::msg::HeadlightsReport;
 using autoware_auto_msgs::msg::HornCommand;
@@ -137,6 +141,12 @@ public:
   /// a runtime error will be thrown.
   /// \param[in] msg The control command to send to the vehicle.
   virtual void send_wipers_command(const WipersCommand & msg);
+
+  /// \brief Send the hazard lights control command to the vehicle platform.
+  /// If this is not implemented for a specific vehicle but is called,
+  /// a runtime error will be thrown.
+  /// \param[in] msg The control command to send to the vehicle.
+  virtual void send_hazard_lights_command(const HazardLightsCommand & msg);
 
 protected:
   /// Get the underlying state report for modification

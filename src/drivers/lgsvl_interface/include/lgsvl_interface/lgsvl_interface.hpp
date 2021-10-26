@@ -23,6 +23,7 @@
 #include <autoware_auto_msgs/msg/headlights_command.hpp>
 #include <autoware_auto_msgs/msg/horn_command.hpp>
 #include <autoware_auto_msgs/msg/wipers_command.hpp>
+#include <autoware_auto_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_auto_msgs/msg/raw_control_command.hpp>
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_msgs/msg/vehicle_state_command.hpp>
