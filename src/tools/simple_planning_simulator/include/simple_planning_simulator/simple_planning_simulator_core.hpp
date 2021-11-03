@@ -110,9 +110,9 @@ private:
   autocore::Publisher<PoseStamped>::SharedPtr pub_current_pose_;
 
   autocore::Subscription<VehicleStateCommand>::SharedPtr sub_state_cmd_;
-  rclcpp::Subscription<VehicleControlCommand>::SharedPtr sub_vehicle_cmd_;
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_ackermann_cmd_;
-  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
+  autocore::Subscription<VehicleControlCommand>::SharedPtr sub_vehicle_cmd_;
+  autocore::Subscription<AckermannControlCommand>::SharedPtr sub_ackermann_cmd_;
+  autocore::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
 
   uint32_t timer_sampling_time_ms_;  //!< @brief timer sampling time
   rclcpp::TimerBase::SharedPtr on_timer_;  //!< @brief timer for simulation

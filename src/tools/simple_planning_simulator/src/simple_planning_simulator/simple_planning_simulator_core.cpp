@@ -95,7 +95,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   sub_ackermann_cmd_ = create_subscription<AckermannControlCommand>(
     "input/ackermann_control_command", QoS{1},
     std::bind(&SimplePlanningSimulator::on_ackermann_cmd, this, _1));
-  sub_state_cmd_ = create_subscription1<VehicleStateCommand>(
+  sub_state_cmd_ = create_subscription<VehicleStateCommand>(
     "input/vehicle_state_command", QoS{1},
     std::bind(&SimplePlanningSimulator::on_state_cmd, this, _1));
 
