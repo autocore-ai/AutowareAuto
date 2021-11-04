@@ -383,6 +383,31 @@ void SimplePlanningSimulator::publish_tf(const VehicleKinematicState & state)
   tf_msg.transforms.emplace_back(std::move(tf));
   pub_tf_->publish(tf_msg);
 }
+
+void SimplePlanningSimulator::SetStateCmd(const VehicleStateCommand & msg)
+{
+  sub_state_cmd_->set(msg);
+}
+void SimplePlanningSimulator::SetVehicleCmd(const VehicleControlCommand & msg)
+{
+  sub_vehicle_cmd_->set(msg);
+}
+void SimplePlanningSimulator::SetAckermannCmd(const AckermannControlCommand & msg)
+{
+  sub_ackermann_cmd_->set(msg);
+}
+void SimplePlanningSimulator::SetInitPose(const PoseWithCovarianceStamped & msg)
+{
+  sub_init_pose_->set(msg);
+}
+void SimplePlanningSimulator::Update() { on_timer(); }
+VehicleKinematicState SimplePlanningSimulator::GetKinematicState()
+{
+  return pub_kinematic_state_->get();
+}
+VehicleStateReport SimplePlanningSimulator::GetStateReport() { return pub_state_report_->get(); }
+PoseStamped SimplePlanningSimulator::GetCurrentPose() { return pub_current_pose_->get(); }
+
 }  // namespace simple_planning_simulator
 }  // namespace simulation
 

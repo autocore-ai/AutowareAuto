@@ -27,8 +27,8 @@ namespace autoware
 namespace behavior_planner_nodes
 {
 
-BehaviorPlannerNode::BehaviorPlannerNode(const rclcpp::NodeOptions & options)
-:  Node("behavior_planner_node", options)
+BehaviorPlannerNode::BehaviorPlannerNode(const rclcpp::NodeOptions & options, const autocore::NodeType node_type)
+:  Node("behavior_planner_node", options, node_type)
 {
   init();
 }

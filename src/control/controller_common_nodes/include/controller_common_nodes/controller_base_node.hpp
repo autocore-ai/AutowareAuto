@@ -22,7 +22,7 @@
 #include <tf2/buffer_core.h>
 #include <tf2_msgs/msg/tf_message.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <exception>
 #include <memory>
@@ -43,11 +43,11 @@ using tf2_msgs::msg::TFMessage;
 using geometry_msgs::msg::TransformStamped;
 using ControllerPtr = std::unique_ptr<controller_common::ControllerBase>;
 
-class CONTROLLER_COMMON_NODES_PUBLIC ControllerBaseNode : public rclcpp::Node
+class CONTROLLER_COMMON_NODES_PUBLIC ControllerBaseNode : public autocore::Node
 {
 public:
   /// Parameter file constructor
-  ControllerBaseNode(const std::string & name, const std::string & ns);
+  ControllerBaseNode(const std::string & name, const std::string & ns, const autocore::NodeType node_type = autocore::NodeType::ROS);
   /// Explicit constructor
   ControllerBaseNode(
     const std::string & name,
@@ -57,9 +57,14 @@ public:
     const std::string & tf_topic,
     const std::string & trajectory_topic,
     const std::string & diagnostic_topic,
-    const std::string & static_tf_topic = "static_tf");
+    const std::string & static_tf_topic = "static_tf",
+    const autocore::NodeType node_type = autocore::NodeType::ROS);
 
   virtual ~ControllerBaseNode() noexcept = default;
+
+  void SetKinematicState(const State &);
+  void SetTrajectory(const Trajectory &);
+  Command GetVehicleCmd();
 
 protected:
   /// Child class should call this to set the controller
@@ -96,12 +101,12 @@ private:
   CONTROLLER_COMMON_NODES_LOCAL void retry_compute();
 
 
-  rclcpp::Subscription<State>::SharedPtr m_state_sub{};
-  rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub{};
-  rclcpp::Subscription<TFMessage>::SharedPtr m_static_tf_sub{};
-  rclcpp::Subscription<Trajectory>::SharedPtr m_trajectory_sub{};
-  rclcpp::Publisher<Command>::SharedPtr m_command_pub{};
-  rclcpp::Publisher<Diagnostic>::SharedPtr m_diagnostic_pub{};
+  autocore::Subscription<State>::SharedPtr m_state_sub{};
+  autocore::Subscription<TFMessage>::SharedPtr m_tf_sub{};
+  autocore::Subscription<TFMessage>::SharedPtr m_static_tf_sub{};
+  autocore::Subscription<Trajectory>::SharedPtr m_trajectory_sub{};
+  autocore::Publisher<Command>::SharedPtr m_command_pub{};
+  autocore::Publisher<Diagnostic>::SharedPtr m_diagnostic_pub{};
   tf2::BufferCore m_tf_buffer{tf2::BUFFER_CORE_DEFAULT_CACHE_TIME};
   // TODO(c.ho) diagnostics
   ControllerPtr m_controller{nullptr};

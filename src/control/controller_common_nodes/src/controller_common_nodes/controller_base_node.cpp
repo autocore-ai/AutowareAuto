@@ -28,8 +28,8 @@ namespace control
 namespace controller_common_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
-ControllerBaseNode::ControllerBaseNode(const std::string & name, const std::string & ns)
-: Node{name, ns, rclcpp::NodeOptions{rcl_get_default_allocator()}}
+ControllerBaseNode::ControllerBaseNode(const std::string & name, const std::string & ns, const autocore::NodeType node_type)
+: Node{name, ns, rclcpp::NodeOptions{rcl_get_default_allocator()}, node_type}
 {
   using rcl_interfaces::msg::ParameterDescriptor;
   using rclcpp::ParameterValue;
@@ -52,8 +52,9 @@ ControllerBaseNode::ControllerBaseNode(
   const std::string & tf_topic,
   const std::string & trajectory_topic,
   const std::string & diagnostic_topic,
-  const std::string & static_tf_topic)
-: Node{name, ns, rclcpp::NodeOptions{rcl_get_default_allocator()}}
+  const std::string & static_tf_topic,
+  const autocore::NodeType node_type)
+: Node{name, ns, rclcpp::NodeOptions{rcl_get_default_allocator()}, node_type}
 {
   init(command_topic, state_topic, tf_topic, static_tf_topic, trajectory_topic, diagnostic_topic);
 }
@@ -99,16 +100,16 @@ void ControllerBaseNode::init(
     [this](const Trajectory::SharedPtr msg) {on_trajectory(msg);}, SubAllocT{});
   m_tf_sub = create_subscription<TFMessage>(
     tf_topic, QoS{10},
-    [this](const TFMessage::SharedPtr msg) {on_tf(msg);}, SubAllocT{});
+    [this](const TFMessage::SharedPtr msg) {on_tf(msg);}, SubAllocT{}, true);
   m_static_tf_sub = create_subscription<TFMessage>(
     static_tf_topic, static_tf_qos,
-    [this](const TFMessage::SharedPtr msg) {on_static_tf(msg);}, SubAllocT{});
+    [this](const TFMessage::SharedPtr msg) {on_static_tf(msg);}, SubAllocT{}, true);
   // Pubs
   using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
   m_command_pub = create_publisher<Command>(command_topic, QoS{10}, PubAllocT{});
   // Diagnostics are not strictly needed for proper running
   if (!diagnostic_topic.empty()) {
-    m_diagnostic_pub = create_publisher<Diagnostic>(diagnostic_topic, QoS{10}, PubAllocT{});
+    m_diagnostic_pub = create_publisher<Diagnostic>(diagnostic_topic, QoS{10}, PubAllocT{}, true);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,6 +274,10 @@ void ControllerBaseNode::on_bad_compute(std::exception_ptr eptr)  // NOLINT
     RCLCPP_WARN(get_logger(), e.what());
   }
 }
+
+void ControllerBaseNode::SetKinematicState(const State & msg) { m_state_sub->set(msg); }
+void ControllerBaseNode::SetTrajectory(const Trajectory & msg) { m_trajectory_sub->set(msg); }
+Command ControllerBaseNode::GetVehicleCmd() { return m_command_pub->get(); }
 
 }  // namespace controller_common_nodes
 }  // namespace control

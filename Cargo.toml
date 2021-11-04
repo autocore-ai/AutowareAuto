@@ -1,0 +1,11 @@
+[workspace]
+
+members = [
+  "src/external/sdv/zenoh_flow_behavior_planner_nodes", # "src/external/sdv/zenoh_flow_goal_pose",  # "src/external/sdv/zenoh_flow_init_pose",
+  "src/external/sdv/zenoh_flow_lanelet2_global_planner_nodes",
+  "src/external/sdv/zenoh_flow_lanelet2_map_provider",
+  "src/external/sdv/zenoh_flow_pure_pursuit",
+  "src/external/sdv/zenoh_flow_simple_planning_simulator",
+  "src/external/sdv/zenoh_flow_system_monitor",
+  "src/external/sdv/zenoh_flow_tick_source",
+]

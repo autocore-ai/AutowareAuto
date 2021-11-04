@@ -7,4 +7,55 @@ repositories:
     type: git
     url: https://github.com/RobotWebTools/rosbridge_suite.git
     version: 1a2c386455067b00a9e67fb70cc711add38c3582
-
+  src/external/autocore_node:
+    type: git
+    url: git@github.com:autocore-ai/autocore_node.git
+    version: autocore-dev
+  src/external/sdv/rust_cxx_autoware_auto_msgs:
+    type: git
+    url: git@github.com:autocore-ai/rust_cxx_autoware_auto_msgs.git
+    version: dev
+  src/external/sdv/rust_cxx_autoware_auto_msgs_cov:
+    type: git
+    url: git@github.com:autocore-ai/rust_cxx_autoware_auto_msgs_cov.git
+    version: dev
+  src/external/sdv/zenoh_flow_behavior_planner_nodes:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_behavior_planner_nodes.git
+    version: dev
+  src/external/sdv/zenoh_flow_goal_pose:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_goal_pose.git
+    version: dev
+  src/external/sdv/zenoh_flow_init_pose:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_init_pose.git
+    version: dev
+  src/external/sdv/zenoh_flow_lane_planner_nodes:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_lane_planner_nodes.git
+    version: dev
+  src/external/sdv/zenoh_flow_lanelet2_global_planner_nodes:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_lanelet2_global_planner_nodes.git
+    version: dev
+  src/external/sdv/zenoh_flow_lanelet2_map_provider:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_lanelet2_map_provider.git
+    version: dev
+  src/external/sdv/zenoh_flow_pure_pursuit:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_pure_pursuit.git
+    version: dev
+  src/external/sdv/zenoh_flow_simple_planning_simulator:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_simple_planning_simulator.git
+    version: dev
+  src/external/sdv/zenoh_flow_system_monitor:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_system_monitor.git
+    version: dev
+  src/external/sdv/zenoh_flow_tick_source:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_tick_source.git
+    version: dev

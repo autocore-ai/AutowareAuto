@@ -19,7 +19,7 @@
 #include <autoware_auto_msgs/msg/vehicle_kinematic_state.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <chrono>
 #include <list>
@@ -55,7 +55,7 @@ using TrajectoryProfilesVec = std::vector<TrajectoryProfile>;
 /// the vehicle perfectly follows the trajectory. States are in the
 /// ego frame, trajectories are in an inertial frame, and transforms
 /// between the two are provided
-class MOTION_TESTING_NODES_PUBLIC MotionTestingPublisher : public rclcpp::Node
+class MOTION_TESTING_NODES_PUBLIC MotionTestingPublisher : public autocore::Node
 {
 public:
   MotionTestingPublisher(
@@ -88,9 +88,9 @@ private:
     const TrajectoryProfile & prof,
     const TrajectoryPoint & pt) noexcept;
 
-  rclcpp::Publisher<TFMessage>::SharedPtr m_tf_pub;
-  rclcpp::Publisher<State>::SharedPtr m_state_pub;
-  rclcpp::Publisher<Trajectory>::SharedPtr m_traj_pub;
+  autocore::Publisher<TFMessage>::SharedPtr m_tf_pub;
+  autocore::Publisher<State>::SharedPtr m_state_pub;
+  autocore::Publisher<Trajectory>::SharedPtr m_traj_pub;
   rclcpp::TimerBase::SharedPtr m_timer;
   std::list<State> m_states;
   std::list<Trajectory> m_trajectories;

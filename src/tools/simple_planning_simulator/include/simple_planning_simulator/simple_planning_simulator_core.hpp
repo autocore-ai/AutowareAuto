@@ -102,6 +102,15 @@ class PLANNING_SIMULATOR_PUBLIC SimplePlanningSimulator : public autocore::Node
 public:
   explicit SimplePlanningSimulator(const rclcpp::NodeOptions & options, const autocore::NodeType node_type = autocore::NodeType::ROS);
 
+  void SetStateCmd(const VehicleStateCommand &);
+  void SetVehicleCmd(const VehicleControlCommand &);
+  void SetAckermannCmd(const AckermannControlCommand &);
+  void SetInitPose(const PoseWithCovarianceStamped &);
+  void Update();
+  VehicleKinematicState GetKinematicState();
+  VehicleStateReport GetStateReport();
+  PoseStamped GetCurrentPose();
+
 private:
   /* ros system */
   autocore::Publisher<VehicleKinematicState>::SharedPtr pub_kinematic_state_;

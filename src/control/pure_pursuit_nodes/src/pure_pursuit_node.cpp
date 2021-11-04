@@ -37,9 +37,10 @@ namespace pure_pursuit_nodes
 {
 PurePursuitNode::PurePursuitNode(
   const std::string & node_name,
-  const std::string & node_namespace)
+  const std::string & node_namespace,
+  const autocore::NodeType node_type)
 : ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
-    "tf", "trajectory", "ctrl_diag"}
+    "tf", "trajectory", "ctrl_diag", "tf_static", node_type}
 {
   pure_pursuit::Config cfg{
     static_cast<float32_t>(declare_parameter(
@@ -62,9 +63,10 @@ PurePursuitNode::PurePursuitNode(
 PurePursuitNode::PurePursuitNode(
   const std::string & node_name,
   const pure_pursuit::Config & cfg,
-  const std::string & node_namespace)
+  const std::string & node_namespace,
+  const autocore::NodeType node_type)
 : ControllerBaseNode{node_name, node_namespace, "ctrl_cmd", "current_pose",
-    "tf", "trajectory", "ctrl_diag"}
+    "tf", "trajectory", "ctrl_diag", "tf_static", node_type}
 {
   set_controller(std::make_unique<pure_pursuit::PurePursuit>(cfg));
 }

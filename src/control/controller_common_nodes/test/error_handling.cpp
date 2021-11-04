@@ -18,7 +18,7 @@
 #include <motion_testing_nodes/wait_for_matched.hpp>
 #include <time_utils/time_utils.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <cmath>
 #include <memory>
@@ -130,7 +130,7 @@ private:
   bool m_trajectory_error{false};
 };  // class ErrorControllerNode
 
-class ErrorListener : public rclcpp::Node
+class ErrorListener : public autocore::Node
 {
 public:
   ErrorListener()
@@ -166,8 +166,8 @@ public:
 private:
   std::vector<State> m_states{};
   std::vector<Diagnostic> m_diags{};
-  rclcpp::Subscription<State>::SharedPtr m_state_sub;
-  rclcpp::Subscription<Diagnostic>::SharedPtr m_diag_sub;
+  autocore::Subscription<State>::SharedPtr m_state_sub;
+  autocore::Subscription<Diagnostic>::SharedPtr m_diag_sub;
 };  // class ErrorListener
 
 
