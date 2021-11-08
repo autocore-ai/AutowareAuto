@@ -31,7 +31,8 @@ class MPC_CONTROLLER_NODES_PUBLIC MpcControllerNode
 {
 public:
   /// Parameter file constructor
-  MpcControllerNode(const std::string & name, const std::string & ns);
+  MpcControllerNode(const std::string & name, const std::string & ns,
+    const autocore::NodeType node_type = autocore::NodeType::ROS);
   /// Explicit constructor
   MpcControllerNode(
     const std::string & name,
@@ -42,10 +43,11 @@ public:
     const std::string & trajectory_topic,
     const std::string & diagnostic_topic,
     const std::string & static_tf_topic,
-    const mpc_controller::Config & config);
+    const mpc_controller::Config & config,
+    const autocore::NodeType node_type = autocore::NodeType::ROS);
 
 private:
-  rclcpp::Publisher<autoware_auto_msgs::msg::Trajectory>::SharedPtr m_debug_traj_pub{};
+  autocore::Publisher<autoware_auto_msgs::msg::Trajectory>::SharedPtr m_debug_traj_pub{};
   rclcpp::TimerBase::SharedPtr m_debug_timer{};
 };  // class MpcControllerNode
 }  // namespace mpc_controller_nodes

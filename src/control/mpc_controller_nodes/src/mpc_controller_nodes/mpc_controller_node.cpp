@@ -25,8 +25,8 @@ namespace control
 namespace mpc_controller_nodes
 {
 ////////////////////////////////////////////////////////////////////////////////
-MpcControllerNode::MpcControllerNode(const std::string & name, const std::string & ns)
-: ControllerBaseNode{name, ns}
+MpcControllerNode::MpcControllerNode(const std::string & name, const std::string & ns, const autocore::NodeType node_type)
+: ControllerBaseNode{name, ns, node_type}
 {
   using mpc_controller::Real;
   using mpc_controller::LimitsConfig;
@@ -179,7 +179,8 @@ MpcControllerNode::MpcControllerNode(
   const std::string & trajectory_topic,
   const std::string & diagnostic_topic,
   const std::string & static_tf_topic,
-  const mpc_controller::Config & config)
+  const mpc_controller::Config & config,
+  const autocore::NodeType node_type)
 : ControllerBaseNode{
     name,
     ns,
@@ -188,7 +189,8 @@ MpcControllerNode::MpcControllerNode(
     tf_topic,
     trajectory_topic,
     diagnostic_topic,
-    static_tf_topic}
+    static_tf_topic,
+    node_type}
 {
   set_controller(std::make_unique<mpc_controller::MpcController>(config));
 }
