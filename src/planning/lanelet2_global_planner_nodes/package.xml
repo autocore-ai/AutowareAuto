@@ -18,7 +18,7 @@
   <depend>lanelet2_core</depend>
   <depend>lanelet2_global_planner</depend>
   <depend>motion_common</depend>
-  <depend>rclcpp</depend>
+  <depend>autocore_node</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>

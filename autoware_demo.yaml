@@ -88,20 +88,25 @@ sources: # sources can have only ONE output
       type: usize
     configuration:
       hz: 10
-  # - id : Lanelet2MapProvider
-  #   uri: file://./target/release/libzenoh_flow_lanelet2_map_provider.so
-  #   output:
-  #     id: mode
-  #     type: usize
-  #   configuration:
-  #     map_osm_file: ./**.map
-  #     origin_offset_lat: 0.0
-  #     origin_offset_lon: 0.0
-  #     latitude: 37.380811523812845
-  #     longitude: -121.90840595108715,
-  #     elevation: -121.90840595108715
+  - id : zenoh_flow_lanelet2_map_provider
+    uri: file://./install/lib/libzenoh_flow_lanelet2_map_provider.so
+    output:
+      id: log
+      type: Str
+    configuration:
+      map_osm_file: ./**.map
+      origin_offset_lat: 0.0
+      origin_offset_lon: 0.0
+      latitude: 37.380811523812845
+      longitude: -121.90840595108715
+      elevation: -121.90840595108715
 sinks:
-  - id: zenoh_flow_system_monitor
+  - id: zenoh_flow_simple_planning_simulator_monitor
+    uri: file://./target/release/libzenon_flow_system_monitor.so
+    input:
+      id: log
+      type: Str
+  - id: zenoh_flow_lanelet2_map_provider_monitor
     uri: file://./target/release/libzenon_flow_system_monitor.so
     input:
       id: log
@@ -114,10 +119,16 @@ links:
     node : zenoh_flow_simple_planning_simulator
     input : tick
 - from:
+    node : zenoh_flow_lanelet2_map_provider
+    output : log
+  to:
+    node : zenoh_flow_lanelet2_map_provider_monitor
+    input : log
+- from:
     node : zenoh_flow_simple_planning_simulator
     output : log
   to:
-    node : zenoh_flow_system_monitor
+    node : zenoh_flow_simple_planning_simulator_monitor
     input : log
 # - from:
 #     node : GloablPlanner

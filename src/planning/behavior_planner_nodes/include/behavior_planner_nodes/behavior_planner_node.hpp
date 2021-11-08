@@ -83,7 +83,7 @@ public:
   void SetRoute(const HADMapRoute &);
   void SetStateReport(const VehicleStateReport &);
   Trajectory GetTrajectory();
-  VehicleStateCommand Get();
+  VehicleStateCommand GetStateCmd();
 
 private:
   //  ROS Interface

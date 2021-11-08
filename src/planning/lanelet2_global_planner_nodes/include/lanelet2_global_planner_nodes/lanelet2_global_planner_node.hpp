@@ -17,7 +17,7 @@
 #ifndef  LANELET2_GLOBAL_PLANNER_NODES__LANELET2_GLOBAL_PLANNER_NODE_HPP_
 #define  LANELET2_GLOBAL_PLANNER_NODES__LANELET2_GLOBAL_PLANNER_NODE_HPP_
 // ros2
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -55,10 +55,10 @@ namespace planning
 {
 namespace lanelet2_global_planner_nodes
 {
-class LANELET2_GLOBAL_PLANNER_NODES_PUBLIC Lanelet2GlobalPlannerNode : public rclcpp::Node
+class LANELET2_GLOBAL_PLANNER_NODES_PUBLIC Lanelet2GlobalPlannerNode : public autocore::Node
 {
 public:
-  explicit Lanelet2GlobalPlannerNode(const rclcpp::NodeOptions & node_options);
+  explicit Lanelet2GlobalPlannerNode(const rclcpp::NodeOptions & node_options, const autocore::NodeType node_type = autocore::NodeType::ROS);
 
   void request_osm_binary_map();
   void goal_pose_cb(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
@@ -71,13 +71,17 @@ public:
   bool8_t transform_pose_to_map(
     const geometry_msgs::msg::PoseStamped & pose_in, geometry_msgs::msg::PoseStamped & pose_out);
 
+  void SetCurrentPose(const autoware_auto_msgs::msg::VehicleKinematicState&);
+  void SetGoalPose(const geometry_msgs::msg::PoseStamped&);
+  autoware_auto_msgs::msg::HADMapRoute GetRoute();
+
 private:
   std::shared_ptr<Lanelet2GlobalPlanner> lanelet2_global_planner;
   rclcpp::Client<autoware_auto_msgs::srv::HADMapService>::SharedPtr map_client;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pose_sub_ptr;
-  rclcpp::Subscription<autoware_auto_msgs::msg::VehicleKinematicState>::SharedPtr
+  autocore::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pose_sub_ptr;
+  autocore::Subscription<autoware_auto_msgs::msg::VehicleKinematicState>::SharedPtr
     current_pose_sub_ptr;
-  rclcpp::Publisher<autoware_auto_msgs::msg::HADMapRoute>::SharedPtr global_path_pub_ptr;
+  autocore::Publisher<autoware_auto_msgs::msg::HADMapRoute>::SharedPtr global_path_pub_ptr;
   geometry_msgs::msg::PoseStamped start_pose;
   geometry_msgs::msg::PoseStamped goal_pose;
   bool8_t start_pose_init;
