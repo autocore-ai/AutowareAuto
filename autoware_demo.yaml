@@ -1,70 +1,66 @@
-flow: AutowareDemo # it should have a id, from this we will have an Instance of the graph, UUID => flow
+flow: AutowareDemo
 operators:
-  # - id : GloablPlanner # this should be unique in the graph
-  #   uri: file://./target/release/libzenoh_flow_lanelet2_global_planner_nodes.so
-  #   inputs:
-  #     - id: goal_pose
-  #       type: geometry_msgs_PoseStamped
-  #     - id: current_pose
-  #       type: autoware_auto_msgs_VehicleKinematicState
-  #   outputs:
-  #     - id: route
-  #       type: autoware_auto_msgs_HADMapRoute
-  # - id : BehaviorPlanner # this should be unique in the graph
-  #   uri: file://./target/release/libzenoh_flow_behavior_planner_nodes.so
-  #   inputs:
-  #     - id: vehicle_kinematic_state
-  #       type: autoware_auto_msgs_VehicleKinematicState
-  #     - id: hadmap_route
-  #       type: autoware_auto_msgs_HADMapRoute
-  #     - id: vehicle_state_report
-  #       type: autoware_auto_msgs_VehicleStateReport
-  #   outputs:
-  #     - id: trajectory
-  #       type: autoware_auto_msgs_Trajectory
-  #     - id: vehicle_state_command
-  #       type: autoware_auto_msgs_VehicleStateCommand
-  #   configuration:
-  #     enable_object_collision_estimator: true
-  #     heading_weight: 0.1
-  #     goal_distance_thresh: 3.0
-  #     stop_velocity_thresh: 2.0
-  #     subroute_goal_offset_lane2parking: 7.6669
-  #     subroute_goal_offset_parking2lane: 7.6669
-  #     cg_to_front_m: 1.228
-  #     cg_to_rear_m: 1.5618
-  #     front_overhang_m: 0.5
-  #     rear_overhang_m: 0.5
-  # - id : PurePursuit # this should be unique in the graph
-  #   uri: file://./target/release/libzenoh_flow_pure_pursuit.so
-  #   inputs:
-  #     - id: trajectory
-  #       type: autoware_auto_msgs_Trajectory
-  #     - id: vehicle_kinematic_state
-  #       type: autoware_auto_msgs_VehicleKinematicState
-  #   outputs:
-  #     - id: vehicle_control_command
-  #       type: autoware_auto_msgs_VehicleControlCommand
+  - id : zenoh_flow_lanelet2_global_planner_nodes
+    uri: file://./install/lib/zenoh_flow_lanelet2_global_planner_nodes.so
+    inputs:
+      - id: goal_pose
+        type: geometry_msgs_PoseStamped
+      - id: current_pose
+        type: autoware_auto_msgs_VehicleKinematicState
+    outputs:
+      - id: route
+        type: autoware_auto_msgs_HADMapRoute
+  - id : zenoh_flow_behavior_planner_nodes
+    uri: file://./install/lib/zenoh_flow_behavior_planner_nodes.so
+    inputs:
+      - id: kinematic_state
+        type: autoware_auto_msgs_VehicleKinematicState
+      - id: route
+        type: autoware_auto_msgs_HADMapRoute
+      - id: state_report
+        type: autoware_auto_msgs_VehicleStateReport
+    outputs:
+      - id: trajectory
+        type: autoware_auto_msgs_Trajectory
+      - id: state_command
+        type: autoware_auto_msgs_VehicleStateCommand
+    configuration:
+      enable_object_collision_estimator: true
+      heading_weight: 0.1
+      goal_distance_thresh: 3.0
+      stop_velocity_thresh: 2.0
+      subroute_goal_offset_lane2parking: 7.6669
+      subroute_goal_offset_parking2lane: 7.6669
+      cg_to_front_m: 1.228
+      cg_to_rear_m: 1.5618
+      front_overhang_m: 0.5
+      rear_overhang_m: 0.5
+  - id : zenoh_flow_pure_pursuit
+    uri: file://./install/lib/zenoh_flow_pure_pursuit.so
+    inputs:
+      - id: trajectory
+        type: autoware_auto_msgs_Trajectory
+      - id: kinematic_state
+        type: autoware_auto_msgs_VehicleKinematicState
+    outputs:
+      - id: control_cmd
+        type: autoware_auto_msgs_VehicleControlCommand
   - id : zenoh_flow_simple_planning_simulator
     uri: file://./install/lib/libzenoh_flow_simple_planning_simulator.so
     inputs:
       - id: tick
         type: usize
-      # - id: InitPose
-      #   type: geometry_msgs_PoseWithCovarianceStamped
-      # - id: VehicleCmd
-      #   type: autoware_auto_msgs_VehicleControlCommand
-      # - id: StateCmd
-      #   type: autoware_auto_msgs_VehicleStateCommand
+      - id: init_pose
+        type: geometry_msgs_PoseWithCovarianceStamped
+      - id: control_cmd
+        type: autoware_auto_msgs_VehicleControlCommand
+      - id: state_cmd
+        type: autoware_auto_msgs_VehicleStateCommand
     outputs:
-      # - id: CurrentPose
-      #   type: geometry_msgs_PoseStamped
-      # - id: KinematicState
-      #   type: autoware_auto_msgs_VehicleKinematicState
-      # - id: StateReport
-      #   type: autoware_auto_msgs_VehicleStateReport
-      - id: log
-        type: Str
+      - id: kinematic_state
+        type: autoware_auto_msgs_VehicleKinematicState
+      - id: state_report
+        type: autoware_auto_msgs_VehicleStateReport
     configuration:
       simulated_frame_id: base_link
       origin_frame_id: odom
@@ -88,6 +84,16 @@ sources: # sources can have only ONE output
       type: usize
     configuration:
       hz: 10
+  - id : zenoh_flow_init_pose
+    uri: file://./install/lib/zenoh_flow_init_pose.so
+    output:
+      id: init_pose
+      type: geometry_msgs_PoseWithCovarianceStamped
+  - id : zenoh_flow_goal_pose
+    uri: file://./install/lib/zenoh_flow_goal_pose.so
+    output:
+      id: goal_pose
+      type: geometry_msgs_PoseStamped
   - id : zenoh_flow_lanelet2_map_provider
     uri: file://./install/lib/libzenoh_flow_lanelet2_map_provider.so
     output:
@@ -99,8 +105,13 @@ sources: # sources can have only ONE output
       origin_offset_lon: 0.0
       latitude: 37.380811523812845
       longitude: -121.90840595108715
-      elevation: -121.90840595108715
+      elevation: 0
 sinks:
+  - id: zenoh_flow_behavior_planner_nodes_monitor
+    uri: file://./target/release/libzenon_flow_system_monitor.so
+    input:
+      id: log
+      type: Str
   - id: zenoh_flow_simple_planning_simulator_monitor
     uri: file://./target/release/libzenon_flow_system_monitor.so
     input:
@@ -113,17 +124,47 @@ sinks:
       type: Str
 links:
 - from:
-    node : zenoh_flow_tick_source
-    output : tick
-  to:
-    node : zenoh_flow_simple_planning_simulator
-    input : tick
-- from:
     node : zenoh_flow_lanelet2_map_provider
     output : log
   to:
     node : zenoh_flow_lanelet2_map_provider_monitor
     input : log
+- from:
+    node : zenoh_flow_init_pose
+    output : init_pose
+  to:
+    node : zenoh_flow_simple_planning_simulator
+    input : init_pose
+- from:
+    node : zenoh_flow_simple_planning_simulator
+    output : kinematic_state
+  to:
+    node : zenoh_flow_lanelet2_global_planner_nodes
+    input : current_pose
+- from:
+    node : zenoh_flow_simple_planning_simulator
+    output : kinematic_state
+  to:
+    node : zenoh_flow_behavior_planner_nodes
+    input : kinematic_state
+- from:
+    node : zenoh_flow_simple_planning_simulator
+    output : state_report
+  to:
+    node : zenoh_flow_behavior_planner_nodes
+    input : state_report
+- from:
+    node : zenoh_flow_pure_pursuit
+    output : control_cmd
+  to:
+    node : zenoh_flow_simple_planning_simulator
+    input : control_cmd
+- from:
+    node : zenoh_flow_tick_source
+    output : tick
+  to:
+    node : zenoh_flow_simple_planning_simulator
+    input : tick
 - from:
     node : zenoh_flow_simple_planning_simulator
     output : log
@@ -154,3 +195,6 @@ links:
 #   to:
 #     node : SimplePlanningSimulator
 #     input : autoware_auto_msgs_VehicleControlCommand
+mapping:
+  - id: zenoh_flow_simple_planning_simulator
+    runtime: simulator
