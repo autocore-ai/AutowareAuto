@@ -106,8 +106,18 @@ sources: # sources can have only ONE output
       latitude: 37.380811523812845
       longitude: -121.90840595108715
       elevation: 0
+  - id : zenoh_flow_lane_planner_nodes
+    uri: file://./install/lib/zenoh_flow_lane_planner_nodes.so
+    output:
+      id: log
+      type: Str
 sinks:
   - id: zenoh_flow_lanelet2_map_provider_monitor
+    uri: file://./target/release/libzenon_flow_system_monitor.so
+    input:
+      id: log
+      type: Str
+  - id: zenoh_flow_lane_planner_nodes_monitor
     uri: file://./target/release/libzenon_flow_system_monitor.so
     input:
       id: log
@@ -118,6 +128,12 @@ links:
     output : log
   to:
     node : zenoh_flow_lanelet2_map_provider_monitor
+    input : log
+- from:
+    node : zenoh_flow_lane_planner_nodes
+    output : log
+  to:
+    node : zenoh_flow_lane_planner_nodes_monitor
     input : log
 - from:
     node : zenoh_flow_init_pose
