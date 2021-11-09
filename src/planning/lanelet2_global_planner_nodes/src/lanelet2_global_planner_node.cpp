@@ -88,7 +88,7 @@ Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
     "global_path", rclcpp::QoS(10));
 
   // Create map client
-  map_client = this->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Client");
+  map_client = this->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Service");
 
   // Request binary map from the map loader node
   this->request_osm_binary_map();
