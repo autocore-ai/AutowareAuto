@@ -22,7 +22,7 @@ operators:
     outputs:
       - id: trajectory
         type: autoware_auto_msgs_Trajectory
-      - id: state_command
+      - id: state_cmd
         type: autoware_auto_msgs_VehicleStateCommand
     configuration:
       enable_object_collision_estimator: true
@@ -100,23 +100,13 @@ sources: # sources can have only ONE output
       id: log
       type: Str
     configuration:
-      map_osm_file: ./**.map
+      map_osm_file: ./install/share/autoware_demos/data/autonomoustuff_parking_lot.osm
       origin_offset_lat: 0.0
       origin_offset_lon: 0.0
       latitude: 37.380811523812845
       longitude: -121.90840595108715
       elevation: 0
 sinks:
-  - id: zenoh_flow_behavior_planner_nodes_monitor
-    uri: file://./target/release/libzenon_flow_system_monitor.so
-    input:
-      id: log
-      type: Str
-  - id: zenoh_flow_simple_planning_simulator_monitor
-    uri: file://./target/release/libzenon_flow_system_monitor.so
-    input:
-      id: log
-      type: Str
   - id: zenoh_flow_lanelet2_map_provider_monitor
     uri: file://./target/release/libzenon_flow_system_monitor.so
     input:
@@ -136,11 +126,41 @@ links:
     node : zenoh_flow_simple_planning_simulator
     input : init_pose
 - from:
+    node : zenoh_flow_goal_pose
+    output : goal_pose
+  to:
+    node : zenoh_flow_lanelet2_global_planner_nodes
+    input : goal_pose
+- from:
+    node : zenoh_flow_lanelet2_global_planner_nodes
+    output : route
+  to:
+    node : zenoh_flow_behavior_planner_nodes
+    input : route
+- from:
+    node : zenoh_flow_behavior_planner_nodes
+    output : trajectory
+  to:
+    node : zenoh_flow_pure_pursuit
+    input : trajectory
+- from:
+    node : zenoh_flow_behavior_planner_nodes
+    output : state_cmd
+  to:
+    node : zenoh_flow_simple_planning_simulator
+    input : state_cmd
+- from:
     node : zenoh_flow_simple_planning_simulator
     output : kinematic_state
   to:
     node : zenoh_flow_lanelet2_global_planner_nodes
     input : current_pose
+- from:
+    node : zenoh_flow_simple_planning_simulator
+    output : kinematic_state
+  to:
+    node : zenoh_flow_pure_pursuit
+    input : kinematic_state
 - from:
     node : zenoh_flow_simple_planning_simulator
     output : kinematic_state
@@ -165,36 +185,6 @@ links:
   to:
     node : zenoh_flow_simple_planning_simulator
     input : tick
-- from:
-    node : zenoh_flow_simple_planning_simulator
-    output : log
-  to:
-    node : zenoh_flow_simple_planning_simulator_monitor
-    input : log
-# - from:
-#     node : GloablPlanner
-#     output : autoware_auto_msgs_HADMapRoute
-#   to:
-#     node : BehaviorPlanner
-#     input : autoware_auto_msgs_HADMapRoute
-# - from:
-#     node : BehaviorPlanner
-#     output : autoware_auto_msgs_Trajectory
-#   to:
-#     node : PurePursuit
-#     input : autoware_auto_msgs_Trajectory
-# - from:
-#     node : BehaviorPlanner
-#     output : autoware_auto_msgs_Trajectory
-#   to:
-#     node : PurePursuit
-#     input : autoware_auto_msgs_Trajectory
-# - from:
-#     node : PurePursuit
-#     output : autoware_auto_msgs_VehicleControlCommand
-#   to:
-#     node : SimplePlanningSimulator
-#     input : autoware_auto_msgs_VehicleControlCommand
-mapping:
-  - id: zenoh_flow_simple_planning_simulator
-    runtime: simulator
+# mapping:
+#   - id: zenoh_flow_simple_planning_simulator
+#     runtime: simulator
