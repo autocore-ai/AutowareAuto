@@ -34,7 +34,8 @@ def generate_launch_description():
     be found at https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/25.
     """
     avp_demo_pkg_prefix = get_package_share_directory('autoware_demos')
-    autoware_launch_pkg_prefix = get_package_share_directory('autoware_auto_launch')
+    autoware_launch_pkg_prefix = get_package_share_directory(
+        'autoware_auto_launch')
 
     euclidean_cluster_param_file = os.path.join(
         autoware_launch_pkg_prefix, 'param/euclidean_cluster.param.yaml')
@@ -77,7 +78,7 @@ def generate_launch_description():
     )
     with_obstacles_param = DeclareLaunchArgument(
         'with_obstacles',
-        default_value='True',
+        default_value='False',
         description='Enable obstacle detection'
     )
     scan_downsampler_param = DeclareLaunchArgument(
@@ -136,9 +137,9 @@ def generate_launch_description():
     # point cloud fusion runner to fuse front and rear lidar
 
     point_cloud_fusion_node = IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(point_cloud_fusion_node_pkg_prefix,
-                             'launch/vlp16_sim_lexus_pc_fusion.launch.py'))
+        PythonLaunchDescriptionSource(
+            os.path.join(point_cloud_fusion_node_pkg_prefix,
+                         'launch/vlp16_sim_lexus_pc_fusion.launch.py'))
     )
     ray_ground_classifier = Node(
         package='ray_ground_classifier_nodes',
@@ -177,7 +178,7 @@ def generate_launch_description():
         name='lanelet2_global_planner_node',
         namespace='planning',
         executable='lanelet2_global_planner_node_exe',
-        remappings=[('HAD_Map_Client', '/had_maps/HAD_Map_Service'),
+        remappings=[('HAD_Map_Service', '/had_maps/HAD_Map_Service'),
                     ('vehicle_kinematic_state', '/vehicle/vehicle_kinematic_state')]
     )
     lane_planner = Node(
@@ -223,7 +224,8 @@ def generate_launch_description():
         executable='behavior_planner_node_exe',
         parameters=[
             LaunchConfiguration('behavior_planner_param_file'),
-            {'enable_object_collision_estimator': LaunchConfiguration('with_obstacles')},
+            {'enable_object_collision_estimator': LaunchConfiguration(
+                'with_obstacles')},
             LaunchConfiguration('vehicle_characteristics_param_file'),
         ],
         output='screen',
@@ -240,7 +242,8 @@ def generate_launch_description():
         name='off_map_obstacles_filter_node',
         namespace='perception',
         executable='off_map_obstacles_filter_nodes_exe',
-        parameters=[LaunchConfiguration('off_map_obstacles_filter_param_file')],
+        parameters=[LaunchConfiguration(
+            'off_map_obstacles_filter_param_file')],
         output='screen',
         remappings=[
             ('bounding_boxes_in', 'lidar_bounding_boxes'),
