@@ -43,6 +43,14 @@ repositories:
     type: git
     url: git@github.com:autocore-ai/zenoh_flow_lanelet2_map_provider.git
     version: dev
+  src/external/sdv/zenoh_flow_ndt_map_publisher:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_ndt_map_publisher.git
+    version: dev
+  src/external/sdv/zenoh_flow_parking_planner_nodes:
+    type: git
+    url: git@github.com:autocore-ai/zenoh_flow_parking_planner_nodes.git
+    version: dev
   src/external/sdv/zenoh_flow_pure_pursuit:
     type: git
     url: git@github.com:autocore-ai/zenoh_flow_pure_pursuit.git
