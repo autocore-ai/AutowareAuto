@@ -110,6 +110,7 @@ public:
   VehicleKinematicState GetKinematicState();
   VehicleStateReport GetStateReport();
   PoseStamped GetCurrentPose();
+  bool IsInitialized();
 
 private:
   /* ros system */
@@ -141,7 +142,7 @@ private:
   std::string origin_frame_id_;  //!< @brief map frame_id
 
   /* flags */
-  bool8_t is_initialized_;         //!< @brief flag to check the initial position is set
+  bool8_t is_initialized_ = false;         //!< @brief flag to check the initial position is set
   bool8_t add_measurement_noise_;  //!< @brief flag to add measurement noise
 
   DeltaTime delta_time_;  //!< @brief to calculate delta time
