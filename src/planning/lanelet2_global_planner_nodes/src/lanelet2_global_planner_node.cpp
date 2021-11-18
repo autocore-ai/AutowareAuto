@@ -63,8 +63,8 @@ autoware_auto_msgs::msg::TrajectoryPoint convertToTrajectoryPoint(
 }
 
 Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
-  const rclcpp::NodeOptions & node_options)
-: Node("lanelet2_global_planner_node", node_options),
+  const rclcpp::NodeOptions & node_options, const autocore::NodeType node_type)
+: Node("lanelet2_global_planner_node", node_options, node_type),
   tf_listener(tf_buffer, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
 {
   start_pose_init = false;
@@ -88,7 +88,7 @@ Lanelet2GlobalPlannerNode::Lanelet2GlobalPlannerNode(
     "global_path", rclcpp::QoS(10));
 
   // Create map client
-  map_client = this->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Client");
+  map_client = this->create_client<autoware_auto_msgs::srv::HADMapService>("HAD_Map_Service");
 
   // Request binary map from the map loader node
   this->request_osm_binary_map();
@@ -268,6 +268,13 @@ bool8_t Lanelet2GlobalPlannerNode::transform_pose_to_map(
   tf2::doTransform(pose_in, pose_out, tf_map);
   return true;
 }
+
+void Lanelet2GlobalPlannerNode::SetCurrentPose(const autoware_auto_msgs::msg::VehicleKinematicState & msg)
+{
+  current_pose_sub_ptr->set(msg);
+}
+void Lanelet2GlobalPlannerNode::SetGoalPose(const geometry_msgs::msg::PoseStamped & msg) { goal_pose_sub_ptr->set(msg); }
+autoware_auto_msgs::msg::HADMapRoute Lanelet2GlobalPlannerNode::GetRoute() { return global_path_pub_ptr->get(); }
 
 }  // namespace lanelet2_global_planner_nodes
 }  // namespace planning

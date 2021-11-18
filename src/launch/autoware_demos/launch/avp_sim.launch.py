@@ -18,6 +18,8 @@ from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
+from launch.conditions import IfCondition, UnlessCondition
+from launch.conditions import LaunchConfigurationEquals
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -33,7 +35,8 @@ def generate_launch_description():
     be found at https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/milestones/25.
     """
     avp_demo_pkg_prefix = get_package_share_directory('autoware_demos')
-    autoware_launch_pkg_prefix = get_package_share_directory('autoware_auto_launch')
+    autoware_launch_pkg_prefix = get_package_share_directory(
+        'autoware_auto_launch')
 
     lgsvl_param_file = os.path.join(
         autoware_launch_pkg_prefix, 'param/lgsvl_interface.param.yaml')
@@ -44,6 +47,8 @@ def generate_launch_description():
         avp_demo_pkg_prefix, 'param/avp/ndt_localizer_sim.param.yaml')
     mpc_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/avp/mpc_sim.param.yaml')
+    pure_pursuit_param_file = os.path.join(
+        avp_demo_pkg_prefix, 'param/avp/pure_pursuit_sim.param.yaml')
     pc_filter_transform_param_file = os.path.join(
         avp_demo_pkg_prefix, 'param/avp/pc_filter_transform.param.yaml')
     vehicle_characteristics_param_file = os.path.join(
@@ -76,6 +81,16 @@ def generate_launch_description():
         default_value=mpc_param_file,
         description='Path to config file for MPC'
     )
+    pure_pursuit_param = DeclareLaunchArgument(
+        'pure_pursuit_param_file',
+        default_value=pure_pursuit_param_file,
+        description='Path to config file for pure pursuit controller'
+    )
+    run_pure_pursuit_arg = DeclareLaunchArgument(
+        'run_pure_pursuit',
+        default_value='True',
+        description='Set this to true to run pure pursuit controller instead of MPC'
+    )
     pc_filter_transform_param = DeclareLaunchArgument(
         'pc_filter_transform_param_file',
         default_value=pc_filter_transform_param_file,
@@ -96,9 +111,10 @@ def generate_launch_description():
         name='lgsvl_interface_node',
         output='screen',
         parameters=[
-          LaunchConfiguration('lgsvl_interface_param_file'),
-          {"lgsvl.publish_tf": True}
+            LaunchConfiguration('lgsvl_interface_param_file'),
+            {"lgsvl.publish_tf": True}
         ],
+        condition=LaunchConfigurationEquals('sim_with_lgsvl', 'True'),
         remappings=[
             ("vehicle_control_cmd", "/lgsvl/vehicle_control_cmd"),
             ("vehicle_state_cmd", "/lgsvl/vehicle_state_cmd"),
@@ -156,10 +172,28 @@ def generate_launch_description():
             LaunchConfiguration('mpc_param_file'),
             LaunchConfiguration('vehicle_characteristics_param_file'),
         ],
+        condition=UnlessCondition(LaunchConfiguration('run_pure_pursuit'))
+    )
+    pure_pursuit = Node(
+        package='pure_pursuit_nodes',
+        executable='pure_pursuit_node_exe',
+        name='pure_pursuit_node',
+        output="screen",
+        parameters=[
+            LaunchConfiguration('pure_pursuit_param_file'),
+        ],
+        remappings=[
+            ("current_pose", "/vehicle/vehicle_kinematic_state"),
+            ("trajectory", "/planning/trajectory"),
+            ("ctrl_cmd", "/vehicle/vehicle_command"),
+            ("ctrl_diag", "/control/control_diagnostic"),
+        ],
+        condition=IfCondition(LaunchConfiguration('run_pure_pursuit'))
     )
 
     core_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([avp_demo_pkg_prefix, '/launch/avp_core.launch.py']),
+        PythonLaunchDescriptionSource(
+            [avp_demo_pkg_prefix, '/launch/avp_core.launch.py']),
         launch_arguments={}.items()
     )
 
@@ -172,11 +206,22 @@ def generate_launch_description():
                          'launch/point_type_adapter.launch.py'))
     )
 
+    simple_planning_simulator_pkg_prefix = get_package_share_directory(
+        'simple_planning_simulator')
+
+    simple_planning_simulator_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(simple_planning_simulator_pkg_prefix,
+                         'launch/simple_planning_simulator.launch.py'))
+    )
+
     return LaunchDescription([
         lgsvl_interface_param,
         map_publisher_param,
         ndt_localizer_param,
         mpc_param,
+        pure_pursuit_param,
+        run_pure_pursuit_arg,
         pc_filter_transform_param,
         vehicle_characteristics_param,
         urdf_publisher,
@@ -184,8 +229,10 @@ def generate_launch_description():
         map_publisher,
         ndt_localizer,
         mpc,
+        pure_pursuit,
         filter_transform_vlp16_front,
         filter_transform_vlp16_rear,
         core_launch,
         adapter_launch,
+        simple_planning_simulator_launch
     ])

@@ -15,7 +15,7 @@
 
   <depend>autoware_auto_msgs</depend>
   <depend>controller_common</depend>
-  <depend>rclcpp</depend>
+  <depend>autocore_node</depend>
   <depend>tf2</depend>
   <depend>tf2_msgs</depend>
   <depend>motion_model</depend>

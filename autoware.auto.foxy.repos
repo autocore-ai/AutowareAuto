@@ -7,4 +7,7 @@ repositories:
     type: git
     url: https://github.com/RobotWebTools/rosbridge_suite.git
     version: 1a2c386455067b00a9e67fb70cc711add38c3582
-
+  src/external/autocore_node:
+    type: git
+    url: git@github.com:autocore-ai/autocore_node.git
+    version: autocore-dev

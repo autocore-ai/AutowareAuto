@@ -16,7 +16,7 @@
 #include <motion_testing_nodes/motion_testing_publisher.hpp>
 #include <time_utils/time_utils.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <cmath>
 #include <memory>
@@ -44,7 +44,7 @@ protected:
   }
 };  // SanityCheck
 
-class Listener : public rclcpp::Node
+class Listener : public autocore::Node
 {
 public:
   Listener(
@@ -93,9 +93,9 @@ private:
   std::vector<Trajectory> m_trajectories;
   std::vector<State> m_states;
   std::vector<TransformStamped> m_tfs;
-  rclcpp::Subscription<Trajectory>::SharedPtr m_traj_sub;
-  rclcpp::Subscription<State>::SharedPtr m_state_sub;
-  rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub;
+  autocore::Subscription<Trajectory>::SharedPtr m_traj_sub;
+  autocore::Subscription<State>::SharedPtr m_state_sub;
+  autocore::Subscription<TFMessage>::SharedPtr m_tf_sub;
 };  // class Listener
 
 TEST_F(SanityCheck, Basic)

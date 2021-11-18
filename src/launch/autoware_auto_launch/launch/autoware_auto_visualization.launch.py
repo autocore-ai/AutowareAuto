@@ -66,14 +66,14 @@ def generate_launch_description():
         executable='rosbridge_websocket'
     )
     web_server = ExecuteProcess(
-      cmd=["python3", "-m", "http.server", "8000"],
-      cwd=web_files_root
+        cmd=["python3", "-m", "http.server", "8000"],
+        cwd=web_files_root
     )
 
     return LaunchDescription([
         with_rviz_param,
         rviz_cfg_path_param,
         rviz2,
-        web_server,
-        web_bridge,
+        # web_server,
+        # web_bridge,
     ])

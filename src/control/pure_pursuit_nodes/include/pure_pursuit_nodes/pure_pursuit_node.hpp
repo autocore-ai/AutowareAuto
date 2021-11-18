@@ -44,7 +44,8 @@ public:
   /// \param[in] node_namespace Name of the node's namespace, controls which parameters are used
   PurePursuitNode(
     const std::string & node_name,
-    const std::string & node_namespace = "");
+    const std::string & node_namespace = "",
+    const autocore::NodeType node_type = autocore::NodeType::ROS);
 
   /// \brief Explicit constructor
   /// \param[in] node_name Name of the node
@@ -53,7 +54,8 @@ public:
   PurePursuitNode(
     const std::string & node_name,
     const pure_pursuit::Config & cfg,
-    const std::string & node_namespace = "");
+    const std::string & node_namespace = "",
+    const autocore::NodeType node_type = autocore::NodeType::ROS);
 };
 }  // namespace pure_pursuit_nodes
 }  // namespace control

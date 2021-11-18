@@ -23,7 +23,7 @@
 #include <string>
 #include <random>
 
-#include "rclcpp/rclcpp.hpp"
+#include "autocore_node/node.hpp"
 
 #include "simple_planning_simulator/visibility_control.hpp"
 
@@ -95,21 +95,29 @@ public:
   std::shared_ptr<std::normal_distribution<>> steer_dist_;
 };
 
-class PLANNING_SIMULATOR_PUBLIC SimplePlanningSimulator : public rclcpp::Node
+class PLANNING_SIMULATOR_PUBLIC SimplePlanningSimulator : public autocore::Node
 {
 public:
-  explicit SimplePlanningSimulator(const rclcpp::NodeOptions & options);
+  explicit SimplePlanningSimulator(const rclcpp::NodeOptions & options, const autocore::NodeType node_type = autocore::NodeType::ROS);
+
+  void SetStateCmd(const VehicleStateCommand &);
+  void SetVehicleCmd(const VehicleControlCommand &);
+  void SetInitPose(const PoseWithCovarianceStamped &);
+  void Update();
+  VehicleKinematicState GetKinematicState();
+  VehicleStateReport GetStateReport();
+  bool IsInitialized();
 
 private:
   /* ros system */
-  rclcpp::Publisher<VehicleKinematicState>::SharedPtr pub_kinematic_state_;
-  rclcpp::Publisher<VehicleStateReport>::SharedPtr pub_state_report_;
-  rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf_;
-  rclcpp::Publisher<PoseStamped>::SharedPtr pub_current_pose_;
+  autocore::Publisher<VehicleKinematicState>::SharedPtr pub_kinematic_state_;
+  autocore::Publisher<VehicleStateReport>::SharedPtr pub_state_report_;
+  autocore::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf_;
+  autocore::Publisher<PoseStamped>::SharedPtr pub_current_pose_;
 
-  rclcpp::Subscription<VehicleStateCommand>::SharedPtr sub_state_cmd_;
-  rclcpp::Subscription<VehicleControlCommand>::SharedPtr sub_vehicle_cmd_;
-  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
+  autocore::Subscription<VehicleStateCommand>::SharedPtr sub_state_cmd_;
+  autocore::Subscription<VehicleControlCommand>::SharedPtr sub_vehicle_cmd_;
+  autocore::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
 
   uint32_t timer_sampling_time_ms_;  //!< @brief timer sampling time
   rclcpp::TimerBase::SharedPtr on_timer_;  //!< @brief timer for simulation
@@ -128,7 +136,7 @@ private:
   std::string origin_frame_id_;  //!< @brief map frame_id
 
   /* flags */
-  bool8_t is_initialized_;         //!< @brief flag to check the initial position is set
+  bool8_t is_initialized_ = false;         //!< @brief flag to check the initial position is set
   bool8_t add_measurement_noise_;  //!< @brief flag to add measurement noise
 
   DeltaTime delta_time_;  //!< @brief to calculate delta time

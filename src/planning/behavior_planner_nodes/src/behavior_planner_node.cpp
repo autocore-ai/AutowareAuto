@@ -27,8 +27,8 @@ namespace autoware
 namespace behavior_planner_nodes
 {
 
-BehaviorPlannerNode::BehaviorPlannerNode(const rclcpp::NodeOptions & options)
-:  Node("behavior_planner_node", options)
+BehaviorPlannerNode::BehaviorPlannerNode(const rclcpp::NodeOptions & options, const autocore::NodeType node_type)
+:  Node("behavior_planner_node", options, node_type)
 {
   init();
 }
@@ -413,6 +413,11 @@ void BehaviorPlannerNode::map_response(rclcpp::Client<HADMapService>::SharedFutu
   }
   m_debug_checkpoints_pub->publish(checkpoints);
 }
+void BehaviorPlannerNode::SetKinematicState(const State & msg) { m_ego_state_sub->set(msg); }
+void BehaviorPlannerNode::SetRoute(const HADMapRoute & msg) { m_route_sub->set(msg); }
+void BehaviorPlannerNode::SetStateReport(const VehicleStateReport & msg){ m_vehicle_state_report_sub->set(msg); }
+Trajectory BehaviorPlannerNode::GetTrajectory() { return m_trajectory_pub->get(); }
+VehicleStateCommand BehaviorPlannerNode::GetStateCmd(){ return m_vehicle_state_command_pub->get(); }
 }  // namespace behavior_planner_nodes
 }  // namespace autoware
 

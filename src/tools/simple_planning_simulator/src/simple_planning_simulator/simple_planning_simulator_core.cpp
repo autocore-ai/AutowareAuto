@@ -73,8 +73,8 @@ namespace simulation
 namespace simple_planning_simulator
 {
 
-SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & options)
-: Node("simple_planning_simulator", options),
+SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & options, const autocore::NodeType node_type)
+: Node("simple_planning_simulator", options, node_type),
   tf_buffer_(get_clock()),
   tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
 {
@@ -99,7 +99,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   pub_state_report_ = create_publisher<VehicleStateReport>("output/vehicle_state_report", QoS{1});
   pub_current_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("/current_pose", QoS{1});
   pub_kinematic_state_ = create_publisher<VehicleKinematicState>("output/kinematic_state", QoS{1});
-  pub_tf_ = create_publisher<tf2_msgs::msg::TFMessage>("/tf", QoS{1});
+  pub_tf_ = create_publisher<tf2_msgs::msg::TFMessage>("/tf", QoS{1}, true);
 
   timer_sampling_time_ms_ = static_cast<uint32_t>(declare_parameter("timer_sampling_time_ms", 25));
   on_timer_ = create_wall_timer(
@@ -366,6 +366,27 @@ void SimplePlanningSimulator::publish_tf(const VehicleKinematicState & state)
   tf_msg.transforms.emplace_back(std::move(tf));
   pub_tf_->publish(tf_msg);
 }
+
+void SimplePlanningSimulator::SetStateCmd(const VehicleStateCommand & msg)
+{
+  sub_state_cmd_->set(msg);
+}
+void SimplePlanningSimulator::SetVehicleCmd(const VehicleControlCommand & msg)
+{
+  sub_vehicle_cmd_->set(msg);
+}
+void SimplePlanningSimulator::SetInitPose(const PoseWithCovarianceStamped & msg)
+{
+  sub_init_pose_->set(msg);
+}
+void SimplePlanningSimulator::Update() { on_timer(); }
+VehicleKinematicState SimplePlanningSimulator::GetKinematicState()
+{
+  return pub_kinematic_state_->get();
+}
+VehicleStateReport SimplePlanningSimulator::GetStateReport() { return pub_state_report_->get(); }
+bool SimplePlanningSimulator::IsInitialized() { return is_initialized_; }
+
 }  // namespace simple_planning_simulator
 }  // namespace simulation
 

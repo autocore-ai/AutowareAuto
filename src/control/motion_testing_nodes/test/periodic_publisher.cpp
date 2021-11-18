@@ -69,7 +69,7 @@ TYPED_TEST(PeriodicPublisherTest, Basic)
   using Pub = PeriodicPublisher<T>;
   std::string node_name{"periodic_publisher_test_node"};
   node_name += std::to_string(count);
-  const auto node = std::make_shared<rclcpp::Node>(node_name);
+  const auto node = std::make_shared<autocore::Node>(node_name);
   Pub pub1{*node, *(this->cfg1_)};
   Pub pub2{*node, *(this->cfg2_)};
 
@@ -78,7 +78,7 @@ TYPED_TEST(PeriodicPublisherTest, Basic)
   v2.reserve((this->cfg2_)->count);
   std::string listener_name{"periodic_publisher_test_listener"};
   listener_name += std::to_string(count);
-  const auto listener = std::make_shared<rclcpp::Node>(listener_name);
+  const auto listener = std::make_shared<autocore::Node>(listener_name);
   const auto create_sub = [listener](const auto cfg, auto & v) -> auto {
       const auto qos = rclcpp::QoS{cfg.count}.reliable().transient_local();
       const auto fn = [&v](const typename T::SharedPtr msg) -> void {

@@ -23,7 +23,7 @@
 #include <behavior_planner_nodes/visibility_control.hpp>
 
 // rclcpp headers
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
 // autoware packages
@@ -72,12 +72,18 @@ using autoware::common::types::float64_t;
 
 /// \class BehaviorPlannerNode
 /// \brief ROS 2 Node for wrapping behavior planner
-class BEHAVIOR_PLANNER_NODES_PUBLIC BehaviorPlannerNode : public rclcpp::Node
+class BEHAVIOR_PLANNER_NODES_PUBLIC BehaviorPlannerNode : public autocore::Node
 {
 public:
   /// \brief default constructor, starts the planner
   /// \param[in] options name of the node for rclcpp internals
-  explicit BehaviorPlannerNode(const rclcpp::NodeOptions & options);
+  explicit BehaviorPlannerNode(const rclcpp::NodeOptions & options, const autocore::NodeType node_type = autocore::NodeType::ROS);
+
+  void SetKinematicState(const State &);
+  void SetRoute(const HADMapRoute &);
+  void SetStateReport(const VehicleStateReport &);
+  Trajectory GetTrajectory();
+  VehicleStateCommand GetStateCmd();
 
 private:
   //  ROS Interface
@@ -86,16 +92,16 @@ private:
   rclcpp::Client<HADMapService>::SharedPtr m_map_client;
   // May be nullptr if disabled
   rclcpp::Client<ModifyTrajectory>::SharedPtr m_modify_trajectory_client;
-  rclcpp::Subscription<State>::SharedPtr m_ego_state_sub{};
-  rclcpp::Subscription<HADMapRoute>::SharedPtr m_route_sub{};
-  rclcpp::Subscription<Trajectory>::SharedPtr m_lane_trajectory_sub{};
-  rclcpp::Subscription<Trajectory>::SharedPtr m_parking_trajectory_sub{};
-  rclcpp::Subscription<VehicleStateReport>::SharedPtr m_vehicle_state_report_sub{};
-  rclcpp::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
-  rclcpp::Publisher<Trajectory>::SharedPtr m_debug_trajectory_pub{};
-  rclcpp::Publisher<Trajectory>::SharedPtr m_debug_checkpoints_pub{};
-  rclcpp::Publisher<HADMapRoute>::SharedPtr m_debug_subroute_pub{};
-  rclcpp::Publisher<VehicleStateCommand>::SharedPtr m_vehicle_state_command_pub{};
+  autocore::Subscription<State>::SharedPtr m_ego_state_sub{};
+  autocore::Subscription<HADMapRoute>::SharedPtr m_route_sub{};
+  autocore::Subscription<Trajectory>::SharedPtr m_lane_trajectory_sub{};
+  autocore::Subscription<Trajectory>::SharedPtr m_parking_trajectory_sub{};
+  autocore::Subscription<VehicleStateReport>::SharedPtr m_vehicle_state_report_sub{};
+  autocore::Publisher<Trajectory>::SharedPtr m_trajectory_pub{};
+  autocore::Publisher<Trajectory>::SharedPtr m_debug_trajectory_pub{};
+  autocore::Publisher<Trajectory>::SharedPtr m_debug_checkpoints_pub{};
+  autocore::Publisher<HADMapRoute>::SharedPtr m_debug_subroute_pub{};
+  autocore::Publisher<VehicleStateCommand>::SharedPtr m_vehicle_state_command_pub{};
 
   //  planner
   std::unique_ptr<behavior_planner::BehaviorPlanner> m_planner;

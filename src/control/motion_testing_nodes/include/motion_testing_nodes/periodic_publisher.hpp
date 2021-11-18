@@ -17,7 +17,7 @@
 #include <motion_testing_nodes/visibility_control.hpp>
 #include <motion_testing_nodes/wait_for_matched.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <chrono>
 #include <list>
@@ -39,7 +39,7 @@ template<typename T>
 class MOTION_TESTING_NODES_PUBLIC PeriodicPublisher
 {
 public:
-  PeriodicPublisher(rclcpp::Node & node, const PeriodCountTopic & cfg, std::list<T> msgs = {})
+  PeriodicPublisher(autocore::Node & node, const PeriodCountTopic & cfg, std::list<T> msgs = {})
   : m_msgs{msgs}
   {
     // Prune list if too long
@@ -73,7 +73,7 @@ public:
 
 private:
   std::list<T> m_msgs;
-  typename rclcpp::Publisher<T>::SharedPtr m_pub{};
+  typename autocore::Publisher<T>::SharedPtr m_pub{};
   rclcpp::TimerBase::SharedPtr m_timer{};
 };  // class PeriodicPublisher
 

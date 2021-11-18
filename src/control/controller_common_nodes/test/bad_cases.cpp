@@ -18,7 +18,7 @@
 #include <motion_testing_nodes/wait_for_matched.hpp>
 #include <time_utils/time_utils.hpp>
 
-#include <rclcpp/rclcpp.hpp>
+#include <autocore_node/node.hpp>
 
 #include <cmath>
 #include <memory>
@@ -48,7 +48,7 @@ constexpr auto tf_topic = "bad_controller_base_node_tf";
 constexpr auto traj_topic = "bad_controller_base_node_traj";
 constexpr auto diagnostic_topic = "bad_controller_base_node_diag";
 
-class BadListener : public rclcpp::Node
+class BadListener : public autocore::Node
 {
 public:
   BadListener()
@@ -118,11 +118,11 @@ private:
   std::vector<TransformStamped> m_tfs{};
   std::vector<Command> m_cmds{};
   std::vector<Diagnostic> m_diags{};
-  rclcpp::Subscription<Trajectory>::SharedPtr m_traj_sub;
-  rclcpp::Subscription<State>::SharedPtr m_state_sub;
-  rclcpp::Subscription<TFMessage>::SharedPtr m_tf_sub;
-  rclcpp::Subscription<Command>::SharedPtr m_cmd_sub;
-  rclcpp::Subscription<Diagnostic>::SharedPtr m_diag_sub;
+  autocore::Subscription<Trajectory>::SharedPtr m_traj_sub;
+  autocore::Subscription<State>::SharedPtr m_state_sub;
+  autocore::Subscription<TFMessage>::SharedPtr m_tf_sub;
+  autocore::Subscription<Command>::SharedPtr m_cmd_sub;
+  autocore::Subscription<Diagnostic>::SharedPtr m_diag_sub;
 };  // class BadListener
 
 // A simple controller instance to pass-through the transformed stuff
@@ -203,8 +203,8 @@ protected:
     (void)rclcpp::shutdown();
   }
 
-  rclcpp::Publisher<State>::SharedPtr state_pub_{};
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_{};
+  autocore::Publisher<State>::SharedPtr state_pub_{};
+  autocore::Publisher<Trajectory>::SharedPtr traj_pub_{};
   std::shared_ptr<BadListener> sub_{};
   std::shared_ptr<BadControllerNode> ctrl_{};
 };  // BadCases
