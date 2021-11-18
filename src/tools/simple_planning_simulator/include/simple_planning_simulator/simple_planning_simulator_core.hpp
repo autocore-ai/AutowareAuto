@@ -109,7 +109,6 @@ public:
   void Update();
   VehicleKinematicState GetKinematicState();
   VehicleStateReport GetStateReport();
-  PoseStamped GetCurrentPose();
   bool IsInitialized();
 
 private:

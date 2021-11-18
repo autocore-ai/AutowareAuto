@@ -100,9 +100,9 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     std::bind(&SimplePlanningSimulator::on_state_cmd, this, _1));
 
   pub_state_report_ = create_publisher<VehicleStateReport>("output/vehicle_state_report", QoS{1});
-  pub_current_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("/current_pose", QoS{1}, true);
+  pub_current_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("/current_pose", QoS{1});
   pub_kinematic_state_ = create_publisher<VehicleKinematicState>("output/kinematic_state", QoS{1});
-  pub_tf_ = create_publisher<tf2_msgs::msg::TFMessage>("/tf", QoS{1});
+  pub_tf_ = create_publisher<tf2_msgs::msg::TFMessage>("/tf", QoS{1}, true);
 
   timer_sampling_time_ms_ = static_cast<uint32_t>(declare_parameter("timer_sampling_time_ms", 25));
   on_timer_ = create_wall_timer(
@@ -406,7 +406,6 @@ VehicleKinematicState SimplePlanningSimulator::GetKinematicState()
   return pub_kinematic_state_->get();
 }
 VehicleStateReport SimplePlanningSimulator::GetStateReport() { return pub_state_report_->get(); }
-PoseStamped SimplePlanningSimulator::GetCurrentPose() { return pub_current_pose_->get(); }
 bool SimplePlanningSimulator::IsInitialized() { return is_initialized_; }
 
 }  // namespace simple_planning_simulator
