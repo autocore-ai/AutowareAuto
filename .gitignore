@@ -72,7 +72,3 @@ target_fs/
 
 ## python notebook checkpoints
 *.ipynb_checkpoints/
-
-target
-Cargo.lock
-computed-record.yaml
