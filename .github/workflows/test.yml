@@ -9,6 +9,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Test
+      run: ls -al /usr/lib/x86_64-linux-gnu/libpython*
     - name: Setup ROS
       uses: ros-tooling/setup-ros@v0.2
       with:
