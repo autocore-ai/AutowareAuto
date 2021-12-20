@@ -15,12 +15,10 @@ jobs:
         required-ros-distributions: foxy
     - name: Build Autoware.Auto
       run: |
-        sudo mkdir /opt/AutowareAuto
-        sudo chown runner:docker /opt/AutowareAuto
         cd AutowareAuto
         vcs import < autoware.auto.foxy.repos
         rosdep update
         rosdep install -y --from . --ignore-src --rosdistro foxy
         curl https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/raw/master/src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd -o src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd
         source /opt/ros/foxy/setup.bash
-        colcon build --merge-install --install-base /opt/AutowareAuto
+        colcon build --merge-install --packages-up-to benchmark_tool_nodes
