@@ -13,12 +13,6 @@ jobs:
       uses: ros-tooling/setup-ros@v0.2
       with:
         required-ros-distributions: foxy
-    - name: Checkout Autoware.Auto
-      uses: actions/checkout@v2
-      with:
-        repository: autocore-ai/AutowareAuto
-        ref: refs/heads/zenoh-flow
-        path: AutowareAuto
     - name: Build Autoware.Auto
       run: |
         sudo mkdir /opt/AutowareAuto
