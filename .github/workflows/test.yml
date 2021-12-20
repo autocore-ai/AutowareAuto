@@ -16,6 +16,7 @@ jobs:
       with:
         required-ros-distributions: foxy
     - name: Build Autoware.Auto
+      continue-on-error: true
       run: |
         vcs import < autoware.auto.foxy.repos
         rosdep update
@@ -23,3 +24,7 @@ jobs:
         curl https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/raw/master/src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd -o src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd
         source /opt/ros/foxy/setup.bash
         colcon build --merge-install --packages-up-to benchmark_tool_nodes
+    - uses: actions/upload-artifact@v2
+      with:
+        name: build-dir
+        path: build
