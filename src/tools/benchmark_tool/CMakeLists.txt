@@ -61,7 +61,7 @@ if(BUILD_TESTING)
     target_compile_options(test_benchmark_tool
       PUBLIC $<$<COMPILE_LANGUAGE:CXX>: -Wno-useless-cast>)
   endif()
-  target_link_libraries(test_benchmark_tool kittiobjeval ${Python3_LIBRARYS})
+  target_link_libraries(test_benchmark_tool kittiobjeval ${Python3_LIBRARIES})
   target_include_directories(test_benchmark_tool PRIVATE
     ${PROJECT_NAME}/kittiobjdetsdk/include/)
   ament_target_dependencies(test_benchmark_tool "autoware_auto_common")
