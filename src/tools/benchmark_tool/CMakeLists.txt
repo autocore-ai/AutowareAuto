@@ -21,8 +21,6 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 find_package(Python3 REQUIRED COMPONENTS Development)
 
-message("Python3_FOUND:::::${Python3_FOUND}::${Python3_LIBRARY_DIRS}::${Python3_LIBRARIES}::${Python3_LIBRARY}##")
-
 ### Build
 
 ament_auto_add_library(kittiobjeval SHARED
@@ -63,8 +61,7 @@ if(BUILD_TESTING)
     target_compile_options(test_benchmark_tool
       PUBLIC $<$<COMPILE_LANGUAGE:CXX>: -Wno-useless-cast>)
   endif()
-  message("XXXXXXXXXXXXXXXXXXXXXXX::${Python3_LIBRARY}")
-  target_link_libraries(test_benchmark_tool kittiobjeval ${Python3_LIBRARY})
+  target_link_libraries(test_benchmark_tool kittiobjeval ${Python3_LIBRARYS})
   target_include_directories(test_benchmark_tool PRIVATE
     ${PROJECT_NAME}/kittiobjdetsdk/include/)
   ament_target_dependencies(test_benchmark_tool "autoware_auto_common")
