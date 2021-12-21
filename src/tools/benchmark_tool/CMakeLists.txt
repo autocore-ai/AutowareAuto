@@ -21,6 +21,8 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 find_package(Python3 REQUIRED COMPONENTS Development)
 
+message("Python3_FOUND:::::${Python3_FOUND}::${Python3_LIBRARY_DIRS}::${Python3_LIBRARIES}::${Python3_LIBRARY}##")
+
 ### Build
 
 ament_auto_add_library(kittiobjeval SHARED
