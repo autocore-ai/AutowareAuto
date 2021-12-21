@@ -26,7 +26,7 @@ jobs:
           python3-rosdep \
           python3-vcstool \
           ros-foxy-cyclonedds \
-          ros-foxy-rmw-cyclonedds-cpp \
+          ros-foxy-rmw-cyclonedds-cpp
         vcs import < autoware.auto.foxy.repos
         rosdep update
         rosdep install -y --from . --ignore-src --rosdistro foxy
