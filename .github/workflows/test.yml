@@ -4,13 +4,13 @@ on:
 env:
   CARGO_TERM_COLOR: always
 jobs:
-  doc:
+  test:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Test
-      run: env
+      run: cmake --version
     - name: Setup ROS
       uses: ros-tooling/setup-ros@v0.2
       with:
@@ -18,8 +18,7 @@ jobs:
     - name: Build Autoware.Auto
       continue-on-error: true
       run: |
-        cmake --version
-        apt-get update && apt-get -y --no-install-recommends install \
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install \
           build-essential \
           clang-tidy \
           cmake \
