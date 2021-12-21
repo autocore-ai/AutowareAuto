@@ -1,0 +1,23 @@
+name: Build
+on:
+  pull_request
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup ROS
+      uses: ros-tooling/setup-ros@v0.2
+      with:
+        required-ros-distributions: foxy
+    - name: Build Autoware.Auto
+      run: |
+        vcs import < autoware.auto.foxy.repos
+        rosdep update
+        rosdep install -y --from . --ignore-src --rosdistro foxy
+        curl https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/raw/master/src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd -o src/launch/autoware_demos/data/autonomoustuff_parking_lot_lgsvl.pcd
+        source /opt/ros/foxy/setup.bash
+        colcon build --merge-install
